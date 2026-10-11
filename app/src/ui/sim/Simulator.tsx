@@ -16,6 +16,7 @@ import { ReportButton } from './ReportButton'
 import { Presentation, type PresentStep } from './Presentation'
 import { CodeChip, SafetyChip, StatusChip } from './Status'
 import { DuctGuide } from './DuctGuide'
+import { QuickStart, useQuickStart } from './QuickStart'
 
 type Slot = 'bare' | 'current' | 'recommended' | number | `mat:${MaterialId}`
 
@@ -75,6 +76,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const [present, setPresent] = useState(false)
   const [step, setStep] = useState<PresentStep>(0)
   const [tab, setTab] = useState<'setup' | 'results' | 'learn'>('results')
+  const help = useQuickStart(mode)
   const [guide, setGuide] = useState(() => mode === 'duct' && new URLSearchParams(location.search).get('guide') === '1')
   const sync = useMemo(() => new CamSync(), [])
 
@@ -163,19 +165,24 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           options={[{ id: 'ins', label: 'Insulated' }, { id: 'bare', label: 'Bare' }]}
         />
       )}
-      <button className="tool present-btn" aria-label="Present" onClick={() => { setStep(0); setPresent(true) }}>
+      {mode === 'duct' && (
+        <button className="tool guide-tool" onClick={() => setGuide(true)} title="See where duct locations sit in a building and what each requires">
+          <Icon name="map" size={16} /> <span>Location guide</span>
+        </button>
+      )}
+      <button className="tool present-btn" onClick={() => { setStep(0); setPresent(true) }} title="Full-screen walkthrough for a customer: bare, insulated, side by side">
         <Icon name="spark" size={16} /> <span>Present</span>
       </button>
-      <button className={`tool ${compare ? 'on' : ''}`} aria-pressed={compare} aria-label="Compare" onClick={() => setCompare(!compare)}>
+      <button className={`tool ${compare ? 'on' : ''}`} aria-pressed={compare} onClick={() => setCompare(!compare)} title="Show two or three versions side by side">
         <Icon name="compare" size={16} /> <span>Compare</span>
       </button>
-      <button
-        className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} aria-label="Thermal" onClick={() => setThermal(!thermal)}
+      {mode !== 'duct' && <button
+        className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} onClick={() => setThermal(!thermal)}
         disabled={s.system === 'duct' || s.component === 'elbow' || s.component === 'tee'}
         title={s.system === 'duct' ? 'Thermal view covers pipe; the duct faces are listed in Results' : s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined}
       >
         <Icon name="thermo" size={16} /> <span>Thermal</span>
-      </button>
+      </button>}
       <Segmented<'installed' | 'cutaway'>
         size="sm"
         label="View"
@@ -255,7 +262,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
 
   const results = (
     <ResultsPanel
-      mode={beh} accent={acc} s={s} ev={ev} recs={recs} units={units} compact={mobile}
+      mode={beh} accent={acc} s={s} onGuide={mode === 'duct' ? () => setGuide(true) : undefined} ev={ev} recs={recs} units={units} compact={mobile}
       onApply={(t) => set({ thicknessIn: t })}
       onSet={set}
       onCompareMaterial={(id) => {
@@ -283,6 +290,8 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
         <div className="sim-mobile-stage">
           {stage}
           {statusPill}
+          {help.isOpen && <QuickStart mode={mode} mobile onClose={help.close} />}
+          {!help.isOpen && <button className="help-fab" aria-label="How it works" onClick={help.show}><Icon name="help" size={18} /></button>}
           {legend}
           <div className="sim-toolbar-wrap">{toolbar}</div>
         </div>
@@ -315,6 +324,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       {stage}
       <div className="sim-overlay" style={{ left: insetLeft, right: insetRight }}>
         {statusPill}
+        {help.isOpen && !present && <QuickStart mode={mode} mobile={false} onClose={help.close} />}
         {compareBar}
         {legend}
         <div className="sim-toolbar-wrap">{toolbar}</div>
@@ -341,6 +351,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
         <header>
           <h2 className="title">Results</h2>
           <div className="hdr-right">
+            <button className="tool" aria-label="How it works" title="How it works" onClick={help.show}><Icon name="help" size={15} /></button>
             <ReportButton make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} />
             <Scenarios mode={mode} s={s} onLoad={loadScenario} />
             {unitToggle}

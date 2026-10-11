@@ -51,7 +51,7 @@ export function Scenarios({ mode, s, onLoad }: { mode: SimMode; s: SimState; onL
   }
   return (
     <div className="scenarios">
-      <button className="tool" aria-label="Scenarios" aria-expanded={open} onClick={() => setOpen(!open)}><Icon name="layers" size={15} /> <span>Scenarios</span></button>
+      <button className="tool" aria-label="Scenarios" aria-expanded={open} onClick={() => setOpen(!open)}><Icon name="layers" size={15} /> <span className="lbl-long">Scenarios</span><span className="lbl-short">Saved</span></button>
       {open && (
         <div className="scn-pop" role="dialog" aria-label="Scenarios">
           <div className="scn-save">

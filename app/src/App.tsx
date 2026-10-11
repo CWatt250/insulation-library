@@ -54,24 +54,48 @@ function readParams() {
   }
 }
 
-const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' | 'wind' | 'target' }[] = [
-  { id: 'explore', label: 'Explore', short: 'Explore', icon: 'cube' },
-  { id: 'hot', label: 'Hot Pipe', short: 'Hot', icon: 'flame' },
-  { id: 'cold', label: 'Cold Pipe', short: 'Cold', icon: 'snow' },
-  { id: 'condensate', label: 'Condensate', short: 'Condensate', icon: 'drop' },
-  { id: 'duct', label: 'Ductwork', short: 'Duct', icon: 'wind' },
-  { id: 'recommend', label: 'Recommend', short: 'Recommend', icon: 'target' },
+/** The top bar: four plainly named places; Pipes opens a second row for the service. */
+const GROUPS: { id: 'recommend' | 'pipe' | 'duct' | 'explore'; label: string; short: string; hint: string; icon: 'target' | 'pipe' | 'wind' | 'cube' }[] = [
+  { id: 'recommend', label: 'Recommend', short: 'Recommend', hint: 'Answer a few questions, get the thickness', icon: 'target' },
+  { id: 'pipe', label: 'Pipes', short: 'Pipes', hint: 'Simulate hot pipes, cold pipes and condensate drains', icon: 'pipe' },
+  { id: 'duct', label: 'Ductwork', short: 'Ductwork', hint: 'Duct insulation by energy code, plus condensation', icon: 'wind' },
+  { id: 'explore', label: 'Material library', short: 'Library', hint: 'Browse insulation build-ups in 3D', icon: 'cube' },
 ]
+const PIPE_MODES: { id: 'hot' | 'cold' | 'condensate'; label: string; hint: string; icon: 'flame' | 'snow' | 'drop' }[] = [
+  { id: 'hot', label: 'Hot pipe', hint: 'Heat loss, surface temperature, safe-touch', icon: 'flame' },
+  { id: 'cold', label: 'Cold pipe', hint: 'Heat gain, dew point, condensation', icon: 'snow' },
+  { id: 'condensate', label: 'Condensate drain', hint: 'Sweating and dripping', icon: 'drop' },
+]
+const groupOf = (m: AppMode) => (m === 'hot' || m === 'cold' || m === 'condensate' ? 'pipe' : m)
 
-function ModeBar({ mode, onChange, mobile }: { mode: AppMode; onChange: (m: AppMode) => void; mobile: boolean }) {
+function ModeBar({ mode, onChange, mobile, lastPipe }: { mode: AppMode; onChange: (m: AppMode) => void; mobile: boolean; lastPipe: AppMode }) {
+  const g = groupOf(mode)
   return (
-    <nav className={`modebar ${mobile ? 'mobile' : ''}`} aria-label="Mode">
-      {MODES.map((m) => (
-        <button key={m.id} className={`mode-${m.id} ${m.id === mode ? 'on' : ''}`} aria-label={m.label} aria-current={m.id === mode ? 'page' : undefined} onClick={() => onChange(m.id)}>
-          <Icon name={m.icon} size={16} />
-          <span>{mobile ? m.short : m.label}</span>
-        </button>
-      ))}
+    <nav className={`modebar ${mobile ? 'mobile' : ''} ${g === 'pipe' ? 'with-sub' : ''}`} aria-label="Sections">
+      <div className="mb-main">
+        {GROUPS.map((x) => (
+          <button
+            key={x.id}
+            className={`mb-${x.id} ${x.id === g ? 'on' : ''}`}
+            aria-current={x.id === g ? 'page' : undefined}
+            title={x.hint}
+            onClick={() => onChange(x.id === 'pipe' ? (g === 'pipe' ? mode : lastPipe) : x.id)}
+          >
+            <Icon name={x.icon} size={mobile ? 18 : 16} />
+            <span>{mobile ? x.short : x.label}</span>
+          </button>
+        ))}
+      </div>
+      {g === 'pipe' && (
+        <div className="mb-sub" role="group" aria-label="Pipe service">
+          {PIPE_MODES.map((x) => (
+            <button key={x.id} className={`mode-${x.id} ${x.id === mode ? 'on' : ''}`} aria-current={x.id === mode ? 'page' : undefined} title={x.hint} onClick={() => onChange(x.id)}>
+              <Icon name={x.icon} size={14} />
+              <span>{x.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </nav>
   )
 }
@@ -112,8 +136,10 @@ export default function App() {
   const [units, setUnits] = useState<UnitSystem>(init.units)
   // a scenario from a share link, or a recommendation opened in the simulator
   const [handoff, setHandoff] = useState(init.share)
+  const [lastPipe, setLastPipe] = useState<AppMode>(() => (init.mode === 'cold' || init.mode === 'condensate' ? init.mode : 'hot'))
   const setMode = (m: AppMode) => {
     setModeState(m)
+    if (m === 'hot' || m === 'cold' || m === 'condensate') setLastPipe(m)
     const q = new URLSearchParams(location.search)
     if (m === 'explore') q.delete('mode')
     else q.set('mode', m)
@@ -348,8 +374,8 @@ export default function App() {
 
   if (mode === 'recommend') {
     return (
-      <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
-        <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
+      <div className={`app sim-app ${mobile ? 'is-mobile' : ''} ${groupOf(mode) === 'pipe' ? 'subnav' : ''}`}>
+        <ModeBar mode={mode} onChange={setMode} mobile={mobile} lastPipe={lastPipe} />
         <Recommend mobile={mobile} units={units} onOpen={(m, st) => { setHandoff({ mode: m, state: st }); setMode(m) }} />
       </div>
     )
@@ -357,8 +383,8 @@ export default function App() {
 
   if (mode !== 'explore') {
     return (
-      <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
-        <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
+      <div className={`app sim-app ${mobile ? 'is-mobile' : ''} ${groupOf(mode) === 'pipe' ? 'subnav' : ''}`}>
+        <ModeBar mode={mode} onChange={setMode} mobile={mobile} lastPipe={lastPipe} />
         <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} share={handoff} onMode={setMode} />
       </div>
     )
@@ -366,7 +392,7 @@ export default function App() {
 
   return (
     <div className={`app ${mobile ? 'is-mobile' : ''} ${init.ui ? '' : 'no-ui'}`}>
-      {init.ui && <ModeBar mode={mode} onChange={setMode} mobile={mobile} />}
+      {init.ui && <ModeBar mode={mode} onChange={setMode} mobile={mobile} lastPipe={lastPipe} />}
       <div className="stage">
         <Viewer
           insulation={insulation}

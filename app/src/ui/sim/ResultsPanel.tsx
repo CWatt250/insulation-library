@@ -13,7 +13,7 @@ import type { SimMode, SimState } from '../../sim/types'
 import { currentMaterial, noun, type MaterialId } from '../../sim/system'
 import { ductCode } from '../../sim/design'
 import { recommend } from '../../sim/model'
-import { DUCT_CODES, DUCT_TYPES } from '../../sim/duct'
+import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES } from '../../sim/duct'
 import type { DuctFaceResult } from '../../sim/duct'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { DUCT_LEARN, INTRO, LEARN, TOPICS } from '../../sim/learn'
@@ -270,7 +270,9 @@ function MaterialCompare({ s, mode, units, onUse, on3d }: { s: SimState; mode: S
   )
 }
 
-export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, onCompareMaterial, compact, accent }: {
+export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, onCompareMaterial, compact, accent, onGuide }: {
+  /** Ductwork: open the location guide. */
+  onGuide?: () => void
   mode: SimMode
   /** Panel accent; defaults to the mode's. */
   accent?: string
@@ -293,7 +295,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
   const tone = mode === 'hot' ? (safe ? 'good' : 'bad') : STATUS_TONE[ins.status]
   return (
     <div className="results" style={{ '--acc': accent ?? ACCENT[mode] } as React.CSSProperties}>
-      {s.system === 'duct' && <DuctCodeHero s={s} ev={ev} mode={mode} onApply={onApply} />}
+      {s.system === 'duct' && <DuctCodeHero s={s} ev={ev} mode={mode} onApply={onApply} onGuide={onGuide} />}
       {/* ---------------------------------------------------------------- hero */}
       <div className={`hero ${tone}`}>
         <div className="hero-top">
@@ -439,7 +441,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
 }
 
 /** Ductwork leads with the energy code: what this duct type, location and climate zone require, and whether the insulation meets it. */
-function DuctCodeHero({ s, ev, mode, onApply }: { s: SimState; ev: Evaluation; mode: SimMode; onApply: (t: number) => void }) {
+function DuctCodeHero({ s, ev, mode, onApply, onGuide }: { s: SimState; ev: Evaluation; mode: SimMode; onApply: (t: number) => void; onGuide?: () => void }) {
   const c = ductCode(s)
   const R = ev.ins.ratedR ?? 0
   const ok = c.R === null || R + 1e-9 >= c.R
@@ -460,6 +462,7 @@ function DuctCodeHero({ s, ev, mode, onApply }: { s: SimState; ev: Evaluation; m
       <p className="hero-sub">This insulation: <b>R-{R.toFixed(1)} installed</b>{c.R !== null ? (ok ? ' — meets it.' : ' — below the minimum.') : '.'}</p>
       {fix !== null && fix !== s.thicknessIn && <button className="apply" onClick={() => onApply(fix)}>Use {inchLabel(fix)} to meet code</button>}
       {mode !== 'hot' && <p className="hero-sub muted">The code minimum is for energy; condensation is checked below.</p>}
+      {onGuide && <button className="linkish" onClick={onGuide}><Icon name="map" size={13} /> Where is "{DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.short.toLowerCase()}"? Show it on the building</button>}
     </div>
   )
 }

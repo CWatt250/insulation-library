@@ -13,38 +13,46 @@
 
 /* ---------------------------------------------------------------- mode bar */
 .modebar {
-  position: fixed; z-index: 40; top: 14px;
+  position: fixed; z-index: 40; top: 12px;
   left: calc(312px + (100% - 312px - 372px) / 2); transform: translateX(-50%);
-  display: flex; gap: 4px; padding: 5px;
-  background: rgba(18, 19, 21, 0.82); backdrop-filter: blur(16px) saturate(1.3);
-  border: 1px solid var(--line); border-radius: 14px;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.4);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
 .sim-app .modebar { left: calc(332px + (100% - 332px - 392px) / 2); }
+.mb-main, .mb-sub {
+  display: flex; gap: 4px; padding: 5px;
+  background: rgba(18, 19, 21, 0.86); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.4);
+}
+.mb-sub { padding: 4px; border-radius: 12px; }
 .modebar button {
-  display: flex; align-items: center; gap: 7px; padding: 8px 14px; border: 0; border-radius: 10px;
-  background: none; color: var(--ink-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 7px; padding: 9px 15px; border: 0; border-radius: 10px;
+  background: none; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 650; cursor: pointer; white-space: nowrap;
   transition: background 0.18s, color 0.18s;
 }
-.modebar button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.05); }
+.mb-sub button { padding: 6px 12px; font-size: 12.5px; }
+.modebar button:hover { color: var(--ink); background: rgba(255, 255, 255, 0.07); }
 .modebar button.on { color: #111; }
-.modebar .mode-explore.on { background: #ecebe7; }
+.modebar .mb-explore.on { background: #ecebe7; }
+.modebar .mb-recommend.on { background: linear-gradient(180deg, #fff1a8, #f5c542); }
+.modebar .mb-pipe.on { background: linear-gradient(180deg, #ffd2ad, #ffa766); }
+.modebar .mb-duct.on { background: linear-gradient(180deg, #d4c6ff, #a58bff); }
 .modebar .mode-hot.on { background: linear-gradient(180deg, #ffa766, #ff7a2f); }
 .modebar .mode-cold.on { background: linear-gradient(180deg, #c4e8ff, #86ccff); }
 .modebar .mode-condensate.on { background: linear-gradient(180deg, #2dd4bf, #0f9488); }
-.modebar .mode-duct.on { background: linear-gradient(180deg, #d4c6ff, #a58bff); }
-.modebar .mode-recommend.on { background: linear-gradient(180deg, #fff1a8, #f5c542); }
 .modebar button:focus-visible, .sim button:focus-visible, .sim input:focus-visible, .sim select:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+/* the overlays under the bar move down when the pipe row shows */
+.sim-app.subnav .status-pill, .sim-app.subnav .pane-label { top: 108px; }
 @media (max-width: 1240px) and (min-width: 861px) {
-  .modebar button { padding: 8px 10px; }
-  .modebar button span { display: none; }
-  .modebar button.on span { display: inline; }
+  .modebar button { padding: 8px 11px; font-size: 12.5px; }
 }
-.modebar.mobile { top: 8px; left: 50%; padding: 4px; border-radius: 12px; }
-.modebar.mobile button { padding: 7px 10px; font-size: 12px; gap: 5px; }
-/* five modes on a phone: icons, with the label only on the active one */
-.modebar.mobile button:not(.on) span { display: none; }
-.modebar.mobile button:not(.on) { padding: 7px 9px; }
+/* phones: a labelled tab bar, icon over label */
+.modebar.mobile { top: 6px; left: 50%; width: calc(100% - 12px); }
+.modebar.mobile .mb-main { width: 100%; justify-content: space-between; padding: 4px; border-radius: 14px; }
+.modebar.mobile .mb-main button { flex: 1; flex-direction: column; gap: 2px; padding: 6px 2px; font-size: 11px; border-radius: 10px; }
+.modebar.mobile .mb-sub { width: 100%; justify-content: space-between; }
+.modebar.mobile .mb-sub button { flex: 1; justify-content: center; padding: 6px 4px; font-size: 11.5px; gap: 4px; }
+.sim-app.is-mobile .status-pill { top: 64px; }
+.sim-app.is-mobile.subnav .status-pill { top: 104px; }
 
 /* ------------------------------------------------------------ sim layout */
 .sim { position: absolute; inset: 0; }
@@ -288,16 +296,19 @@ button.primary:disabled { opacity: 0.45; cursor: default; }
 /* ------------------------------------------------------------------ mobile */
 .sim.is-mobile { position: fixed; inset: 0; --sheet-collapsed: 196px; }
 .sim-mobile-stage { position: absolute; left: 0; right: 0; top: 0; height: calc(100dvh - var(--sheet-collapsed) + 14px); }
-.sim.is-mobile .status-pill { top: 54px; font-size: 11.5px; max-width: calc(100% - 24px); overflow: hidden; }
-.sim.is-mobile .sim-toolbar-wrap { bottom: 22px; max-width: calc(100% - 16px); }
-.sim.is-mobile .sim-toolbar { overflow-x: auto; scrollbar-width: none; }
-.sim.is-mobile .sim-toolbar .tool span { display: none; }
+.sim.is-mobile .status-pill { top: 64px; font-size: 11.5px; max-width: calc(100% - 24px); overflow: hidden; }
+.sim.is-mobile .sim-toolbar-wrap { bottom: 20px; left: 8px; right: 8px; transform: none; display: flex; justify-content: center; }
+.sim.is-mobile .sim-toolbar { flex-wrap: wrap; justify-content: center; gap: 5px; padding: 5px; }
+.sim.is-mobile .sim-toolbar .tool { padding: 6px 9px; font-size: 12px; gap: 5px; }
+.sim.is-mobile .sim-toolbar .segmented button { padding: 5px 9px; font-size: 12px; }
+.guide-tool { border-color: color-mix(in srgb, var(--acc) 55%, transparent); color: var(--ink); }
 .sim.is-mobile .sim-stage.compare { left: 0; right: 0; grid-template-columns: 1fr; grid-auto-rows: 1fr; }
 .sim.is-mobile .sim-stage.compare.n3 { grid-template-columns: 1fr; }
 .sim.is-mobile .pane-label { top: 6px; left: 8px; right: auto; max-width: calc(100% - 16px); padding: 4px 8px; gap: 2px 6px; }
 .sim.is-mobile .pane-label strong { font-size: 12px; }
 .sim.is-mobile .pane-label span { font-size: 10.5px; }
-.sim.is-mobile .sim-stage.compare .compare-pane:first-child .pane-label { top: 52px; }
+.sim.is-mobile .sim-stage.compare .compare-pane:first-child .pane-label { top: 64px; }
+.sim-app.subnav .sim.is-mobile .sim-stage.compare .compare-pane:first-child .pane-label { top: 104px; }
 .sim-mobile-stage .sim-stage.compare ~ .status-pill { display: none; }
 .sim.is-mobile .thermal-legend { bottom: 76px; left: 8px; width: 180px; }
 .sim.is-mobile .thermal-legend.over-compare { left: 8px; transform: none; }
@@ -408,7 +419,9 @@ table.mat-compare tr.on td:first-child { color: var(--acc); font-weight: 650; }
 
 .mc-act { display: flex; gap: 4px; justify-content: flex-end; }
 .apply.ghost { border-color: var(--chip-line); color: var(--ink-2); }
-.is-mobile .scenarios .tool span { display: none; }
+.scenarios .lbl-short { display: none; }
+.is-mobile .scenarios .lbl-long { display: none; }
+.is-mobile .scenarios .lbl-short { display: inline; }
 .scn-pop { max-width: min(320px, calc(100vw - 24px)); }
 
 .rp-field { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -534,3 +547,23 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 .rec-sticky b.plain { color: #111; }
 .rec-sticky b { color: #111; }
 .rec-sticky span { color: #222; }
+
+/* ------------------------------------------------------------ how it works */
+.quickstart {
+  position: absolute; top: 112px; left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 24px));
+  padding: 12px 14px; border-radius: 14px; background: rgba(20, 21, 23, 0.95); backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--acc) 50%, var(--line)); box-shadow: 0 16px 40px rgba(0,0,0,0.45); z-index: 6;
+}
+.sim-app.subnav .quickstart { top: 150px; }
+.qs-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.qs-head b { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.quickstart ol { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.quickstart li { display: flex; gap: 9px; font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+.quickstart li i { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #111; background: var(--acc); }
+.sim.is-mobile .quickstart { top: 106px; left: 10px; right: 10px; width: auto; transform: none; }
+.sim-app.subnav .sim.is-mobile .quickstart { top: 142px; }
+.help-fab { position: absolute; right: 10px; top: 106px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); background: rgba(20, 21, 23, 0.85); color: var(--ink); backdrop-filter: blur(10px); }
+.sim-app.subnav .help-fab { top: 142px; }
+.linkish { display: inline-flex; align-items: center; gap: 5px; padding: 0; border: 0; background: none; color: var(--acc); font: inherit; font-size: 12.5px; font-weight: 650; cursor: pointer; text-align: left; }
+.linkish:hover { text-decoration: underline; }
+.field-label-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }

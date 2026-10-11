@@ -94,7 +94,7 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
         <Segmented<DuctType> size="sm" label="Duct type" value={s.ductType} onChange={(v) => set({ ductType: v })} options={DUCT_TYPES.map((t) => ({ id: t.id, label: t.short }))} />
       </div>
       <div className="field">
-        <span className="field-label">Where it runs</span>
+        <span className="field-label field-label-row">Where it runs {onGuide && <button className="linkish" onClick={onGuide}><Icon name="map" size={13} /> Show me on a building</button>}</span>
         <div className="chips loc-chips">
           {DUCT_LOCATIONS.map((l) => (
             <button key={l.id} className={l.id === s.ductLocation ? 'on' : ''} onClick={() => set({ ductLocation: l.id })} title={l.label}>{l.label}</button>
