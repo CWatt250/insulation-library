@@ -220,7 +220,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   )
 
   const legend = thermal && s.component !== 'elbow' && s.component !== 'tee' && (
-    <div className={`thermal-legend ${mode === 'hot' ? 'hot' : 'cold'}`} aria-label="Thermal colour scale">
+    <div className={`thermal-legend ${mode === 'hot' ? 'hot' : 'cold'} ${compare ? 'over-compare' : ''}`} aria-label="Thermal colour scale">
       <div className="tl-bar" />
       <div className="tl-ticks">
         <span>{fmt.temp(mode === 'hot' ? s.ambientF : s.processF, units)}</span>

@@ -43,6 +43,11 @@ export interface ViewerProps extends AssemblyParams {
   sim?: SimVisual
   /** Compare mode: cameras move together. */
   sync?: { group: CamSync; id: number }
+  /**
+   * Compare mode: frame the model to this panel's own width and height, sized
+   * for the largest model in the row (metres) so every panel shows the same view.
+   */
+  frameRadius?: number
   /** Fraction of the landscape framing a narrow view must keep (phones 0.68, compare panes less). */
   coverage?: number
   /** Presentation mode: a slow turntable. */
@@ -219,6 +224,14 @@ const VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]
  */
 function applyFov(camera: THREE.PerspectiveCamera) {
   const base = (camera.userData.baseFov as number | undefined) ?? 30
+  const aspect0 = camera.aspect || 1.6
+  if (camera.userData.fit) {
+    // compare panels are framed by distance; tall narrow panels just open the
+    // vertical angle a little so the camera need not back off as far
+    camera.fov = aspect0 >= 1 ? base : Math.min(Math.max((2 * Math.atan(Math.tan((13 * Math.PI) / 180) / aspect0) * 180) / Math.PI, base), 58)
+    camera.updateProjectionMatrix()
+    return
+  }
   // phones have no side panels to frame around, so they can cover less width
   const coverage = (camera.userData.coverage as number | undefined) ?? 1
   const aspect = camera.aspect || 1.6
@@ -256,55 +269,105 @@ function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.Pe
     // the section is about the cut face: frame the face and the first stretch of run behind it
     ? new THREE.Box3(new THREE.Vector3(half - 0.1 - Math.max(0.12, 1.2 * R), -R, -R), new THREE.Vector3(half - 0.1, R, R))
     : new THREE.Box3(new THREE.Vector3(-half, -R, -R), new THREE.Vector3(half, asm.yMax, R))
-  const center = box.getCenter(new THREE.Vector3())
-  const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(
-    i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z,
-  ))
   // open area in NDC, model to the left of the label column
   const openL = (screen.left / screen.w) * 2 - 1
   const openR = 1 - (screen.right / screen.w) * 2
   const modelR = openR - (openR - openL) * labelRoom
-  const want = { l: openL, r: modelR, b: -0.82, t: 0.8 }
+  return fitBox(camera, box, dir, { l: openL, r: modelR, b: -0.82, t: 0.8 }, fill)
+}
+
+/** Camera along `dir` that just fits `box` inside the NDC rectangle `want` (× fill). */
+function fitBox(camera: THREE.PerspectiveCamera, box: THREE.Box3, dir: THREE.Vector3, want: { l: number; r: number; b: number; t: number }, fill: number): Preset {
+  const center = box.getCenter(new THREE.Vector3())
+  const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(
+    i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z,
+  ))
   const cam = camera.clone()
   const right = new THREE.Vector3().crossVectors(dir.clone().negate(), new THREE.Vector3(0, 1, 0)).normalize()
-  const place = (dist: number, shift: number) => {
-    const t = center.clone().addScaledVector(right, shift)
+  const up = new THREE.Vector3().crossVectors(right, dir.clone().negate()).normalize()
+  // find the distance where the box just fits, then slide it into the open area
+  let lo = 0.2, hi = 12, shift = 0, lift = 0
+  const centre = (d: number) => {
+    for (let k = 0; k < 3; k++) {
+      const f = place(d, shift, lift)
+      const perX = d * Math.tan((cam.fov * Math.PI) / 360) * cam.aspect
+      const perY = d * Math.tan((cam.fov * Math.PI) / 360)
+      shift -= ((want.l + want.r) / 2 - (f.l + f.r) / 2) * perX
+      lift -= ((want.b + want.t) / 2 - (f.b + f.tp) / 2) * perY
+    }
+  }
+  const place = (dist: number, sh: number, li: number) => {
+    const t = center.clone().addScaledVector(right, sh).addScaledVector(up, li)
     cam.position.copy(t).addScaledVector(dir, dist)
     cam.lookAt(t)
     cam.updateMatrixWorld()
     const p = corners.map((c) => c.clone().project(cam))
     return { t, l: Math.min(...p.map((v) => v.x)), r: Math.max(...p.map((v) => v.x)), b: Math.min(...p.map((v) => v.y)), tp: Math.max(...p.map((v) => v.y)) }
   }
-  // find the distance where the box just fits, then slide it into the open area
-  let lo = 0.2, hi = 8, shift = 0
   for (let i = 0; i < 28; i++) {
     const d = (lo + hi) / 2
-    // centre the box horizontally in the wanted span at this distance
-    for (let k = 0; k < 3; k++) {
-      const f = place(d, shift)
-      const mid = (f.l + f.r) / 2
-      const perNdc = (d * Math.tan((cam.fov * Math.PI) / 360) * cam.aspect)
-      shift -= (((want.l + want.r) / 2) - mid) * perNdc
-    }
-    const f = place(d, shift)
+    centre(d)
+    const f = place(d, shift, lift)
     const fits = f.r - f.l <= (want.r - want.l) * fill && f.tp - f.b <= (want.t - want.b) * fill
     if (fits) hi = d
     else lo = d
   }
-  const dist = Math.min(hi, 4.4)
-  const f = place(dist, shift)
+  const dist = Math.min(hi, 9)
+  centre(dist)
+  const f = place(dist, shift, lift)
   return { cam: [cam.position.x, cam.position.y, cam.position.z], target: [f.t.x, f.t.y, f.t.z] }
 }
 
+/**
+ * Compare panels: the cut end (straight run) or the fitting, fitted to the
+ * panel's own shape between its label and the controls. `radius` is the
+ * largest model in the row so every panel computes the same camera.
+ */
+function fitCompare(component: AssemblyParams['component'], asm: Assembly, camera: THREE.PerspectiveCamera, radius: number): Preset {
+  const v = VIEWS[component]
+  const dir = new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target)).normalize()
+  const R = Math.max(radius, asm.outerRadius)
+  const half = (asm.zMax - asm.zMin) / 2
+  const rise = Math.max(0.05, 0.7 * R) // heat waves and arrows above the pipe
+  let box: THREE.Box3
+  if (component === 'straight') {
+    const L = Math.min(2 * half, Math.max(0.42, 9 * R))
+    box = new THREE.Box3(new THREE.Vector3(half - L, -R, -R), new THREE.Vector3(half + 7 * IN, R + rise, R))
+  } else if (component === 'elbow') {
+    box = new THREE.Box3(new THREE.Vector3(-half, -R, -R), new THREE.Vector3(half, asm.yMax, R))
+  } else {
+    const hw = Math.min(half, Math.max(0.36, 6 * R))
+    box = new THREE.Box3(new THREE.Vector3(-hw, -R, -R), new THREE.Vector3(hw, Math.max(asm.yMax, R) + rise, R))
+  }
+  return fitBox(camera, box, dir, { l: -0.9, r: 0.9, b: -0.5, t: 0.6 }, 0.94)
+}
+
 /** Frames the assembly when the component or view changes (URL cam/tgt override for screenshots). */
-function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0, zoom = 1 }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight'> & { asm: Assembly; zoom?: number }) {
+function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0, zoom = 1, frameRadius }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight' | 'frameRadius'> & { asm: Assembly; zoom?: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
   const fit = view === 'exploded' || view === 'section'
+  const compare = frameRadius !== undefined && !cam && (view === 'cutaway' || view === 'installed')
   useEffect(() => {
+    if (!compare) return
+    const pc = camera as THREE.PerspectiveCamera
+    pc.userData.fit = true
+    pc.userData.baseFov = 30
+    pc.aspect = size.width / size.height
+    applyFov(pc)
+    const v = fitCompare(component, asm, pc, frameRadius!)
+    camera.position.set(...v.cam)
+    if (controls) {
+      controls.target.set(...v.target)
+      controls.update()
+    }
+  }, [compare, component, view, camera, controls, size.width, size.height, frameRadius, asm.zMin, asm.zMax, asm.yMax]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (compare) return
     const room = stage === 'room' && view !== 'layers' && !fit
     const pc = camera as THREE.PerspectiveCamera
+    pc.userData.fit = false
     pc.userData.baseFov = room ? 52 : 30
     applyFov(pc)
     const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight })
@@ -469,7 +532,7 @@ export function Viewer(props: ViewerProps) {
       <RendererSetup mobile={props.mobile} coverage={props.coverage} />
       <CameraRig
         component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} asm={asm}
-        insetLeft={props.insetLeft} insetRight={props.insetRight}
+        insetLeft={props.insetLeft} insetRight={props.insetRight} frameRadius={props.frameRadius}
         zoom={props.sim ? Math.round(Math.min(Math.max((asm.outerRadius + 0.07) / 0.18, 0.62), 1.1) * 100) / 100 + 0.001 : 1}
       />
       {props.sync && <SyncCamera group={props.sync.group} id={props.sync.id} />}

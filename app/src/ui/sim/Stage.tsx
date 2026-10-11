@@ -6,6 +6,7 @@ import type { SimMode, SimState } from '../../sim/types'
 import { rayIntensity, systemFor } from '../../sim/model'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { StatusChip } from './Status'
+import { NPS } from '../../data/pipe'
 
 export interface PanelSpec {
   key: string
@@ -63,7 +64,7 @@ export function visualFor(side: Side, bare: Side, mode: SimMode, thermal: boolea
   }
 }
 
-function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
+function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRadius }: {
   s: SimState
   mode: SimMode
   panel: PanelSpec
@@ -72,6 +73,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
   sync?: { group: CamSync; id: number }
   inset: { left: number; right: number }
   coverage?: number
+  frameRadius?: number
 }) {
   s = panel.state ?? s
   const sys = systemFor(s, mode)
@@ -98,6 +100,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
       insetLeft={inset.left}
       insetRight={inset.right}
       coverage={coverage}
+      frameRadius={frameRadius}
       autoRotate={opts.autoRotate}
     />
   )
@@ -120,11 +123,16 @@ export function Stage({ s, mode, panels, bare, opts, inset, sync }: {
       </div>
     )
   }
+  // frame every panel for the largest model in the row so the views line up
+  const frameRadius = Math.max(...panels.map((p) => {
+    const st = p.state ?? s
+    return (NPS[st.npsIndex].od / 2 + p.modelThickness + 0.1) * 0.0254
+  }))
   return (
     <div className={`sim-stage compare n${panels.length}`} style={opts.mobile ? undefined : { left: inset.left, right: inset.right }}>
       {panels.map((p, i) => (
         <div key={p.key} className="compare-pane">
-          <SimViewer s={s} mode={mode} panel={p} bare={bare} opts={opts} inset={{ left: 0, right: 0 }} sync={{ group: sync, id: i }} coverage={opts.mobile ? 0.62 : panels.length === 3 ? 0.5 : 0.62} />
+          <SimViewer s={s} mode={mode} panel={p} bare={bare} opts={opts} inset={{ left: 0, right: 0 }} sync={{ group: sync, id: i }} frameRadius={frameRadius} />
           <div className="pane-label">
             <strong>{p.title}</strong>
             <span>

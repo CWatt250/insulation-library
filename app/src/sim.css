@@ -91,6 +91,8 @@
   position: absolute; left: 16px; bottom: 82px; width: 220px; padding: 8px 10px; border-radius: 10px;
   background: rgba(18, 19, 21, 0.8); backdrop-filter: blur(10px); border: 1px solid var(--line); font-size: 11px; color: var(--ink-2);
 }
+/* compare: sit above the panel picker instead of on top of it */
+.thermal-legend.over-compare { bottom: 162px; left: 50%; transform: translateX(-50%); }
 .tl-bar { height: 8px; border-radius: 4px; }
 .thermal-legend.hot .tl-bar { background: linear-gradient(90deg, rgb(204,199,184), rgb(250,204,51) 30%, rgb(242,97,15) 65%, rgb(153,10,10)); }
 .thermal-legend.cold .tl-bar { background: linear-gradient(90deg, rgb(10,28,115), rgb(15,115,230) 34%, rgb(140,204,242) 75%, rgb(204,199,184)); }
@@ -292,6 +294,7 @@ button.primary:disabled { opacity: 0.45; cursor: default; }
 .sim.is-mobile .sim-stage.compare .compare-pane:first-child .pane-label { top: 52px; }
 .sim-mobile-stage .sim-stage.compare ~ .status-pill { display: none; }
 .sim.is-mobile .thermal-legend { bottom: 76px; left: 8px; width: 180px; }
+.sim.is-mobile .thermal-legend.over-compare { left: 8px; transform: none; }
 .sim-sheet .sheet-head .segmented { flex: none; }
 .sheet-presets .presets {
   display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 10px; scrollbar-width: none; scroll-snap-type: x proximity;
