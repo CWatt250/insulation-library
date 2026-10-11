@@ -1,0 +1,4828 @@
+{
+  "dataset": "Pipe and tube dimensions for insulation estimating (steel pipe OD, copper tube OD, ASTM C585 insulation dimensions, manufacturer actuals)",
+  "generated": "2026-10-10",
+  "units": "inches",
+  "conventions": {
+    "unverified": "The literal string 'unverified' means no published source was found for that value. Nothing has been guessed, averaged or computed to fill a gap.",
+    "src": "Each row's 'src' lists ids in this file's 'sources' array.",
+    "decimal_conversion": "Sproule (D6) prints fractions; 'insulation_od_in' is the exact decimal of the printed fraction (e.g. 2 7/8 = 2.875). The fraction as printed is kept alongside it."
+  },
+  "sources": [
+    {
+      "id": "D1",
+      "title": "Standard Pipe (brochure) — Schedule 40 ASTM A53 Grades A and B dimension table",
+      "publisher": "Wheatland Tube (Zekelman Industries)",
+      "url": "https://www.wheatland.com/wp-content/uploads/2017/12/Standard-Pipe-Brochure-2.pdf",
+      "doc_type": "pipe-mill product brochure PDF; table states product is 'Produced to ASTM A53/A53M, federal specification WW-P404 and ASME B36.10M'",
+      "pub_no_or_date": "PDF created 2025-04-21 (6 pp.)",
+      "covers": "NPS 1/2–18 OD",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D2",
+      "title": "Dimensions & weights welded and seamless wrought steel pipes ASME B36.10 (parts A–F)",
+      "publisher": "Wermac.org (Explore the World of Piping)",
+      "url": "https://www.wermac.org/pipes/dim_b36.10_pipes_part-a.html",
+      "other_urls": [
+        "https://www.wermac.org/pipes/dim_b36.10_pipes_part-b.html",
+        "https://www.wermac.org/pipes/dim_b36.10_pipes_part-c.html",
+        "https://www.wermac.org/pipes/dim_b36.10_pipes_part-d.html",
+        "https://www.wermac.org/pipes/dim_b36.10_pipes_part-e.html",
+        "https://www.wermac.org/pipes/dim_b36.10_pipes_part-f.html"
+      ],
+      "doc_type": "engineering reference web tables reproducing ASME B36.10 (secondary source)",
+      "covers": "NPS 1/8–24 OD",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+HTML table parse"
+    },
+    {
+      "id": "D3",
+      "title": "Fiberglas Pipe Insulation Sizing Manual",
+      "publisher": "Owens Corning",
+      "url": "https://www.owenscorning.com/dms/10018078",
+      "doc_type": "manufacturer sizing manual PDF (iron pipe OD + insulation OD per nominal thickness; copper tube OD + insulation OD). Does NOT state that it reproduces ASTM C585 and gives no insulation ID or actual-thickness columns.",
+      "pub_no_or_date": "Pub. No. 10018078, February 2022 (pp. 4–6 iron pipe, p. 12 copper)",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D4",
+      "title": "Performance+ Earthwool 1000° Pipe Insulation — Dimensional Data Nesting Chart",
+      "publisher": "Knauf Insulation",
+      "url": "https://res.cloudinary.com/knauf-insulation/image/upload/v1578612234/Knauf%20Insulation/Pipe%20and%20Equipment/Literature/knauf-pipe-nesting-chart.pdf",
+      "doc_type": "manufacturer dimensional chart PDF; note on each page: 'All Earthwool 1000° Pipe Insulation complies with ASTM C585 Dimensional Standards' (copper page adds 'with the exception of 1-5/8\" x 1-1/2\" cts'). Values are Knauf product actuals, 'Subject to Knauf Insulation tolerances'.",
+      "pub_no_or_date": "PDF created 2025-05-21 (8 pp.)",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D5",
+      "title": "The Copper Tube Handbook — Table 14.2b Dimensions and Physical Characteristics of Copper Tube: Type L",
+      "publisher": "Copper Development Association (CDA)",
+      "url": "https://copper.org/wp-content/uploads/2026/04/copper_tube_handbook.pdf",
+      "doc_type": "industry handbook PDF (ASTM B88 water tube sizes)",
+      "pub_no_or_date": "CDA Publication A4015-26/24, p. 67 (PDF created 2026-02-17)",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D6",
+      "title": "ASTM C-585 Outside of Insulation for Nominal Pipe Sizes (NPS) / ASTM C-585 Outside of Insulation for Tubes / ASTM C-585 Inner Diameter of Insulation for Nominal Pipe Size & Tubes",
+      "publisher": "Sproule Manufacturing Company, Inc. (Devault, PA) — high-temperature pre-molded fitting covers",
+      "url": "https://helicon-swordfish-23d2.squarespace.com/s/ASTM-C-585.pdf",
+      "doc_type": "manufacturer reproduction of ASTM C585 tables (2-page PDF). Fractions as printed.",
+      "pub_no_or_date": "PDF created 2001-06-12, so it predates C585-10 and C585-22 (likely reflects C585-90)",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext; independently transcribed twice (0 differences over 285 cells) and checked against rendered page images"
+    },
+    {
+      "id": "D7",
+      "title": "ASTM C585 Inner and Outer Dimensions — Copper Pipe (ACTUAL INSULATION O.D.'S)",
+      "publisher": "Extol of Ohio (insulation fabricator)",
+      "url": "https://extolohio.com/wp-content/uploads/2023/10/ASTM-C-585-Inner-and-Outer-Dimensions-Copper-Pipe.pdf",
+      "doc_type": "fabricator reproduction of ASTM C585 copper-tube insulation OD table (1 page)",
+      "pub_no_or_date": "PDF created 2023-05-02, modified 2023-10-01; page marked '5-23'",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D8",
+      "title": "Micro-Lok HP & Micro-Lok HP Ultra — Dimensional Data Sheet",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/pipe/micro-lok-hp/CI-214_Dimensional%20Data%20Sheet.pdf",
+      "doc_type": "manufacturer product dimension table PDF (actual wall thickness + insulation OD per nominal wall). Does not itself mention ASTM C585.",
+      "pub_no_or_date": "CI-214 9-04-24 (pages 1–2 marked 'CI-214 3-07-19 (Replaces 3-08)')",
+      "accessed": "2026-10-10",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "D9",
+      "title": "ASTM C585-22 Standard Practice for Inner and Outer Diameters of Thermal Insulation for Nominal Sizes of Pipe and Tubing (store page: scope)",
+      "publisher": "ASTM International",
+      "url": "https://store.astm.org/c0585-22.html",
+      "doc_type": "ASTM standard store page (scope only; tables are paywalled)",
+      "pub_no_or_date": "Status 'Standard Active'; page 'Last Updated: Jun 13, 2022'",
+      "accessed": "2026-10-10",
+      "retrieval": "WebFetch"
+    }
+  ],
+  "steel_pipe_od": {
+    "standard": "ASME B36.10M (the request said ANSI B36.10; B36.10 is now published by ASME as B36.10M). OD is fixed per NPS regardless of schedule.",
+    "notes": [
+      "For NPS 14 and larger, OD equals the NPS number.",
+      "Wheatland's table (D1) stops at NPS 18; NPS 20–24 rest on D2, D3 and D4, which agree.",
+      "Only standard B36.10M sizes from 1/2 to 24 are listed here; odd sizes used for insulation nesting (4-1/2, 7, 9, 11) appear in the C585 table below with their source."
+    ],
+    "rows": [
+      {
+        "nps": "1/2",
+        "nps_decimal": 0.5,
+        "od_in": 0.84,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "3/4",
+        "nps_decimal": 0.75,
+        "od_in": 1.05,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "1",
+        "nps_decimal": 1.0,
+        "od_in": 1.315,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "1-1/4",
+        "nps_decimal": 1.25,
+        "od_in": 1.66,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "1-1/2",
+        "nps_decimal": 1.5,
+        "od_in": 1.9,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "2",
+        "nps_decimal": 2.0,
+        "od_in": 2.375,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "2-1/2",
+        "nps_decimal": 2.5,
+        "od_in": 2.875,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "3",
+        "nps_decimal": 3.0,
+        "od_in": 3.5,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "3-1/2",
+        "nps_decimal": 3.5,
+        "od_in": 4.0,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "4",
+        "nps_decimal": 4.0,
+        "od_in": 4.5,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "5",
+        "nps_decimal": 5.0,
+        "od_in": 5.563,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "6",
+        "nps_decimal": 6.0,
+        "od_in": 6.625,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "8",
+        "nps_decimal": 8.0,
+        "od_in": 8.625,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "10",
+        "nps_decimal": 10.0,
+        "od_in": 10.75,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "12",
+        "nps_decimal": 12.0,
+        "od_in": 12.75,
+        "src": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ]
+      },
+      {
+        "nps": "14",
+        "nps_decimal": 14.0,
+        "od_in": 14.0,
+        "src": [
+          "D1",
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "nps": "16",
+        "nps_decimal": 16.0,
+        "od_in": 16.0,
+        "src": [
+          "D1",
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "nps": "18",
+        "nps_decimal": 18.0,
+        "od_in": 18.0,
+        "src": [
+          "D1",
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "nps": "20",
+        "nps_decimal": 20.0,
+        "od_in": 20.0,
+        "src": [
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "nps": "22",
+        "nps_decimal": 22.0,
+        "od_in": 22.0,
+        "src": [
+          "D2",
+          "D3"
+        ]
+      },
+      {
+        "nps": "24",
+        "nps_decimal": 24.0,
+        "od_in": 24.0,
+        "src": [
+          "D2",
+          "D3"
+        ]
+      }
+    ],
+    "discrepancies": [
+      "None: every listed source gives the same OD for every NPS."
+    ]
+  },
+  "copper_tube_od": {
+    "standard": "ASTM B88 seamless copper water tube (Types K, L, M share the same OD); values from CDA Copper Tube Handbook Table 14.2b",
+    "notes": [
+      "Actual OD is 1/8 in. larger than the nominal size for every size listed (CDA Table 14.2b values).",
+      "Insulation for copper is ordered by tube OD ('copper tube size', CTS)."
+    ],
+    "rows": [
+      {
+        "nominal_in": "1/2",
+        "nominal_decimal": 0.5,
+        "od_in": 0.625,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 0.625,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 0.625,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 0.625,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "5/8",
+        "nominal_decimal": 0.625,
+        "od_in": 0.75,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [],
+        "note": "Nominal 5/8 (0.750 OD) is an ASTM B88 size but does not appear in the C585 tube tables or the insulation makers' copper tables reviewed here."
+      },
+      {
+        "nominal_in": "3/4",
+        "nominal_decimal": 0.75,
+        "od_in": 0.875,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 0.875,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 0.875,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 0.875,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "1",
+        "nominal_decimal": 1.0,
+        "od_in": 1.125,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 1.125,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 1.125,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 1.125,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "1-1/4",
+        "nominal_decimal": 1.25,
+        "od_in": 1.375,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 1.375,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 1.375,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 1.375,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "1-1/2",
+        "nominal_decimal": 1.5,
+        "od_in": 1.625,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 1.625,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 1.625,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 1.625,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "2",
+        "nominal_decimal": 2.0,
+        "od_in": 2.125,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 2.125,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 2.125,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 2.125,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "2-1/2",
+        "nominal_decimal": 2.5,
+        "od_in": 2.625,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 2.625,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 2.625,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 2.625,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "3",
+        "nominal_decimal": 3.0,
+        "od_in": 3.125,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 3.125,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 3.125,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 3.125,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "3-1/2",
+        "nominal_decimal": 3.5,
+        "od_in": 3.625,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 3.625,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 3.625,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 3.625,
+            "agrees": true
+          }
+        ]
+      },
+      {
+        "nominal_in": "4",
+        "nominal_decimal": 4.0,
+        "od_in": 4.125,
+        "src": [
+          "D5"
+        ],
+        "cross_check": [
+          {
+            "src": "D3",
+            "od_in": 4.125,
+            "agrees": true
+          },
+          {
+            "src": "D4",
+            "od_in": 4.125,
+            "agrees": true
+          },
+          {
+            "src": "D7",
+            "od_in": 4.125,
+            "agrees": true
+          }
+        ]
+      }
+    ]
+  },
+  "astm_c585": {
+    "designation": "ASTM C585-22 (active)",
+    "title": "Standard Practice for Inner and Outer Diameters of Thermal Insulation for Nominal Sizes of Pipe and Tubing",
+    "scope_summary": "Dimensional standard for preformed pipe and tubing insulation supplied in cylindrical sections. It lists recommended single-layer inner and outer diameters for nominal wall thicknesses from 1/2 to 5 in. (13 to 127 mm). Inch-pound values are the standard.",
+    "scope_src": [
+      "D9"
+    ],
+    "access_note": "The C585 tables are paywalled. Per the request, only values reproduced in published manufacturer or fabricator documents are included. Unauthorized copies of the standard found online were not used.",
+    "insulation_inner_diameter": {
+      "status": "unverified",
+      "reason": "No manufacturer or fabricator reproduction of the C585 inner-diameter table (Table 1) with plausible values was found. The only one found (Sproule, D6 page 2) is internally inconsistent and was rejected (details below).",
+      "rejected_published_table": {
+        "src": [
+          "D6"
+        ],
+        "why_rejected": [
+          "NPS 1/2 is printed as 13/16 in. (0.8125), which is smaller than the 0.840 in. pipe OD, so it cannot be an insulation bore.",
+          "NPS 5 is printed as 5 and NPS 6 as 5 9/16, which looks like a one-row shift (5.563 is the NPS 5 pipe OD).",
+          "The NPS rows otherwise just track nominal pipe OD fractions (for example 1 7/8 for NPS 1-1/2, whose OD is 1.900), with no bore clearance.",
+          "The tube rows equal the tube OD exactly (for example 5/8 for 1/2 nominal), again with no clearance."
+        ],
+        "as_printed_pipe": {
+          "1/2": "13/16",
+          "3/4": "1 1/32",
+          "1": "1 5/16",
+          "1-1/4": "1 21/32",
+          "1-1/2": "1 7/8",
+          "2": "2 3/8",
+          "2-1/2": "2 7/8",
+          "3": "3 1/2",
+          "3-1/2": "4",
+          "4": "4 1/2",
+          "5": "5",
+          "6": "5 9/16",
+          "7": "7 5/8",
+          "8": "8 5/8",
+          "9": "9 5/8",
+          "10": "10 3/4",
+          "11": "11 3/4",
+          "12": "12 3/4"
+        },
+        "do_not_use": true
+      },
+      "product_specific_alternative": "JM's Micro-Lok HP sheet (D8) prints a column labeled 'Pipe O.D.' whose values (for example 0.90 for NPS 1/2) exceed the B36.10M pipe OD. They equal the insulation OD minus twice the actual wall within 0.03 in. on every row, so they appear to be that product's bore. They are listed under manufacturer_product_actuals, not as C585 values."
+    },
+    "actual_thickness": {
+      "status": "unverified for C585",
+      "reason": "Neither C585-labeled source found (D6, D7) prints actual (as-fabricated) wall thickness. Product actual walls from JM (D8) and Knauf (D4) are listed under manufacturer_product_actuals.",
+      "how_to_get": "Actual thickness = (insulation OD - insulation ID) / 2. Because C585 IDs could not be verified, it is not computed here."
+    },
+    "iron_pipe_insulation_od": {
+      "description": "C585 single-layer insulation OD by NPS and nominal thickness, from Sproule's reproduction (D6). Each value is cross-checked against the OC Fiberglas sizing manual (D3).",
+      "nominal_thickness_range_in": "1 to 5 (Sproule also prints 5-1/2 to 8 in.; those columns are beyond the C585-22 scope of 1/2 to 5 in. and are omitted)",
+      "corroboration": "OC's 2022 sizing manual (D3) lists an OD for 146 of these cells and matches Sproule within 0.01 in. on 146. OC rounds fractions to 2 decimals (for example 5 9/16 to 5.56); for NPS 2 x 3 in. it prints 8.63 where it prints 8.62 elsewhere for 8 5/8.",
+      "edition_caveat": "Sproule's PDF dates from 2001 (C585-90 era). OC's 2022 manual gives the same ODs, but no C585-22 copy was available to confirm the values are unchanged.",
+      "rows": [
+        {
+          "nps": "1/2",
+          "nps_decimal": 0.5,
+          "pipe_od_in": 0.84,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 2.875,
+              "insulation_od_as_printed": "2 7/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 2.88,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 4.0,
+              "insulation_od_as_printed": "4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 4.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 5.0,
+              "insulation_od_as_printed": "5",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 1.88,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "3/4",
+          "nps_decimal": 0.75,
+          "pipe_od_in": 1.05,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 2.875,
+              "insulation_od_as_printed": "2 7/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 2.88,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 4.0,
+              "insulation_od_as_printed": "4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 4.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 5.0,
+              "insulation_od_as_printed": "5",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 2.13,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "1",
+          "nps_decimal": 1.0,
+          "pipe_od_in": 1.315,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 3.5,
+              "insulation_od_as_printed": "3 1/2",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 3.5,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 4.5,
+              "insulation_od_as_printed": "4 1/2",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 4.5,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 5.5625,
+              "insulation_od_as_printed": "5 9/16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.56,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 2.38,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "1-1/4",
+          "nps_decimal": 1.25,
+          "pipe_od_in": 1.66,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 3.5,
+              "insulation_od_as_printed": "3 1/2",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 3.5,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 5.0,
+              "insulation_od_as_printed": "5",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 5.5625,
+              "insulation_od_as_printed": "5 9/16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.56,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 2.66,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "1-1/2",
+          "nps_decimal": 1.5,
+          "pipe_od_in": 1.9,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 4.0,
+              "insulation_od_as_printed": "4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 4.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 5.0,
+              "insulation_od_as_printed": "5",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 2.88,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "2",
+          "nps_decimal": 2.0,
+          "pipe_od_in": 2.375,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 4.5,
+              "insulation_od_as_printed": "4 1/2",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 4.5,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 5.5625,
+              "insulation_od_as_printed": "5 9/16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.56,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.63,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 3.5,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "2-1/2",
+          "nps_decimal": 2.5,
+          "pipe_od_in": 2.875,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 5.0,
+              "insulation_od_as_printed": "5",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "half_inch_wall_od_in_from_oc_only": {
+            "nominal_thickness_in": 0.5,
+            "insulation_od_in": 4.0,
+            "src": [
+              "D3"
+            ],
+            "note": "Sproule (D6) starts at 1 in.; ASTM C585-22 scope starts at 1/2 in., but no C585-labeled source with 1/2-in. ODs was found. This value is from the OC sizing manual, which does not claim to reproduce C585."
+          }
+        },
+        {
+          "nps": "3",
+          "nps_decimal": 3.0,
+          "pipe_od_in": 3.5,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 5.5625,
+              "insulation_od_as_printed": "5 9/16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 5.56,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "3-1/2",
+          "nps_decimal": 3.5,
+          "pipe_od_in": 4.0,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "4",
+          "nps_decimal": 4.0,
+          "pipe_od_in": 4.5,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 6.625,
+              "insulation_od_as_printed": "6 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 6.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "4-1/2",
+          "nps_decimal": 4.5,
+          "pipe_od_in": 5.0,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "pipe_od_note": "NPS 4-1/2 is not an ASME B36.10M size; insulation tables include it for nesting. OD 5.000 in per D3/D4."
+        },
+        {
+          "nps": "5",
+          "nps_decimal": 5.0,
+          "pipe_od_in": 5.563,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 7.625,
+              "insulation_od_as_printed": "7 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 7.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": "not listed",
+              "oc_agrees_within_0.01": null
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "6",
+          "nps_decimal": 6.0,
+          "pipe_od_in": 6.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 8.625,
+              "insulation_od_as_printed": "8 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 8.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "7",
+          "nps_decimal": 7.0,
+          "pipe_od_in": 7.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 9.625,
+              "insulation_od_as_printed": "9 5/8",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 9.62,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "pipe_od_note": "NPS 7 is not in the ASME B36.10M size list used here; insulation tables include it for nesting. OD per D3/D4."
+        },
+        {
+          "nps": "8",
+          "nps_decimal": 8.0,
+          "pipe_od_in": 8.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 10.75,
+              "insulation_od_as_printed": "10 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 10.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 19.0,
+              "insulation_od_as_printed": "19",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 19.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "9",
+          "nps_decimal": 9.0,
+          "pipe_od_in": 9.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 11.75,
+              "insulation_od_as_printed": "11 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 11.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 19.0,
+              "insulation_od_as_printed": "19",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 19.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 20.0,
+              "insulation_od_as_printed": "20",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 20.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "pipe_od_note": "NPS 9 is not in the ASME B36.10M size list used here; insulation tables include it for nesting. OD per D3/D4."
+        },
+        {
+          "nps": "10",
+          "nps_decimal": 10.0,
+          "pipe_od_in": 10.75,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 12.75,
+              "insulation_od_as_printed": "12 3/4",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 12.75,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 19.0,
+              "insulation_od_as_printed": "19",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 19.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 20.0,
+              "insulation_od_as_printed": "20",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 20.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 21.0,
+              "insulation_od_as_printed": "21",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 21.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        },
+        {
+          "nps": "11",
+          "nps_decimal": 11.0,
+          "pipe_od_in": 11.75,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 14.0,
+              "insulation_od_as_printed": "14",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 14.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 19.0,
+              "insulation_od_as_printed": "19",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 19.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 20.0,
+              "insulation_od_as_printed": "20",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 20.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 21.0,
+              "insulation_od_as_printed": "21",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 21.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 22.0,
+              "insulation_od_as_printed": "22",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 22.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ],
+          "pipe_od_note": "NPS 11 is not in the ASME B36.10M size list used here; insulation tables include it for nesting. OD per D3/D4."
+        },
+        {
+          "nps": "12",
+          "nps_decimal": 12.0,
+          "pipe_od_in": 12.75,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "insulation_od_in": 15.0,
+              "insulation_od_as_printed": "15",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 15.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "insulation_od_in": 16.0,
+              "insulation_od_as_printed": "16",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 16.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "insulation_od_in": 17.0,
+              "insulation_od_as_printed": "17",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 17.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "insulation_od_in": 18.0,
+              "insulation_od_as_printed": "18",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 18.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "insulation_od_in": 19.0,
+              "insulation_od_as_printed": "19",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 19.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "insulation_od_in": 20.0,
+              "insulation_od_as_printed": "20",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 20.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "insulation_od_in": 21.0,
+              "insulation_od_as_printed": "21",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 21.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "insulation_od_in": 22.0,
+              "insulation_od_as_printed": "22",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 22.0,
+              "oc_agrees_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "insulation_od_in": 23.0,
+              "insulation_od_as_printed": "23",
+              "actual_thickness_in": "unverified",
+              "oc_sizing_manual_od_in": 23.0,
+              "oc_agrees_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D3"
+          ]
+        }
+      ]
+    },
+    "copper_tube_insulation_od": {
+      "description": "C585 single-layer insulation OD for copper tube, from two C585-labeled reproductions: Sproule (D6, by nominal tube size) and Extol (D7, by CTS OD). Rows are nominal 1/2 to 4 in.",
+      "rows": [
+        {
+          "nominal_tube_in": "1/2",
+          "tube_od_in": 0.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 2.875,
+              "sproule_D6_as_printed": "2 7/8",
+              "extol_D7_od_in": 2.88,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 3.5,
+              "sproule_D6_as_printed": "3 1/2",
+              "extol_D7_od_in": 3.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 4.5,
+              "sproule_D6_as_printed": "4 1/2",
+              "extol_D7_od_in": 4.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 5.5625,
+              "sproule_D6_as_printed": "5 9/16",
+              "extol_D7_od_in": 5.56,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": "not listed",
+              "sproule_D6_as_printed": "not listed",
+              "extol_D7_od_in": 7.62
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": "not listed",
+              "sproule_D6_as_printed": "not listed",
+              "extol_D7_od_in": 8.62
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "3/4",
+          "tube_od_in": 0.875,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 2.875,
+              "sproule_D6_as_printed": "2 7/8",
+              "extol_D7_od_in": 2.88,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 4.0,
+              "sproule_D6_as_printed": "4",
+              "extol_D7_od_in": 4.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 5.0,
+              "sproule_D6_as_printed": "5",
+              "extol_D7_od_in": 5.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "1",
+          "tube_od_in": 1.125,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 2.875,
+              "sproule_D6_as_printed": "2 7/8",
+              "extol_D7_od_in": 3.0,
+              "sources_agree_within_0.01": false
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 4.0,
+              "sproule_D6_as_printed": "4",
+              "extol_D7_od_in": 4.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 5.0,
+              "sproule_D6_as_printed": "5",
+              "extol_D7_od_in": 5.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "1-1/4",
+          "tube_od_in": 1.375,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 3.5,
+              "sproule_D6_as_printed": "3 1/2",
+              "extol_D7_od_in": 3.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 4.5,
+              "sproule_D6_as_printed": "4 1/2",
+              "extol_D7_od_in": 4.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 5.5625,
+              "sproule_D6_as_printed": "5 9/16",
+              "extol_D7_od_in": 5.56,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "1-1/2",
+          "tube_od_in": 1.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 3.5,
+              "sproule_D6_as_printed": "3 1/2",
+              "extol_D7_od_in": 3.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 4.5,
+              "sproule_D6_as_printed": "4 1/2",
+              "extol_D7_od_in": 4.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 5.5625,
+              "sproule_D6_as_printed": "5 9/16",
+              "extol_D7_od_in": 5.56,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "2",
+          "tube_od_in": 2.125,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 4.0,
+              "sproule_D6_as_printed": "4",
+              "extol_D7_od_in": 4.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 5.0,
+              "sproule_D6_as_printed": "5",
+              "extol_D7_od_in": 5.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 10.75,
+              "sproule_D6_as_printed": "10 3/4",
+              "extol_D7_od_in": 10.75,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "2-1/2",
+          "tube_od_in": 2.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 4.5,
+              "sproule_D6_as_printed": "4 1/2",
+              "extol_D7_od_in": 4.5,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 5.5625,
+              "sproule_D6_as_printed": "5 9/16",
+              "extol_D7_od_in": 5.56,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 10.75,
+              "sproule_D6_as_printed": "10 3/4",
+              "extol_D7_od_in": 10.75,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "3",
+          "tube_od_in": 3.125,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 5.0,
+              "sproule_D6_as_printed": "5",
+              "extol_D7_od_in": 5.0,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 10.75,
+              "sproule_D6_as_printed": "10 3/4",
+              "extol_D7_od_in": 10.75,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 11.75,
+              "sproule_D6_as_printed": "11 3/4",
+              "extol_D7_od_in": 11.75,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "3-1/2",
+          "tube_od_in": 3.625,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 5.625,
+              "sproule_D6_as_printed": "5 5/8",
+              "extol_D7_od_in": 5.56,
+              "sources_agree_within_0.01": false
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 10.75,
+              "sproule_D6_as_printed": "10 3/4",
+              "extol_D7_od_in": 10.75,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 11.75,
+              "sproule_D6_as_printed": "11 3/4",
+              "extol_D7_od_in": 11.75,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        },
+        {
+          "nominal_tube_in": "4",
+          "tube_od_in": 4.125,
+          "insulation_id_in": "unverified",
+          "options": [
+            {
+              "nominal_thickness_in": 1.0,
+              "sproule_D6_od_in": 6.625,
+              "sproule_D6_as_printed": "6 5/8",
+              "extol_D7_od_in": 6.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "sproule_D6_od_in": 7.625,
+              "sproule_D6_as_printed": "7 5/8",
+              "extol_D7_od_in": 7.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "sproule_D6_od_in": 8.625,
+              "sproule_D6_as_printed": "8 5/8",
+              "extol_D7_od_in": 8.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "sproule_D6_od_in": 9.625,
+              "sproule_D6_as_printed": "9 5/8",
+              "extol_D7_od_in": 9.62,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "sproule_D6_od_in": 10.75,
+              "sproule_D6_as_printed": "10 3/4",
+              "extol_D7_od_in": 10.75,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "sproule_D6_od_in": 11.75,
+              "sproule_D6_as_printed": "11 3/4",
+              "extol_D7_od_in": 11.75,
+              "sources_agree_within_0.01": true
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "sproule_D6_od_in": 12.75,
+              "sproule_D6_as_printed": "12 3/4",
+              "extol_D7_od_in": 12.75,
+              "sources_agree_within_0.01": true
+            }
+          ],
+          "src": [
+            "D6",
+            "D7",
+            "D5"
+          ]
+        }
+      ],
+      "discrepancies": [
+        "Copper 1 nominal (1.125 OD) x 1.0 in.: Sproule 2 7/8 (2.875) vs Extol 3.0",
+        "Copper 3-1/2 nominal (3.625 OD) x 1.0 in.: Sproule 5 5/8 (5.625) vs Extol 5.56"
+      ],
+      "discrepancy_context": [
+        "1 in. nominal x 1 in.: OC's sizing manual (D3) prints 2.88, and the JM (D8) and Knauf (D4) product ODs (2.83 and 2.82) sit about 0.05 in. under 2.875, matching Sproule's 2 7/8 rather than Extol's 3.00.",
+        "3-1/2 in. nominal x 1 in.: OC (D3) prints 5.56, and the JM/Knauf product ODs are 5.50/5.51, matching Extol's 5.56 rather than Sproule's 5 5/8. Sproule's 5 5/8 is probably a misprint of 5 9/16."
+      ]
+    }
+  },
+  "manufacturer_product_actuals": {
+    "description": "Actual as-manufactured wall thickness and OD for two fiberglass pipe insulation products (NPS 1/2 to 12). These are product data, not C585 values. Both products' ODs run about 0.05 in. under the C585 ODs above (for example 2.83/2.82 vs 2.875).",
+    "jm_micro_lok_hp": {
+      "src": [
+        "D8"
+      ],
+      "note": "'column_labeled_pipe_od_in' is printed as 'Pipe O.D.' but exceeds the true pipe OD (0.90 vs 0.840 for NPS 1/2). It equals insulation OD minus 2 x actual wall within 0.03 in. on every row, so it appears to be the insulation bore.",
+      "rows": [
+        {
+          "nps": "1/2",
+          "column_labeled_pipe_od_in": 0.9,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 1.93
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.97,
+              "insulation_od_in": 2.83
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.53,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.03,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.3,
+              "insulation_od_in": 5.5
+            }
+          ]
+        },
+        {
+          "nps": "3/4",
+          "column_labeled_pipe_od_in": 1.15,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.51,
+              "insulation_od_in": 2.17
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.84,
+              "insulation_od_in": 2.83
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.4,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.9,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.71,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.21,
+              "insulation_od_in": 7.57
+            }
+          ]
+        },
+        {
+          "nps": "1",
+          "column_labeled_pipe_od_in": 1.4,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.51,
+              "insulation_od_in": 2.41
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.03,
+              "insulation_od_in": 3.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.53,
+              "insulation_od_in": 4.45
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.05,
+              "insulation_od_in": 5.5
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.59,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.09,
+              "insulation_od_in": 7.57
+            }
+          ]
+        },
+        {
+          "nps": "1-1/4",
+          "column_labeled_pipe_od_in": 1.7,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 2.73
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.88,
+              "insulation_od_in": 3.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.63,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.9,
+              "insulation_od_in": 5.5
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.44,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 2.94,
+              "insulation_od_in": 7.57
+            }
+          ]
+        },
+        {
+          "nps": "1-1/2",
+          "column_labeled_pipe_od_in": 1.97,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 3.0
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.99,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.49,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.3,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.8,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.3,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.8,
+              "insulation_od_in": 9.57
+            }
+          ]
+        },
+        {
+          "nps": "2",
+          "column_labeled_pipe_od_in": 2.4,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.53,
+              "insulation_od_in": 3.45
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.03,
+              "insulation_od_in": 4.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.55,
+              "insulation_od_in": 5.5
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.09,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.59,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.09,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.59,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.15,
+              "insulation_od_in": 10.7
+            }
+          ]
+        },
+        {
+          "nps": "2-1/2",
+          "column_labeled_pipe_od_in": 2.91,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.02,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.83,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.33,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.83,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.33,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.9,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.4,
+              "insulation_od_in": 11.7
+            }
+          ]
+        },
+        {
+          "nps": "3",
+          "column_labeled_pipe_od_in": 3.54,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 4.57
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.98,
+              "insulation_od_in": 5.5
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.52,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.02,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.52,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.02,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.58,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.08,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.58,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.21,
+              "insulation_od_in": 13.95
+            }
+          ]
+        },
+        {
+          "nps": "3-1/2",
+          "column_labeled_pipe_od_in": 4.15,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.46,
+              "insulation_od_in": 5.07
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.21,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.71,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.21,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.71,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.28,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.78,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.28,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.28,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 4.9,
+              "insulation_od_in": 13.95
+            }
+          ]
+        },
+        {
+          "nps": "4",
+          "column_labeled_pipe_od_in": 4.55,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.51,
+              "insulation_od_in": 5.57
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.01,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.51,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.01,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.51,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.08,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.58,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.08,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.7,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.2,
+              "insulation_od_in": 14.95
+            }
+          ]
+        },
+        {
+          "nps": "4-1/2",
+          "column_labeled_pipe_od_in": 5.15,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.47,
+              "insulation_od_in": 6.09
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.21,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.71,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.21,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.78,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.28,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.78,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.4,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.4,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 4.9,
+              "insulation_od_in": 14.95
+            }
+          ]
+        },
+        {
+          "nps": "5",
+          "column_labeled_pipe_od_in": 5.62,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.52,
+              "insulation_od_in": 6.65
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.98,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.48,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.98,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.54,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.04,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.54,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.17,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.67,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.17,
+              "insulation_od_in": 15.95
+            }
+          ]
+        },
+        {
+          "nps": "6",
+          "column_labeled_pipe_od_in": 6.69,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.51,
+              "insulation_od_in": 7.71
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.94,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.44,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.01,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.51,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.01,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.63,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.13,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.63,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.13,
+              "insulation_od_in": 16.95
+            }
+          ]
+        },
+        {
+          "nps": "7",
+          "column_labeled_pipe_od_in": 7.7,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.94,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.5,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.0,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.5,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.13,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.63,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.13,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.63,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.13,
+              "insulation_od_in": 17.95
+            }
+          ]
+        },
+        {
+          "nps": "8",
+          "column_labeled_pipe_od_in": 8.72,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.99,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.49,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.99,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.62,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.12,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.62,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.12,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.62,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.12,
+              "insulation_od_in": 18.95
+            }
+          ]
+        },
+        {
+          "nps": "9",
+          "column_labeled_pipe_od_in": 9.72,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.99,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.49,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.12,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.62,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.12,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.62,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.12,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.62,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.12,
+              "insulation_od_in": 19.95
+            }
+          ]
+        },
+        {
+          "nps": "10",
+          "column_labeled_pipe_od_in": 10.85,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.93,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.55,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.05,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.55,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.05,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.55,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.05,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.55,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.05,
+              "insulation_od_in": 20.95
+            }
+          ]
+        },
+        {
+          "nps": "11",
+          "column_labeled_pipe_od_in": 11.86,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.05,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.55,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.05,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.55,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.05,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.55,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.05,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.55,
+              "insulation_od_in": 20.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.05,
+              "insulation_od_in": 21.95
+            }
+          ]
+        },
+        {
+          "nps": "12",
+          "column_labeled_pipe_od_in": 12.86,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.05,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.55,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.05,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.55,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.05,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.55,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.05,
+              "insulation_od_in": 20.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.55,
+              "insulation_od_in": 21.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.05,
+              "insulation_od_in": 22.95
+            }
+          ]
+        }
+      ]
+    },
+    "knauf_earthwool_1000": {
+      "src": [
+        "D4"
+      ],
+      "note": "'iron_pipe_od_in' is the steel pipe OD as printed by Knauf. Knauf states the product complies with ASTM C585; values are 'Subject to Knauf Insulation tolerances'.",
+      "flags": [
+        "Knauf D4 NPS 2-1/2 x 4.5 in.: Internally inconsistent as published: OD 12.7 - 2 x wall 4.375 = 3.950 in., which is +1.075 in. larger than the 2.875 in. pipe OD. One of the two printed values is likely a typo; do not use this cell without confirming with Knauf.",
+        "Knauf D4 NPS 4 x 4.0 in.: Internally inconsistent as published: OD 13.95 - 2 x wall 4.07 = 5.810 in., which is +1.310 in. larger than the 4.5 in. pipe OD. One of the two printed values is likely a typo; do not use this cell without confirming with Knauf."
+      ],
+      "rows": [
+        {
+          "nps": "1/2",
+          "iron_pipe_od_in": 0.84,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.485,
+              "insulation_od_in": 1.9
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.945,
+              "insulation_od_in": 2.82
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.51,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.01,
+              "insulation_od_in": 4.95
+            }
+          ]
+        },
+        {
+          "nps": "3/4",
+          "iron_pipe_od_in": 1.05,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.495,
+              "insulation_od_in": 2.16
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.825,
+              "insulation_od_in": 2.82
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.39,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.89,
+              "insulation_od_in": 4.95
+            }
+          ]
+        },
+        {
+          "nps": "1",
+          "iron_pipe_od_in": 1.315,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.478,
+              "insulation_od_in": 2.375
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.015,
+              "insulation_od_in": 3.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.515,
+              "insulation_od_in": 4.45
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.045,
+              "insulation_od_in": 5.51
+            }
+          ]
+        },
+        {
+          "nps": "1-1/4",
+          "iron_pipe_od_in": 1.66,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.515,
+              "insulation_od_in": 2.72
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.88,
+              "insulation_od_in": 3.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.63,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.91,
+              "insulation_od_in": 5.51
+            }
+          ]
+        },
+        {
+          "nps": "1-1/2",
+          "iron_pipe_od_in": 1.9,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.468,
+              "insulation_od_in": 2.875
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.005,
+              "insulation_od_in": 3.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.505,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.315,
+              "insulation_od_in": 6.57
+            }
+          ]
+        },
+        {
+          "nps": "2",
+          "iron_pipe_od_in": 2.375,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.46,
+              "insulation_od_in": 3.42
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.975,
+              "insulation_od_in": 4.45
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.505,
+              "insulation_od_in": 5.51
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.035,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.535,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.035,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.54,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.1,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.625,
+              "insulation_od_in": 11.75
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.1,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 5.73,
+              "insulation_od_in": 13.95
+            }
+          ]
+        },
+        {
+          "nps": "2-1/2",
+          "iron_pipe_od_in": 2.875,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.465,
+              "insulation_od_in": 3.93
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.975,
+              "insulation_od_in": 4.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.785,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.285,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.785,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.285,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.85,
+              "insulation_od_in": 10.75
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.35,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.375,
+              "insulation_od_in": 12.7,
+              "flag": "Internally inconsistent as published: OD 12.7 - 2 x wall 4.375 = 3.950 in., which is +1.075 in. larger than the 2.875 in. pipe OD. One of the two printed values is likely a typo; do not use this cell without confirming with Knauf."
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.48,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.48,
+              "insulation_od_in": 15.95
+            }
+          ]
+        },
+        {
+          "nps": "3",
+          "iron_pipe_od_in": 3.5,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.46,
+              "insulation_od_in": 4.5
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.965,
+              "insulation_od_in": 5.51
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.495,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.995,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.495,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 2.995,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.56,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.06,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.56,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.19,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.19,
+              "insulation_od_in": 15.95
+            }
+          ]
+        },
+        {
+          "nps": "3-1/2",
+          "iron_pipe_od_in": 4.0,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.47,
+              "insulation_od_in": 5.0
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.225,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.755,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.255,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.755,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.32,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.82,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.32,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.32,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 4.95,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 5.95,
+              "insulation_od_in": 15.95
+            }
+          ]
+        },
+        {
+          "nps": "4",
+          "iron_pipe_od_in": 4.5,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 0.5,
+              "actual_wall_in": 0.502,
+              "insulation_od_in": 5.563
+            },
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.005,
+              "insulation_od_in": 6.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.505,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.005,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.505,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.07,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.57,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.07,
+              "insulation_od_in": 13.95,
+              "flag": "Internally inconsistent as published: OD 13.95 - 2 x wall 4.07 = 5.810 in., which is +1.310 in. larger than the 4.5 in. pipe OD. One of the two printed values is likely a typo; do not use this cell without confirming with Knauf."
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.695,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.195,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.2,
+              "insulation_od_in": 16.95
+            }
+          ]
+        },
+        {
+          "nps": "4-1/2",
+          "iron_pipe_od_in": 5.0,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.225,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.755,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.255,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.82,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.32,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.82,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 3.82,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.445,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 4.945,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 5.95,
+              "insulation_od_in": 16.95
+            }
+          ]
+        },
+        {
+          "nps": "5",
+          "iron_pipe_od_in": 5.563,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.95,
+              "insulation_od_in": 7.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.455,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.95,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.515,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.015,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.515,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.14,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.64,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.14,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.14,
+              "insulation_od_in": 17.95
+            }
+          ]
+        },
+        {
+          "nps": "6",
+          "iron_pipe_od_in": 6.625,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.92,
+              "insulation_od_in": 8.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.42,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.985,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.485,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 2.985,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.61,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.11,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.61,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.11,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.11,
+              "insulation_od_in": 18.95
+            }
+          ]
+        },
+        {
+          "nps": "7",
+          "iron_pipe_od_in": 7.625,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.92,
+              "insulation_od_in": 9.57
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.485,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.985,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.485,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.11,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.61,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.11,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.61,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.11,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.11,
+              "insulation_od_in": 19.95
+            }
+          ]
+        },
+        {
+          "nps": "8",
+          "iron_pipe_od_in": 8.625,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.97,
+              "insulation_od_in": 10.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.47,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 1.97,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.595,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.095,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.595,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.095,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.6,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.095,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.1,
+              "insulation_od_in": 20.95
+            }
+          ]
+        },
+        {
+          "nps": "9",
+          "iron_pipe_od_in": 9.625,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.99,
+              "insulation_od_in": 11.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.49,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.115,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.615,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.115,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.615,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.115,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.615,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.115,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.12,
+              "insulation_od_in": 21.95
+            }
+          ]
+        },
+        {
+          "nps": "10",
+          "iron_pipe_od_in": 10.75,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 0.905,
+              "insulation_od_in": 12.7
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.53,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.03,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.53,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.03,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.53,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.03,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.545,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.03,
+              "insulation_od_in": 20.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.03,
+              "insulation_od_in": 22.95
+            }
+          ]
+        },
+        {
+          "nps": "11",
+          "iron_pipe_od_in": 11.75,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.045,
+              "insulation_od_in": 13.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.545,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.045,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.545,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.045,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.545,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.045,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.545,
+              "insulation_od_in": 20.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.045,
+              "insulation_od_in": 21.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.05,
+              "insulation_od_in": 23.95
+            }
+          ]
+        },
+        {
+          "nps": "12",
+          "iron_pipe_od_in": 12.75,
+          "by_nominal_thickness": [
+            {
+              "nominal_thickness_in": 1.0,
+              "actual_wall_in": 1.035,
+              "insulation_od_in": 14.95
+            },
+            {
+              "nominal_thickness_in": 1.5,
+              "actual_wall_in": 1.535,
+              "insulation_od_in": 15.95
+            },
+            {
+              "nominal_thickness_in": 2.0,
+              "actual_wall_in": 2.035,
+              "insulation_od_in": 16.95
+            },
+            {
+              "nominal_thickness_in": 2.5,
+              "actual_wall_in": 2.535,
+              "insulation_od_in": 17.95
+            },
+            {
+              "nominal_thickness_in": 3.0,
+              "actual_wall_in": 3.035,
+              "insulation_od_in": 18.95
+            },
+            {
+              "nominal_thickness_in": 3.5,
+              "actual_wall_in": 3.535,
+              "insulation_od_in": 19.95
+            },
+            {
+              "nominal_thickness_in": 4.0,
+              "actual_wall_in": 4.035,
+              "insulation_od_in": 20.95
+            },
+            {
+              "nominal_thickness_in": 4.5,
+              "actual_wall_in": 4.535,
+              "insulation_od_in": 21.95
+            },
+            {
+              "nominal_thickness_in": 5.0,
+              "actual_wall_in": 5.035,
+              "insulation_od_in": 22.95
+            },
+            {
+              "nominal_thickness_in": 6.0,
+              "actual_wall_in": 6.04,
+              "insulation_od_in": 24.95
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

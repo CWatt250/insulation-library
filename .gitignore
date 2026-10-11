@@ -1,0 +1,15 @@
+node_modules
+dist
+tools/.venv
+
+# Reference photos are mostly copyrighted (see each SOURCES.md): keep them local,
+# commit only the SOURCES.md records.
+research/refs/**/*.jpg
+research/refs/**/*.jpeg
+research/refs/**/*.png
+research/refs/**/*.webp
+research/renders/
+
+# local tooling
+app/test-results
+*.log

@@ -1,0 +1,14 @@
+# Field references: mechanical insulation contractor work
+
+Collected 2026-10-10 from Bing Images (large photos only) with the query `mechanical insulation contractor work`, using `tools/bing_images.mjs`. Every file was checked with `file` and opened with PIL, and each one is at least 600 px on its short side. Each image was viewed to confirm that it is a real photograph of installed insulation, not a render or product cut-out.
+
+All images are **visual references only**: they are used to match the look of real installs and are never shipped in the app. No source page stated an open license, so every image is labelled `reference-only (copyrighted)`. Pages marked *aggregator* are scraper or blog-farm pages that re-host the photo. The original photographer is unknown.
+
+| File | Size | Source page | Image URL | What it shows | License |
+|---|---|---|---|---|---|
+| `alu-jacket-mech-room-pressed-elbows-butterfly-valves-01.jpg` | 1024×768 | https://rbinsulation.com/ | https://rbinsulation.com/wp-content/uploads/2015/12/Rouch_Project1-1024x768.jpg | Mech room: Al jacketed pipes, pressed elbows, bands, blue butterfly valves, wall cladding. | `reference-only (copyrighted)` |
+| `alu-jacket-mech-room-removable-blankets-valves-01.jpg` | 675×900 | https://www.tbntra.com/photos-mechanical-insulation-contractors.html | https://www.tbntra.com/images/mechanical-insulation-contractor-0422-3.jpeg | Mech room: Al jacketed pipes and gored elbows, grey removable blankets on valves, blue handwheels. | `reference-only (copyrighted)` |
+| `alu-jacket-outdoor-pumps-volute-covers-01.jpg` | 600×800 | https://arkpremium.pro/ | https://img1.wsimg.com/isteam/ip/4fb9996d-96c6-468a-95f1-04d3951676d1/23.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:600,cg:true | Outdoor pump skid: Al-jacketed risers, pump volute covers, gauges. | `reference-only (copyrighted)` |
+| `alu-jacket-rooftop-pipe-stands-overcast-01.webp` | 1280×960 | https://irpros.com/core-insulation-1-industrial-and-commercial-insulation-contractor/ | https://irpros.com/wp-content/uploads/2023/11/img_0424.webp | Rooftop: Al-jacketed lines on pipe stands, overcast sky, Frick units, white roof. | `reference-only (copyrighted)` |
+| `pvc-fitting-covers-asj-pump-skid-unistrut-01.jpg` | 972×972 | https://www.goldlapinsulation.ca/ | https://www.goldlapinsulation.ca/images/image3.jpg | Pump/boiler room: glossy white PVC fitting covers vs ASJ/kraft jackets, red tags, brass valves, unistrut, Knauf box. | `reference-only (copyrighted)` |
+| `stucco-alu-ammonia-rooftop-rack-labels-01.jpg` | 1370×1000 | https://mlperfection.com/services/ | https://mlperfection.com/wp-content/uploads/2024/01/SERVICES-MECHANICAL.jpg | Rooftop ammonia piping: stucco Al, smooth pressed elbows, HGRH labels, galvanized racks, yellow tags. | `reference-only (copyrighted)` |
