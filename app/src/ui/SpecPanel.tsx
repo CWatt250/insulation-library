@@ -84,64 +84,72 @@ export function SpecPanel({ id }: { id: InsulationId }) {
           {open ? '–' : '+'}
         </button>
       </header>
-      {open && (
-        <div className="scroll">
-          <p className="astm">{spec.astm}</p>
-          <p className="summary">{spec.summary}</p>
-
-          <div className="products">
-            {spec.products.map((p) => (
-              <div key={p.name} className="product">
-                <h3>{p.name}</h3>
-                <dl>
-                  <dt>Service temp</dt>
-                  <dd>{fmtRange(p.tempF.min, p.tempF.max)}{p.tempF.note ? <small>{p.tempF.note}</small> : null}</dd>
-                  {p.density && (<><dt>Density</dt><dd>{p.density}</dd></>)}
-                  {p.compressive && (<><dt>Compressive</dt><dd>{p.compressive}</dd></>)}
-                  {p.e84 && (<><dt>ASTM E84</dt><dd>{p.e84}</dd></>)}
-                  {p.vapor && (<><dt>Vapor</dt><dd>{p.vapor}</dd></>)}
-                  {p.combustibility && (<><dt>Combustibility</dt><dd>{p.combustibility}</dd></>)}
-                  {p.k.length === 1 && (<><dt>k-value</dt><dd>{p.k[0].k} @ {p.k[0].meanF}°F mean</dd></>)}
-                  {p.kNote && (<><dt>k note</dt><dd>{p.kNote}</dd></>)}
-                </dl>
-              </div>
-            ))}
-          </div>
-
-          <KChart spec={spec} />
-
-          <h3>Typical applications</h3>
-          <ul>{spec.applications.map((a) => <li key={a}>{a}</li>)}</ul>
-          <div className="proscons">
-            <div>
-              <h3>Strengths</h3>
-              <ul>{spec.pros.map((a) => <li key={a}>{a}</li>)}</ul>
-            </div>
-            <div>
-              <h3>Watch-outs</h3>
-              <ul>{spec.cons.map((a) => <li key={a}>{a}</li>)}</ul>
-            </div>
-          </div>
-          <h3>Sizes</h3>
-          <p className="small">{spec.sizes}</p>
-
-          {spec.gaps.length > 0 && (
-            <details>
-              <summary>Data notes ({spec.gaps.length})</summary>
-              <ul className="small">{spec.gaps.map((g) => <li key={g}>{g}</li>)}</ul>
-            </details>
-          )}
-          <details>
-            <summary>Sources ({spec.sources.length})</summary>
-            <ol className="small sources">
-              {spec.sources.map((s) => (
-                <li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>
-              ))}
-            </ol>
-          </details>
-          <p className="disclaimer">Typical published values. Always confirm against the current manufacturer data sheet and project specification.</p>
-        </div>
-      )}
+      {open && <SpecContent id={id} />}
     </aside>
+  )
+}
+
+/** The spec sheet body; used in the desktop side panel and the phone bottom sheet. */
+export function SpecContent({ id, showTitle = false }: { id: InsulationId; showTitle?: boolean }) {
+  const spec = SPECS[id]
+  if (!spec) return null
+  return (
+    <div className="scroll">
+          {showTitle && <h2 className="title spec-title">{spec.name}</h2>}
+      <p className="astm">{spec.astm}</p>
+      <p className="summary">{spec.summary}</p>
+
+      <div className="products">
+        {spec.products.map((p) => (
+          <div key={p.name} className="product">
+            <h3>{p.name}</h3>
+            <dl>
+              <dt>Service temp</dt>
+              <dd>{fmtRange(p.tempF.min, p.tempF.max)}{p.tempF.note ? <small>{p.tempF.note}</small> : null}</dd>
+              {p.density && (<><dt>Density</dt><dd>{p.density}</dd></>)}
+              {p.compressive && (<><dt>Compressive</dt><dd>{p.compressive}</dd></>)}
+              {p.e84 && (<><dt>ASTM E84</dt><dd>{p.e84}</dd></>)}
+              {p.vapor && (<><dt>Vapor</dt><dd>{p.vapor}</dd></>)}
+              {p.combustibility && (<><dt>Combustibility</dt><dd>{p.combustibility}</dd></>)}
+              {p.k.length === 1 && (<><dt>k-value</dt><dd>{p.k[0].k} @ {p.k[0].meanF}°F mean</dd></>)}
+              {p.kNote && (<><dt>k note</dt><dd>{p.kNote}</dd></>)}
+            </dl>
+          </div>
+        ))}
+      </div>
+
+      <KChart spec={spec} />
+
+      <h3>Typical applications</h3>
+      <ul>{spec.applications.map((a) => <li key={a}>{a}</li>)}</ul>
+      <div className="proscons">
+        <div>
+          <h3>Strengths</h3>
+          <ul>{spec.pros.map((a) => <li key={a}>{a}</li>)}</ul>
+        </div>
+        <div>
+          <h3>Watch-outs</h3>
+          <ul>{spec.cons.map((a) => <li key={a}>{a}</li>)}</ul>
+        </div>
+      </div>
+      <h3>Sizes</h3>
+      <p className="small">{spec.sizes}</p>
+
+      {spec.gaps.length > 0 && (
+        <details>
+          <summary>Data notes ({spec.gaps.length})</summary>
+          <ul className="small">{spec.gaps.map((g) => <li key={g}>{g}</li>)}</ul>
+        </details>
+      )}
+      <details>
+        <summary>Sources ({spec.sources.length})</summary>
+        <ol className="small sources">
+          {spec.sources.map((s) => (
+            <li key={s.id}><a href={s.url} target="_blank" rel="noreferrer">{s.label}</a></li>
+          ))}
+        </ol>
+      </details>
+      <p className="disclaimer">Typical published values. Always confirm against the current manufacturer data sheet and project specification.</p>
+    </div>
   )
 }

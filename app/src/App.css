@@ -10,6 +10,7 @@
 }
 
 .app { position: fixed; inset: 0; font: 13px/1.4 'Inter', system-ui, sans-serif; color: var(--ink); }
+.stage { position: absolute; inset: 0; }
 
 .panel {
   position: absolute; top: 16px; max-height: calc(100% - 32px);
@@ -21,12 +22,13 @@
 
 /* ---------------------------------------------------------------- controls */
 .controls { left: 16px; width: 280px; padding: 16px; gap: 14px; overflow-y: auto; }
-.controls h1 { font-size: 16px; font-weight: 650; margin: 0; letter-spacing: 0.005em; }
-.controls .sub { margin: 2px 0 0; color: var(--ink-3); font-size: 12px; }
-.controls h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin: 0 0 6px; }
-.controls section { display: flex; flex-direction: column; gap: 6px; }
-.controls section.row { flex-direction: row; gap: 8px; }
-.controls section.row label { flex: 1; min-width: 0; }
+:is(.controls, .controls-body) h1 { font-size: 16px; font-weight: 650; margin: 0; letter-spacing: 0.005em; }
+:is(.controls, .controls-body) .sub { margin: 2px 0 0; color: var(--ink-3); font-size: 12px; }
+:is(.controls, .controls-body) h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin: 0 0 6px; }
+:is(.controls, .controls-body) section { display: flex; flex-direction: column; gap: 6px; }
+.controls-body { display: flex; flex-direction: column; gap: 14px; }
+:is(.controls, .controls-body) section.row { flex-direction: row; gap: 8px; }
+:is(.controls, .controls-body) section.row label { flex: 1; min-width: 0; }
 
 .materials { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .mat {
@@ -46,7 +48,7 @@
 .seg { display: flex; gap: 4px; }
 .seg button { flex: 1; border-radius: 8px; text-transform: capitalize; }
 
-.controls select {
+:is(.controls, .controls-body) select {
   width: 100%; background: var(--chip); color: var(--ink); border: 1px solid var(--chip-line);
   border-radius: 8px; padding: 7px 6px; font: inherit; font-size: 12px;
 }
@@ -62,15 +64,15 @@
 
 /* ------------------------------------------------------------------- specs */
 .specs { right: 16px; width: 340px; }
-.specs header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 6px; }
-.specs .title { margin: 0; font-size: 16px; font-weight: 650; }
-.specs .collapse { background: none; border: 1px solid var(--chip-line); color: var(--ink-2); width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 15px; }
-.specs .scroll { overflow-y: auto; padding: 0 16px 16px; }
-.specs .astm { margin: 0 0 8px; color: var(--ink-3); font-size: 12px; }
-.specs .summary { margin: 0 0 12px; color: var(--ink-2); }
-.specs h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin: 14px 0 6px; font-weight: 600; }
-.specs ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
-.specs li { margin: 2px 0; }
+:is(.specs, .sheet) header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 6px; }
+:is(.specs, .sheet) .title { margin: 0; font-size: 16px; font-weight: 650; }
+:is(.specs, .sheet) .collapse { background: none; border: 1px solid var(--chip-line); color: var(--ink-2); width: 26px; height: 26px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+:is(.specs, .sheet) .scroll { overflow-y: auto; padding: 0 16px 16px; }
+:is(.specs, .sheet) .astm { margin: 0 0 8px; color: var(--ink-3); font-size: 12px; }
+:is(.specs, .sheet) .summary { margin: 0 0 12px; color: var(--ink-2); }
+:is(.specs, .sheet) h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); margin: 14px 0 6px; font-weight: 600; }
+:is(.specs, .sheet) ul { margin: 0; padding-left: 18px; color: var(--ink-2); }
+:is(.specs, .sheet) li { margin: 2px 0; }
 .product { border-top: 1px solid var(--line); padding-top: 4px; }
 .product h3 { color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 13px; margin: 8px 0 6px; }
 .product dl { display: grid; grid-template-columns: 96px 1fr; gap: 3px 10px; margin: 0; }
@@ -79,8 +81,8 @@
 .product dd small { display: block; color: var(--ink-3); font-size: 11px; }
 .proscons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .small { font-size: 12px; color: var(--ink-2); margin: 0; }
-.specs details { margin-top: 12px; }
-.specs summary { cursor: pointer; color: var(--ink-2); font-size: 12px; }
+:is(.specs, .sheet) details { margin-top: 12px; }
+:is(.specs, .sheet) summary { cursor: pointer; color: var(--ink-2); font-size: 12px; }
 .sources a { color: #86b6ef; text-decoration: none; word-break: break-word; }
 .sources a:hover { text-decoration: underline; }
 .disclaimer { color: var(--ink-3); font-size: 11px; margin: 14px 0 0; }
@@ -98,15 +100,45 @@
 .kchart .unit { margin: 4px 0 0; font-size: 10px; color: var(--ink-3); }
 
 /* ------------------------------------------------------------------ mobile */
-@media (max-width: 860px) {
-  .panel { position: absolute; top: auto; max-height: 46vh; border-radius: 12px 12px 0 0; }
-  .controls { left: 0; right: 0; bottom: 0; width: auto; padding: 12px 16px; }
-  .materials { grid-template-columns: repeat(3, 1fr); }
-  .specs { left: 0; right: 0; top: 0; width: auto; max-height: 34vh; border-radius: 0 0 12px 12px; }
-  .specs.collapsed { max-height: none; }
-  .hint { display: none; }
-  .photo-section { display: none; }
+/* Phone: 3D on top, one bottom sheet (Configure / Specs). Collapsed it shows a
+   summary line and a swipeable material row; tap to expand. */
+.app.is-mobile { --sheet-collapsed: 172px; font-size: 14px; }
+.is-mobile .stage { bottom: auto; height: calc(100dvh - var(--sheet-collapsed) + 14px); }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  height: var(--sheet-collapsed); display: flex; flex-direction: column;
+  background: rgba(20, 21, 23, 0.94); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line); border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.35);
+  padding-bottom: env(safe-area-inset-bottom);
+  transition: height 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: hidden;
 }
+.sheet.open { height: min(74dvh, calc(100dvh - 120px)); }
+.sheet-handle { display: flex; justify-content: center; padding: 8px 0 4px; background: none; border: 0; cursor: pointer; }
+.sheet-handle i { width: 40px; height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.28); }
+.sheet-head { display: flex; align-items: center; gap: 8px; padding: 0 16px 6px; }
+.tabs { flex: 1; display: flex; gap: 4px; background: #232427; border-radius: 10px; padding: 3px; }
+.tabs button { flex: 1; padding: 8px; border: 0; border-radius: 8px; background: none; color: var(--ink-2); font: inherit; font-weight: 600; }
+.tabs button.on { background: #3a3b40; color: var(--ink); }
+.sheet-toggle { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--chip-line); background: var(--chip); color: var(--ink-2); font-size: 16px; }
+.sheet-summary { margin: 0; padding: 0 16px 6px; color: var(--ink-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet-materials .materials {
+  display: flex; gap: 8px; overflow-x: auto; padding: 2px 16px 10px; scroll-snap-type: x proximity; scroll-padding-inline: 16px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.sheet-materials .materials::-webkit-scrollbar { display: none; }
+.sheet-materials .mat { flex: none; scroll-snap-align: start; padding: 9px 12px; font-size: 13px; }
+.sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 4px 16px 20px; border-top: 1px solid var(--line); }
+.sheet:not(.open) .sheet-body { visibility: hidden; }
+.sheet .scroll { padding: 0; overflow: visible; }
+.sheet .spec-title { margin: 8px 0 4px; font-size: 16px; font-weight: 650; }
+.sheet .chips button, .sheet .seg button { padding: 9px 12px; font-size: 13px; }
+.sheet select { padding: 10px 8px; font-size: 14px; }
+.sheet .proscons { grid-template-columns: 1fr; }
+.is-mobile .callout-label { padding: 4px 7px; }
+.is-mobile .callout-label strong { font-size: 11px; }
+.is-mobile .callout-label span { font-size: 10px; }
 
 /* ---------------------------------------------------------------- callouts */
 .callout-lines { position: absolute; inset: 0; overflow: visible; }

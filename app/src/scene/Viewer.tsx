@@ -13,6 +13,8 @@ import { buildSlots, cradleMat, padMat, pbr, setMaxAnisotropy } from '../materia
 
 export interface ViewerProps extends AssemblyParams {
   stage: 'studio' | 'plant' | 'room'
+  /** Phone: lighter render settings. */
+  mobile?: boolean
   photo?: boolean
   onPhotoProgress?: (p: PhotoProgress) => void
   cam?: [number, number, number]
@@ -96,6 +98,21 @@ const VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]
   valve: { cam: [1.15, 0.62, 1.4], target: [0, 0.08, 0] },
 }
 
+/**
+ * Presets are framed for a ~1.6 landscape aspect. On narrower screens (phones
+ * in portrait) widen the vertical FOV so the horizontal coverage stays the same.
+ */
+function applyFov(camera: THREE.PerspectiveCamera) {
+  const base = (camera.userData.baseFov as number | undefined) ?? 30
+  // phones have no side panels to frame around, so they can cover less width
+  const coverage = (camera.userData.coverage as number | undefined) ?? 1
+  const aspect = camera.aspect || 1.6
+  const want = 1.6 * coverage
+  const fov = aspect >= want ? base : (2 * Math.atan((Math.tan((base * Math.PI) / 360) * want) / aspect) * 180) / Math.PI
+  camera.fov = Math.min(fov, 80)
+  camera.updateProjectionMatrix()
+}
+
 /** Frames the assembly when the component changes (URL cam/tgt override for screenshots). */
 function CameraRig({ component, view, stage, cam, target }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target'>) {
   const camera = useThree((s) => s.camera)
@@ -103,8 +120,8 @@ function CameraRig({ component, view, stage, cam, target }: Pick<ViewerProps, 'c
   useEffect(() => {
     const v = (stage === 'room' && view !== 'layers' ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
     const pc = camera as THREE.PerspectiveCamera
-    pc.fov = stage === 'room' && view !== 'layers' ? 52 : 30
-    pc.updateProjectionMatrix()
+    pc.userData.baseFov = stage === 'room' && view !== 'layers' ? 52 : 30
+    applyFov(pc)
     camera.position.set(...(cam ?? v.cam))
     if (controls) {
       controls.target.set(...(target ?? v.target))
@@ -114,15 +131,16 @@ function CameraRig({ component, view, stage, cam, target }: Pick<ViewerProps, 'c
   return null
 }
 
-function RendererSetup() {
+function RendererSetup({ mobile }: { mobile?: boolean }) {
   const gl = useThree((s) => s.gl)
   const size = useThree((s) => s.size)
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   // R3F leaves aspect alone on cameras passed in as instances.
   useEffect(() => {
+    camera.userData.coverage = mobile ? 0.68 : 1
     camera.aspect = size.width / size.height
-    camera.updateProjectionMatrix()
-  }, [camera, size])
+    applyFov(camera)
+  }, [camera, size, mobile])
   useEffect(() => {
     setMaxAnisotropy(gl.capabilities.getMaxAnisotropy())
   }, [gl])
@@ -208,11 +226,11 @@ export function Viewer(props: ViewerProps) {
   return (
     <Canvas
       shadows="variance"
-      dpr={[1, 2]}
+      dpr={props.mobile ? [1, 1.5] : [1, 2]}
       camera={camera}
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
-      <RendererSetup />
+      <RendererSetup mobile={props.mobile} />
       <CameraRig component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} />
       <color attach="background" args={['#3a3b3e']} />
       <Suspense fallback={null}>
@@ -246,7 +264,7 @@ export function Viewer(props: ViewerProps) {
             position={[0.9, 4.2, 1.6]}
             intensity={props.stage === 'studio' ? 1.3 : props.stage === 'room' ? 0.35 : 0.5}
             color="#fff6ec"
-            shadow-mapSize={[4096, 4096]}
+            shadow-mapSize={props.mobile ? [2048, 2048] : [4096, 4096]}
             shadow-camera-left={-3.2}
             shadow-camera-right={3.2}
             shadow-camera-top={3.2}
@@ -277,7 +295,7 @@ export function Viewer(props: ViewerProps) {
       />
       {!props.photo && (
       <EffectComposer multisampling={0}>
-        <N8AO aoRadius={0.06} distanceFalloff={0.5} intensity={2.2} quality="high" halfRes={false} />
+        <N8AO aoRadius={0.06} distanceFalloff={0.5} intensity={2.2} quality={props.mobile ? 'medium' : 'high'} halfRes={!!props.mobile} />
         <SMAA />
         <ToneMapping mode={ToneMappingMode.NEUTRAL} />
         <Vignette offset={0.35} darkness={0.35} />
