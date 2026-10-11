@@ -5,7 +5,7 @@ import type * as THREE from 'three'
  * k-values, ASTM) live in specs.ts and come only from verified data sheets.
  */
 
-export type InsulationId = 'calsil' | 'fiberglass' | 'mineral-wool' | 'cellular-glass' | 'elastomeric' | 'phenolic'
+export type InsulationId = 'calsil' | 'fiberglass' | 'mineral-wool' | 'cellular-glass' | 'elastomeric' | 'phenolic' | 'pir' | 'aerogel' | 'perlite' | 'polyolefin'
 /** Sheet systems. 'asj' and 'fsk' are factory facings; the rest are field-applied outer jackets. */
 export type JacketId = 'none' | 'asj' | 'fsk' | 'pvc' | 'alu-smooth' | 'alu-stucco' | 'ss'
 /** Outer jackets offered in the UI ('none' = the facing, or the bare insulation, is the finish). */
@@ -52,8 +52,10 @@ export interface InsulationVisual {
    */
   vapor: { kind: VaporKind; membraneUnder?: OuterJacketId[]; membrane?: { name: string; mil: number; look: 'white' | 'foil' | 'black' } }
   maxThicknessIn: number
-  /** Thicker than this goes on in two layers (JM: over 3"; Resolco phenolic: over 2-1/2"). */
+  /** Thicker than this goes on in more layers (JM: over 3"; Resolco phenolic: over 2-1/2"; aerogel: one 10 mm wrap). */
   maxSingleLayerIn: number
+  /** Thicknesses offered, inches, when they aren't the standard ½" steps (blanket wraps, tube walls). */
+  thicknesses?: number[]
   /** Cut-edge softness in metres: rigid board is crisp, foams round over. */
   edge: number
 }
@@ -172,10 +174,92 @@ export const INSULATIONS: InsulationVisual[] = [
     maxSingleLayerIn: 2.5,
     edge: 0.0008,
   },
+  {
+    id: 'pir',
+    label: 'Polyisocyanurate',
+    swatch: '#e6d6a0',
+    skin: { tex: 'pir-cut', params: { normalStrength: 0.7 } },
+    cut: { tex: 'pir-cut', params: { normalStrength: 0.8 } },
+    layered: false,
+    // Kingspan Tarecpir 360: 180° half-sections; JM: 36" sections
+    pieces: 'halves',
+    sectionIn: 36,
+    rigid: true,
+    services: ['cold', 'hot'],
+    facings: ['none'],
+    jackets: ['pvc', 'alu-smooth', 'alu-stucco', 'ss', 'none'],
+    // JM: a separate ≤0.02-perm retarder (Saranex CX film) on cold work; PVC and aluminum don't count
+    vapor: { kind: 'membrane', membrane: { name: 'Saranex 540 CX film', mil: 4, look: 'white' } },
+    maxThicknessIn: 4,
+    // JM refrigeration: over 2-1/2" goes on in two layers
+    maxSingleLayerIn: 2.5,
+    edge: 0.0006,
+  },
+  {
+    id: 'aerogel',
+    label: 'Aerogel Blanket',
+    swatch: '#c3c5c4',
+    skin: { tex: 'aerogel-skin' },
+    cut: { tex: 'aerogel-cut' },
+    layered: true,
+    pieces: 'hinged',
+    // visual spacing of the blanket butt joints (roll width not in the verified data)
+    sectionIn: 48,
+    rigid: false,
+    services: ['hot', 'cold'],
+    facings: ['none'],
+    jackets: ['alu-smooth', 'alu-stucco', 'ss', 'pvc', 'none'],
+    // Aspen cold-service manual: a primary vapor barrier over the outermost layer, e.g. 50-mil foil-faced butyl
+    vapor: { kind: 'membrane', membrane: { name: 'Foil-faced butyl barrier', mil: 50, look: 'foil' } },
+    // 10 mm (0.39") wraps; Pyrogel over 80 mm total needs Aspen review
+    maxThicknessIn: 3.15,
+    maxSingleLayerIn: 0.4,
+    thicknesses: [0.39, 0.79, 1.18, 1.57, 1.97, 2.36, 2.76, 3.15],
+    edge: 0.0015,
+  },
+  {
+    id: 'perlite',
+    label: 'Expanded Perlite',
+    swatch: '#e2dfd6',
+    skin: { tex: 'perlite-molded' },
+    cut: { tex: 'perlite-cut' },
+    layered: false,
+    pieces: 'halves',
+    sectionIn: 36,
+    rigid: true,
+    services: ['hot'],
+    facings: ['none'],
+    jackets: ['alu-smooth', 'alu-stucco', 'ss', 'none'],
+    vapor: { kind: 'membrane' },
+    maxThicknessIn: 4,
+    // JM: double layer at or above 600°F or over 3" thick
+    maxSingleLayerIn: 3,
+    edge: 0.0007,
+  },
+  {
+    id: 'polyolefin',
+    label: 'Polyolefin Foam',
+    swatch: '#bcc0c3',
+    skin: { tex: 'polyolefin-skin', params: { clearcoat: 0.1, clearcoatRoughness: 0.5 } },
+    cut: { tex: 'polyolefin-cut' },
+    layered: false,
+    pieces: 'tube',
+    sectionIn: 72,
+    rigid: false,
+    services: ['cold', 'hot'],
+    facings: ['none'],
+    jackets: ['none', 'pvc'],
+    vapor: { kind: 'integral' },
+    // 3/8–1" walls, 6 ft tubes (Armacell Tubolit, K-FLEX PE)
+    maxThicknessIn: 1,
+    maxSingleLayerIn: 1,
+    thicknesses: [0.375, 0.5, 0.75, 1],
+    edge: 0.002,
+  },
 ]
 
-/** Number of insulation layers for a thickness. */
-export const layerCount = (ins: InsulationVisual, thicknessIn: number) => (thicknessIn > ins.maxSingleLayerIn ? 2 : 1)
+/** Number of insulation layers for a thickness (aerogel: one per 10 mm wrap). */
+export const layerCount = (ins: InsulationVisual, thicknessIn: number) => Math.max(1, Math.ceil(thicknessIn / ins.maxSingleLayerIn - 1e-6))
 
 export const INSULATION = Object.fromEntries(INSULATIONS.map((i) => [i.id, i])) as Record<InsulationId, InsulationVisual>
 
@@ -204,3 +288,10 @@ export const JACKETS: Record<JacketId, JacketVisual> = {
   pvc: { id: 'pvc', label: 'PVC jacket', metal: false, t: 0.0005, sheetIn: 36, circLapIn: 1, longLapIn: 1.5, bands: false, elbow: 'fitting-cover' },
   none: { id: 'none', label: 'None (bare)', metal: false, sheetIn: 36, circLapIn: 0, longLapIn: 0, bands: false, elbow: 'none' },
 }
+
+/** Thicknesses a material is offered in, inches. */
+export const thicknessesFor = (ins: InsulationVisual, standard: number[]) => ins.thicknesses ?? standard.filter((t) => t <= ins.maxThicknessIn)
+
+/** The offered thickness closest to a wanted one. */
+export const snapThickness = (ins: InsulationVisual, want: number, standard: number[]) =>
+  thicknessesFor(ins, standard).reduce((best, t) => (Math.abs(t - want) < Math.abs(best - want) ? t : best))

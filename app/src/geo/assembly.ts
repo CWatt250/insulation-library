@@ -25,7 +25,7 @@ import {
  */
 
 export type ViewMode = 'installed' | 'cutaway' | 'layers' | 'exploded' | 'section'
-export type Component = 'straight' | 'elbow' | 'valve'
+export type Component = 'straight' | 'elbow' | 'tee' | 'valve' | 'flange'
 
 export interface AssemblyParams {
   component: Component
@@ -66,8 +66,32 @@ export interface Callout {
   layer?: LayerId
 }
 
+/**
+ * An exposed surface the simulation effects play on, in its own frame (axis +z):
+ * a run of insulated pipe, a bare stub sticking out past the insulation, or the
+ * fitting itself (valve or flange cover). `matrix` places the frame in the
+ * assembly; `vertical` frames have +z pointing up.
+ */
+export interface SimZone {
+  key: string
+  kind: 'run' | 'stub' | 'fitting'
+  matrix?: THREE.Matrix4
+  vertical?: boolean
+  z0: number
+  z1: number
+  /** Exposed radius when insulated; and when the whole system is shown bare. */
+  radius: number
+  rBare: number
+  /** Span when the whole system is shown bare (covers the stubs, which are then skipped); null = skip. */
+  bareZ?: [number, number] | null
+  wedge?: [number, number]
+  zWedge?: number
+}
+
 export interface Assembly {
   parts: Part[]
+  /** Exposed surfaces for the simulation overlays. */
+  zones?: SimZone[]
   /** Outermost radius on straight runs, for sizing cradles. */
   outerRadius: number
   /** Cradle stations along the horizontal run's z axis. */
@@ -420,8 +444,9 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
   for (let L = 0; L < d.layers; L++) {
     const rIn = d.rIns0 + (d.T * L) / d.layers
     const rOut = d.rIns0 + (d.T * (L + 1)) / d.layers
-    const seamRot = L === 0 ? 0 : 90 * DEG
-    const zOff = L === 0 ? 0 : -SECTION / 2
+    // successive layers alternate seams by 90° and stagger butt joints by half a section
+    const seamRot = L % 2 ? 90 * DEG : 0
+    const zOff = L % 2 ? -SECTION / 2 : 0
     const halfGap = SEAM_GAP / rOut
     const zE = insEnd(L)
     for (let zs = z0 + zOff; zs < zE; zs += SECTION) {
@@ -870,7 +895,7 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
       const rOut = d.rIns0 + (d.T * (L + 1)) / d.layers
       const g0 = k === 0 ? 0 : gap
       const g1 = k === n - 1 ? 0 : gap
-      pieceArcs(d.ins, L === 0 ? 0 : 90 * DEG, 0.0008 / rOut).forEach(([a, b], hh) => {
+      pieceArcs(d.ins, L % 2 ? 90 * DEG : 0, 0.0008 / rOut).forEach(([a, b], hh) => {
         add(`elb-ins-${k}-${L}-${hh}`, sweep(annulusProfile(rIn, rOut, c.z0 + g0, c.z1 - g1, insMats, 0, [false, false], endUv), {
           theta0: a, theta1: b, segments: 128, capMat: Slot.InsCut, capUv, zMap: c.zLerp,
           tint: pieceTint(`elb${k}${L}${hh}`),
@@ -1089,6 +1114,8 @@ export function buildAssembly(p: AssemblyParams): Assembly {
   if (p.view === 'exploded') return explodedAssembly(d, outerRadius)
   if (p.view === 'section') return sectionAssembly(d, outerRadius)
   if (p.component === 'valve') return valveAssembly(d, p.view, outerRadius)
+  if (p.component === 'flange') return flangeAssembly(d, p.view, outerRadius)
+  if (p.component === 'tee') return teeAssembly(d, p.view, outerRadius)
   if (p.component === 'elbow') {
     const zMin = -0.85
     const parts = [
@@ -1099,7 +1126,16 @@ export function buildAssembly(p: AssemblyParams): Assembly {
       // riser is seen from the front-right: cut the quadrant facing the camera
       ...elbowAssembly(d, cutaway ? [180 * DEG, 270 * DEG] : null, steps ? callouts : null),
     ]
-    return { parts, outerRadius, cradles: [zMin + 0.22], zMin, zMax: d.bendR + d.rJ, yMax: d.bendR + 0.62, callouts: arrangeCallouts(callouts, true) }
+    const R = d.bendR
+    const riser = riserMatrix(R)
+    const ext = (cutaway || steps ? 7 : 4) * IN
+    const zones: SimZone[] = [
+      { key: 'run', kind: 'run', z0: zMin + 0.012, z1: -0.01, radius: outerRadius, rBare: d.rPipe, bareZ: [zMin - 4 * IN, 0] },
+      { key: 'riser', kind: 'run', matrix: riser, vertical: true, z0: 0.01, z1: 0.62 - (cutaway ? 4 * IN : 0) - 0.01, radius: outerRadius, rBare: d.rPipe, bareZ: [0, 0.62 + ext], ...(cutaway ? { wedge: [Math.PI, 1.5 * Math.PI] as [number, number], zWedge: 0.62 - 18 * IN } : {}) },
+      ...stubs(d, [[zMin - 4 * IN, zMin]]),
+      ...stubs(d, [[0.62, 0.62 + ext]], riser, true),
+    ]
+    return { parts, outerRadius, cradles: [zMin + 0.22], zMin, zMax: d.bendR + d.rJ, yMax: d.bendR + 0.62, callouts: arrangeCallouts(callouts, true), zones }
   }
   const len = p.span && !cutaway && !steps ? p.span : 1.32
   const long = len > 3
@@ -1113,7 +1149,12 @@ export function buildAssembly(p: AssemblyParams): Assembly {
   const span = d.npsNominal <= 1 ? 2.1 : d.npsNominal <= 1.5 ? 2.7 : 3
   const nH = Math.max(2, Math.round(len / span))
   const cradles = long ? Array.from({ length: nH }, (_, i) => (len / nH) * (i + 0.5)) : [0.2, len - 0.55]
-  return { parts, outerRadius, cradles, zMin: 0, zMax: len, yMax: outerRadius, callouts: arrangeCallouts(callouts) }
+  const ext = long ? 0 : (cutaway || steps ? 7 : 5) * IN
+  const zones: SimZone[] = [
+    { key: 'run', kind: 'run', z0: 0.012, z1: len - (cutaway ? 4 * IN : 0) - 0.012, radius: outerRadius, rBare: d.rPipe, bareZ: [-5 * IN, len + ext], ...(cutaway ? { wedge: [Math.PI / 2 - 0.05, Math.PI + 0.05] as [number, number], zWedge: len - 18 * IN - 0.01 } : {}) },
+    ...stubs(d, [[-5 * IN, 0], [len, len + ext]]),
+  ]
+  return { parts, outerRadius, cradles, zMin: 0, zMax: len, yMax: outerRadius, callouts: arrangeCallouts(callouts), zones }
 }
 
 /** Radial extent of every layer, inside to out (cross-section labels and the UI). */
@@ -1546,7 +1587,182 @@ function valveAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
     zMax: zEnd,
     yMax: wheelY,
     callouts: callouts.map((c) => c),
+    zones: fittingZones(d, outerRadius, zi, zEnd, blanket.rOuter, D / 2),
   }
+}
+
+// ------------------------------------------------------------------ flange pair + tee
+
+/** Weld-neck flange (ASME B16.5 Class 150) with its face at zFace, body and hub running toward `side`. */
+function weldNeckFlange(d: Dims, zFace: number, side: 1 | -1, add: (k: string, g: THREE.BufferGeometry) => void, key: string) {
+  const [fOD, fT, , , , fY] = FLANGE_150[NPS_KEY(d)].map((v, i) => (i === 3 ? v : v * IN)) as number[]
+  const f1 = zFace + side * fT
+  const hubEnd = zFace + side * fY
+  const hubR = d.rPipe + 0.4 * IN
+  const S = Slot
+  add(`${key}-flange`, sweep(annulusProfile(d.rBore, fOD / 2, Math.min(zFace, f1), Math.max(zFace, f1), { outer: S.PipeOuter, inner: S.PipeBore, end: S.PipeEnd }, 0.0015), { segments: 96 }))
+  const hub: [number, number][] = side > 0
+    ? [[d.rBore, f1], [hubR, f1], [d.rPipe, hubEnd], [d.rBore, hubEnd]]
+    : [[d.rBore, hubEnd], [d.rPipe, hubEnd], [hubR, f1], [d.rBore, f1]]
+  add(`${key}-hub`, sweep({ pts: hub, edges: [{ mat: S.PipeEnd }, { mat: S.PipeOuter }, { mat: S.PipeEnd }, { mat: S.PipeBore }] }, { segments: 96 }))
+  return { hubEnd, fT, fY, fOD }
+}
+
+/** Studs through a bolted joint centred at zMid, with heavy hex nuts on both sides. */
+function studsAndNuts(d: Dims, zMid: number, grip: number, add: (k: string, g: THREE.BufferGeometry) => void, key: string) {
+  const [, , fBC, nB, bD] = FLANGE_150[NPS_KEY(d)].map((v, i) => (i === 3 ? v : v * IN)) as number[]
+  const S = Slot
+  const studLen = grip + 2.2 * bD
+  for (let i = 0; i < nB; i++) {
+    const th = (TAU * (i + 0.5)) / nB
+    const x = (fBC / 2) * Math.cos(th), y = (fBC / 2) * Math.sin(th)
+    const along = new THREE.Matrix4().compose(new THREE.Vector3(x, y, zMid), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2), new THREE.Vector3(1, 1, 1))
+    add(`${key}-stud-${i}`, cylPart(bD / 2, studLen, S.Bolt, along, 12))
+    for (const e of [-1, 1]) {
+      const zNut = zMid + e * (grip / 2 + 0.5 * bD)
+      const m = new THREE.Matrix4().compose(new THREE.Vector3(x, y, zNut), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2), new THREE.Vector3(1, 1, 1))
+      add(`${key}-nut-${i}-${e}`, cylPart(0.95 * bD, bD, S.Bolt, m, 6))
+    }
+  }
+  return { bD, fBC }
+}
+
+/**
+ * Bolted flange pair in a straight run: two weld-neck flanges, gasket, studs.
+ * As on the valve, the pipe insulation stops a stud length + 1" short of the
+ * flanges so the bolts can be pulled, and a removable blanket covers the joint
+ * and laps 2" onto the jacket each side.
+ */
+function flangeAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
+  const parts: Part[] = []
+  const add = (key: string, g: THREE.BufferGeometry, layer: LayerId = 'pipe') => parts.push({ key, geometry: g, layer })
+  const gasket = 0.003
+  const a = weldNeckFlange(d, -gasket / 2, -1, add, 'fa')
+  weldNeckFlange(d, gasket / 2, 1, add, 'fb')
+  const { bD, fBC } = studsAndNuts(d, 0, 2 * a.fT + gasket, add, 'joint')
+  add('gasket', sweep(annulusProfile(d.rPipe + 0.2 * IN, fBC / 2 - bD * 0.6, -gasket / 2, gasket / 2, { outer: Slot.Bolt, inner: Slot.Bolt, end: Slot.Bolt }), { segments: 96 }))
+  const zi = gasket / 2 + a.fY + 1.5 * bD + 1 * IN
+  const zEnd = 0.95
+  const reach = zi - (gasket / 2 + a.fY) + 0.002
+  for (const part of straightSegment(d, {
+    key: 'runL', z0: -zEnd, z1: -zi, pipeExt: [4 * IN, reach],
+    cutaway: null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })) parts.push(part)
+  for (const part of straightSegment(d, {
+    key: 'runR', z0: zi, z1: zEnd, pipeExt: [reach, 4 * IN],
+    cutaway: view === 'cutaway' ? [90 * DEG, 180 * DEG] : null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })) parts.push(part)
+  const blanket = removableBlanket({
+    zSpan: zi + 2 * IN,
+    rCore: a.fOD / 2 + 0.25 * IN,
+    rEnd: outerRadius + 0.002,
+    T: 2 * IN,
+    bonnet: null,
+    halfOnly: view === 'cutaway' || view === 'layers',
+  })
+  for (const [k, g] of blanket.geos) add(`blanket-${k}`, g, 'blanket')
+  const callouts: Callout[] = []
+  if (view === 'layers') {
+    const rb = blanket.rOuter
+    callouts.push(
+      { title: 'Flange pair, weld neck', detail: `NPS ${npsLabel(d.npsNominal)}" Class 150 · studs & gasket`, pos: [0, a.fOD / 2, 0], side: 'up', tier: 0, layer: 'pipe' },
+      { title: 'Removable flange cover', detail: '2 layers × 1" fiberglass mat, laced', pos: [0, -rb, -0.3 * zi], side: 'down', tier: 0, layer: 'blanket' },
+      { title: 'Insulation stops short', detail: 'Stud length + 1" clear, so bolts can be pulled', pos: [0, -outerRadius, zi + 3 * IN], side: 'down', tier: 1, layer: 'insulation' },
+      { ...finishCallout(d), pos: [0, outerRadius, zi + 8 * IN], side: 'up', tier: 1 },
+    )
+  }
+  return {
+    parts, outerRadius, cradles: [-zEnd + 0.2, zEnd - 0.2], zMin: -zEnd, zMax: zEnd, yMax: blanket.rOuter, callouts,
+    zones: fittingZones(d, outerRadius, zi, zEnd, blanket.rOuter, a.fOD / 2, view === 'cutaway'),
+  }
+}
+
+/** Height where a branch of radius r at angle θ meets a run cylinder of radius Rm (fish-mouth cope). */
+const saddle = (Rm: number, r: number, th: number) => Math.sqrt(Math.max(Rm * Rm - (r * Math.cos(th)) ** 2, 0))
+
+/** Branch frame of a tee: pipe axis → +y, rising from the run's centreline at z = 0. */
+const BRANCH = new THREE.Matrix4().makeRotationX(-Math.PI / 2)
+
+/**
+ * Equal tee in a horizontal run with the branch going up. Field practice:
+ * the run insulation carries through, and the branch insulation and jacket
+ * are fish-mouthed (coped) to sit on it; on the run, a plain collar of
+ * insulation and jacket spans the tee so no band lands on the opening.
+ */
+function teeAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
+  const parts: Part[] = []
+  const add = (key: string, g: THREE.BufferGeometry, layer: LayerId, m?: THREE.Matrix4) => {
+    if (m) g.applyMatrix4(m)
+    parts.push({ key, geometry: g, layer })
+  }
+  const zEnd = 0.95
+  const rTop = d.jacketed ? d.rJ + d.t : d.rFinish
+  const w = rTop + 1.25 * IN
+  const S = Slot
+  // run, either side of the collar
+  for (const part of straightSegment(d, {
+    key: 'runL', z0: -zEnd, z1: -w, pipeExt: [4 * IN, 0],
+    cutaway: null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })) parts.push(part)
+  for (const part of straightSegment(d, {
+    key: 'runR', z0: w, z1: zEnd, pipeExt: [0, (view === 'cutaway' ? 7 : 4) * IN],
+    cutaway: view === 'cutaway' ? [90 * DEG, 180 * DEG] : null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })) parts.push(part)
+  // collar over the tee: pipe, insulation, then each sheet layer
+  const pipeMats = { outer: S.PipeOuter, inner: S.PipeBore, end: S.PipeEnd }
+  const insMats = { outer: S.InsSkin, inner: S.InsBore, end: S.InsCut }
+  add('collar-pipe', sweep(annulusProfile(d.rBore, d.rPipe, -w, w, pipeMats, 0, [false, false]), { segments: 128 }), 'pipe')
+  add('collar-ins', sweep(annulusProfile(d.rIns0, d.rInsOut, -w, w, insMats, 0, [false, false]), { segments: 128, tint: pieceTint('collar') }), 'insulation')
+  const stack = sheetStack(d, { seamTheta: 203 * DEG })
+  for (const sh of stack) add(`collar-${sh.layer}`, sweep(lipProfile(sh.r, sh.t, -w, w, sh.mats.outer, { inner: sh.mats.inner, edge: sh.mats.edge }), { segments: 160 }), sh.layer)
+  // branch: coped collar pieces from the run surface up to just above it
+  const zTop = rTop + 0.006
+  const cope = (Rm: number) => (r: number, z: number, th: number) => (z < 1e-7 ? saddle(Rm, r, th) : z)
+  add('br-pipe-cope', sweep(annulusProfile(d.rBore, d.rPipe, 0, zTop, pipeMats, 0, [false, false]), { segments: 128, zMap: cope(d.rPipe) }), 'pipe', BRANCH)
+  add('br-ins-cope', sweep(annulusProfile(d.rIns0, d.rInsOut, 0, zTop, insMats, 0, [false, false]), { segments: 128, zMap: cope(d.rInsOut), tint: pieceTint('brcope') }), 'insulation', BRANCH)
+  for (const sh of stack) {
+    add(`br-${sh.layer}-cope`, sweep(lipProfile(sh.r, sh.t, 0, zTop, sh.mats.outer, { inner: sh.mats.inner, edge: sh.mats.edge }), { segments: 160, zMap: cope(sh.r + sh.t) }), sh.layer, BRANCH)
+  }
+  // branch: an ordinary insulated run from there up
+  const branchLen = 0.62
+  for (const part of straightSegment(d, {
+    key: 'branch', z0: zTop, z1: branchLen, pipeExt: [0, 4 * IN],
+    cutaway: null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })) add(part.key, part.geometry, part.layer, BRANCH)
+  const cut = view === 'cutaway'
+  const zones: SimZone[] = [
+    { key: 'runL', kind: 'run', z0: -zEnd + 0.012, z1: w, radius: outerRadius, rBare: d.rPipe, bareZ: [-zEnd - 4 * IN, zEnd + (cut ? 7 : 4) * IN] },
+    { key: 'runR', kind: 'run', z0: w, z1: zEnd - (cut ? 4 * IN : 0) - 0.012, radius: outerRadius, rBare: d.rPipe, bareZ: null, ...(cut ? { wedge: [Math.PI / 2 - 0.05, Math.PI + 0.05] as [number, number], zWedge: zEnd - 18 * IN - 0.01 } : {}) },
+    { key: 'branch', kind: 'run', matrix: BRANCH, vertical: true, z0: zTop + 0.01, z1: branchLen - 0.01, radius: outerRadius, rBare: d.rPipe, bareZ: [0, branchLen + 4 * IN] },
+    ...stubs(d, [[-zEnd - 4 * IN, -zEnd], [zEnd, zEnd + (cut ? 7 : 4) * IN]]),
+    ...stubs(d, [[branchLen, branchLen + 4 * IN]], BRANCH, true),
+  ]
+  const callouts: Callout[] = view === 'layers'
+    ? [
+      { title: 'Equal tee', detail: `NPS ${npsLabel(d.npsNominal)}" · branch up`, pos: [0, branchLen + 2 * IN, d.rPipe], side: 'right', tier: 0, layer: 'pipe' },
+      { title: 'Fish-mouthed branch', detail: 'Insulation coped to sit on the run', pos: [-rTop * 0.7, rTop * 0.75, 0], side: 'up', tier: 1, layer: 'insulation' },
+      { title: 'Collar over the tee', detail: 'No band over the branch opening', pos: [0, -rTop, w * 0.5], side: 'down', tier: 0, layer: d.jacketed ? 'jacket' : 'insulation' },
+      { ...finishCallout(d), pos: [0, outerRadius, zEnd - 0.5], side: 'up', tier: 1 },
+    ]
+    : []
+  return { parts, outerRadius, cradles: [-zEnd + 0.2, zEnd - 0.2], zMin: -zEnd, zMax: zEnd, yMax: branchLen + 4 * IN, callouts, zones }
+}
+
+/** Bare pipe sticking out past the insulation at the ends of a display run. */
+function stubs(d: Dims, spans: [number, number][], matrix?: THREE.Matrix4, vertical?: boolean): SimZone[] {
+  return spans.filter(([a, b]) => b - a > 0.01).map(([a, b], i) => ({
+    key: `stub-${i}-${a.toFixed(3)}`, kind: 'stub', matrix, vertical, z0: a + 0.006, z1: b - 0.006, radius: d.rPipe, rBare: d.rPipe,
+  }))
+}
+
+/** Runs either side of a valve or flange pair, their stubs, and the fitting itself (blanket, or bare flanges). */
+function fittingZones(d: Dims, outerRadius: number, zi: number, zEnd: number, rBlanket: number, rFlange: number, cut = false): SimZone[] {
+  return [
+    { key: 'runL', kind: 'run', z0: -zEnd + 0.012, z1: -zi - 0.01, radius: outerRadius, rBare: d.rPipe, bareZ: [-zEnd - 4 * IN, -zi] },
+    { key: 'runR', kind: 'run', z0: zi + 0.01, z1: zEnd - 0.012, radius: outerRadius, rBare: d.rPipe, bareZ: [zi, zEnd + 4 * IN], ...(cut ? { wedge: [Math.PI / 2 - 0.05, Math.PI + 0.05] as [number, number], zWedge: zEnd - 18 * IN } : {}) },
+    { key: 'fitting', kind: 'fitting', z0: -zi + 0.01, z1: zi - 0.01, radius: rBlanket, rBare: rFlange },
+    ...stubs(d, [[-zEnd - 4 * IN, -zEnd], [zEnd, zEnd + 4 * IN]]),
+  ]
 }
 
 function NPS_KEY(d: Dims): string {
@@ -1558,7 +1774,8 @@ interface BlanketOpts {
   rCore: number
   rEnd: number
   T: number
-  bonnet: { r: number; yTop: number }
+  /** Valve bonnet boot; null for a flange cover. */
+  bonnet: { r: number; yTop: number } | null
   halfOnly: boolean
 }
 
@@ -1674,7 +1891,8 @@ function removableBlanket(o: BlanketOpts) {
         geos.push([`cut-${th.toFixed(2)}-${mat}`, withGroup(g, mat)])
       }
     }
-  } else {
+  } else if (o.bonnet) {
+    const bonnet = o.bonnet
     // bonnet boot: a quilted sleeve over the bonnet, gathered at the yoke
     const NB = 64
     const NT = 120
@@ -1682,11 +1900,11 @@ function removableBlanket(o: BlanketOpts) {
     const pos: number[] = []
     const uv: number[] = []
     for (let i = 0; i <= NB; i++) {
-      const y = y0 + ((o.bonnet.yTop - y0) * i) / NB
+      const y = y0 + ((bonnet.yTop - y0) * i) / NB
       for (let j = 0; j <= NT; j++) {
         const th = (TAU * j) / NT
-        const top = Math.max(0, (y - (o.bonnet.yTop - 0.5 * IN)) / (0.5 * IN))
-        const r = (o.bonnet.r + o.T * 0.6) * (1 - 0.45 * top) + 0.002 * Math.sin(th * 17) * top + 0.003 * Math.sin((Math.PI * i) / NB) ** 2
+        const top = Math.max(0, (y - (bonnet.yTop - 0.5 * IN)) / (0.5 * IN))
+        const r = (bonnet.r + o.T * 0.6) * (1 - 0.45 * top) + 0.002 * Math.sin(th * 17) * top + 0.003 * Math.sin((Math.PI * i) / NB) ** 2
         pos.push(r * Math.cos(th), y, r * Math.sin(th))
         uv.push(th * r, y)
       }
@@ -1710,10 +1928,10 @@ function removableBlanket(o: BlanketOpts) {
     }
     geos.push(['boot', withGroup(g.toNonIndexed(), Slot.Fabric)])
     // boot top: gathered annulus around the yoke base
-    const capR0 = 0.13 * (o.bonnet.r / 0.42)
-    const cap = new THREE.RingGeometry(capR0, (o.bonnet.r + o.T * 0.6) * 0.55, 64, 2).toNonIndexed()
+    const capR0 = 0.13 * (bonnet.r / 0.42)
+    const cap = new THREE.RingGeometry(capR0, (bonnet.r + o.T * 0.6) * 0.55, 64, 2).toNonIndexed()
     cap.rotateX(-Math.PI / 2)
-    cap.translate(0, o.bonnet.yTop, 0)
+    cap.translate(0, bonnet.yTop, 0)
     geos.push(['boot-cap', withGroup(cap, Slot.Fabric)])
   }
 

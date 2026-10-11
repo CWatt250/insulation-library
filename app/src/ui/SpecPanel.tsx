@@ -166,7 +166,7 @@ export function SpecContent({ showTitle = false, ...p }: SpecProps & { showTitle
         <strong>NPS {NPS[p.npsIndex].nps}" × {p.thicknessIn}" · {p.service === 'hot' ? 'hot service' : 'cold service'}</strong>
         <small>
           Insulation OD ≈ {+sys.insulationOdIn.toFixed(2)}" (pipe OD + 2 × wall)
-          {sys.rings.filter((r) => r.layer === 'insulation').length > 1 ? ' · applied in 2 layers' : ''}
+          {(() => { const n = sys.rings.filter((r) => r.layer === 'insulation').length; return n > 1 ? ` · applied in ${n} layers` : '' })()}
         </small>
       </div>
 

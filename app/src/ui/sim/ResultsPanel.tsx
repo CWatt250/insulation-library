@@ -1,5 +1,12 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import type { Evaluation, Recommendation } from '../../sim/model'
+import { dewZone, materialOptions, type Design } from '../../sim/design'
+import { codeMinimum } from '../../sim/code'
+import { vaporCheck } from '../../sim/vapor'
+import { fittingResult } from '../../sim/fittings'
+import { SPECS } from '../../data/specs'
+import { NPS } from '../../data/pipe'
+import { refsFor } from '../../sim/sources'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -10,7 +17,8 @@ import { ACCENT } from './SetupPanel'
 import { Assumptions } from './Assumptions'
 
 export interface Recs {
-  primary: Recommendation
+  /** Design thickness: every requirement solved, the largest governs. */
+  primary: Design
   others: { label: string; rec: Recommendation }[]
 }
 
@@ -92,13 +100,161 @@ function explain(ev: Evaluation, s: SimState, units: UnitSystem): string {
   return `${lead} With ${inchLabel(s.thicknessIn)} of insulation the surface stays at ${T(ins.result.surfaceF)}, ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point, so it stays dry — as long as the vapor retarder is sealed.`
 }
 
-export function ResultsPanel({ mode, s, ev, recs, units, onApply, compact }: {
+function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Partial<SimState>) => void }) {
+  const c = codeMinimum(s, mode)
+  if ('none' in c) return <p className="field-note">Energy code: {c.none}</p>
+  const ref = refsFor(c.src)[0]
+  return (
+    <label className="code-row">
+      <input type="checkbox" checked={s.applyCode} onChange={(e) => onSet({ applyCode: e.target.checked })} />
+      <span>
+        <b>{c.edition} minimum: {c.minIn.toFixed(2)}"</b>
+        <small>
+          {c.table}, {c.row}: {c.tableIn}" in the table
+          {c.corrected ? `, corrected for k ${c.K.toFixed(3)} at ${c.meanF}°F (table range ${c.kRange[0]}–${c.kRange[1]})` : ` (k ${c.K.toFixed(3)} at ${c.meanF}°F is within ${c.kRange[0]}–${c.kRange[1]})`}
+          {ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}. Include as a requirement.
+        </small>
+      </span>
+    </label>
+  )
+}
+
+const FITTING_NAME: Record<string, string> = { elbow: '90° elbow', tee: 'Tee', valve: 'Valve', flange: 'Flange pair' }
+
+function FittingCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Evaluation; units: UnitSystem }) {
+  const f = fittingResult(s, ev)
+  if (!f) return null
+  const name = FITTING_NAME[s.component]
+  if ('none' in f) return <section className="fitting-card"><h3><Icon name="cube" size={14} /> {name}</h3><p className="vc-note">{f.none}</p></section>
+  const word = mode === 'hot' ? 'loss' : 'gain'
+  const q = (btuHr: number) => (units === 'si' ? `${Math.round(btuHr * 0.29307).toLocaleString('en-US')} W` : `${Math.round(btuHr).toLocaleString('en-US')} Btu/hr`)
+  const refs = refsFor(f.eq.src)
+  const coverWord = s.component === 'valve' || s.component === 'flange' ? 'covered (removable blanket)' : 'insulated'
+  return (
+    <section className="fitting-card">
+      <h3><Icon name="cube" size={14} /> {name} heat {word}</h3>
+      <p className="vc-note">
+        Counts as <b>{f.eq.ft.toFixed(2)} ft</b> of {NPSLabel(s)} pipe{f.eq.interpolated ? ' (interpolated between table sizes)' : ''} — {f.eq.basis}
+        {refs.map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}.
+      </p>
+      <div className="fc-grid">
+        <div className={!f.coveredNow ? 'on' : ''}><span>Bare {name.toLowerCase()}</span><b>{q(f.bare)}</b></div>
+        <div className={f.coveredNow ? 'on' : ''}><span>{coverWord[0].toUpperCase() + coverWord.slice(1)}</span><b>{q(f.covered)}</b></div>
+      </div>
+      <p className="vc-verdict">
+        {f.coveredNow ? 'Insulating it' : 'Covering it'} {mode === 'hot' ? 'saves' : 'cuts heat gain by'} <b>{q(f.savedBtuHr)}</b>
+        {f.annualSaved !== null && <> — about <b>{fmt.energy(f.annualSaved, units)}</b> over {s.hours.toLocaleString('en-US')} h</>}.
+        {!f.coveredNow && mode !== 'hot' && ev.bare.moisture.condensing && ' The bare fitting is below the dew point, so it sweats.'}
+      </p>
+      <p className="vc-note">The covered value applies the same equivalent length to the insulated pipe, as the Illinois TRM and Hart do — an estimate, not a fitting-specific calculation.</p>
+    </section>
+  )
+}
+
+const NPSLabel = (s: SimState) => `NPS ${NPS[s.npsIndex].nps}"`
+
+function VaporCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Evaluation; units: UnitSystem }) {
+  const v = vaporCheck(s, mode, ev.ins)
+  if (!v) return null
+  const r = v.retarder
+  const links = r.materialSrc
+    ? SPECS[s.insulation].sources.filter((x) => r.src.includes(x.id)).map((x) => ({ id: x.id, url: x.url, title: x.label }))
+    : refsFor(r.src)
+  const req = refsFor(v.requiredSrc)
+  const tone = v.meets === null ? 'warn' : v.meets ? 'good' : 'bad'
+  const permTxt = r.perm === null ? 'not published' : `${r.upper ? '≤ ' : ''}${r.perm < 0.001 ? r.perm.toFixed(4) : r.perm.toFixed(3)} perm`
+  return (
+    <section className={`vapor-card ${tone}`}>
+      <h3><Icon name="drop" size={14} /> Vapor retarder</h3>
+      <div className="vc-row">
+        <span>Needed</span>
+        <b>≤ {v.required} perm</b>
+        <small>{v.requiredNote}{req.map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</small>
+      </div>
+      <div className="vc-row">
+        <span>This system</span>
+        <b>{permTxt}</b>
+        <small>{r.label}{r.note ? ` — ${r.note}` : ''}{links.map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</small>
+      </div>
+      <p className="vc-verdict">
+        {v.meets === null ? 'No published permeance to check against.' : v.meets ? 'Meets the guidance at its published permeance.' : 'Above the guidance — add or upgrade the vapor retarder.'}
+        {v.ozPerYearPer100ft !== null && (
+          <> With every joint sealed, about <b>{units === 'si' ? `${(v.ozPerYearPer100ft * 29.5735 * 0.984).toFixed(v.ozPerYearPer100ft < 1 ? 1 : 0)} mL` : `${v.ozPerYearPer100ft < 1 ? v.ozPerYearPer100ft.toFixed(2) : v.ozPerYearPer100ft.toFixed(1)} fl oz`}</b> of water vapor a year gets through per {units === 'si' ? '30 m' : '100 ft'} of pipe.</>
+        )}
+      </p>
+      {s.vr !== 'ideal' && s.vr !== 'good' && <p className="vc-note">{s.vr === 'poor' ? 'Poor sealing:' : 'Fair sealing:'} open laps and joints let far more vapor in than the published permeance — the figure above assumes they are sealed.</p>}
+      {v.notes.map((n) => <p key={n} className="vc-note">{n}</p>)}
+    </section>
+  )
+}
+
+function DesignBlock({ d, s, mode, units, onApply, onSet }: { d: Design; s: SimState; mode: SimMode; units: UnitSystem; onApply: (t: number) => void; onSet: (p: Partial<SimState>) => void }) {
+  const T = (f: number) => fmt.temp(f, units)
+  const t = d.thicknessIn
+  return (
+    <div className="design">
+      <div className="design-head">
+        <div>
+          <span>Design thickness</span>
+          <strong>{t === null ? `More than ${inchLabel(d.maxIn)}` : inchLabel(t)}{t !== null && d.layers > 1 ? <small> · {d.layers} layers</small> : null}</strong>
+          {d.governing && <em>Governed by {d.governing.label.split(':')[0].toLowerCase()}</em>}
+        </div>
+        {t !== null && <button className="apply" disabled={t === s.thicknessIn} onClick={() => onApply(t)}>{t === s.thicknessIn ? 'Current' : 'Apply'}</button>}
+      </div>
+      <ul className="design-rows">
+        {d.rows.map(({ c, rec }) => (
+          <li key={c.id} className={d.governing?.id === c.id ? 'gov' : ''}>
+            <span>{c.label.replace(/°F/g, '°F')}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}</span>
+            <b>{rec.thicknessIn === null ? `> ${inchLabel(rec.maxIn)}` : rec.alreadyMet ? 'Met bare' : inchLabel(rec.thicknessIn)}</b>
+          </li>
+        ))}
+      </ul>
+      {d.side && <p className="field-note">At {inchLabel(t!)}: surface {T(d.side.result.surfaceF)}, {fmt.flow(Math.abs(d.side.result.qBtuHrFt), units)} {fmt.flowUnit(units)}.{d.exactIn !== null && d.exactIn > 0 ? ` Calculated minimum ≈ ${d.exactIn.toFixed(2)}" (nominal OD); rounded up to a standard ½" size.` : ''}</p>}
+      {t === null && <p className="field-note bad">This material can't meet it within {inchLabel(d.maxIn)} — try a higher-emittance finish or compare materials below.</p>}
+      <CodeRow s={s} mode={mode} onSet={onSet} />
+    </div>
+  )
+}
+
+function MaterialCompare({ s, mode, units, onUse }: { s: SimState; mode: SimMode; units: UnitSystem; onUse: (next: SimState) => void }) {
+  const opts = useMemo(() => materialOptions(s, mode), [s, mode])
+  return (
+    <table className="mat-compare">
+      <thead><tr><th>Material</th><th>Thickness</th><th>Surface</th><th>{mode === 'hot' ? 'Loss' : 'Gain'}</th><th /></tr></thead>
+      <tbody>
+        {opts.map((o) => {
+          const d = o.design
+          const cur = o.id === s.insulation
+          return (
+            <tr key={o.id} className={cur ? 'on' : ''}>
+              <td>{o.label}</td>
+              {d && d.thicknessIn !== null && d.side ? (
+                <>
+                  <td><b>{inchLabel(d.thicknessIn)}</b></td>
+                  <td>{fmt.temp(d.side.result.surfaceF, units)}</td>
+                  <td>{fmt.flow(Math.abs(d.side.result.qBtuHrFt), units)}</td>
+                  <td>{cur && d.thicknessIn === s.thicknessIn ? <span className="muted">Current</span> : <button className="apply sm" onClick={() => onUse({ ...o.state, thicknessIn: d.thicknessIn! })}>Use</button>}</td>
+                </>
+              ) : (
+                <td colSpan={4} className="muted">{o.reason ?? (d ? `Needs more than ${inchLabel(d.maxIn)}` : '—')}</td>
+              )}
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, compact }: {
   mode: SimMode
   s: SimState
   ev: Evaluation
   recs: Recs
   units: UnitSystem
   onApply: (t: number) => void
+  onUseMaterial: (next: SimState) => void
+  onSet: (p: Partial<SimState>) => void
   compact?: boolean
 }) {
   const ins = ev.ins
@@ -140,6 +296,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, compact }: {
           <div>
             <span>Minimum to prevent sweating</span>
             <strong>{recs.primary.thicknessIn === null ? `> ${inchLabel(recs.primary.maxIn)}` : recs.primary.thicknessIn === s.thicknessIn ? `${inchLabel(recs.primary.thicknessIn)} (current)` : inchLabel(recs.primary.thicknessIn)}</strong>
+            {recs.primary.exactIn !== null && recs.primary.exactIn > 0 && <span>calculated ≈ {recs.primary.exactIn.toFixed(2)}"</span>}
           </div>
           <button
             className="primary"
@@ -193,12 +350,34 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, compact }: {
         </ul>
       )}
 
+      {mode !== 'hot' && (() => {
+        const z = dewZone(ins)
+        if (!z || z.fraction <= 0) return null
+        return (
+          <div className={`dewzone ${z.fraction >= 1 ? 'bad' : ''}`}>
+            <div className="dz-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, z.fraction * 100)}%` }} /></div>
+            <p>
+              {z.fraction >= 1
+                ? 'The whole insulation thickness is colder than the dew point — the outside surface condenses.'
+                : `The inner ${fmt.inches(+z.depthIn.toFixed(2), units)} (${Math.round(z.fraction * 100)}%) of the insulation is colder than the ${T(m.dewF)} dew point. Water vapor that gets past the vapor retarder condenses there — that's why every seam must be sealed.`}
+            </p>
+          </div>
+        )
+      })()}
+
+      <FittingCard s={s} mode={mode} ev={ev} units={units} />
+      <VaporCard s={s} mode={mode} ev={ev} units={units} />
+
       {/* ------------------------------------------------------------- solvers */}
       <section className="recs">
         <h3><Icon name="target" size={14} /> Find the thickness</h3>
-        <RecRow label={recs.primary.goal.kind === 'surfaceMax' ? `Personnel protection (surface ≤ ${T(s.ppF)})` : `No condensation (surface ≥ dew point + ${fmt.margin(s.dewMarginF, units)})`} rec={recs.primary} current={s.thicknessIn} onApply={onApply} units={units} />
+        <DesignBlock d={recs.primary} s={s} mode={mode} units={units} onApply={onApply} onSet={onSet} />
+        {recs.others.length > 0 && <h4 className="sub-h">Your targets</h4>}
         {recs.others.map((o) => <RecRow key={o.label} label={o.label} rec={o.rec} current={s.thicknessIn} onApply={onApply} units={units} />)}
-        <p className="field-note">Checks standard thicknesses in ½" steps with this material, finish and k-curve.</p>
+        <Disclosure title={<>Compare materials <small className="muted">same conditions and finish</small></>}>
+          <MaterialCompare s={s} mode={mode} units={units} onUse={onUseMaterial} />
+          <p className="field-note">Each row is the design thickness for that material (first product whose published range covers {T(s.processF)}), keeping your finish where the material offers it.</p>
+        </Disclosure>
       </section>
 
       {/* ------------------------------------------------------------- explain */}

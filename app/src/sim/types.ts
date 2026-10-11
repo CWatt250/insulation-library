@@ -1,4 +1,5 @@
 import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
+import type { Component } from '../geo/assembly'
 
 export type SimMode = 'hot' | 'cold' | 'condensate'
 export type AppMode = 'explore' | SimMode
@@ -12,6 +13,10 @@ export type MetalFinish = 'oxidized' | 'bright' | 'painted'
 /** Everything a simulation needs. Temperatures °F, lengths as labelled. */
 export interface SimState {
   presetId: string | null
+  /** What is modelled in 3D: a straight run or a fitting in a run. */
+  component: Component
+  /** Valves and flange pairs: a removable insulated blanket, or left bare. */
+  fittingCover: 'blanket' | 'none'
   processF: number
   ambientF: number
   rh: number
@@ -38,6 +43,8 @@ export interface SimState {
   targetQ: number
   /** Required surface margin above the dew point, °F. */
   dewMarginF: number
+  /** Include the ASHRAE 90.1 minimum thickness as a design requirement. */
+  applyCode: boolean
 }
 
 export type CondensationStatus = 'dry' | 'borderline' | 'sweating' | 'dripping'

@@ -25,6 +25,10 @@ const FACING_NONE: Record<InsulationId, string> = {
   'cellular-glass': 'Ships bare; pipe covering is fabricated from block (ASTM C1639).',
   elastomeric: 'None: the closed-cell skin is the finished surface indoors (Armacell).',
   phenolic: 'Plain section.',
+  pir: 'Ships unfaced; half-sections fabricated from bunstock (JM, Kingspan).',
+  aerogel: 'Unfaced blanket wrapped in layers (Pyrogel XTE); Cryogel Z carries a laminated vapor retarder (Aspen).',
+  perlite: 'Ships unfaced; field jacketed (JM).',
+  polyolefin: 'None: the polyethylene skin is the finish indoors (Armacell, K-FLEX).',
 }
 
 const FACING_ASJ: Partial<Record<InsulationId, string>> = {
@@ -48,6 +52,16 @@ const VAPOR_COLD: Record<InsulationId, { facing?: string; membrane?: string; int
   },
   calsil: {},
   'mineral-wool': {},
+  pir: {
+    membrane: 'Separate retarder: 0.02 perm or less at or below 32°F, 0.03 above (JM), every joint sealed. Shown: Saranex 540 CX film, 4 mil, white.',
+  },
+  aerogel: {
+    membrane: 'A primary vapor barrier over the outermost layer, a secondary one below −40°F, and vapor stops (Aspen cold-service manual). Shown: 50-mil foil-faced butyl.',
+  },
+  perlite: {},
+  polyolefin: {
+    integral: 'Closed-cell polyethylene, 0.02 perm·in (Tubolit, E96 Proc. A). Seal every seam; K-FLEX: cold lines in high humidity may need an added vapor barrier.',
+  },
 }
 
 export function describeLayers(p: AssemblyParams): LayerInfo[] {

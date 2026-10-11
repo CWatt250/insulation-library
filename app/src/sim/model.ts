@@ -1,4 +1,4 @@
-import { INSULATION, type InsulationId } from '../data/catalog'
+import { INSULATION, thicknessesFor, type InsulationId } from '../data/catalog'
 import { NPS, THICKNESSES } from '../data/pipe'
 import { SPECS, type ProductSpec } from '../data/specs'
 import { resolveSystem } from '../geo/assembly'
@@ -17,6 +17,13 @@ import { IN_M } from './units'
 export const kProducts = (id: InsulationId): { index: number; product: ProductSpec }[] =>
   SPECS[id].products.map((product, index) => ({ index, product })).filter((p) => p.product.k.length >= 2)
 
+/** Index of the first product with a k-curve whose published range covers a temperature (else the first with a k-curve). */
+export function productForTemp(id: InsulationId, processF: number): number {
+  const list = kProducts(id)
+  const fit = list.find(({ product: p }) => (p.tempF.max === null || processF <= p.tempF.max) && (p.tempF.min === null || processF >= p.tempF.min))
+  return (fit ?? list[0])?.index ?? 0
+}
+
 /** Materials that can be simulated in a mode, and why the others can't. */
 export function availability(id: InsulationId, mode: SimMode): { ok: boolean; reason?: string } {
   const ins = INSULATION[id]
@@ -33,9 +40,9 @@ export interface Geometry {
   actualThicknessIn: number
 }
 
-export function geometry(npsIndex: number, thicknessIn: number): Geometry {
+export function geometry(npsIndex: number, thicknessIn: number, nominal = false): Geometry {
   const p = NPS[npsIndex]
-  const c = C585_OD[p.nps]?.[String(thicknessIn)]
+  const c = nominal ? undefined : C585_OD[p.nps]?.[String(thicknessIn)]
   const insOdIn = c ?? p.od + 2 * thicknessIn
   return { pipeOdIn: p.od, insOdIn, c585: c !== undefined, actualThicknessIn: (insOdIn - p.od) / 2 }
 }
@@ -50,7 +57,8 @@ export function systemFor(s: SimState, mode: SimMode) {
   return resolveSystem({ insulation: s.insulation, jacket: s.jacket, facing: s.facing, service: mode === 'hot' ? 'hot' : 'cold' })
 }
 
-export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null): { input: CaseInput; geo: Geometry | null; surface: SurfaceRef } {
+/** `nominal` uses pipe OD + 2t even where a C585 OD exists (for continuous thickness solving). */
+export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null, nominal = false): { input: CaseInput; geo: Geometry | null; surface: SurfaceRef } {
   const pipeOd = NPS[s.npsIndex].od * IN_M
   if (thicknessIn === null || thicknessIn <= 0) {
     const surface = BARE_PIPE
@@ -60,7 +68,7 @@ export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null):
       surface,
     }
   }
-  const geo = geometry(s.npsIndex, thicknessIn)
+  const geo = geometry(s.npsIndex, thicknessIn, nominal)
   const sys = systemFor(s, mode)
   const surface = outerSurface({ insulation: s.insulation, jacket: sys.jacketId, facing: sys.facing, membrane: sys.membrane, metalFinish: s.metalFinish })
   const emittance = s.emittanceOverride ?? surface.value
@@ -113,8 +121,8 @@ export interface Side {
   surface: SurfaceRef
 }
 
-export function evaluateSide(s: SimState, mode: SimMode, thicknessIn: number | null): Side {
-  const { input, geo, surface } = caseFor(s, mode, thicknessIn)
+export function evaluateSide(s: SimState, mode: SimMode, thicknessIn: number | null, nominal = false): Side {
+  const { input, geo, surface } = caseFor(s, mode, thicknessIn, nominal)
   const result = solveCase(input)
   const m = moisture(input, result, s.rh)
   return { thicknessIn, input, result, moisture: m, status: condensationStatus(m, s.dewMarginF), geo, surface }
@@ -170,6 +178,8 @@ export type Goal =
   | { kind: 'noCondensation'; marginF: number }
   | { kind: 'surfaceMin'; F: number }
   | { kind: 'qMax'; btuHrFt: number }
+  /** A thickness floor, e.g. an energy-code minimum. */
+  | { kind: 'minThickness'; in: number }
 
 export interface Recommendation {
   goal: Goal
@@ -187,6 +197,7 @@ export function meets(goal: Goal, side: Side): boolean {
     case 'surfaceMin': return r.surfaceF >= goal.F
     case 'noCondensation': return side.moisture.marginF >= goal.marginF
     case 'qMax': return Math.abs(r.qBtuHrFt) <= goal.btuHrFt
+    case 'minThickness': return side.thicknessIn !== null && side.thicknessIn + 1e-9 >= goal.in
   }
 }
 
@@ -194,7 +205,7 @@ export function meets(goal: Goal, side: Side): boolean {
 export function recommend(s: SimState, mode: SimMode, goal: Goal): Recommendation {
   const maxIn = INSULATION[s.insulation].maxThicknessIn
   const bare = evaluateSide(s, mode, null)
-  for (const t of THICKNESSES.filter((t) => t <= maxIn)) {
+  for (const t of thicknessesFor(INSULATION[s.insulation], THICKNESSES)) {
     const side = evaluateSide(s, mode, t)
     if (meets(goal, side)) return { goal, thicknessIn: t, side, maxIn, alreadyMet: meets(goal, bare) }
   }

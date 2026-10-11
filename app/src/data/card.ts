@@ -139,4 +139,82 @@ export const CARD: Record<InsulationId, Card> = {
       'alu-smooth': 'Resolco: outdoors over Polyguard Insulrap 30; 0.016" min, 0.024" where abuse or vertical equipment.',
     },
   },
+  pir: {
+    // research/materials2-verified.json → polyisocyanurate (JM Trymer 2000XP, Kingspan Tarecpir 2.0)
+    standards: [
+      { code: 'C591', note: 'Unfaced preformed rigid cellular PIR (C591-22)' },
+      { code: 'E84 25/250', note: 'Kingspan, tested at 4" — not 25/50' },
+      { code: 'E84 25/450', note: 'JM, up to 4" — not 25/50' },
+      { code: 'E96', note: '2.49 perm·in (Kingspan), 4 perm·in (JM)' },
+      { code: 'D1622', note: '2.02 pcf (Kingspan), 2.05 pcf (JM)' },
+    ],
+    moisture: [
+      'Not a vapor retarder: 2.49 perm·in (Kingspan), 4 perm·in (JM).',
+      'Cold work: a separate retarder of 0.02 perm or less at or below 32°F (JM: Saranex CX film), every joint sealed; JM says PVC and aluminum jackets do not count as retarders.',
+      'JM refrigeration work over 2-1/2" thick goes on in two layers.',
+    ],
+    tags: ['Refrigeration', 'Chilled water', 'Cryogenic / LNG', 'Hot water (to 300°F)'],
+    jacketNotes: {
+      none: 'Unjacketed foam degrades in sunlight and must be covered (data sheets).',
+      pvc: 'PVC protects but is not the vapor retarder (JM) — the film stays underneath.',
+      'alu-smooth': 'Aluminum protects but is not the vapor retarder (JM).',
+    },
+  },
+  aerogel: {
+    // research/materials2-verified.json → aerogel (Aspen Pyrogel XTE, Cryogel Z)
+    standards: [
+      { code: 'C1728', note: 'Flexible aerogel: Pyrogel XTE Type III Gr. 1A, Cryogel Z Type I Gr. 1B' },
+      { code: 'E84 ≤5/≤10', note: 'Pyrogel XTE' },
+      { code: 'E84 ≤25/≤50', note: 'Cryogel Z blanket' },
+      { code: 'C165', note: '≥3 psi (Pyrogel), ≥5 psi (Cryogel) at 10%' },
+      { code: 'C177', note: 'k measured flat at 2 psi load' },
+    ],
+    moisture: [
+      'Pyrogel XTE is "hydrophobic and breathable" — not a vapor retarder (Aspen).',
+      'Cryogel Z has a laminated retarder (≤0.00 perm, E96 dry cup), yet Aspen\'s manual still calls for a separate primary vapor barrier, a secondary one below −40°F, and vapor stops.',
+      'Wrapped in 5 mm or 10 mm layers; Cryogel seams staggered at least 4".',
+    ],
+    tags: ['High-temp process', 'Steam', 'CUI mitigation', 'Cryogenic / LNG', 'Tight clearances'],
+    jacketNotes: {
+      'alu-smooth': 'Pyrogel XTE is "designed for use with a properly installed jacketing system" — metal cladding, sealed (Aspen).',
+      none: 'Both Aspen sheets call for a jacketing system; bare blanket is shown for reference only.',
+    },
+  },
+  perlite: {
+    // research/materials2-verified.json → expanded_perlite (JM Sproule WR-1200, Howred GOODTEMP)
+    standards: [
+      { code: 'C610', note: 'Molded expanded perlite block and pipe, 80–1200°F' },
+      { code: 'E136', note: 'Noncombustible (JM)' },
+      { code: 'E84 0/0', note: 'JM (also SMC, TPS)' },
+      { code: 'C335', note: 'Pipe k tests (JM, Howred)' },
+    ],
+    moisture: [
+      'Hot-service material; not a vapor retarder and no perm·in published.',
+      'Relies on water-repellent and corrosion-inhibiting treatment; makers claim C795 compatibility with stainless steel.',
+    ],
+    tags: ['Steam', 'High-temp process', 'Power', 'Stainless piping'],
+    jacketNotes: {
+      'alu-smooth': 'JM guide spec: 0.016" T-3003 H-14 aluminum with factory poly-film moisture barrier.',
+      ss: 'JM guide spec: 0.010" type 304 stainless.',
+      none: 'Ships unfaced (poly shrink-wrap is for handling only); field jacketed.',
+    },
+  },
+  polyolefin: {
+    // research/materials2-verified.json → polyolefin (Armacell Tubolit, K-FLEX PE)
+    standards: [
+      { code: 'C1427', note: 'Flexible cellular polyolefin, sheet and tube' },
+      { code: 'E84 25/50', note: 'Up to 1" walls (Tubolit)' },
+      { code: 'E96', note: '0.02 perm·in, Proc. A (Tubolit)' },
+      { code: 'D1667', note: '1.5–2.0 pcf (Tubolit)' },
+    ],
+    moisture: [
+      'Very low vapor permeability: 0.02 perm·in (Tubolit, E96 Proc. A); K-FLEX <0.05 (unit not printed).',
+      'K-FLEX: most indoor work needs no added protection; cold lines in high humidity may need an added vapor barrier.',
+    ],
+    tags: ['Domestic hot water', 'Cold water', 'Freeze protection', 'Chilled water'],
+    jacketNotes: {
+      none: 'Outdoors: paint with Armaflex WB Finish or jacket for UV (Armacell); K-FLEX: coat or jacket right after installing.',
+      pvc: 'Jacketing is one of the UV protections both makers allow outdoors.',
+    },
+  },
 }

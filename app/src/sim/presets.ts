@@ -108,6 +108,8 @@ export const presetsFor = (mode: SimMode) => PRESETS.filter((p) => p.mode === mo
 
 const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   presetId: null,
+  component: 'straight',
+  fittingCover: 'blanket',
   rh: 50,
   insulation: 'fiberglass',
   thicknessIn: 1.5,
@@ -124,11 +126,12 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   targetSurfaceF: 120,
   targetQ: 20,
   dewMarginF: DEW_MARGIN_DEFAULT_F,
+  applyCode: false,
 }
 
 export function applyPreset(base: SimState | null, p: Preset): SimState {
   const keep = base
-    ? { lengthFt: base.lengthFt, hours: base.hours, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish }
+    ? { lengthFt: base.lengthFt, hours: base.hours, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, component: base.component, fittingCover: base.fittingCover }
     : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5 }
   return { ...BASE, ...keep, ...p.set, presetId: p.id, kProduct: 0, emittanceOverride: null }
 }

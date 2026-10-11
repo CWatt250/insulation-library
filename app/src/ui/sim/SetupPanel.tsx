@@ -1,7 +1,7 @@
-import { INSULATIONS, INSULATION, JACKETS, type OuterJacketId } from '../../data/catalog'
+import { INSULATIONS, INSULATION, JACKETS, snapThickness, thicknessesFor, type OuterJacketId } from '../../data/catalog'
 import { NPS, THICKNESSES } from '../../data/pipe'
 import { presetsFor, type Preset } from '../../sim/presets'
-import { availability, kProducts, systemFor } from '../../sim/model'
+import { availability, kProducts, productForTemp, systemFor } from '../../sim/model'
 import { outerSurface } from '../../sim/emittance'
 import type { MetalFinish, SimMode, SimState, VrQuality } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -44,7 +44,7 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
   const ins = INSULATION[s.insulation]
   const sys = systemFor(s, mode)
   const maxT = ins.maxThicknessIn
-  const thicknesses = THICKNESSES.filter((t) => t <= maxT)
+  const thicknesses = thicknessesFor(ins, THICKNESSES)
   const r = RANGES[mode]
   const surface = outerSurface({ insulation: s.insulation, jacket: sys.jacketId, facing: sys.facing, membrane: sys.membrane, metalFinish: s.metalFinish })
   const products = kProducts(s.insulation)
@@ -55,8 +55,8 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
     const next = INSULATION[id]
     set({
       insulation: id,
-      kProduct: 0,
-      thicknessIn: Math.min(s.thicknessIn, next.maxThicknessIn),
+      kProduct: productForTemp(id, s.processF),
+      thicknessIn: snapThickness(next, s.thicknessIn, THICKNESSES),
       jacket: next.jackets.includes(s.jacket) ? s.jacket : next.jackets[0],
       facing: next.facings.includes(s.facing) ? s.facing : next.facings[0],
     })
@@ -100,6 +100,34 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
       </section>
 
       <section>
+        <h2>Component</h2>
+        <Segmented<SimState['component']>
+          size="sm"
+          label="Component"
+          value={s.component}
+          onChange={(v) => set({ component: v })}
+          options={[
+            { id: 'straight', label: 'Straight' },
+            { id: 'elbow', label: 'Elbow' },
+            { id: 'tee', label: 'Tee' },
+            { id: 'valve', label: 'Valve' },
+            { id: 'flange', label: 'Flanges' },
+          ]}
+        />
+        {(s.component === 'valve' || s.component === 'flange') && (
+          <div className="field">
+            <span className="field-label">{s.component === 'valve' ? 'Valve' : 'Flange'} cover</span>
+            <Segmented<SimState['fittingCover']>
+              size="sm"
+              value={s.fittingCover}
+              onChange={(v) => set({ fittingCover: v })}
+              options={[{ id: 'blanket', label: 'Removable blanket' }, { id: 'none', label: 'Left bare' }]}
+            />
+          </div>
+        )}
+      </section>
+
+      <section>
         <h2>Insulation</h2>
         <div className="materials sim-materials">
           {INSULATIONS.map((m) => {
@@ -124,7 +152,7 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
           values={thicknesses}
           onChange={(v) => set({ thicknessIn: v })}
           format={(v) => (units === 'ip' ? inchLabel(v) : fmt.inches(v, units))}
-          hint={maxT < 4 ? <span>{ins.label} is modelled up to {inchLabel(maxT)}</span> : undefined}
+          hint={ins.thicknesses ? <span>{ins.label}: {s.insulation === 'aerogel' ? `${Math.round(s.thicknessIn / 0.3937)} × 10 mm wraps` : 'tube wall sizes'}</span> : maxT < 4 ? <span>{ins.label} is modelled up to {inchLabel(maxT)}</span> : undefined}
           accent={acc}
         />
         <div className="field">

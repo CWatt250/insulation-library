@@ -40,6 +40,10 @@ export interface SimVisual extends ZoneState {
   profile: { s: number; tF: number }[]
   /** The bare pipe stubs that stick out past the insulation, when insulated. */
   stub: ZoneState | null
+  /** The valve or flange pair itself (covered or bare), when the component has one. */
+  fitting: ZoneState | null
+  /** The fitting is left uncovered. */
+  fittingBare: boolean
 }
 
 export interface RunExtent {
@@ -53,6 +57,8 @@ export interface RunExtent {
   zWedge: number
   /** Floor height in the local frame. */
   floorY: number
+  /** The zone's axis points up (riser, tee branch): heat rises along it and water runs down it. */
+  vertical?: boolean
 }
 
 /** Deterministic PRNG so effects don't reshuffle on every render. */
@@ -151,6 +157,7 @@ const waveVert = /* glsl */ `
   uniform float uAmp;
   uniform float uActive;
   uniform float uRise;
+  uniform vec3 uUp;
   varying float vU;
   varying float vV;
   varying float vFade;
@@ -159,7 +166,7 @@ const waveVert = /* glsl */ `
     float p = fract(uTime * 0.16 + iA.z);
     vec3 radial = vec3(cos(iA.x), sin(iA.x), 0.0);
     // heat leaves outward and the warm air carries it up
-    vec3 D = normalize(radial + vec3(0.0, uRise, 0.0));
+    vec3 D = normalize(radial + uUp * uRise);
     float s = p * uTravel + aU * uLen;
     vec3 local = radial * uR0 + D * s + vec3(0.0, 0.0, iA.y);
     vec4 world = modelMatrix * vec4(local, 1.0);
@@ -198,6 +205,7 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
     // waves leave the sides and the top; heat off the underside wraps round and rises too
     const spacing = Math.max(0.07, extent.radius * 1.6)
     const list = ringLayout(extent, spacing, (k, r) => {
+      if (extent.vertical) return Array.from({ length: 6 }, (_, j) => ((j + 0.5 * (k % 2)) / 6) * TAU + (r() - 0.5) * 0.3)
       const n = 5
       return Array.from({ length: n }, (_, j) => (-25 + (230 * (j + 0.5 * (k % 2) + 0.25)) / n + (r() - 0.5) * 14) * (Math.PI / 180))
     }, 3)
@@ -210,7 +218,7 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
   useEffect(() => () => geo.dispose(), [geo])
   const mat = useMemo(() => glowMaterial(waveVert, waveFrag, {
     uTime: { value: 0 }, uR0: { value: 0.05 }, uLen: { value: 0.1 }, uTravel: { value: 0.1 }, uWidth: { value: 0.01 },
-    uAmp: { value: 0.01 }, uActive: { value: 1 }, uRise: { value: 0.8 }, uOpacity: { value: 0.5 },
+    uAmp: { value: 0.01 }, uActive: { value: 1 }, uRise: { value: 0.8 }, uOpacity: { value: 0.5 }, uUp: { value: new THREE.Vector3(0, 1, 0) },
     uCore: { value: new THREE.Color('#ffd08a') }, uEdge: { value: new THREE.Color('#ff6a1a') },
   }), [])
   useEffect(() => () => mat.dispose(), [mat])
@@ -224,6 +232,8 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
   u.uAmp.value = size * 0.12
   u.uActive.value = 0.12 + 0.88 * i
   u.uOpacity.value = 0.18 + 0.5 * i
+  ;(u.uUp.value as THREE.Vector3).set(0, extent.vertical ? 0 : 1, extent.vertical ? 1 : 0)
+  u.uRise.value = extent.vertical ? 1.4 : 0.8
   useFrame((_, dt) => { u.uTime.value += dt })
   if (i < 0.02) return null
   return <mesh geometry={geo} material={mat} frustumCulled={false} renderOrder={5} raycast={noRaycast} />
@@ -540,6 +550,12 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
         b.r = Math.min(b.max, b.r + grow * dt * (0.6 + 0.8 * rand()))
         // heavy beads let go and run, except frost, which stays put
         if (!frost && b.r >= b.max * 0.98 && rand() < dt * (0.4 + 1.6 * w)) b.state = 2
+      } else if (extent.vertical) {
+        // a riser: beads run straight down the pipe and off the bottom of the zone
+        b.speed = Math.min(b.speed + dt * 3, 1.6)
+        b.z -= b.speed * dt * unit * 14
+        b.r += grow * dt * 0.4
+        if (b.z < extent.z0) b.state = 0
       } else {
         // running down round the pipe toward the underside (θ = 270°)
         const t = wrap(b.theta)
@@ -558,7 +574,7 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
       }
     }
     // hanging drops and drips
-    for (const h of hangs) {
+    for (const h of extent.vertical ? [] : hangs) {
       if (!zs.condensing) h.vol = Math.max(0, h.vol - dt * 0.5)
       if (h.fall < 0 && h.vol >= 1 && !frost) {
         h.fall = 0
@@ -587,10 +603,10 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
         if (!b.state) continue
         tmp.n.set(Math.cos(b.theta), Math.sin(b.theta), 0)
         tmp.q.setFromUnitVectors(tmp.z, tmp.n)
-        const stretch = b.state === 2 ? 1.5 : 1
+        const stretch = b.state === 2 && !extent.vertical ? 1.5 : 1
         tmp.p.copy(tmp.n).multiplyScalar(extent.radius + b.r * 0.12)
         tmp.p.z = b.z
-        tmp.s.set(b.r * stretch, b.r, b.r * (frost ? 0.45 : 0.6))
+        tmp.s.set(b.r * stretch, b.r * (b.state === 2 && extent.vertical ? 1.5 : 1), b.r * (frost ? 0.45 : 0.6))
         tmp.m.compose(tmp.p, tmp.q, tmp.s)
         bm.setMatrixAt(n++, tmp.m)
       }

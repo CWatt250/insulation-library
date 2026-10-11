@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { CamSync } from '../../scene/Viewer'
-import { INSULATION } from '../../data/catalog'
+import { INSULATION, thicknessesFor } from '../../data/catalog'
 import { THICKNESSES } from '../../data/pipe'
 import { evaluate, evaluateSide, recommend, type Goal } from '../../sim/model'
+import { design } from '../../sim/design'
 import { applyPreset, initialState, PRESETS, type Preset } from '../../sim/presets'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -62,8 +63,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
 
   const ev = useMemo(() => evaluate(s, mode), [s, mode])
   const recs: Recs = useMemo(() => {
-    const goalPrimary: Goal = mode === 'hot' ? { kind: 'surfaceMax', F: s.ppF } : { kind: 'noCondensation', marginF: s.dewMarginF }
-    const primary = recommend(s, mode, goalPrimary)
+    const primary = design(s, mode)
     const flow = (btuHrFt: number): Goal => ({ kind: 'qMax', btuHrFt })
     const others = mode === 'hot'
       ? [
@@ -89,6 +89,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
       if (slot === 'recommended') {
         const t = recs.primary.thicknessIn ?? maxIn
         const side = recs.primary.side ?? evaluateSide(s, mode, t)
+
         return {
           key: `p${i}-rec`,
           title: `Recommended · ${inchLabel(t)}`,
@@ -111,7 +112,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
     { id: 'bare', label: 'Bare pipe' },
     { id: 'current', label: 'Current' },
     { id: 'recommended', label: 'Recommended' },
-    ...THICKNESSES.filter((t) => t <= maxIn).map((t) => ({ id: String(t), label: `${inchLabel(t)} insulation` })),
+    ...thicknessesFor(INSULATION[s.insulation], THICKNESSES).map((t) => ({ id: String(t), label: `${inchLabel(t)} insulation` })),
   ]
 
   const toolbar = (
@@ -128,7 +129,11 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
       <button className={`tool ${compare ? 'on' : ''}`} aria-pressed={compare} aria-label="Compare" onClick={() => setCompare(!compare)}>
         <Icon name="compare" size={16} /> <span>Compare</span>
       </button>
-      <button className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} aria-label="Thermal" onClick={() => setThermal(!thermal)}>
+      <button
+        className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} aria-label="Thermal" onClick={() => setThermal(!thermal)}
+        disabled={s.component === 'elbow' || s.component === 'tee'}
+        title={s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined}
+      >
         <Icon name="thermo" size={16} /> <span>Thermal</span>
       </button>
       <Segmented<'installed' | 'cutaway'>
@@ -180,7 +185,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
     </div>
   )
 
-  const legend = thermal && (
+  const legend = thermal && s.component !== 'elbow' && s.component !== 'tee' && (
     <div className={`thermal-legend ${mode === 'hot' ? 'hot' : 'cold'}`} aria-label="Thermal colour scale">
       <div className="tl-bar" />
       <div className="tl-ticks">
@@ -207,7 +212,14 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
     />
   )
 
-  const results = <ResultsPanel mode={mode} s={s} ev={ev} recs={recs} units={units} onApply={(t) => set({ thicknessIn: t })} compact={mobile} />
+  const results = (
+    <ResultsPanel
+      mode={mode} s={s} ev={ev} recs={recs} units={units} compact={mobile}
+      onApply={(t) => set({ thicknessIn: t })}
+      onSet={set}
+      onUseMaterial={(next) => set({ insulation: next.insulation, kProduct: next.kProduct, jacket: next.jacket, facing: next.facing, thicknessIn: next.thicknessIn })}
+    />
+  )
 
   if (mobile) {
     return (

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Viewer } from './scene/Viewer'
 import { NPS, THICKNESSES } from './data/pipe'
 import {
-  INSULATIONS, INSULATION, JACKETS, LAYER_ORDER, layerCount,
+  INSULATIONS, INSULATION, JACKETS, LAYER_ORDER, layerCount, snapThickness, thicknessesFor,
   type FacingId, type InsulationId, type LayerId, type OuterJacketId, type ServiceId,
 } from './data/catalog'
 import type { Component, ViewMode } from './geo/assembly'
@@ -84,7 +84,7 @@ function useIsMobile() {
   return m
 }
 
-const COMPONENT_LABEL: Record<Component, string> = { straight: 'Straight', elbow: '90° elbow', valve: 'Valve' }
+const COMPONENT_LABEL: Record<Component, string> = { straight: 'Straight', elbow: '90° elbow', tee: 'Tee', valve: 'Valve', flange: 'Flanges' }
 const STAGE_LABEL: Record<Stage, string> = { studio: 'Studio', plant: 'Plant', room: 'Mech room' }
 const VIEW_LABEL: Record<ViewMode, string> = { installed: 'Installed', cutaway: 'Cutaway', layers: 'Layers', exploded: 'Exploded', section: 'Section' }
 const SERVICE_LABEL: Record<ServiceId, string> = { hot: 'Hot', cold: 'Cold (below ambient)' }
@@ -131,8 +131,8 @@ export default function App() {
   const [tab, setTab] = useState<'configure' | 'specs'>('configure')
 
   const ins = INSULATION[insulation]
-  const thicknesses = THICKNESSES.filter((t) => t <= ins.maxThicknessIn)
-  const thicknessIn = Math.min(thkWant, ins.maxThicknessIn)
+  const thicknesses = thicknessesFor(ins, THICKNESSES)
+  const thicknessIn = snapThickness(ins, thkWant, THICKNESSES)
   const service: ServiceId = serviceWant && ins.services.includes(serviceWant) ? serviceWant : ins.services[0]
   const jacket: OuterJacketId = jacketWant && ins.jackets.includes(jacketWant) ? jacketWant : ins.jackets[0]
   // on cold lines the ASJ is the vapor retarder, so a fibrous section keeps it
@@ -283,7 +283,7 @@ export default function App() {
           <h2>Thickness</h2>
           <select value={thicknessIn} onChange={(e) => setThk(Number(e.target.value))}>
             {thicknesses.map((t) => (
-              <option key={t} value={t}>{t}"{layerCount(ins, t) > 1 ? ' (2 layers)' : ''}</option>
+              <option key={t} value={t}>{t}"{layerCount(ins, t) > 1 ? ` (${layerCount(ins, t)} layers)` : ''}</option>
             ))}
           </select>
         </label>
@@ -296,8 +296,8 @@ export default function App() {
             <button key={v} className={v === view ? 'on' : ''} onClick={() => setView(v)}>{VIEW_LABEL[v]}</button>
           ))}
         </div>
-        <div className="seg">
-          {(['straight', 'elbow', 'valve'] as const).map((v) => (
+        <div className="seg views">
+          {(['straight', 'elbow', 'tee', 'valve', 'flange'] as const).map((v) => (
             <button
               key={v}
               className={v === comp ? 'on' : ''}

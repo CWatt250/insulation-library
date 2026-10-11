@@ -717,9 +717,124 @@ def mech_room(scales):
     save("cmu-painted", alb, normal_from_height(h, 1.0), rough, tile_w, scales)
 
 
+def pir(scales):
+    # ---- PIR foam cut from bunstock (cut face and fabricated outer surface alike):
+    # pale tan-yellow, very fine closed cells, faint rise streaks and knit lines.
+    tile = 60.0
+    n = N
+    px = n / tile
+    h, pit, rim, crand = _cell_pits(n, 0.22 * px, 801, aspect=1.15, drop=0.25, depth_px=0.07 * px, wall_px=0.8)
+    grit = spectral(n, 802, beta=0.3, fmin=150)
+    rise = spectral(n, 803, beta=2.0, fmin=2, stretch=(1.0, 0.12))
+    knit = np.exp(-((spectral(n, 804, beta=2.6, fmin=1, stretch=(1.0, 0.05)) - 0.6) / 0.05) ** 2)
+    mott = spectral(n, 805, beta=3.0, fmin=1)
+    h = h + 0.05 * slope(grit) + 0.02 * slope(rise)
+    occl = 1 - pit ** 1.6
+    alb = mix_hex("#B9A46A", "#EADCAA", 0.25 + 0.65 * occl + 0.05 * mott + 0.04 * rise)
+    alb *= (1 - 0.08 * knit)[..., None]
+    rough = 0.86 + 0.05 * grit - 0.08 * rim
+    save("pir-cut", alb, normal_from_height(h, 1.0), np.clip(rough, 0.4, 1), tile, scales)
+
+
+def aerogel(scales):
+    # ---- blanket face: needled non-woven batt carrying the aerogel, light grey,
+    # matte and dusty, short random fibres plus faint needle-punch dimples.
+    tile = 80.0
+    n = N
+    px = n / tile
+    wdx, wdy = warp_field(n, 901, 0.6 * px, beta=2.4, fmin=3)
+    fib1 = warp(spectral(n, 902, beta=0.7, fmin=50, stretch=(1.0, 0.12)), wdx, wdy)
+    fib2 = warp(spectral(n, 903, beta=0.7, fmin=50, stretch=(0.12, 1.0)), wdx, wdy)
+    fuzz = spectral(n, 904, beta=0.2, fmin=200)
+    mott = spectral(n, 905, beta=3.0, fmin=1)
+    ao = np.ones((n, n))
+    hp = stamp_pits(np.zeros((n, n)), 900, 0.25 * px, 0.6 * px, 0.12 * px, 906, ao)
+    h = 0.18 * slope(fib1) + 0.18 * slope(fib2) + 0.12 * slope(fuzz) + hp
+    dust = np.clip(spectral(n, 907, beta=2.4, fmin=2) * 1.5 + 0.3, 0, 1)
+    alb = mix_hex("#A9ACAC", "#D9DBDA", 0.45 + 0.18 * mott + 0.12 * fib1 + 0.12 * fib2 + 0.15 * dust)
+    alb *= (0.9 + 0.1 * ao + 0.05 * fuzz)[..., None]
+    rough = 0.93 + 0.03 * fuzz
+    save("aerogel-skin", alb, normal_from_height(h, 1.0), rough, tile, scales)
+
+    # ---- cut edge of the wrapped layers: 10 mm blanket plies, each ply a fibrous
+    # band with a slightly denser, darker boundary where the wraps press together.
+    tile = 100.0
+    px = n / tile
+    li, fr, seam = laminations(n, 10, 911, 0.5 * px, 0.4 * px)
+    lay = rng(912).uniform(-1, 1, 10)[li]
+    fib = warp(spectral(n, 913, beta=0.8, fmin=45, stretch=(1.0, 0.08)), *warp_field(n, 914, 0.5 * px, beta=2.4, fmin=3, stretch=(1.0, 0.5)))
+    fuzz = spectral(n, 915, beta=0.2, fmin=200)
+    mott = spectral(n, 916, beta=3.0, fmin=1)
+    h = 0.26 * slope(fib) + 0.1 * slope(fuzz) - seam * px * 0.06
+    alb = mix_hex("#9C9F9F", "#D3D5D4", 0.5 + 0.16 * fib + 0.12 * mott + 0.08 * lay)
+    alb *= (1 - 0.18 * seam)[..., None]
+    rough = 0.94 + 0.03 * fuzz
+    save("aerogel-cut", alb, normal_from_height(h, 1.0), rough, tile, scales)
+
+
+def perlite(scales):
+    # ---- molded skin: chalky off-white, coarse expanded-perlite granules (0.3-1.5 mm)
+    # standing slightly proud, glassy specks, occasional pores.
+    tile = 120.0
+    n = N
+    px = n / tile
+    f1, edge, cid, count = foam_cells(n, 0.9 * px, 951, jitter=0.5, drop=0.15)
+    crand = rng(952).random(count)[cid]
+    gran = np.exp(-(edge / (0.12 * px)) ** 2)
+    mott = spectral(n, 953, beta=3.2, fmin=1)
+    grain = spectral(n, 954, beta=0.6, fmin=40)
+    ao = np.ones((n, n))
+    h = 0.05 * slope(spectral(n, 955, beta=2.6, fmin=2)) + 0.08 * slope(grain) - gran * 0.03 * px + crand * 0.02 * px
+    h = stamp_pits(h, 300, 0.25 * px, 1.0 * px, 0.35 * px, 956, ao)
+    spark = disc_mask(n, 2500, 0.5, 1.1, 957, soft=0.6)
+    alb = tint("#E6E3DA", (1.0 + 0.04 * mott + 0.03 * grain - 0.05 * gran + 0.03 * (crand - 0.5)) * (0.65 + 0.35 * ao))
+    rough = (0.95 + 0.02 * grain) * (1 - 0.45 * spark)
+    save("perlite-molded", alb, normal_from_height(h, 1.0), rough, tile, scales)
+
+    # ---- saw-cut face: the same granules sliced through, a little greyer, open pores.
+    f1, edge, cid, count = foam_cells(n, 0.8 * px, 961, jitter=0.5, drop=0.1)
+    crand = rng(962).random(count)[cid]
+    wall = np.exp(-(edge / (0.1 * px)) ** 2)
+    stri = spectral(n, 963, beta=1.6, fmin=4, stretch=(0.02, 1.0))
+    ao = np.ones((n, n))
+    h = 0.25 * slope(stri) - wall * 0.04 * px + 0.06 * slope(spectral(n, 964, beta=0.8, fmin=60))
+    h = stamp_pits(h, 700, 0.15 * px, 0.9 * px, 0.4 * px, 965, ao)
+    alb = tint("#DCD8CD", (1.0 + 0.05 * (crand - 0.5) - 0.07 * wall + 0.03 * stri) * (0.55 + 0.45 * ao))
+    rough = 0.96
+    save("perlite-cut", alb, normal_from_height(h, 1.0), rough + 0 * h, tile, scales)
+
+
+def polyolefin(scales):
+    # ---- extruded PE tube skin: light grey, faint extrusion lines along V (the
+    # pipe axis), soft satin sheen, very fine orange peel.
+    tile = 60.0
+    n = N
+    px = n / tile
+    ext = spectral(n, 981, beta=1.2, fmin=4, stretch=(0.03, 1.0))
+    peel = spectral(n, 982, beta=3.0, fmin=6, fmax=40)
+    grit = spectral(n, 983, beta=0.3, fmin=150)
+    mott = spectral(n, 984, beta=3.0, fmin=1)
+    h = 0.05 * slope(ext) + 0.03 * slope(peel) + 0.02 * slope(grit)
+    alb = mix_hex("#A6AAAD", "#CDD0D2", 0.55 + 0.15 * mott + 0.12 * ext)
+    rough = 0.5 + 0.05 * grit + 0.04 * mott
+    save("polyolefin-skin", alb, normal_from_height(h, 1.0), rough, tile, scales)
+
+    # ---- cut face: fine closed cells, paler than the skin.
+    tile = 30.0
+    px = n / tile
+    h, pit, rim, crand = _cell_pits(n, 0.32 * px, 991, aspect=1.0, drop=0.25, depth_px=0.09 * px, wall_px=0.9)
+    grit = spectral(n, 992, beta=0.3, fmin=150)
+    h = h + 0.05 * slope(grit)
+    occl = 1 - pit ** 1.5
+    alb = mix_hex("#8E9294", "#DADCDD", 0.2 + 0.72 * occl + 0.05 * grit)
+    rough = 0.8 + 0.05 * grit - 0.15 * rim
+    save("polyolefin-cut", alb, normal_from_height(h, 1.0), np.clip(rough, 0.3, 1), tile, scales)
+
+
 ALL = {"room": mech_room, "valve": valve_and_blanket, "calsil": calsil, "aluminum": aluminum, "stainless": stainless, "steel": carbon_steel,
        "fiberglass": fiberglass, "mineralwool": mineralwool, "cellglass": cellglass,
-       "elastomeric": elastomeric, "phenolic": phenolic, "jackets_soft": jackets_soft}
+       "elastomeric": elastomeric, "phenolic": phenolic, "jackets_soft": jackets_soft,
+       "pir": pir, "aerogel": aerogel, "perlite": perlite, "polyolefin": polyolefin}
 
 if __name__ == "__main__":
     which = sys.argv[1:] or list(ALL)

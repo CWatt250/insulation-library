@@ -104,35 +104,10 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
   useEffect(() => () => thermal.dispose(), [thermal])
   const groupRef = useRef<THREE.Group>(null)
   const sim = props.sim
-  const hidden = sim?.bare ? SHEET_LAYERS : props.hidden ?? []
+  const hidden = sim?.bare ? SHEET_LAYERS : sim?.fittingBare ? ['blanket' as LayerId] : props.hidden ?? []
   const rPipe = (NPS[props.npsIndex].od / 2) * IN
   const rIns = rPipe + 0.0004 + props.thicknessIn * IN
   if (sim?.thermal) updateThermal(thermal, sim, rPipe, rIns)
-  // Exposed surfaces: the insulated run (or the whole bare pipe), plus the bare
-  // pipe stubs that stick out past the insulation at each end.
-  const zones = useMemo<{ key: string; extent: RunExtent; stub: boolean }[]>(() => {
-    if (!sim || props.component !== 'straight') return []
-    const len = asm.zMax - asm.zMin
-    const cut = props.view === 'cutaway'
-    const ext = (cut ? 7 : 5) * IN
-    if (sim.bare) return [{ key: 'bare', stub: false, extent: { radius: rPipe, z0: -5 * IN, z1: len + ext, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } }]
-    return [
-      {
-        key: 'run',
-        stub: false,
-        extent: {
-          radius: asm.outerRadius,
-          z0: 0.012,
-          z1: len - (cut ? 4 * IN : 0) - 0.012,
-          wedge: cut ? [Math.PI / 2 - 0.05, Math.PI + 0.05] : null,
-          zWedge: len - 18 * IN - 0.01,
-          floorY: FLOOR_Y,
-        },
-      },
-      { key: 'stub-a', stub: true, extent: { radius: rPipe, z0: -5 * IN + 0.006, z1: -0.004, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } },
-      { key: 'stub-b', stub: true, extent: { radius: rPipe, z0: len + 0.004, z1: len + ext - 0.006, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } },
-    ]
-  }, [!!sim, sim?.bare, asm, props.component, props.view, rPipe]) // eslint-disable-line react-hooks/exhaustive-deps
   const onSelect = props.onSelect
   const click = (layer: LayerId) => (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return // an orbit drag, not a pick
@@ -164,9 +139,19 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
         })}
       </group>
       {props.stage !== 'room' && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
-      {sim && !props.photo && zones.map((z) => {
-        const state = z.stub ? sim.stub : sim
-        return state ? <ZoneEffects key={z.key} extent={z.extent} mode={sim.mode} zone={state} /> : null
+      {sim && !props.photo && (asm.zones ?? []).filter((z) => !(sim.bare && (z.kind === 'stub' || z.bareZ === null))).map((z) => {
+        const state = z.kind === 'stub' ? sim.stub ?? sim : z.kind === 'fitting' ? sim.fitting ?? sim : sim
+        const bareFit = z.kind === 'fitting' && (sim.bare || sim.fittingBare)
+        // shown bare, a run covers its stubs too and nothing is cut away
+        const span = sim.bare && z.bareZ ? z.bareZ : [z.z0, z.z1]
+        const extent: RunExtent = {
+          radius: sim.bare || bareFit ? z.rBare : z.radius,
+          z0: span[0], z1: span[1],
+          wedge: sim.bare ? null : z.wedge ?? null, zWedge: z.zWedge ?? Infinity,
+          floorY: FLOOR_Y, vertical: z.vertical,
+        }
+        const fx = <ZoneEffects key={z.key} extent={extent} mode={sim.mode} zone={state} />
+        return z.matrix ? <group key={z.key} matrix={z.matrix} matrixAutoUpdate={false}>{fx}</group> : fx
       })}
     </group>
     {props.stage === 'room' && (
@@ -205,6 +190,8 @@ const LAYER_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, n
   straight: { cam: [1.32, 0.42, 1.36], target: [0.42, -0.04, 0] },
   elbow: { cam: [1.6, 1.0, 1.9], target: [0.12, 0.42, 0] },
   valve: { cam: [0.95, 0.55, 1.15], target: [0, 0.05, 0] },
+  tee: { cam: [1.5, 0.9, 1.75], target: [0.1, 0.18, 0] },
+  flange: { cam: [0.95, 0.45, 1.15], target: [0, 0.0, 0] },
 }
 
 /** Mech room: eye height (1.6 m above the floor) looking up at the overhead line. */
@@ -212,12 +199,16 @@ const ROOM_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, nu
   straight: { cam: [1.9, -0.95, 2.6], target: [-0.2, 0.05, -0.3] },
   elbow: { cam: [1.9, -0.6, 2.9], target: [0.0, 0.25, -0.2] },
   valve: { cam: [1.5, -0.9, 2.3], target: [0, 0.05, -0.1] },
+  tee: { cam: [1.9, -0.7, 2.8], target: [0.0, 0.2, -0.2] },
+  flange: { cam: [1.5, -0.9, 2.3], target: [0, 0.0, -0.1] },
 }
 
 const VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
   straight: { cam: [1.72, 0.66, 1.64], target: [0.16, -0.08, 0] },
   elbow: { cam: [1.9, 1.05, 2.3], target: [0.0, 0.24, 0] },
   valve: { cam: [1.15, 0.62, 1.4], target: [0, 0.08, 0] },
+  tee: { cam: [1.75, 1.0, 2.05], target: [0.08, 0.2, 0] },
+  flange: { cam: [1.1, 0.5, 1.35], target: [0, 0.0, 0] },
 }
 
 /**

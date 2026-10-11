@@ -37,8 +37,8 @@ export function zoneOf(side: Side, mode: SimMode): ZoneState {
   }
 }
 
-/** Simulation overlays for one panel: its own surface, plus the bare stubs past the insulation. */
-export function visualFor(side: Side, bare: Side, mode: SimMode, thermal: boolean): SimVisual {
+/** Simulation overlays for one panel: its own surface, the bare stubs past the insulation, and any fitting. */
+export function visualFor(side: Side, bare: Side, mode: SimMode, thermal: boolean, fittingBare: boolean): SimVisual {
   const r = side.result
   const rPipe = side.input.pipeOd / 2
   const rOut = side.input.layers.length ? side.input.layers[side.input.layers.length - 1].rOut : rPipe
@@ -54,6 +54,9 @@ export function visualFor(side: Side, bare: Side, mode: SimMode, thermal: boolea
     dewF: side.moisture.dewF,
     profile: r.profile.map((p) => ({ s: Math.log(p.r / rPipe) / span, tF: p.tF })),
     stub: side.thicknessIn === null ? null : zoneOf(bare, mode),
+    // the covered fitting is shown at the run's flux; a bare fitting at the bare pipe's
+    fitting: fittingBare || side.thicknessIn === null ? zoneOf(bare, mode) : zoneOf(side, mode),
+    fittingBare,
   }
 }
 
@@ -71,7 +74,9 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
   // geometry rebuilds can lag a fast slider; the numbers never do
   const thickness = useDeferredValue(panel.modelThickness)
   const nps = useDeferredValue(s.npsIndex)
-  const sim = useMemo(() => visualFor(panel.side, bare, mode, opts.thermal), [panel.side, bare, mode, opts.thermal])
+  const fittingBare = (s.component === 'valve' || s.component === 'flange') && s.fittingCover === 'none'
+  const thermal = opts.thermal && s.component !== 'elbow' && s.component !== 'tee'
+  const sim = useMemo(() => visualFor(panel.side, bare, mode, thermal, fittingBare), [panel.side, bare, mode, thermal, fittingBare])
   return (
     <Viewer
       insulation={s.insulation}
@@ -81,7 +86,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
       facing={sys.facing}
       service={sys.service}
       view={opts.view}
-      component="straight"
+      component={s.component}
       stage={opts.stage}
       mobile={opts.mobile}
       sim={{ ...sim, bare: panel.bare }}

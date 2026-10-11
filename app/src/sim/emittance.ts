@@ -1,4 +1,4 @@
-import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
+import { INSULATION, type FacingId, type InsulationId, type OuterJacketId } from '../data/catalog'
 import type { MetalFinish } from './types'
 
 /**
@@ -44,7 +44,7 @@ export function outerSurface(p: { insulation: InsulationId; jacket: OuterJacketI
   if (p.jacket === 'alu-smooth' || p.jacket === 'alu-stucco') return SURFACES[`alu-${p.metalFinish}`]
   if (p.jacket === 'ss') return SURFACES[`ss-${p.metalFinish}`]
   if (p.jacket === 'pvc') return SURFACES.pvc
-  if (p.membrane) return p.insulation === 'cellular-glass' ? SURFACES['membrane-foil'] : SURFACES['membrane-white']
+  if (p.membrane) return INSULATION[p.insulation].vapor.membrane?.look === 'foil' ? SURFACES['membrane-foil'] : SURFACES['membrane-white']
   if (p.facing === 'asj') return SURFACES.asj
   if (p.insulation === 'elastomeric') return SURFACES.elastomeric
   return SURFACES.nonmetallic

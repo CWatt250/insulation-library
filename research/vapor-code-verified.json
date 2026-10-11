@@ -1,0 +1,2786 @@
+{
+ "dataset": "Below-ambient vapor-retarder requirements, vapor-retarder and material water-vapor data, a sourced water-vapor-transmission method, and energy-code minimum pipe insulation thickness (ASHRAE 90.1 by edition, IECC-family) for a pipe insulation simulator",
+ "generated": "2026-10-11",
+ "conventions": {
+  "unverified": "The literal string 'unverified' means no fetched source stated the value. Nothing was guessed, averaged, interpolated or filled from memory. No permeance was computed from a permeability or vice versa.",
+  "src": "Every fact carries 'src', a list of ids in this file's top-level 'sources' array (R1…R40). Entries marked 'carried_from' were verified with quotes by the earlier research pass (jackets-verified.json, materials-verified.json, validation-cases.json) and are copied here programmatically from those files; their own source ids (J…, S…, V…) apply.",
+  "quotes": "'quote' strings are verbatim from pdftotext output or page text. Line breaks and hyphenation splits were joined and runs of spaces collapsed; nothing else was changed. Where a source shows an equation as an image or a superscript, the image was read visually and that is stated.",
+  "units": {
+   "permeance": "perm = grain/(h·ft²·inHg)",
+   "permeability": "perm-in = grain·in/(h·ft²·inHg)",
+   "temperature": "°F",
+   "thickness": "inches of insulation wall (nominal)",
+   "k": "Btu·in/(h·ft²·°F)",
+   "vapor_pressure": "inHg"
+  },
+  "agent_arithmetic": "The only computed numbers in this file are in vapor_transmission_method.worked_example_from_source.agent_check, labelled as agent arithmetic, used solely to flag a discrepancy.",
+  "typical_values": "Manufacturer values are typical, subject to change without notice. Confirm against the current sheet before using a number in a submittal."
+ },
+ "sources": [
+  {
+   "id": "R1",
+   "title": "ASHRAE Handbook—Refrigeration, Chapter 10: Insulation Systems for Refrigerant Piping (I-P)",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/R26/IP/R26_Ch10/r26_ch10_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'R26'; the chapter refers readers to 'the 2025 ASHRAE Handbook—Fundamentals'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML; text and Table 2 parsed from markup)",
+   "note": "Same chapter as validation-cases.json V11. Scope quote: 'operated at temperatures ranging from 35 to –100°F. It does not deal with HVAC systems or applications such as chilled-water systems.'"
+  },
+  {
+   "id": "R2",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 23: Insulation for Mechanical Systems (I-P)",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F25/IP/F25_Ch23/f25_ch23_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F25' (page prints no year)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML; Tables 3A and 10 parsed from <table> markup); Table 3A footnote equation is an image (equations/F23_ieq001_ip.jpg, 122x16 px) read visually after 3x upscale",
+   "note": "Same chapter as validation-cases.json V10."
+  },
+  {
+   "id": "R3",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 23: Insulation for Mechanical Systems (I-P), F21 edition",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F21/IP/F21_Ch23/f21_ch23_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F21'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; Table 3A text compared cell by cell with R2 (identical)"
+  },
+  {
+   "id": "R4",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 23: Insulation for Mechanical Systems (I-P), F17 edition",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F17/IP/f17_ch23/f17_ch23_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F17'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; Table 3A text compared cell by cell with R2 (identical)"
+  },
+  {
+   "id": "R5",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 25: Heat, Air, and Moisture Control in Building Assemblies—Fundamentals (I-P)",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F25/IP/F25_Ch25/f25_ch25_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F25'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text); Equations (24) and (37) are images (equations/F25_eq024.jpg, F25_eq037.jpg) read visually after 3x upscale"
+  },
+  {
+   "id": "R6",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 26: Heat, Air, and Moisture Control in Building Assemblies—Material Properties (I-P)",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F25/IP/F25_Ch26/f25_ch26_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F25'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; Tables 5 and 6 parsed from <table> markup"
+  },
+  {
+   "id": "R7",
+   "title": "ASHRAE Handbook—Fundamentals, Chapter 27: Heat, Air, and Moisture Control in Building Assemblies—Examples (I-P)",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F25/IP/F25_Ch27/f25_ch27_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F25'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)"
+  },
+  {
+   "id": "R8",
+   "title": "Mechanical Insulation Design Guide – Design Objectives (condensation control / moisture blocking)",
+   "publisher": "National Insulation Association (MIDG)",
+   "url": "https://insulation.org/training-tools/designguide/design-objectives/",
+   "doc_type": "design guide web page",
+   "pub_no_or_date": "no date printed on page",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)",
+   "note": "Same page as validation-cases.json V17 / calc-method-verified.json M6."
+  },
+  {
+   "id": "R9",
+   "title": "Mechanical Insulation Design Guide – Materials and Systems (insulation materials, facings/vapor retarders, mastics)",
+   "publisher": "National Insulation Association (MIDG)",
+   "url": "https://insulation.org/training-tools/designguide/materials-and-systems/",
+   "doc_type": "design guide web page",
+   "pub_no_or_date": "no date printed on page",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)"
+  },
+  {
+   "id": "R10",
+   "title": "Introduction to ASTM E96 (presentation, Charlie Petty, Lamtec Corporation, ASTM E96 Task Group Chair)",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/wp-content/uploads/sites/37/2022/04/Water-Vapor-Transmission-Properties.pdf",
+   "doc_type": "trade-association presentation PDF (30 slides)",
+   "pub_no_or_date": "PDF created 2022-03-23; slides say E96 'Latest revisions approved December 2021'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R11",
+   "title": "ASTM C755-25 Standard Guide for Selection of Water Vapor Retarders for Thermal Insulation – store scope page",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c0755-25.html",
+   "doc_type": "ASTM store scope page",
+   "pub_no_or_date": "C755-25 (Active); page last updated Jul 18, 2025",
+   "accessed": "2026-10-11",
+   "retrieval": "curl, HTML to text (C755-20 page also read; it is titled a 'Practice' and says 'defines' where C755-25 says 'suggests' water vapor transmission values)"
+  },
+  {
+   "id": "R12",
+   "title": "ASTM C1136-23 Standard Specification for Flexible, Low Permeance Vapor Retarders for Thermal Insulation – store scope page",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c1136-23.html",
+   "doc_type": "ASTM store scope page",
+   "pub_no_or_date": "C1136-23 (Active); page last updated Mar 14, 2023",
+   "accessed": "2026-10-11",
+   "retrieval": "curl, HTML to text",
+   "note": "Same page as jackets-verified.json J24; re-read here."
+  },
+  {
+   "id": "R13",
+   "title": "ASTM E96/E96M-24 Standard Test Methods for Gravimetric Determination of Water Vapor Transmission Rate of Materials – store scope page",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/e0096_e0096m-24.html",
+   "doc_type": "ASTM store scope page",
+   "pub_no_or_date": "page marked 'Historical', last updated Nov 20, 2024; E96/E96M-24a is listed as a later version",
+   "accessed": "2026-10-11",
+   "retrieval": "curl, HTML to text"
+  },
+  {
+   "id": "R14",
+   "title": "NIST Handbook 44 – 2023, Appendix C. General Tables of Units of Measurement",
+   "publisher": "National Institute of Standards and Technology",
+   "url": "https://www.nist.gov/system/files/documents/2023/01/30/appc-23-HB44.pdf",
+   "doc_type": "government handbook appendix PDF",
+   "pub_no_or_date": "Handbook 44 – 2023 (doi 10.6028/NIST.HB.44-2023)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R15",
+   "title": "NIST Special Publication 811, 2008 Edition: Guide for the Use of the International System of Units (SI)",
+   "publisher": "National Institute of Standards and Technology",
+   "url": "https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication811e2008.pdf",
+   "doc_type": "government publication PDF",
+   "pub_no_or_date": "SP 811, 2008 Edition (Thompson and Taylor)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R16",
+   "title": "TECHNICAL DATA – AP ArmaFlex Black and White Tube Insulation",
+   "publisher": "Armacell LLC",
+   "url": "https://zoro.com/static/cms/enhanced_pdf/Amerisafe%20Inc_APxxArmaFlexxxTube.Sub.EN.US.2021xxbbcf71.pdf",
+   "doc_type": "manufacturer data sheet PDF (distributor-hosted)",
+   "pub_no_or_date": "Oct 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout",
+   "note": "Same document as materials-verified.json elastomeric S1; re-read here. The armacell.com 2024 Americas TDS URL returned HTTP 404."
+  },
+  {
+   "id": "R17",
+   "title": "ArmaFlex North America Application Manual (EN-US)",
+   "publisher": "Armacell",
+   "url": "https://www.armacell.com/sites/default/files/2025/10/27/ArmaFlex_NA_ApplicationManual_EN-US.pdf",
+   "doc_type": "manufacturer installation manual PDF",
+   "pub_no_or_date": "PDF dated 2025-10-27 in URL",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout",
+   "note": "Same document as materials-verified.json elastomeric S4."
+  },
+  {
+   "id": "R18",
+   "title": "K-FLEX INSUL-TUBE leaflet with technical data (US_LEA_INSUL-TUBE_V1_LRES_0520)",
+   "publisher": "K-FLEX USA",
+   "url": "https://db.kflex.com/file/marketing?f=US_LEA_INSUL-TUBE_V1_LRES_0520.pdf",
+   "doc_type": "manufacturer leaflet PDF",
+   "pub_no_or_date": "May 2020 (file name 0520)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout)",
+   "note": "Same document as materials-verified.json elastomeric S10; re-read here."
+  },
+  {
+   "id": "R19",
+   "title": "Trymer 2000XP Polyisocyanurate Foam Insulation – Data Sheet",
+   "publisher": "Johns Manville",
+   "url": "https://www.jm.com/content/dam/jm/global/en/industrial-insulation/polyisocynurate/trymer-pir/JM_IND_TrymerPIR_2000XP_DS.pdf",
+   "doc_type": "manufacturer data sheet PDF",
+   "pub_no_or_date": "T2000XP 02/14/23 (Replaces T2000XP-04/07/22)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R20",
+   "title": "TRYMER Polyisocyanurate Foam Insulation – Refrigeration Installation Guide",
+   "publisher": "Johns Manville",
+   "url": "https://jm.com/content/dam/jm/global/en/industrial-insulation/polyisocynurate/trymer-pir/JM_IND_Trymer_Refrigeration_Install_Guide.pdf",
+   "doc_type": "manufacturer installation guide PDF",
+   "pub_no_or_date": "01/21/2020",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw)"
+  },
+  {
+   "id": "R21",
+   "title": "FOAMGLAS ONE Insulation – Industrial Pipe & Equipment Insulation, ASTM C552 Grade 6 (Product Data Sheet)",
+   "publisher": "Owens Corning",
+   "url": "https://www.owenscorning.com/dms/10024264",
+   "doc_type": "manufacturer data sheet PDF",
+   "pub_no_or_date": "Pub. No. 10024264-C, September 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout",
+   "note": "Same document as materials-verified.json cellular_glass S1; re-read here."
+  },
+  {
+   "id": "R22",
+   "title": "Product Data Sheet – SSL II with ASJ Max Fiberglas Pipe Insulation",
+   "publisher": "Owens Corning",
+   "url": "https://www.owenscorning.com/dms/20547",
+   "doc_type": "manufacturer data sheet PDF",
+   "pub_no_or_date": "Pub. No. 20547-FF, July 2026",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout)",
+   "note": "Same document as materials-verified.json fiberglass S1 / validation-cases.json V1; re-read here."
+  },
+  {
+   "id": "R23",
+   "title": "Micro-Lok HP High-Performance Fiberglass Pipe Insulation – Data Sheet",
+   "publisher": "Johns Manville",
+   "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/pipe/micro-lok-hp/JM_MECH_MicroLok_HP_Data_Sheet_EN.pdf",
+   "doc_type": "manufacturer data sheet PDF",
+   "pub_no_or_date": "MECH-228 07/31/25 (Replaces 11/08/23)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout)",
+   "note": "Same document as materials-verified.json fiberglass S8; re-read here."
+  },
+  {
+   "id": "R24",
+   "title": "Micro-Lok HP Guidebook – A Complete Guide to Micro-Lok HP Pipe Insulations (Chapter 5: two 'HOT AND COLD APPLICATIONS ASHRAE STD. 90.1' tables)",
+   "publisher": "Johns Manville",
+   "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/documents/ebooks/JM_MicroLok_HP_Guidebook_eBook.pdf",
+   "doc_type": "manufacturer guidebook PDF (34 pp.)",
+   "pub_no_or_date": "PDF created 2023-03-10 (validation-cases.json V3 records 'CI-245 08/17/21 (Replaces 09/02/20)')",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; page 16 rendered at 170 dpi and both tables checked visually",
+   "note": "Same document as validation-cases.json V3 / materials-verified.json fiberglass S11."
+  },
+  {
+   "id": "R25",
+   "title": "ASHRAE Standard 90.1-2010 Increases Minimum Pipe Insulation Thicknesses (Gordon H. Hart, P.E.)",
+   "publisher": "Insulation Outlook (National Insulation Association)",
+   "url": "https://insulation.org/io/?p=7035",
+   "doc_type": "trade magazine article with table figures",
+   "pub_no_or_date": "September 1, 2010 (datePublished 2010-09-01)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text) + figure images https://insulation.org/wp-content/uploads/2017/06/IO100902_01.jpg and _02.jpg (633x348 px) read visually after 2x and 3x Lanczos upscaling"
+  },
+  {
+   "id": "R26",
+   "title": "ASHRAE Issues Updated Standard 90.1 and Handbook Chapter on Mechanical Insulation (Gordon H. Hart, P.E.)",
+   "publisher": "Insulation Outlook (National Insulation Association)",
+   "url": "https://insulation.org/io/articles/ashrae-issues-updated-standard-90-1-and-handbook-chapter-on-mechanical-insulation/",
+   "doc_type": "trade magazine article",
+   "pub_no_or_date": "datePublished 2014-02-01",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)"
+  },
+  {
+   "id": "R27",
+   "title": "Insulation Efficiency Calculators (pipe insulation calculator page with an ASHRAE 90.1-2010 Table 6.8.3A excerpt)",
+   "publisher": "The Hartford Steam Boiler Inspection and Insurance Company",
+   "url": "https://www.hsb.com/efficiencycalculators/insulation.aspx",
+   "doc_type": "insurer calculator web page",
+   "pub_no_or_date": "undated web page",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)"
+  },
+  {
+   "id": "R28",
+   "title": "Errata Sheet for ANSI/ASHRAE/IES Standard 90.1-2016 (I-P Edition)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/File%20Library/Technical%20Resources/ASHRAE%20Journal/90.1-2016-IP-ErrataSheet-3-18-2019-.pdf",
+   "doc_type": "standard errata sheet PDF",
+   "pub_no_or_date": "March 18, 2019",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R29",
+   "title": "Errata Sheet for ANSI/ASHRAE/IES Standard 90.1-2016 (SI Edition)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20errata/standards/90.1-2016-si-erratasheet-4-9-2025-.pdf",
+   "doc_type": "standard errata sheet PDF",
+   "pub_no_or_date": "April 9, 2025",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R30",
+   "title": "ANSI/ASHRAE/IES Addendum aq to ANSI/ASHRAE/IES Standard 90.1-2019 (Section 6.8.3 and Tables 6.8.3-1/6.8.3-2 shown in strikethrough/underline)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90_1_2019_aq_20220729.pdf",
+   "doc_type": "official standard addendum PDF",
+   "pub_no_or_date": "Approved by ASHRAE and ANSI July 29, 2022; by IES July 26, 2022",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; page 4 (I-P tables) rendered at 200 dpi and read visually to confirm values, strikethroughs and the K/k superscript"
+  },
+  {
+   "id": "R31",
+   "title": "ANSI/ASHRAE/IES Addendum bt to ANSI/ASHRAE/IES Standard 90.1-2022 (process pipe insulation, new Table 10.8-7)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90_1_2022_bt_20251031.pdf",
+   "doc_type": "official standard addendum PDF",
+   "pub_no_or_date": "Approved by ASHRAE and ANSI October 31, 2025; by IES October 16, 2025",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; page 4 rendered at 200 dpi and the equation read visually"
+  },
+  {
+   "id": "R32",
+   "title": "NYC Energy Code 2025 – 6.8.3 Piping Insulation Tables (code snippet)",
+   "publisher": "UpCodes (publishing the New York City Energy Conservation Code 2025)",
+   "url": "https://up.codes/s/piping-insulation-tables",
+   "doc_type": "code-hosting web page",
+   "pub_no_or_date": "page labelled 'NYC Energy Code 2025 > 6 Heating, Ventilating, and Air Conditioning > 6.8 ... > 6.8.3'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text)"
+  },
+  {
+   "id": "R33",
+   "title": "2025 New York City Energy Conservation Code – Chapter 1 (Administration)",
+   "publisher": "NYC Department of Buildings",
+   "url": "https://www.nyc.gov/assets/buildings/codes-pdf/energy_code_2025/2025nycecc_c1.pdf",
+   "doc_type": "city code chapter PDF",
+   "pub_no_or_date": "PDF modified 2026-03-26",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R34",
+   "title": "Highlights of the 2025 New York City Energy Code",
+   "publisher": "Urban Green Council",
+   "url": "https://www.urbangreencouncil.org/highlights-of-the-2025-new-york-city-energy-code/",
+   "doc_type": "advocacy/technical web article",
+   "pub_no_or_date": "dated January 14, 2025 on the page",
+   "accessed": "2026-10-11",
+   "retrieval": "WebFetch (page summarised by a fetch model, quote extracted verbatim on request)"
+  },
+  {
+   "id": "R35",
+   "title": "Energy Standards and Codes for Mechanical Insulation in Commercial Buildings (Technical Bulletin TB07)",
+   "publisher": "Armacell",
+   "url": "https://www.armacell.com/sites/default/files/2025/06/20/TB07_EnergyStandardsCodesMechanicalInsulationCommercialBuildings_EN-US.pdf",
+   "doc_type": "manufacturer technical bulletin PDF",
+   "pub_no_or_date": "Bulletin TB07, June 2023 (PDF created 2025-06-19)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "R36",
+   "title": "C403.11.3 Piping Insulation (Mandatory) – Office of the State Architect (OSA) Energy Conservation Code 2018 (code snippet)",
+   "publisher": "UpCodes",
+   "url": "https://up.codes/s/piping-insulation-mandatory",
+   "doc_type": "code-hosting web page",
+   "pub_no_or_date": "page labelled 'Office of the State Architect (OSA) Energy Conservation Code 2018 > Chapter 4 [CE] ... > C403.11.3'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text); the footnote equation is an image that did not come through in the HTML text"
+  },
+  {
+   "id": "R37",
+   "title": "Multifamily Performance Program – Code Reference Guide For Minimum Performance Standards",
+   "publisher": "NYSERDA",
+   "url": "https://www.nyserda.ny.gov/-/media/Project/Nyserda/Files/Programs/MPP-Existing-Buildings/library/mpp-code-reference.pdf",
+   "doc_type": "state-agency program guide PDF",
+   "pub_no_or_date": "'Latest Update January 25, 2022'; 'All references are from the 2020 NYS Code and supplements'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout (the C403.11.3 table itself is an image and was not read; only the notes are text)"
+  },
+  {
+   "id": "R38",
+   "title": "Minnesota Rules 1323.0680 – Section 6.8, Minimum Equipment Efficiency Tables (amendments to ASHRAE 90.1)",
+   "publisher": "Minnesota Office of the Revisor of Statutes",
+   "url": "https://www.revisor.mn.gov/rules/1323.0680/",
+   "doc_type": "state administrative rule web page",
+   "pub_no_or_date": "current version as served 2026-10-11",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text)"
+  },
+  {
+   "id": "R39",
+   "title": "ANSI/ASHRAE/IES Standard 90.1-2019: HVAC (training slides, PNNL-SA-153210)",
+   "publisher": "Pacific Northwest National Laboratory for U.S. DOE Building Energy Codes Program (hosted by Oregon BCD)",
+   "url": "https://www.oregon.gov/bcd/codes-stand/Documents/90.1-2019-HVAC-training.pdf",
+   "doc_type": "government training slide deck PDF",
+   "pub_no_or_date": "May 2020 – PNNL-SA-153210",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; slide 38 rendered (it shows no table, only a reference)"
+  },
+  {
+   "id": "R40",
+   "title": "2021 International Energy Conservation Code – C403.12.3 Piping insulation",
+   "publisher": "International Code Council",
+   "url": "https://codes.iccsafe.org/s/IECC2021V1.0/chapter-4-ce-commercial-energy-efficiency/IECC2021V1.0-CE-Ch04-SecC403.12.3",
+   "doc_type": "model code web page",
+   "pub_no_or_date": "IECC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "NOT READABLE: curl returns only a JavaScript application shell (content is loaded by script; page embeds a reCAPTCHA key field); WebFetch returned HTTP 403. Not bypassed. No values taken from this source."
+  }
+ ],
+ "vapor_retarder_requirements": {
+  "note": "Requirements are recommendations from design references and manufacturer system rules; none of them is a building-code mandate. Temperatures are pipe/fluid operating temperatures unless the quote says otherwise. Where sources give different limits for the same service, all are kept and the difference is listed in 'discrepancies'.",
+  "summary_by_service_temperature": [
+   {
+    "service": "Any below-ambient pipe, tank or equipment insulation (general ASHRAE rule)",
+    "operating_temp_F": "below ambient",
+    "max_permeance_perm": 0.02,
+    "applies_to": "vapor retarder sheet/film/mastic on the outer surface, OR the insulation itself (permeability/thickness combination), with sealed joints; mastics excepted in R2",
+    "src": [
+     "R2",
+     "R1"
+    ]
+   },
+   {
+    "service": "Below-ambient, operating temperature below 0°F",
+    "operating_temp_F": "<0",
+    "max_permeance_perm": 0.01,
+    "strength": "'strongly consider' (R1) / 'strong consideration should be given' (R2); R2 also allows 'those of zero permeance'",
+    "src": [
+     "R1",
+     "R2"
+    ]
+   },
+   {
+    "service": "Sealed overlap and tape joints (prepared per ASTM C1809)",
+    "operating_temp_F": "below ambient",
+    "max_permeance_perm": 0.02,
+    "strength": "'recommended'",
+    "src": [
+     "R1",
+     "R2"
+    ]
+   },
+   {
+    "service": "JM Saranex CX / JM Trymer refrigeration system rule, at or below 32°F",
+    "operating_temp_F": "<=32",
+    "max_permeance_perm": 0.02,
+    "src": [
+     "R20"
+    ],
+    "cross_check": "Same rule in jackets-verified.json J31 (JM Saranex install guide)."
+   },
+   {
+    "service": "JM Saranex CX / JM Trymer refrigeration system rule, above 32°F",
+    "operating_temp_F": ">32",
+    "max_permeance_perm": 0.03,
+    "printed_as": "0.030 perm (R20); 0.03 perms (J31)",
+    "src": [
+     "R20"
+    ],
+    "cross_check": "jackets-verified.json J31"
+   },
+   {
+    "service": "Cool/cold service (chilled water, AC duct, systems 33°F to ambient): whole vapor-retarder system incl. facings and mastics",
+    "operating_temp_F": "33 to ambient",
+    "max_permeance_perm": "<0.05",
+    "basis": "MIDG citing ASTM C755",
+    "src": [
+     "R9"
+    ]
+   },
+   {
+    "service": "Low-temperature service mastics (-40°F to 32°F)",
+    "operating_temp_F": "-40 to 32",
+    "max_permeance_perm": "<0.02",
+    "src": [
+     "R9"
+    ]
+   },
+   {
+    "service": "Cryogenic mastics and coatings (below -40°F)",
+    "operating_temp_F": "<-40",
+    "max_permeance_perm": "<0.02",
+    "src": [
+     "R9"
+    ]
+   },
+   {
+    "service": "Water-based mastic sealing punctures/seams of an FSK/ASJ-faced system, interior, warm humid climate",
+    "operating_temp_F": "cool/cold service",
+    "max_permeance_perm": "<0.5",
+    "strength": "'typically acceptable'",
+    "src": [
+     "R9"
+    ]
+   },
+   {
+    "service": "Mastic over unfaced insulation, terminations or bare insulation (cool/cold service)",
+    "operating_temp_F": "cool/cold service",
+    "max_permeance_perm": "<0.05",
+    "src": [
+     "R9"
+    ]
+   },
+   {
+    "service": "Proto PVC fitting covers, at or below 45°F and severe service: intermediate vapor retarder under the cover",
+    "operating_temp_F": "<=45",
+    "max_permeance_perm": 0.02,
+    "src": [],
+    "carried_from": "jackets-verified.json pvc_jacketing_fitting_covers (Proto) cold_rules, source J8; not re-read here"
+   },
+   {
+    "service": "Weather-barrier ('breather') mastics — NOT vapor retarders",
+    "operating_temp_F": "hot or dual-temperature",
+    "min_permeance_perm": ">1.0",
+    "src": [
+     "R9"
+    ]
+   }
+  ],
+  "requirements": [
+   {
+    "topic": "Two approaches for refrigerant piping",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "There are two approaches to providing a vapor retarder (barrier) for an insulation system for refrigerant piping:",
+     "A low-permeance sheet, film, or mastic-type vapor retarder with a permeance of ≤0.02 perm on the outer surface of the insulation system",
+     "An insulation material with a permeability/thickness combination that yields a permeance of ≤0.02 perm, sealed at all of the circumferential and longitudinal joints with vapor retarder sealant"
+    ]
+   },
+   {
+    "topic": "Refrigeration: maximum system permeance and the below-0°F tightening",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "Insulation materials should be protected by a continuous vapor retarder system with a maximum permeance of 0.02 perm, either integral to the insulation or as a separate vapor retarder material applied to the exterior surface of the insulation. At operating temperatures below 0°F, strongly consider requiring the vapor retarder to have a maximum permeance of 0.01 perm.",
+     "Service life of the insulation and pipe depends primarily on the installed water vapor permeance of the system, comprised of the permeance of the insulation, vapor retarders on the insulation, and the sealing of all joints, seams, and penetrations."
+    ]
+   },
+   {
+    "topic": "Refrigeration: joints",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "It is recommended that overlap and tape joints prepared using the Standard C1809 procedure also be required to have a permeance of ≤0.02 perm, the same as the vapor retarder material."
+    ]
+   },
+   {
+    "topic": "Refrigeration: material moisture resistance below 35°F",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "With refrigeration equipment operating at 35°F or lower, the problem may be severe.",
+     "For these reasons, insulation materials with high resistance to moisture (low absorption, low permeability, and low wicking) should be used for refrigerant piping operating at temperatures below 35°F."
+    ]
+   },
+   {
+    "topic": "Mechanical systems (Fundamentals ch. 23): pipe, tank and equipment",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "Pipe, Tank, and Equipment Applications. Insulation materials used on mechanical systems operating at below-ambient temperatures must be covered by a continuous vapor retarder system that utilizes components whose water vapor permeance does not exceed 0.02 perm, with the exception of mastics (see below). Alternatively, a low-permeability insulation material of sufficient thickness to achieve this permeance level (i.e., that acts as its own vapor retarder) can be used without a separate vapor retarder, assuming all joints are properly sealed. At operating temperatures below 0°F, strong consideration should be given to employing vapor retarder system components with a maximum permeance of 0.01 perm, or those of zero permeance. Products used in these applications include ASJ, monolayer films, laminate jackets, pressure-sensitive tape, mastics and sealants and low or zero-permeability insulation.",
+     "There are two approaches to providing a vapor retarder (barrier) for an insulation system for below-ambient piping. The first is the use of a low-permeance sheet, film, or mastic-type vapor retarder with a permeance of ≤0.02 perms on the outer surface of the insulation system. The second approach uses an insulation material with a permeability/thickness combination that yields a permeance of ≤0.02 perms, which is sealed at all of the circumferential and longitudinal joints with vapor-retarder sealant.",
+     "In addition to requirements that the permeance of the vapor retarder material be no greater than 0.02 perms, it is recommended that overlap and tape joints, prepared using the C1809 procedure, also not exceed this threshold."
+    ]
+   },
+   {
+    "topic": "Fundamentals ch. 23: vapor-pressure difference drives the choice (conditioned vs unconditioned space)",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "Typically, in buildings located in humid climates, vapor pressure differentials in unconditioned spaces are significantly greater than in conditioned spaces. For example, in a conditioned space at 75°F and 50% rh, the vapor pressure differential across the insulation system, on 42°F chilled-water lines, is less than 0.20 in. Hg. For below-ambient insulated pipes running in humid unconditioned spaces, the vapor pressure differential across the insulation system can be as great as 0.80 in. Hg in areas of the continental United States, and even greater in places with tropical climates. Hence, for insulated below-ambient pipes running in humid unconditioned spaces, the vapor retarder may need to be of lower vapor permeance than for those same pipes running in conditioned spaces."
+    ]
+   },
+   {
+    "topic": "Fundamentals ch. 23: outdoor below-ambient pipe",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "Outdoor pipe insulation may be vapor-sealed in the same manner as indoor piping, by using an insulation material with a permeability/thickness combination that yields a permeance of ≤0.02 perms that is sealed at all circumferential and longitudinal joints with vapor retarder sealant, or applying added weather protection jacketing without damage to the vapor retarder and sealing it to keep out water."
+    ]
+   },
+   {
+    "topic": "Fundamentals ch. 23: mastics are the stated exception; achieved permeance depends on thickness",
+    "src": [
+     "R2",
+     "R1"
+    ],
+    "quotes": [
+     "It can be difficult to achieve permeance as low as the sheet vapor retarder in use under typical application conditions and using typical methods. Water-borne products are not as vapor-resistant as the solvent-borne ones that are finding less and less acceptance due to VOC limitations. Here it is critical to adhere to manufacturer application instructions to achieve proper thickness of application and acceptable vapor resistance.",
+     "Material permeability is a function of the thickness applied, so this must be very carefully controlled and monitored during installation."
+    ]
+   },
+   {
+    "topic": "MIDG mastic service classes and permeance targets",
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "Permeance of vapor retarder mastics will vary greatly ranging from 0.5 perms to <0.01 perms depending on the mastic type and performance requirements.",
+     "Cryogenic insulation systems require specialized engineering beyond the scope of this document. Mastics and coatings for these uses have very low permeability (<0.02 perms) and include specialized vapor stop coatings with extremely low service temperature limits (down to -320°F) and solvent based thermoplastic rubber (Hypalon) mastics.",
+     "Low temperature service mastics should have permeance of <0.02 perms.",
+     "Cool or cold service insulation includes insulation of chilled water piping, air conditioning ductwork and other systems operating between 33°F and ambient.",
+     "The vapor retarder system, including any sheet facing materials and mastics, should have permeance <0.05 perms per ASTM C 755.",
+     "In this case a water based mastics with permeance <0.5 perms are typically acceptable for vapor sealing punctures (from hangars or pins) and seams in the facing on interior applications.",
+     "If the insulation is not faced with a vapor retarder jacket or at insulation terminations or over bare insulation the mastic should have a permeance less than 0.05 perms.",
+     "These mastics have higher permeance, > 1.0 perm, than vapor retarders and will allow water vapor to pass through them while repelling liquid water."
+    ],
+    "service_bands_quote": [
+     "cryogenic service (operating below -40°F)",
+     "low temperature service (-40°F to 32°F)",
+     "cool/cold service (33°F to ambient)."
+    ]
+   },
+   {
+    "topic": "MIDG moisture-blocking design principle (qualitative, no number)",
+    "src": [
+     "R8"
+    ],
+    "quotes": [
+     "The design must incorporate the following: 1) a vapor retarder with suitably low permeance; 2) a joint-and-seam sealing system that maintains vapor retarding system integrity; and 3) accommodation for future damage repair, joint and seam resealing, and reclosing after maintenance.",
+     "Higher vapor pressure differences typically require a vapor retarder that that has a lower permeance to control the overall moisture pickup of the insulated system.",
+     "Some low-permeability insulation materials are considered to be vapor retarders without any additional jacket material."
+    ]
+   },
+   {
+    "topic": "JM Trymer (polyiso) refrigeration installation guide",
+    "src": [
+     "R20"
+    ],
+    "quotes": [
+     "3.4.4 Vapor Retarder shall have a maximum permeance of 0.02 perms for applications at or below 32°F and a maximum permeance of 0.030 perm for applications above 32°F.",
+     "3.4.3 When operating temperature is ≤32°F or when a permeance of 0.02 perms or better is required, butt joints shall be wrapped with either two layers of 3” wide Saranex 520 CX Vapor Retarder Tape or a single layer of 3” wide Saranex 560 CX Tape. When operating temperature is >32°F, butt joints shall be wrapped with a single layer of 3” wide Saranex 520 CX Tape.",
+     "Refer to ASTM standards C755, C921, and C1136 for information on selection and specification of vapor retarders."
+    ]
+   },
+   {
+    "topic": "ASTM C755 (public scope only; its numeric transmission values are paywalled)",
+    "src": [
+     "R11"
+    ],
+    "quotes": [
+     "1.1 This guide outlines factors to be considered, describes design principles and procedures for water vapor retarder selection, and suggests water vapor transmission values appropriate for established criteria. It is intended for the guidance of design engineers in preparing vapor retarder application specifications for control of water vapor flow through thermal insulation. It covers commercial and residential building construction and industrial applications in the service temperature range from −40 to +150°F (−40 to +66°C).",
+     "Application specifications for insulation systems that operate below ambient dew-point temperatures necessarily include an adequate vapor retarder system. A vapor retarder system is separate and distinct from the insulation, or is provided by the insulation itself when it is has adequate vapor resistant properties and all joints are sealed against water vapor intrusion, in which case a separate vapor retarder system is not necessary.",
+     "4.3.2 It is impractical to specify an “as installed” permeance value because, due to the nature of field application, attainment of system permeance equivalent to the vapor retarder materials themselves is assumed not possible."
+    ]
+   },
+   {
+    "topic": "ASHRAE 90.1 thickness tables do not cover vapor control",
+    "src": [
+     "R30",
+     "R2"
+    ],
+    "quotes": [
+     "These thicknesses are based on energy efficiency considerations only. Issues such as water vapor permeability or surface condensation sometimes require vapor retarders or additional insulation."
+    ]
+   }
+  ],
+  "elastomeric_and_self_retarding_insulation": [
+   {
+    "topic": "ASHRAE Refrigeration ch. 10: elastomeric needs an exterior vapor retarder in refrigeration piping unless ≤0.02 perm-in",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "Although vapor permeability can be as low as 0.1 perm inch, this is still significantly higher than the permeance requirement for vapor retarders (0.02 perm). For this reason, in refrigeration piping, flexible elastomeric should be used only with a vapor retarder applied to the exterior surface unless the insulation has a vapor permeability of 0.02 perm inch or less."
+    ],
+    "scope_note": "R1 covers refrigerant piping at 35 to -100°F and excludes chilled water."
+   },
+   {
+    "topic": "ASHRAE Refrigeration ch. 10: phenolic, polyiso and XPS need an exterior vapor retarder",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "The vapor permeability of the product is higher than 0.02 perm inch and thus, in refrigeration piping, closed-cell foam insulation should be used only with a vapor retarder applied to the exterior surface.",
+     "The vapor permeability of the product is higher than 0.02 perm inch and thus, in refrigeration piping, polyisocyanurate foam insulation should be used only with a vapor retarder applied to the exterior surface.",
+     "The vapor permeability of the product is higher than 0.02 perm inch and thus, in refrigeration piping, XPS insulation should be used only with a vapor retarder applied to the exterior surface."
+    ],
+    "note": "The first quote is from the 'Closed-cell phenolic foam insulation' paragraph."
+   },
+   {
+    "topic": "Fundamentals ch. 23: self-vapor-retarding insulations",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "Low-permeability insulations are in effect “self-vapor-retarding.” There are two types of closed-cell foam insulation that have suitably low permeability for use in below-ambient applications without the use of a separate vapor retarder. Cellular glass is characterized as having zero vapor permeability and being water-proof. As such, with all joints properly sealed to achieve like vapor resistance, the insulation can be installed in virtually all applications without a separate vapor retarder. A covering or jacket of some sort to provide physical protection, is however, required.",
+     "There are flexible closed-cell foams that likewise can be used without a vapor retarder when properly sealed at seams and joints. These are typically limited to use in chilled water applications.",
+     "Flexible closed-cell materials are applied using specially formulated contact adhesives or self-sealing lap (SSL) and may require a vapor retarder closure system for high-humidity applications. Cellular glass and elastomeric foam insulation materials installed in below-ambient applications with no external VR jacket must be sealed at all circumferential and longitudinal joints with vapor retarder sealant."
+    ]
+   },
+   {
+    "topic": "Armacell AP ArmaFlex: no additional vapor retarder; low-temperature limits",
+    "src": [
+     "R16"
+    ],
+    "quotes": [
+     "Built-in vapor retarder eliminates need for additional vapor retarder",
+     "At temperatures below -20°F (-29°C), elastomeric insulation starts to become less flexible. However, this characteristic does not affect thermal efficiency and resistance to water vapor permeability of ArmaFlex insulation.",
+     "For applications of -40°F to -297°F (-40°C to -183°C), contact Armacell.",
+     "Painting with WB Finish or other protective jacketing is required to prevent damage to the insulation in exterior applications and to comply with the insulation protection sections of the International Energy Conservation Code (IECC) and ASHRAE 90.1."
+    ],
+    "temperature_threshold_for_additional_vapor_retarder": "unverified (no Armacell document read states one)",
+    "quote_note": "The second quote is footnote 5; the PDF text reads 'A t temperatures' (a spacing artifact), joined here as 'At'."
+   },
+   {
+    "topic": "Armacell application manual: cold-line sealing practice (no added retarder specified)",
+    "src": [
+     "R17"
+    ],
+    "quotes": [
+     "1. On all cold lines, use ArmaFlex adhesive to glue the ends of the ArmaFlex sheets/tubes to the pipe surface every 18'.",
+     "Whenever used outdoors, ArmaFlex must either be painted, covered or clad."
+    ]
+   },
+   {
+    "topic": "K-FLEX Insul-Tube: additional barrier only for continuous high humidity on cold surfaces",
+    "src": [
+     "R18"
+    ],
+    "quotes": [
+     "The expanded closed cell structure and unique formulation inherently resists moisture vapor intrusion and is considered a Class 1 vapor retarder per ASHRAE. For most indoor applications, K-FLEX® INSUL-TUBE® needs no additional protection. Additional vapor barrier protection may be necessary when installed on cold surfaces that are exposed to continuous high humidity.",
+     "For applications below -40°F (-40°C), contact K-FLEX® technical support."
+    ],
+    "temperature_threshold_for_additional_vapor_retarder": "unverified (K-FLEX gives a humidity condition, not a temperature)"
+   }
+  ],
+  "classification_systems": [
+   {
+    "system": "ASTM C1136 flexible low-permeance vapor retarders",
+    "src": [
+     "R12"
+    ],
+    "quotes": [
+     "1.1 This specification covers vapor retarders for thermal insulation, specifically, flexible materials with permeance of 0.15 perm (8.63 ng·Pa^–1 · s^–1 · m^–2) or lower and surface burning characteristics of 25 flame spread/50 smoke or lower. These materials are intended for use at surface temperatures of −20 to 150°F (−29 to 66°C). It does not cover mastics or barrier coatings applied in liquid form, nor materials intended for use as weather barriers.",
+     "Vapor retarders are classified based on vapor retardance and strength properties: Types I, II, III, IV, V, and VI."
+    ],
+    "max_permeance_per_type": "unverified (paywalled)",
+    "types_named_elsewhere": {
+     "src": [
+      "R2"
+     ],
+     "quotes": [
+      "All-Service Jacket (ASJ) is used for pipe, tank, and equipment applications and meets ASTM C1136, types I-IV, or X.",
+      "Monolayer plastic films that meet ASTM Specification C1136 Types VII or VIII are used primarily on pipes, tanks and equipment.",
+      "Zero Permeance Laminations generally consist of two layers of polyester film and a center layer of nominal 1 mil aluminum foil and are designed to conform to ASTM C1136, Type IX."
+     ],
+     "note": "The public C1136-23 abstract (R12) lists Types I–VI only; R2 names Types VII, VIII, IX and X. Their permeance limits are unverified."
+    }
+   },
+   {
+    "system": "ASTM C921 PVDC film classes (as reported by MIDG; C921 itself not read)",
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "ASTM Standard Practice C 921-10, Type II, Grade 4 covers this type of film for use as a vapor retarding outer jacket on thermal insulation over mechanical equipment such as tanks, pipe, and vessels. The 6 mil PVDC film meets the permeance requirements of Class A, \"Extremely low permeance\" or 0.01 perms maximum. The 4 mil PVDC film meets the permeance requirements of Class B, \"Very low permeance\" or 0.02 perms maximum."
+    ],
+    "class_A_max_perm": 0.01,
+    "class_B_max_perm": 0.02
+   },
+   {
+    "system": "ICC building-envelope vapor retarder classes (context only; for wall/roof assemblies, not pipe insulation)",
+    "src": [
+     "R6"
+    ],
+    "quotes": [
+     "The 2018 supplement to the International Codes (ICC 2018) lists three water vapor retarder classes, determined according to ASTM E96 dry-cup method.",
+     "Class I: 0.1 perm or less",
+     "Class II: more than 0.1 perm but less than or equal to 1.0 perm",
+     "Class III: more than 1.0 perm but less than or equal to 10 perm"
+    ],
+    "note": "K-FLEX (R18) calls Insul-Tube 'a Class 1 vapor retarder per ASHRAE' without saying which scale; the only vapor-retarder class scale read in an ASHRAE source is this envelope scale (Class I ≤0.1 perm, R6), which is much looser than the 0.02 perm pipe-insulation criterion (R1, R2)."
+   }
+  ],
+  "discrepancies": [
+   "Above 32°F: JM (R20, J31) allows up to 0.03 perm; ASHRAE (R1, R2) applies 0.02 perm to all below-ambient service; MIDG (R9) cites <0.05 perm per ASTM C755 for the 33°F-to-ambient system. The simulator should let the user pick the governing document rather than merge these.",
+   "Below 0°F: ASHRAE (R1, R2) says strongly consider ≤0.01 perm; JM (R20, J31) keeps 0.02 perm for everything at or below 32°F (using Saranex 560 CX at and below 0°F per J31).",
+   "Elastomeric without a separate retarder: ASHRAE Refrigeration (R1) says use an exterior retarder in refrigeration piping unless ≤0.02 perm-in; Fundamentals ch. 23 (R2) says flexible closed-cell foams can be used without one when sealed, 'typically limited to use in chilled water applications'; Armacell (R16) says the built-in retarder 'eliminates need' with no temperature limit; K-FLEX (R18) says additional protection 'may be necessary' on cold surfaces under 'continuous high humidity'. AP ArmaFlex publishes 0.05/0.08 perm-in and K-FLEX Insul-Tube <0.01 perm-in (see material_permeability), so by the R1 criterion only Insul-Tube's published figure is at or below 0.02 perm-in.",
+   "R1 says elastomeric 'vapor permeability can be as low as 0.1 perm inch' (its Table 2 lists 0.1, the ASTM C534 Grade 1 maximum), while the AP ArmaFlex (0.05) and K-FLEX Insul-Tube (<0.01) data sheets publish lower values."
+  ]
+ },
+ "vapor_retarder_products": {
+  "note": "Permeance in perms (grains/(h·ft²·inHg)) by ASTM E96 unless stated. A sheet value is for flat material without joints; installed system permeance is higher (see vapor_transmission_method.caveats). 'carried_from' entries were verified (with quotes) by the earlier research pass and are copied here programmatically, not re-read.",
+  "newly_verified": [
+   {
+    "product": "Owens Corning ASJ Max (factory jacket on SSL II fiberglass pipe insulation)",
+    "permeance_perm": 0.01,
+    "method": "ASTM E96, Proc. A",
+    "quote": "Jacket Permeance ASTM E96, Proc. A 0.01 perm",
+    "src": [
+     "R22"
+    ],
+    "cross_check": "materials-verified.json fiberglass S1 gives the same 0.01 perm."
+   },
+   {
+    "product": "Johns Manville Micro-Lok HP factory ASJ (ASTM C1136 Type I & II)",
+    "permeance_perm": "0.02 max",
+    "method": "ASTM E96 – Procedure A",
+    "quote": "Water Vapor Permeance 0.02 perms max. (ASTM E96 – Procedure A)",
+    "src": [
+     "R23"
+    ],
+    "below_ambient_rule_quote": "Pipes operating below ambient temperatures require all joints to be sealed with the factory-applied, self-seal lap and butt strips."
+   }
+  ],
+  "generic_by_type_ashrae_and_nia": [
+   {
+    "type": "All-service jacket (ASJ), sheet",
+    "permeance_perm": "0.02 (ideal conditions, R1); 'as low as 0.01' as supplied (R2)",
+    "src": [
+     "R1",
+     "R2"
+    ],
+    "quotes": [
+     "This type of jacket has a low water vapor permeance under ideal conditions (0.02 perm).",
+     "These types have a low water vapor permeance as supplied as low as 0.01 perm."
+    ],
+    "limitation_quote": "Traditional ASJ has service limitations when installed on systems operating at below-ambient temperatures in humid environments."
+   },
+   {
+    "type": "Laminate vapor retarder (polymer film + aluminum foil), flat sheet without joints",
+    "permeance_perm": 0.0,
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "Flat pieces of this material without any joints have a water vapor permeance of 0 perm.",
+     "Materials in this category must be compliant with ASTM Standard C1775."
+    ]
+   },
+   {
+    "type": "Zero-permeance lamination (polyester/1 mil foil/polyester)",
+    "permeance_perm": "zero (C1136 Type IX)",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "Zero Permeance Laminations generally consist of two layers of polyester film and a center layer of nominal 1 mil aluminum foil and are designed to conform to ASTM C1136, Type IX."
+    ]
+   },
+   {
+    "type": "Multi-ply foil/film peel-and-stick laminates",
+    "permeance_perm": "zero or near zero (reported)",
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "Perm values of zero or near zero are reported."
+    ]
+   },
+   {
+    "type": "Synthetic-rubber-based aluminum-faced laminates (peel-and-stick)",
+    "permeance_perm": "<0.02 (reported)",
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "Perm values of less than 0.02 are reported and the materials are generally considered to be \"self-healing\" in that small punctures and penetrations will re-seal."
+    ]
+   },
+   {
+    "type": "Modified asphalt or butyl rubber membrane",
+    "permeance_perm": "≤0.02",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "This type of retarder has a low permeance of ≤0.02 perm."
+    ]
+   },
+   {
+    "type": "Homogeneous PVDC film, 0.002–0.006 in.",
+    "permeance_perm": "0.01 to 0.02 (depends on thickness)",
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "This type of vapor retarder is available in thicknesses ranging from 0.002 to 0.006 in. Its permeance is very low, depends on thickness, and ranges from 0.01 to 0.02 perm."
+    ]
+   },
+   {
+    "type": "PVDC film 6 mil / 4 mil (ASTM C921 classes, per MIDG)",
+    "permeance_perm": {
+     "6 mil": "0.01 max (Class A)",
+     "4 mil": "0.02 max (Class B)"
+    },
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "The 6 mil PVDC film meets the permeance requirements of Class A, \"Extremely low permeance\" or 0.01 perms maximum. The 4 mil PVDC film meets the permeance requirements of Class B, \"Very low permeance\" or 0.02 perms maximum."
+    ]
+   },
+   {
+    "type": "PVC jacket (as a vapor retarder)",
+    "permeance_perm": "not given as a pipe-jacket value (Proto per-thickness values are under carried_from_other_files)",
+    "src": [
+     "R2"
+    ],
+    "quotes": [
+     "PVC (polyvinyl chloride) jacket can provide a vapor retarder function when properly sealed, but generally should not be used alone for this function."
+    ]
+   },
+   {
+    "type": "Aluminum or stainless metal jacketing (with polysurlyn/polyfilm moisture barrier)",
+    "is_vapor_retarder": false,
+    "src": [
+     "R1"
+    ],
+    "quotes": [
+     "Note that this moisture barrier applied to the metal jacketing helps prevent jacket and pipe corrosion; it does not serve as a vapor retarder to prevent water vapor from entering the insulation system."
+    ],
+    "also": "jackets-verified.json J20 (JM): 'Aluminum or stainless steel protective jacketing shall not be considered a vapor retarder.'"
+   },
+   {
+    "type": "Vapor-retarder mastics (range across products)",
+    "permeance_perm": "0.5 to <0.01",
+    "src": [
+     "R9"
+    ],
+    "quotes": [
+     "Permeance of vapor retarder mastics will vary greatly ranging from 0.5 perms to <0.01 perms depending on the mastic type and performance requirements."
+    ],
+    "type_note_quote": "Permeance: dependent on type - below 0.5 perms",
+    "type_note_applies_to": "MIDG 'Water based synthetic polymers types' of vapor retarder mastic"
+   }
+  ],
+  "generic_films_ashrae_ch26_table5": {
+   "src": [
+    "R6"
+   ],
+   "table": "Table 5 Typical Water Vapor Permeance and Permeability for Common Building Materials (Source: Lotz (1964))",
+   "caution_quote": "Values should not be used as design or specification data.",
+   "rows": [
+    {
+     "material": "Aluminum foil",
+     "thickness_in": 0.001,
+     "permeance_perm_dry_cup": "0.0"
+    },
+    {
+     "material": "Aluminum foil",
+     "thickness_in": 0.00035,
+     "permeance_perm_dry_cup": "0.05"
+    },
+    {
+     "material": "Polyethylene",
+     "thickness_in": 0.002,
+     "permeance_perm_dry_cup": "0.16",
+     "permeability_perm_in": "3.2"
+    },
+    {
+     "material": "Polyethylene",
+     "thickness_in": 0.004,
+     "permeance_perm_dry_cup": "0.08",
+     "permeability_perm_in": "3.2"
+    },
+    {
+     "material": "Polyvinylchloride, unplasticized",
+     "thickness_in": 0.002,
+     "permeance_perm_dry_cup": "0.68",
+     "note": "printed '0.68^b' (footnote b: 'Usually installed as vapor retarders...')"
+    },
+    {
+     "material": "Polyvinylchloride, plasticized",
+     "thickness_in": 0.004,
+     "permeance_perm_dry_cup": "0.8 to 1.4"
+    },
+    {
+     "material": "Polyester",
+     "thickness_in": 0.001,
+     "permeance_perm_dry_cup": "0.73"
+    },
+    {
+     "material": "Polyester",
+     "thickness_in": 0.0032,
+     "permeance_perm_dry_cup": "0.23"
+    },
+    {
+     "material": "Polyester",
+     "thickness_in": 0.0076,
+     "permeance_perm_dry_cup": "0.08"
+    }
+   ],
+   "note": "Columns parsed from HTML <table> markup: Material | Weight lb/100 ft² | Thickness in. | Permeance (Dry-Cup, Wet-Cup, Other) | Permeability perm-in. Rows for polyethylene at 0.006/0.008/0.010 in. were not transcribed because the cell layout could not be mapped to columns unambiguously."
+  },
+  "perforation_effect": {
+   "src": [
+    "R6"
+   ],
+   "quote": "For example, Seiffert (1970) reported a factor of 100 increase in the vapor permeance of aluminum foil when it is 0.014% perforated, and a factor of 4000 increase when 0.22% of the surface is perforated."
+  },
+  "carried_from_other_files": [
+   {
+    "product": "Lamtec WMP-ASJ (paperless: polypropylene / core / scrim / foil)",
+    "carried_from": "jackets-verified.json items[asj_all_service_jacket]",
+    "permeance": {
+     "value": "≤0.01 perm",
+     "method": "ASTM E96 Procedure A",
+     "src": [
+      "J26"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J26"
+    ]
+   },
+   {
+    "product": "Lamtec R-3035 Foil/Scrim/Kraft",
+    "carried_from": "jackets-verified.json items[fsk_facing]",
+    "permeance": {
+     "value": "≤0.02 perm",
+     "method": "ASTM E96 Procedure A",
+     "src": [
+      "J25"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J25"
+    ]
+   },
+   {
+    "product": "Saranex 540 CX Vapor Retarder Film (PVDC; the 'Saran 540' film)",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "thickness_mil": 4,
+    "permeance": {
+     "value_perm": 0.02,
+     "method": "ASTM E96 (1 perm = 1 gr/hr/ft²/in·Hg @73°F, 50% R.H.)",
+     "src": [
+      "J27"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -40,
+     "max_f": 250,
+     "definition_quote": "Service temperature limits is defined as the temperature to which the jacket or coating may be subjected when applied over insulation. it does not refer to the operating temperature of the equipment, vessel, or pipe (Source: National Insulation Association).",
+     "src": [
+      "J27"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J27"
+    ]
+   },
+   {
+    "product": "Saranex 560 CX Vapor Retarder Film (PVDC; the 'Saran 560' film)",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "thickness_mil": 6,
+    "permeance": {
+     "value_perm": 0.01,
+     "method": "ASTM E96",
+     "src": [
+      "J28"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -40,
+     "max_f": 250,
+     "src": [
+      "J28"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J28"
+    ]
+   },
+   {
+    "product": "Saranex 520 CX Vapor Retarder Tape",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "backing_mil": 2,
+    "permeance": {
+     "value_perm": 0.03,
+     "method": "ASTM E96",
+     "src": [
+      "J29"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -40,
+     "max_f": 250,
+     "src": [
+      "J29"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J29"
+    ]
+   },
+   {
+    "product": "Saranex 560 CX Vapor Retarder Tape",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "backing_mil": 6,
+    "permeance": {
+     "value_perm": 0.01,
+     "method": "ASTM E96",
+     "src": [
+      "J30"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -40,
+     "max_f": 250,
+     "src": [
+      "J30"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J30"
+    ]
+   },
+   {
+    "product": "Polyguard Insulrap 30-NG (current name of Insulrap 30)",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "thickness_mil": 30,
+    "permeance": {
+     "value_perm": 0.0,
+     "method": "ASTM E96-00 Procedure A",
+     "quote": "Water Vapor Transmission ASTM E96-00 Procedure A 0.00 perms",
+     "src": [
+      "J33",
+      "J34"
+     ]
+    },
+    "service_temperature": {
+     "max_f": 160,
+     "max_basis": "Service Temperature (Max), LAB",
+     "min_f": "unverified",
+     "operating_limit_quote": "Insulation surface temperature should not exceed 150°F during operation.",
+     "src": [
+      "J33"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J33",
+     "J34"
+    ]
+   },
+   {
+    "product": "Owens Corning PITTWRAP IW50 AL jacketing",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "thickness_mil": 50,
+    "permeance": {
+     "value_perm": 0.0009,
+     "method": "ASTM E96 Procedure A (0.05 ng/Pa-s-m²)",
+     "src": [
+      "J35"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -4,
+     "max_f": 167,
+     "basis": "approved exposure temperature at the jacket",
+     "src": [
+      "J35"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J35"
+    ]
+   },
+   {
+    "product": "Owens Corning PITTWRAP B100 jacketing",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "thickness": "1.2 ± 0.05 mm (47.3 ± 2 mil)",
+    "permeance": {
+     "value_perm": 0.0005,
+     "method": "ASTM E 96 Procedure A (0.027 ng/Pa-s-m²)",
+     "src": [
+      "J36"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -58,
+     "max_f": 284,
+     "basis": "approved exposure temperature at the jacket",
+     "src": [
+      "J36"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J36"
+    ]
+   },
+   {
+    "product": "Owens Corning PITTCOTE 300E coating",
+    "carried_from": "jackets-verified.json items[vapor_retarder_films_tapes_membranes]",
+    "water_vapor_permeability": {
+     "value": "0.13 perm-in",
+     "method": "ASTM E96 (Water Method)",
+     "note": "Printed as permeability (perm-in), not permeance. No permeance at a stated thickness is printed, and none was computed.",
+     "src": [
+      "J37"
+     ]
+    },
+    "permeance_perm": "unverified",
+    "standard_thickness": "1.6 L/m² (4 gal/100 ft²) to achieve a cured coating thickness of 1.7 mm (65 mils), applied as a 3 gal/100 ft² tack coat with PC 150 mesh plus a 1 gal/100 ft² second coat",
+    "src_in_jackets_verified": [
+     "J37"
+    ]
+   },
+   {
+    "product": "Foster 30-65 Vapor-Fas WB Coating",
+    "carried_from": "jackets-verified.json items[vapor_retarder_mastic]",
+    "permeance": {
+     "f1249": "0.08 perms at 45 mils dry film thickness, tested at 100°F (38°C) and 50% RH",
+     "e96_procedure_a": "0.08 perms at 44 mils dry film thickness, tested at 72°F and 50% RH",
+     "tested_with": "reinforcing mesh",
+     "c755_quote": "Meets the permeance requirements of ASTM C755-19, Section 7.2.2 for below ambient vapor retarder coatings when used as a closure mastic in conjunction with ASJ and other vapor retarder membranes.",
+     "src": [
+      "J38"
+     ]
+    },
+    "older_revision_permeance": {
+     "quote": "ASTM E 96 Procedure A, 0.03 perms at 45 mils dry. Tested at 72°F and 50% RH.",
+     "note": "From the superseded DSF30-65 R0512 sheet. Kept only to document the change; R1119 values above are used.",
+     "src": [
+      "J39"
+     ]
+    },
+    "service_temperature": {
+     "min_f": -20,
+     "max_f": 180,
+     "basis": "Temperature at coated surface.",
+     "src": [
+      "J38"
+     ]
+    },
+    "src_in_jackets_verified": [
+     "J38"
+    ]
+   },
+   {
+    "product": "Proto LoSmoke PVC jacketing and fitting covers (Proto Corporation, Clearwater FL; also listed on Knauf Insulation's site)",
+    "carried_from": "jackets-verified.json items[pvc_jacketing_fitting_covers]",
+    "permeance": {
+     "method": "ASTM E96 Procedure A (French version of the sheet: 70°F & 50% RH)",
+     "values_perm": {
+      "0.015 in": "≤0.058",
+      "0.020 in": "≤0.047",
+      "0.030 in": "≤0.027",
+      "0.020 in tested over code-compliant vapor barrier (ASTM C1136 ≤0.02 perm)": "≤0.02"
+     },
+     "src": [
+      "J6"
+     ]
+    },
+    "thickness": {
+     "fitting_covers": "'Standard and Heavy Duty' (no mil value printed; unverified)",
+     "jacketing_mil_range": "10 to 40",
+     "outdoor_min": "0.030 in; 0.040 in for any O.D. over 15 in",
+     "quotes": [
+      "Jacketing: PVC rolls and cut and curl are available in thickness ranging from 10 to 40 mil at a 35 1/2” and 48” width",
+      "Proto PVC Jacketing thickness for outdoor applications should be a minimum of 0.030” (0.8 mm) and 0.040”(1.0 mm) for any O.D. over 15”."
+     ],
+     "src": [
+      "J6"
+     ]
+    },
+    "src_in_jackets_verified": []
+   },
+   {
+    "product": "Johns Manville Zeston 2000 Series PVC insulated fitting covers (standard gauge) with Zeston PVC jacketing",
+    "carried_from": "jackets-verified.json items[pvc_jacketing_fitting_covers]",
+    "vapor_retarder": {
+     "value": "JM calls the jacketing an 'inherent vapor retarder' but publishes no permeance.",
+     "quote": "designed to provide an inherent vapor retarder and protection to insulated pipes",
+     "permeance_perm": "unverified",
+     "src": [
+      "J2"
+     ]
+    },
+    "src_in_jackets_verified": []
+   },
+   {
+    "product": "JM Aluminum Roll and Sheet jacketing (formerly Pabco/Childers Metals); JM Painted Aluminum Roll; JM Ell-Jacs Plus elbows",
+    "carried_from": "jackets-verified.json items[aluminum_jacketing]",
+    "not_a_vapor_retarder": {
+     "quote": "Aluminum or stainless steel protective jacketing shall not be considered a vapor retarder.",
+     "src": [
+      "J20"
+     ]
+    },
+    "src_in_jackets_verified": []
+   },
+   {
+    "product": "JM Stainless Steel Roll & Sheet jacketing (formerly Pabco/Childers Metals)",
+    "carried_from": "jackets-verified.json items[stainless_steel_jacketing]",
+    "not_a_vapor_retarder": {
+     "quote": "Aluminum or stainless steel protective jacketing shall not be considered a vapor retarder.",
+     "src": [
+      "J20"
+     ]
+    },
+    "src_in_jackets_verified": []
+   },
+   {
+    "product": "K-FLEX TITAN (jacketed NBR/PVC elastomeric tube)",
+    "carried_from": "materials-verified.json materials[elastomeric].products[1].water_vapor",
+    "water_vapor": {
+     "material_permeability": "<0.01 perm-in, dry cup, ASTM E96 (core material only)",
+     "jacket_permeance": "≤0.05 perms (Class I vapor retarder), ASTM E96 (jacket material)",
+     "vapor_retarder_required": "No — 'K-FLEX TITAN needs no additional protection.' Seams, butt joints and ends sealed with approved contact adhesive; vapor stops installed as needed.",
+     "note": "",
+     "src": [
+      "S7"
+     ]
+    }
+   },
+   {
+    "product": "Resolco Insul-Phen (CFC & HCFC free rigid phenolic insulation) - standard 2.5 pcf pipe/equipment grade — factory jackets",
+    "carried_from": "materials-verified.json materials[phenolic].products[0].water_vapor",
+    "jacket_permeance": "VentureWrap and VentureClad factory jackets: '0 perm' (quick spec). Venture 1555U: 'factory applied zero perm jacket'. ASJ perm rating not stated. Field vapor barrier mastic spec: max 0.08 US perms; Polyguard Insulrap 30 outdoor vapor barrier: permeance 0.015 max.",
+    "src_in_materials_verified_phenolic": [
+     "S1",
+     "S3",
+     "S4",
+     "S7"
+    ]
+   }
+  ],
+  "unverified": [
+   "Childers CP-34 (and CHIL-PERM CP-30/CP-35) permeance: hbfullerproducts.com returned an empty AWS-WAF response (HTTP 202) and the Distribution International product page returned HTTP 403; no data sheet was read.",
+   "JM Zeston PVC jacketing permeance (JM publishes none; see carried entry).",
+   "Per-type maximum permeance of ASTM C1136 Types I–X (paywalled).",
+   "ASTM C755 numeric water-vapor-transmission recommendations (paywalled; MIDG's '<0.05 perms per ASTM C 755' is the only figure read)."
+  ]
+ },
+ "material_permeability": {
+  "units_note": "perm-in = grains·in/(h·ft²·inHg) (permeability, a material property for homogeneous material). A permeance (perms) at a stated thickness is not converted to perm-in here, and vice versa.",
+  "astm_spec_maxima": {
+   "src": [
+    "R2"
+   ],
+   "table": "Fundamentals ch. 23 Table 10 'Performance Property Guide for Insulation Materials' — row 'Maximum water vapor permeability, perm · in.' (values are ASTM specification limits, not product data)",
+   "values_perm_in": {
+    "calcium silicate (C533 Type I)": "N/S",
+    "flexible elastomeric (C534 Type I Grade 1)": "0.10",
+    "mineral fiber (C612 Type IVA Category 1)": "N/A",
+    "cellular glass (C552 Type I Grade 1)": "0.005",
+    "cellular polystyrene (C578 Type XIII)": "1.5",
+    "cellular polyisocyanurate (C591 Type IV Grade 2)": "4.0",
+    "cellular phenolic (C1126 Type III Grade 1)": "5.0",
+    "cellular polyolefin (C1427 Type I Grade 1)": "0.05",
+    "flexible aerogel (C1728 Type III Grade 1 Category A)": "N/A",
+    "quilted microporous (C1676 Type II Grade 1)": "N/A"
+   },
+   "table_note_quote": "Note 1: N/A = not applicable. N/S = not stated (i.e., ASTM standards do not include a value for this property).",
+   "corroboration": [
+    {
+     "src": [
+      "R1"
+     ],
+     "table": "Refrigeration ch. 10 Table 2 'Properties of Insulation Materials', row 'Water vapor permeability, perm-inch'",
+     "values_perm_in": {
+      "cellular glass (C552 Type I Grade 6)": "0.005",
+      "flexible elastomeric (C534 Type I Grade 1)": "0.1",
+      "closed-cell phenolic (C1126 Type III Grade 1)": "5.0",
+      "polyisocyanurate (C591 Type IV Grade 2)": "4.0",
+      "XPS (C578 Type XIII)": "1.5",
+      "flexible aerogel (C1728 Type I Grade I Category B)": "0.00"
+     },
+     "footnote_quotes": [
+      "Tested in accordance with ASTM Standard E96, Procedure A. Cellular glass tested with ASTM Standard E96, Procedure B.",
+      "Most physical properties shown are taken from the applicable ASTM standards listed and represent requirements when tested at specific laboratory conditions."
+     ]
+    },
+    {
+     "src": [
+      "R9"
+     ],
+     "quotes": [
+      "The maximum water vapor permeability is 0.10 perm-inch for Grade 1 and 0.30 perm-inch for Grades 2 and 3.",
+      "Polyethylene/polyolefin are flexible, closed cell insulation products. The maximum water permeability values are 0.05 perm-inch and the maximum thermal conductivity is 0.35 BTU-in/hr sq ft°F at a mean temperature of 75°F."
+     ],
+     "note": "First quote is MIDG's 'Elastomeric Insulation Products' paragraph on ASTM C534 grades (MIDG's text describes the material as 'made of butyl rubber')."
+    },
+    {
+     "carried_from": "materials-verified.json astm_spec.spec_limits_per_nia_chart (NIA spec chart, April 2024): C534 Grade 1 0.10, Grades 2/3 0.30; C552 0.005 (Procedure B); phenolic 5.0"
+    }
+   ]
+  },
+  "products": [
+   {
+    "material": "flexible elastomeric",
+    "product": "Armacell AP ArmaFlex tube",
+    "permeability_perm_in": {
+     "3/8 in through 1 in walls (NBR/PVC based)": 0.05,
+     "1-1/2 in and 2 in walls (EPDM based)": 0.08
+    },
+    "method": "ASTM E 96, Procedure A",
+    "quote": "Water Vapor Permeability: 0.05 (0.725 x 10–13) 0.08 (1.16 x 10–13) ASTM E 96, Procedure A Perm-in. [Kg/(s • m • Pa)]",
+    "column_headers_quote": "3/8\" through 1\" Walls (NBR/PVC based) 1-1/2\" and 2\" Walls (EPDM based)",
+    "src": [
+     "R16"
+    ],
+    "cross_check": "materials-verified.json elastomeric products[0] water_vapor: 0.05 perm-in (0.725 × 10⁻¹³ kg/(s·m·Pa)) for 3/8\"–1\" walls; 0.08 perm-in (1.16 × 10⁻¹³) for 1-1/2\"–2\" walls — ASTM E96 Procedure A"
+   },
+   {
+    "material": "flexible elastomeric",
+    "product": "K-FLEX INSUL-TUBE",
+    "permeability_perm_in": "<0.01",
+    "method": "ASTM E96 dry cup",
+    "quote": "Water Vapor Permeability (Dry Cup) <0.01 perm-in",
+    "src": [
+     "R18"
+    ]
+   },
+   {
+    "material": "cellular glass",
+    "product": "Owens Corning FOAMGLAS ONE",
+    "permeability_perm_in": 0.0,
+    "method": "E96 Wet Cup",
+    "quote": "Water Vapor Permeability E96 Wet Cup 0.00 ng/Pa·s·m 0.00 perm·inch",
+    "also_quote": "Impermeable to water and water vapor",
+    "src": [
+     "R21"
+    ]
+   },
+   {
+    "material": "polyisocyanurate (ASTM C591)",
+    "product": "Johns Manville Trymer 2000XP",
+    "permeability_perm_in": 4,
+    "method": "ASTM E96 (procedure not stated)",
+    "quote": "Water Vapor Permeability, ASTM E96 4 perm-inches (5.8 ng/Pa•s•m)",
+    "src": [
+     "R19"
+    ]
+   },
+   {
+    "material": "phenolic (ASTM C1126)",
+    "product": "Resolco Insul-Phen / Kingspan Kooltherm",
+    "permeability_perm_in": "unverified",
+    "note": "No phenolic pipe-insulation data sheet read in this or the earlier pass prints a permeability (materials-verified.json phenolic: 'unverified'). Use the ASTM C1126 Type III Grade 1 maximum (5.0 perm-in, R2/R1) only as a specification ceiling."
+   },
+   {
+    "material": "fiberglass (ASTM C547)",
+    "product": "Owens Corning SSL II with ASJ Max",
+    "permeability_perm_in": "unverified (not published)",
+    "quote": "Water Vapor Sorption ASTM C1104 Less than 5% by weight",
+    "src": [
+     "R22"
+    ],
+    "note": "Only sorption is published; the vapor retarder is the ASJ Max jacket (0.01 perm). ASHRAE Table 10 (R2) lists mineral fiber permeability as 'N/A'."
+   },
+   {
+    "material": "fiberglass (ASTM C547)",
+    "product": "Johns Manville Micro-Lok HP",
+    "permeability_perm_in": "unverified (not published)",
+    "src": [
+     "R23"
+    ],
+    "note": "Data sheet gives jacket permeance only (0.02 perms max)."
+   },
+   {
+    "material": "mineral wool",
+    "product": "ROCKWOOL ProRox PS 960NA; JM MinWool-1200",
+    "permeability_perm_in": "unverified",
+    "carried_from": "materials-verified.json mineral_wool products[0..1] water_vapor.material_permeability = 'unverified (no E96 value published)'"
+   }
+  ],
+  "generic_ashrae_ch26_table6": {
+   "src": [
+    "R6"
+   ],
+   "table": "Table 6 Water Vapor Permeance at Various Relative Humidities and Capillary Water Absorption Coefficient — 'Insulation' rows",
+   "note": "These are permeances in perms at the stated specimen thickness, at the stated mean RH. '^*' rows are footnoted 'Historical data, no reference available'. Not converted to perm-in.",
+   "rows": [
+    {
+     "material": "Cellular glass",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "50% column (historical)": "0.0"
+     }
+    },
+    {
+     "material": "Glass fiber batt, 0.7 lb/ft³",
+     "thickness_in": 3.5,
+     "permeance_perm": {
+      "10%": 34,
+      "30%": 34,
+      "50%": 34,
+      "70%": 34,
+      "90%": 34
+     },
+     "ref": "Kumaran (2002)"
+    },
+    {
+     "material": "Glass-fiber insulation board, 7.6 lb/ft³",
+     "thickness_in": 0.93,
+     "permeance_perm": {
+      "10%": 145,
+      "30%": 145,
+      "50%": 145,
+      "70%": 145,
+      "90%": 145
+     },
+     "ref": "Burch and Desjarlais (1995)"
+    },
+    {
+     "material": "Mineral fiber, 9 to 11 lb/ft³",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "10%": 87,
+      "30%": 87,
+      "50%": 87,
+      "70%": 87,
+      "90%": 87
+     },
+     "ref": "Kumaran (1996)"
+    },
+    {
+     "material": "Mineral wool (unprotected)",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "50% column (historical)": "116"
+     }
+    },
+    {
+     "material": "Phenolic foam (covering removed)",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "50% column (historical)": "26"
+     }
+    },
+    {
+     "material": "Polyisocyanurate foam board, 1.7 lb/ft³",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "10%": 2.8,
+      "30%": 3.1,
+      "50%": 3.5,
+      "70%": 4.0,
+      "90%": 4.5
+     },
+     "ref": "Kumaran (2002)"
+    },
+    {
+     "material": "Polyisocyanurate foam board, 2.0 lb/ft³",
+     "thickness_in": 0.97,
+     "permeance_perm": {
+      "10%": 2.0,
+      "30%": 2.3,
+      "50%": 2.5,
+      "70%": 2.8,
+      "90%": 3.2
+     },
+     "ref": "Burch and Desjarlais (1995)"
+    },
+    {
+     "material": "Polystyrene, extruded, 1.8 lb/ft³",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "10%": 0.8,
+      "30%": 0.8,
+      "50%": 0.8,
+      "70%": 0.8,
+      "90%": 0.8
+     },
+     "ref": "Kumaran (2002)"
+    },
+    {
+     "material": "Unicellular synthetic flexible rubber foam",
+     "thickness_in": 1,
+     "permeance_perm": {
+      "30% column (dry cup, historical)": "0.02–0.15"
+     }
+    },
+    {
+     "material": "Aerogel, 10 lb/ft³",
+     "thickness_in": 0.4,
+     "permeance_perm": {
+      "30%": 45.4,
+      "50%": 48.4,
+      "70%": 51.5,
+      "90%": 109.9
+     },
+     "ref": "Schumacher et al. (2020)"
+    }
+   ],
+   "header_quote": "Material | Thickness, in. | Permeance at Various Relative Humidities, perm (10% | 30% | 50% | 70% | 90%) | Water Absorption Coefficient | References/Comments",
+   "footnote_quote": "* Historical data, no reference available"
+  },
+  "not_vapor_retarders": [
+   {
+    "material": "fiberglass / mineral fiber",
+    "basis": "ASHRAE ch. 26 Table 6 permeances of 34–145 perm for 0.93–3.5 in. specimens (R6); ASHRAE Table 10 lists mineral fiber permeability as N/A (R2); ASTM C755 scope: 'A vapor retarder system is separate and distinct from the insulation, or is provided by the insulation itself when it is has adequate vapor resistant properties' (R11).",
+    "src": [
+     "R6",
+     "R2",
+     "R11"
+    ]
+   }
+  ],
+  "discrepancies": [
+   "Cellular glass: ASTM C552 maximum is 0.005 perm-in (R1, R2; tested by E96 Procedure B per R1 footnote) while the FOAMGLAS ONE data sheet prints 0.00 perm·inch (R21, E96 wet cup) and ASHRAE ch. 26 Table 6 gives 0.0 perm for 1 in. (historical).",
+   "Polyisocyanurate: ASTM C591 Type IV Grade 2 maximum 4.0 perm-in (R1, R2) equals the Trymer 2000XP published 4 perm-inches (R19). ASHRAE ch. 26 generic polyiso board permeances (R6) vary with RH (2.8–4.5 perm at 1 in.).",
+   "Elastomeric: spec maximum 0.10 perm-in (C534 Grade 1) vs product data 0.05/0.08 (AP ArmaFlex) and <0.01 (K-FLEX, dry cup). Different E96 procedures (Procedure A vs 'dry cup') — not directly comparable."
+  ]
+ },
+ "vapor_transmission_method": {
+  "definitions": [
+   {
+    "term": "water vapor permeance M",
+    "src": [
+     "R5"
+    ],
+    "quote": "Water vapor permeance M is the steady-state water vapor flux by diffusion through a flat layer, induced by a unit partial water vapor pressure difference across that layer, in lb/ft^2 · h · in. Hg."
+   },
+   {
+    "term": "water vapor resistance Z",
+    "src": [
+     "R5"
+    ],
+    "quote": "Water vapor resistance Z is the reciprocal of water vapor permeance, in ft^2 · h · in. Hg/lb."
+   },
+   {
+    "term": "water vapor permeability μp",
+    "src": [
+     "R5"
+    ],
+    "quote": "Water vapor permeability μ_p is the steady-state water vapor flux through a unit thickness of homogeneous material in a direction perpendicular to the isobaric planes, induced by a unit partial water vapor pressure difference, under specified conditions of temperature and relative humidity. Units are lb/ft · h · in. Hg."
+   },
+   {
+    "term": "units in practice (grains)",
+    "src": [
+     "R5"
+    ],
+    "quote": "Permeability is usually expressed in grains/h · ft · in. Hg and permeance in grains/h · ft^2 · in. Hg. Whereas permeability refers to the water vapor flux per unit thickness, permeance is used in reference to a material of a specific thickness. For example, a homogeneous material that is 2 in. thick generally is assumed to have half the permeance of a 1 in. thick material, even though permeances of many materials often are not strictly proportional to thickness."
+   },
+   {
+    "term": "perm (I-P)",
+    "src": [
+     "R10"
+    ],
+    "quote": "Perm = (1grain/hr/ft²)/inHg",
+    "explanation_quote": "That is: One grain of moisture passing through a 1square foot area of a material or structure in 1 hour, as induced by 1 inch of Mercury partial vapor pressure differential"
+   },
+   {
+    "term": "perm-inch (I-P)",
+    "src": [
+     "R10"
+    ],
+    "quote": "Perm-inch = ((1grain/hr/ft²)/inHg)-inch",
+    "explanation_quote": "Permeability is a measurement of a material property; it can be calculated only for homogenous materials such as insulation with no facing or coating. It is an inappropriate term for use with facings."
+   },
+   {
+    "term": "perm (as printed on a manufacturer sheet, with test condition)",
+    "carried_from": "jackets-verified.json J27 (JM Saranex 540 CX): '1 perm = 1 gr/hr/ft²/in·Hg @73°F, 50% R.H.'"
+   },
+   {
+    "term": "permeability vs permeance (insulation usage)",
+    "src": [
+     "R2"
+    ],
+    "quote": "Water vapor permeability, a material property, is the water vapor flux through 1 in. thickness of a material induced by a unit vapor pressure gradient across the material. For insulating materials, it is commonly expressed in units of perm · in. A related and often-confused term is water vapor permeance, a performance measurement (in perms), which expresses water vapor flux through a material of expressed thickness of use and is generally used to define the performance of the insulation as a vapor retarder. ASTM Standard E96 is used to determine water vapor transmission of materials."
+   }
+  ],
+  "equations": [
+   {
+    "id": "ASHRAE F ch.25 Eq. (24)",
+    "equation_as_printed": "m_v = −μ_p grad(p)",
+    "src": [
+     "R5"
+    ],
+    "read": "image read visually",
+    "context_quote": "The equation used to calculate water vapor flux by diffusion through materials is based on Fick’s law for diffusion of a very dilute gas (water vapor) in a binary system (water vapor and dry air):",
+    "variables_quote": [
+     "grad(p) = gradient of partial water vapor pressure, in. Hg",
+     "μ_p = water vapor permeability of porous material, gr/ft · h · in. Hg"
+    ]
+   },
+   {
+    "id": "ASHRAE F ch.25 Eq. (37) (dew-point method, flat layer)",
+    "equation_as_printed": "−m_v = μ_p Δp/d = Δp/Z",
+    "src": [
+     "R5"
+    ],
+    "read": "image read visually",
+    "context_quote": "The dew-point method uses the equations for steady-state heat conduction and diffusion in a flat component, with the vapor flux in a layer written as",
+    "variables_quote": [
+     "m_v = water vapor flux through layer of material, gr/h · ft^2",
+     "Δp = partial water vapor pressure difference across layer, in. Hg",
+     "μ_p = water vapor permeability of material, gr/ft · h · in. Hg",
+     "d = thickness of layer, ft",
+     "Z = water vapor resistance, in. Hg · ft^2 · h/gr"
+    ]
+   },
+   {
+    "id": "ASHRAE F ch.27 total resistance of layers in series",
+    "src": [
+     "R7"
+    ],
+    "quote": "Z_T = total water vapor diffusion resistance of wall (sum of diffusion resistances of all layers), rep",
+    "note": "'rep' = reciprocal perm (R7 table header 'Vapor Diffusion Resistance, Rep')."
+   }
+  ],
+  "unit_conversions": [
+   {
+    "fact": "1 lb (avoirdupois) = 7000 grains exactly",
+    "src": [
+     "R14"
+    ],
+    "quote_composite": "1 pound, avoirdupois (lb) ... 7000 grains (exactly)",
+    "quote_note": "Two-column table: the row label '1 pound, avoirdupois (lb)' and the equivalent '7000 grains (exactly)' are printed in separate columns; the avoirdupois table also prints '16 ounces = 1 pound (lb) ... = 7000 grains'."
+   },
+   {
+    "fact": "1 grain = 1/7000 lb (ASHRAE's own statement)",
+    "src": [
+     "R7"
+    ],
+    "quote": "(One grain equals 1/7000 of a pound.)"
+   },
+   {
+    "fact": "1 grain = 6.479 891 E−05 kg",
+    "src": [
+     "R15"
+    ],
+    "quote": "grain (gr) .............................................................. kilogram (kg) ....................................... 6.479 891 E−05"
+   },
+   {
+    "fact": "1 grain = 64.798 91 mg exactly; 1 gallon = 231 cubic inches = 8 pints",
+    "src": [
+     "R14"
+    ],
+    "note": "From the same Appendix C tables (used only for the worked-example check below)."
+   }
+  ],
+  "standard_test_vapor_drives": {
+   "src": [
+    "R10"
+   ],
+   "rows": [
+    {
+     "condition": "ASTM E96 Procedure A, desiccant (dry cup) @ 73°F / 50% RH",
+     "vapor_drive_inHg": 0.41,
+     "quote": "Vapor drive: 0.41 in. Hg (0.20 psi)",
+     "note_quote": "Most common test, published data & spec requirement"
+    },
+    {
+     "condition": "ASTM E96 Procedure B, water (wet cup) @ 73°F / 50% RH",
+     "vapor_drive_inHg": 0.41,
+     "quote": "Vapor drive: 0.41 in. Hg (0.20 psi)"
+    },
+    {
+     "condition": "Desiccant method @ 90°F / 90% RH",
+     "vapor_drive_inHg": 1.28,
+     "quote": "Vapor Drive: 1.28 in. Hg (0.63 psi)"
+    },
+    {
+     "condition": "ASTM E96 Procedure E, desiccant @ 100°F / 90% RH",
+     "vapor_drive_inHg": 1.74,
+     "quote": "Vapor Drive: 1.74 in. Hg (0.85 psi)"
+    }
+   ],
+   "service_examples_src": [
+    "R2"
+   ],
+   "service_examples": "Conditioned space 75°F/50% rh on 42°F chilled water: 'less than 0.20 in. Hg'; humid unconditioned spaces: 'as great as 0.80 in. Hg' (continental US) — see vapor_retarder_requirements."
+  },
+  "method_for_simulator": {
+   "statement": "Steady-state vapor flow through a flat layer: flux per unit area m_v [grains/(h·ft²)] = Δp/Z = M·Δp (R5 Eq. 37 with Z = 1/M by R5's definition). Total flow through area A: W [grains/h] = M [perm] × A [ft²] × Δp [inHg]. Mass in pounds = grains / 7000 (R14, R7). Layers in series: Z_total = Σ Z_i = Σ 1/M_i (R7), M_total = 1/Z_total. For a homogeneous layer with permeability μ [perm-in] and thickness L [in], the flat-layer permeance is μ/L (R5: 'a homogeneous material that is 2 in. thick generally is assumed to have half the permeance of a 1 in. thick material').",
+   "derivation_note": "The product form W = M·A·Δp is the flux equation multiplied by area; it is not printed in that exact form in any source read. All factors and their units are sourced (R5, R7, R10, R14).",
+   "src": [
+    "R5",
+    "R7",
+    "R10",
+    "R14"
+   ]
+  },
+  "caveats": [
+   {
+    "src": [
+     "R13"
+    ],
+    "quote": "5.2.1 A WVTR result obtained in one method under one set of test conditions cannot be used to predict the result that would be obtained using the same method with a different set of conditions, or using the other method."
+   },
+   {
+    "src": [
+     "R2"
+    ],
+    "quote": "This research also suggests that in-place system vapor permeance may be higher than the expected performance based on standard material test methods."
+   },
+   {
+    "src": [
+     "R2"
+    ],
+    "quote": "The use of vapor retarder components of a verified water vapor permeance does not guarantee that the installed system will be of the same permeance."
+   },
+   {
+    "src": [
+     "R11"
+    ],
+    "quote": "4.3.2 It is impractical to specify an “as installed” permeance value because, due to the nature of field application, attainment of system permeance equivalent to the vapor retarder materials themselves is assumed not possible."
+   },
+   {
+    "src": [
+     "R5"
+    ],
+    "quote": "In many cases, the property ignores the effect of cracks or holes in the surface. It is inappropriate to ascribe permeability to non-homogeneous or composite materials, such as structural insulated panels (SIPs) or film-faced insulation batts."
+   },
+   {
+    "src": [
+     "R6"
+    ],
+    "quote": "For example, Seiffert (1970) reported a factor of 100 increase in the vapor permeance of aluminum foil when it is 0.014% perforated, and a factor of 4000 increase when 0.22% of the surface is perforated."
+   },
+   {
+    "note": "Pipe geometry: no source read gives a radial (cylindrical) vapor-diffusion formula for pipe insulation. The flat-layer equation is exact only for a flat layer; applying it to a thick cylindrical insulation wall is an approximation whose error is unverified."
+   }
+  ],
+  "worked_example_from_source": {
+   "src": [
+    "R10"
+   ],
+   "quotes": [
+    "100 square feet of faced insulation under procedure A conditions",
+    "Assume constant 73°F, 50% RH on one side",
+    "After 1 year with a 1 perm vapor retarder, theoretically 15.1 gallons of water in vapor form is allowed through.",
+    "After 1 year with a 0.02 perm vapor retarder, theoretically 2.4 pints of water in vapor form is allowed through."
+   ],
+   "agent_check": "NOT usable as a validation case without resolving: the two results are mutually consistent (15.1 gal = 120.8 pints at 8 pints/gal [R14]; 120.8 × 0.02 = 2.4 pints), but W = M·A·Δp·t with the same slide deck's Procedure A drive of 0.41 inHg gives 1 × 100 × 0.41 × 8760 h = 359,160 grains = 51.3 lb for the 1 perm case, about 6 gallons (agent arithmetic; the 8760 h/yr and the water density of about 62.3 lb/ft³ are NOT from a source read). The slide's 15.1 gallons corresponds to a vapor drive of about 1.0 inHg. The slide does not state the Δp it used.",
+   "status": "discrepancy — see unverified"
+  }
+ },
+ "code_minimum_thickness": {
+  "correction_formula": {
+   "equation": "T = r[(1 + t/r)^(K/k) − 1]",
+   "as_printed": [
+    {
+     "src": [
+      "R30"
+     ],
+     "edition": "ASHRAE 90.1-2019 Table 6.8.3-1 and 6.8.3-2 footnote a (shown struck through by Addendum aq, i.e. the 2019 base text)",
+     "quote": "a. For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows: T = r{(1 + t/r)K/k – 1},where T = minimum insulation thickness (in), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu·in/h·ft2·°F); and k = the upper value of the conductivity range listed in this table for the applicable fluid temperature.",
+     "visual_check": "Page 4 render: 'K/k' is printed as a superscript (exponent) on (1 + t/r)."
+    },
+    {
+     "src": [
+      "R2",
+      "R3",
+      "R4"
+     ],
+     "edition": "ASHRAE Handbook—Fundamentals ch. 23 Table 3A footnote a (F17, F21, F25 identical text)",
+     "quote_with_image_placeholder": "For insulation outside stated conductivity range, determine minimum thickness T as follows: [equation image] where T = minimum insulation thickness (in.), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternative material at mean rating temperature indicated for applicable fluid temperature (Btu · in/h · ft^2 · °F); and k = upper value of conductivity range listed in this table for the applicable fluid temperature.",
+     "equation_image_read": "T = r{(1 + t/r)^(K/k) − 1} (F25 equations/F23_ieq001_ip.jpg)"
+    },
+    {
+     "src": [
+      "R25"
+     ],
+     "edition": "ASHRAE 90.1-2010 Tables 6.8.3A/6.8.3B footnote a (as reproduced in Insulation Outlook figures)",
+     "visual_transcription": "For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows: T = r{(1 + t/r)^(K/k) − 1} where T = minimum insulation thickness (in.), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu•in./hr•ft²•°F); and k = the upper value of the conductivity range listed in this table for the applicable fluid temperature.",
+     "read": "low-resolution figure read visually; bracket style and superscript rendering are approximate"
+    },
+    {
+     "src": [
+      "R24"
+     ],
+     "edition": "JM Micro-Lok HP Guidebook (edition of the reproduced 90.1 table not stated)",
+     "quote": "For insulation outside the stated conductivity range, the minimum thickness (T ) should be determined as follows: T = r {(1 + t /r)K/k - 1} where T = minimum insulation thickness (in.), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu•in/[hr•ft2•°F]); and k = the upper value of the conductivity range listed in this table for the applicable fluid temperature.",
+     "visual_check": "K/k rendered as superscript"
+    },
+    {
+     "src": [
+      "R37"
+     ],
+     "edition": "2020 ECCCNYS Table C403.11.3 note b (IECC-family)",
+     "text_with_visual_equation": "For Insulation outside the stated conductivity ranve, the minimum thickness (T) shall be determined as follows: T = r[(1 + t/r)^(K/k) − 1] where: T=minimum insulation thickness r= actual outside radius of pipe t=insulation thickness listed in the table for applicable fluid temperature and pipe size K=conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu·in/h·ft2·°F), and k= the upper value of the conductivity range listed in the table for the applicable fluid temperature.",
+     "note": "The equation is set in math font that pdftotext garbles; it was read from a 150 dpi render of page 4 (K/k is a superscript). 'ranve' is the source's typo."
+    }
+   ],
+   "variables": {
+    "T": "minimum insulation thickness (in.) of the alternate material",
+    "r": "actual outside radius of pipe (in.)",
+    "t": "insulation thickness listed in the table for the applicable fluid temperature and pipe size (in.)",
+    "K": "conductivity of the alternate material at the mean rating temperature indicated for the applicable fluid temperature (Btu·in/h·ft²·°F)",
+    "k": "the upper value of the conductivity range listed in the table for the applicable fluid temperature (Btu·in/h·ft²·°F)"
+   },
+   "moved_into_body_text": {
+    "src": [
+     "R30",
+     "R31",
+     "R32"
+    ],
+    "addendum_aq_foreword_quote": "Section 6.8.3, “Piping Insulation Tables,” has been reorganized. Two footnote items were moved to the body of the standard to make them easier to read. The first is the equation for calculating the minimum required insulation thickness when the insulation’s thermal conductivity is outside the range in the table. The second is the language that allows designers to calculate an alternative minimum thickness for nonsteel pipe that is thicker than schedule 80. This reorganization does not change the requirements of the standard.",
+    "body_equation_as_printed": "talt = r[(1 + ttable/r) × kalt/kupper – 1]",
+    "body_variables_quote": "talt = minimum insulation thickness of the alternate material, in. (mm); r = actual outside radius of pipe, in. (mm); ttable = insulation thickness listed in Table 6.8.3-1 or Table 6.8.3-2 for applicable fluid temperature and pipe size; kalt = thermal conductivity of the alternate material at mean rating temperature indicated for the applicable fluid temperature, Btu·in/h·ft2·°F (W/[m·°C]); kupper = upper value of the thermal conductivity range listed in this table for the applicable fluid temperature, Btu·in/h·ft2·°F] (W/[m·°C])",
+    "visual_check": "R30 and R31 page renders show '×' on the line, NOT a superscript; R32 (NYC 2025 text) prints 't_alt = r[(1 + t_table/r) × k_alt/k_upper — 1]'.",
+    "interpretation": "The printed body-text form multiplies by K/k instead of raising to the power K/k. The addendum's own foreword says the move 'does not change the requirements', and every footnote form read (2010, 2019, Handbook, JM, ECCCNYS) uses the exponent. Treat the exponent form as the requirement and the '×' form as a typesetting discrepancy; ASHRAE has not been seen to publish an erratum for it (unverified)."
+   }
+  },
+  "tables": [
+   {
+    "edition": "ASHRAE 90.1-2010",
+    "table_ids": [
+     "6.8.3A (heating and hot water)",
+     "6.8.3B (cooling)"
+    ],
+    "src": [
+     "R25"
+    ],
+    "verification": "Read visually from Insulation Outlook Figures 1–2 (633x348 px JPEG, upscaled); heating values corroborated by R27 (HSB, text) for all five rows/four size groups it prints.",
+    "heading_heating_verbatim": "Table 1: ASHRAE Standard 90.1 Table 6.8.3A: Minimum Pipe Insulation Thickness for Heating and Hot Water Systems a, b, c, d (Steam, Steam Condensate, Hot Water Heating, and Domestic Systems)",
+    "heading_cooling_verbatim": "Table 2: ASHRAE Standard 90.1 Table 6.8.3B: Minimum Pipe Insulation Thickness for Cooling Systems (Chilled Water, Brine, and Refrigerant) a, b, c",
+    "column_header_note": "Largest size column is printed '> 8' in both figures.",
+    "heating_rows_F": [
+     {
+      "range_F": ">350",
+      "k_range": "0.32 - 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_nps": {
+       "<1": "4.5",
+       "1 to <1 1/2": "5.0",
+       "1 1/2 to <4": "5.0",
+       "4 to <8": "5.0",
+       ">=8": "5.0"
+      }
+     },
+     {
+      "range_F": "251 to 350",
+      "k_range": "0.29 - 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_nps": {
+       "<1": "3.0",
+       "1 to <1 1/2": "4.0",
+       "1 1/2 to <4": "4.5",
+       "4 to <8": "4.5",
+       ">=8": "4.5"
+      }
+     },
+     {
+      "range_F": "201 to 250",
+      "k_range": "0.27 - 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_nps": {
+       "<1": "2.5",
+       "1 to <1 1/2": "2.5",
+       "1 1/2 to <4": "2.5",
+       "4 to <8": "3.0",
+       ">=8": "3.0"
+      }
+     },
+     {
+      "range_F": "141 to 200",
+      "k_range": "0.25 - 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_nps": {
+       "<1": "1.5",
+       "1 to <1 1/2": "1.5",
+       "1 1/2 to <4": "2.0",
+       "4 to <8": "2.0",
+       ">=8": "2.0"
+      }
+     },
+     {
+      "range_F": "105 to 140",
+      "k_range": "0.22 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_nps": {
+       "<1": "1.0",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.5",
+       "4 to <8": "1.5",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "cooling_rows_F": [
+     {
+      "range_F": "40 to 60",
+      "k_range": "0.21 - 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "0.5",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.0"
+      }
+     },
+     {
+      "range_F": "<40",
+      "k_range": "0.20 - 0.26",
+      "mean_rating_temp_F": 50,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.0"
+      }
+     }
+    ],
+    "footnotes_read": {
+     "heating": [
+      "b: energy efficiency only; additional insulation sometimes required for safety/surface temperature",
+      "c: piping < 1-1/2 in. in partitions within conditioned spaces: reduction by 1 in. permitted (before footnote a adjustment) but not below 1 in.",
+      "d: direct-buried heating and hot water piping: reduction by 1.5 in. permitted (before footnote a adjustment) but not below 1 in."
+     ],
+     "cooling": [
+      "b: 'These thicknesses are based on energy efficiency considerations only. Issues such as water vapor permeability or surface condensation sometimes require vapor retarders or additional insulation.'",
+      "c: 'For direct-buried cooling system piping, insulation is not required.'"
+     ]
+    },
+    "hsb_corroboration": {
+     "src": [
+      "R27"
+     ],
+     "quote": "ASHRAE 90.1 Energy Standard 2010 TABLE 6.8.3A Minimum Pipe Insulation Thickness",
+     "note": "HSB prints four size columns ('<1\"', '<1-1/2\"', '1-1/2\" to <4\"', '4+\"'); its values equal the first four columns of R25 heating rows."
+    },
+    "context_quotes": {
+     "src": [
+      "R25"
+     ],
+     "quotes": [
+      "Pipe insulation thicknesses are greater than or equal to those in the 2007 standard, but duct insulation thicknesses have not changed.",
+      "On steam distribution pipes in buildings, those thicknesses will increase from 4 in. to 5 in. on most pipe sizes when using materials such as mineral wool, fiberglass, and calcium silicate."
+     ]
+    }
+   },
+   {
+    "edition": "ASHRAE 90.1-2013",
+    "src": [
+     "R26"
+    ],
+    "values": "same as 90.1-2010 per R26 (table itself not read)",
+    "quote": "Minimum required insulation thicknesses and R-values for pipe, equipment, and ducts were increased in the 2010 edition over the 2007 edition, but there are no changes in this area in the 2013 edition over the 2010 edition."
+   },
+   {
+    "edition": "ASHRAE 90.1-2016",
+    "table_ids": [
+     "6.8.3-1",
+     "6.8.3-2"
+    ],
+    "src": [
+     "R28",
+     "R29"
+    ],
+    "values": "unverified (no 90.1-2016 table reproduction was read)",
+    "table_title_quotes": [
+     "Table 6.8.3-1 Minimum Piping Insulation Thickness Heating and Hot Water Systemsa,b,c,d,e (Steam, Steam Condensate, Hot-Water Heating and Domestic Water Systems).",
+     "Table 6.8.3-2 Minimum Piping Insulation Thickness Cooling Systems (Chilled Water, Brine, and Refrigerant). Change the insulation thickness requirement from “15 mm” to “13 mm” in three places."
+    ],
+    "errata_note_e_quote_IP_R28": "e. The table is based on steel pipe. Nonmetallic pipes schedule 80 thickness or less shall use the table values. For other nonmetallic pipes having thermal resistance greater than that of steel pipe, reduced insulation thicknesses are permitted if documentation is provided showing that the pipe with the proposed insulation has no more heat transfer per foot metre than a steel pipe of the same size with the insulation thickness shown in the table.",
+    "note": "The table-title quotes are from the SI sheet (R29); the I-P sheet (R28) prints the same Table 6.8.3-1 title and the same Note e revision (no thickness change listed for the I-P cooling table). The Note e quote is from R28 (I-P), where pdftotext renders the struck-through/inserted pair as 'per foot metre'; R29 (SI) prints 'per metre foot'."
+   },
+   {
+    "edition": "ASHRAE 90.1-2019",
+    "table_ids": [
+     "6.8.3-1 Minimum Piping Insulation Thickness Heating and Hot Water Systems",
+     "6.8.3-2 Minimum Piping Insulation Thickness Cooling Systems (Chilled Water, Brine, and Refrigerant)"
+    ],
+    "src": [
+     "R30"
+    ],
+    "verification": "Read from Addendum aq's markup of the 2019 tables (pdftotext) and checked against a 200 dpi render of page 4: no thickness, conductivity or mean-temperature cell is struck or underlined, so these are the 90.1-2019 base values and remain unchanged after Addendum aq.",
+    "heading_markup_as_extracted": "Table 6.8.3-1 Minimum Piping Insulation Thickness for Heating and Hot-Water Systemsa,b,c,d,e (Steam, Steam Condensate, and Hot-Water Heating and Domestic Water Systems)",
+    "heading_markup_note": "pdftotext merges struck and underlined text. The page render shows 'for' and 'and' underlined (added) and 'and Hot-Water', superscript 'e', and 'Heating and Domestic Water Systems' struck (deleted). The 2019 base title is therefore 'Table 6.8.3-1 Minimum Piping Insulation Thickness Heating and Hot-Water Systems(a,b,c,d,e) (Steam, Steam Condensate, Hot-Water Heating and Domestic Water Systems)' (consistent with the 2016 errata title, R28/R29).",
+    "heating_rows_F": [
+     {
+      "range_F": ">350",
+      "k_range": "0.32 to 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_nps": {
+       "<1": "4.5",
+       "1 to <1 1/2": "5.0",
+       "1 1/2 to <4": "5.0",
+       "4 to <8": "5.0",
+       ">=8": "5.0"
+      }
+     },
+     {
+      "range_F": "251 to 350",
+      "k_range": "0.29 to 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_nps": {
+       "<1": "3.0",
+       "1 to <1 1/2": "4.0",
+       "1 1/2 to <4": "4.5",
+       "4 to <8": "4.5",
+       ">=8": "4.5"
+      }
+     },
+     {
+      "range_F": "201 to 250",
+      "k_range": "0.27 to 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_nps": {
+       "<1": "2.5",
+       "1 to <1 1/2": "2.5",
+       "1 1/2 to <4": "2.5",
+       "4 to <8": "3.0",
+       ">=8": "3.0"
+      }
+     },
+     {
+      "range_F": "141 to 200",
+      "k_range": "0.25 to 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_nps": {
+       "<1": "1.5",
+       "1 to <1 1/2": "1.5",
+       "1 1/2 to <4": "2.0",
+       "4 to <8": "2.0",
+       ">=8": "2.0"
+      }
+     },
+     {
+      "range_F": "105 to 140",
+      "k_range": "0.22 to 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_nps": {
+       "<1": "1.0",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.5",
+       "4 to <8": "1.5",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "cooling_rows_F": [
+     {
+      "range_F": "40 to 60",
+      "k_range": "0.21 to 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "0.5",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.0"
+      }
+     },
+     {
+      "range_F": "<40",
+      "k_range": "0.20 to 0.26",
+      "mean_rating_temp_F": 50,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "footnotes_2019_base": {
+     "heating": [
+      "a. For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows: T = r{(1 + t/r)K/k – 1},where T = minimum insulation thickness (in), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu·in/h·ft2·°F); and k = the upper value of the conductivity range listed in this table for the applicable fluid temperature.",
+      "b. These thicknesses are based on energy efficiency considerations only. Additional insulation is sometimes required relative to safety issues/surface temperature.",
+      "c. For piping smaller than 1.5 in. and located in partitions within conditioned spaces, reduction of these thicknesses by 1 in. shall be permitted (before thickness adjustment required in footnote [a]) but not to thicknesses below 1 in.",
+      "d. For direct-buried heating and hot-water system piping, reduction of these thicknesses by 1.5 in. shall be permitted (before thickness adjustment required in footnote [a]) but not to thicknesses below 1.5 in.",
+      "e. The table is based on steel pipe. Nonmetallic pipes schedule 80 thickness or less shall use the table values. For other nonmetallic pipes having thermal resistance greater than that of steel pipe, reduced insulation thicknesses are permitted if documentation is provided showing that the pipe with the proposed insulation has no more heat transfer per foot than a steel pipe of the same size with the insulation thickness shown in the table."
+     ],
+     "cooling": [
+      "a. For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows: T = r{(1 + t/r)K/k – 1}, where T = minimum insulation thickness (in.), r = actual outside radius of pipe (in.), t = insulation thickness listed in this table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu·in/h·ft2·°F); and k = the upper value of the conductivity range listed in this table for the applicable fluid temperature.",
+      "b. These thicknesses are based on energy efficiency considerations only. Issues such as water vapor permeability or surface condensation sometimes require vapor retarders or additional insulation.",
+      "c. For direct-buried cooling system piping, insulation is not required.",
+      "d. The table is based on steel pipe. ..."
+     ],
+     "letters_note": "Letters are the 2019 base letters (before Addendum aq relettered them). In the cooling footnote the pdftotext line drops the superscript K/k ('T = r{(1 + t/r) – 1}') — the render shows the superscript; the text above restores it from the identical heating footnote."
+    },
+    "page_reference": {
+     "src": [
+      "R39"
+     ],
+     "quote": "Piping Insulation - Reference Tables 6.8.3-1 and 6.8.3-2 on page 150 in 90.1-2019"
+    }
+   },
+   {
+    "edition": "ASHRAE 90.1-2022 (as adopted in the 2025 New York State/New York City energy code)",
+    "table_ids": [
+     "6.8.3-1",
+     "6.8.3-2"
+    ],
+    "src": [
+     "R32",
+     "R33",
+     "R34"
+    ],
+    "verification": "Values read from UpCodes' text of 'NYC Energy Code 2025 > ... > 6.8.3 Piping Insulation Tables'. R33: 'The New York State-specific version of the publication entitled “Standard 90.1, Energy Standard for Buildings Except Low-Rise Residential Buildings,” published by the International Code Council, as incorporated in the ECCCNYS shall be known as “2025 NYS ASHRAE 90.1.”'; R34: 'The State Energy Code incorporates the 2024 IECC and ASHRAE 90.1-2022,'. The national ASHRAE 90.1-2022 text itself was not read, and NYS/NYC amendments to this section cannot be ruled out.",
+    "heating_heading_verbatim": "Table 6.8.3-1 Minimum Piping Insulation Thickness Heating and Hot-Water Systems^a,b,c,d (Steam, Steam Condensate, Hot-Water Heating and Domestic Water Systems)",
+    "heating_rows_F": [
+     {
+      "range_F": ">350",
+      "k_range": "0.32 to 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_nps": {
+       "<1": "4.5",
+       "1 to <1 1/2": "5.0",
+       "1 1/2 to <4": "5.0",
+       "4 to <8": "5.0",
+       ">=8": "5.0"
+      }
+     },
+     {
+      "range_F": "251 to 350",
+      "k_range": "0.29 to 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_nps": {
+       "<1": "3.0",
+       "1 to <1 1/2": "4.0",
+       "1 1/2 to <4": "4.5",
+       "4 to <8": "4.5",
+       ">=8": "4.5"
+      }
+     },
+     {
+      "range_F": "201 to 250",
+      "k_range": "0.27 to 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_nps": {
+       "<1": "2.5",
+       "1 to <1 1/2": "2.5",
+       "1 1/2 to <4": "2.5",
+       "4 to <8": "3.0",
+       ">=8": "3.0"
+      }
+     },
+     {
+      "range_F": "141 to 200",
+      "k_range": "0.25 to 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_nps": {
+       "<1": "1.5",
+       "1 to <1 1/2": "1.5",
+       "1 1/2 to <4": "2.0",
+       "4 to <8": "2.0",
+       ">=8": "2.0"
+      }
+     },
+     {
+      "range_F": "105 to 140",
+      "k_range": "0.22 to 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_nps": {
+       "<1": "1.0",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.5",
+       "4 to <8": "1.5",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "cooling_rows_F": [
+     {
+      "range_F": "40 to 60",
+      "k_range": "0.21 to 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "0.5",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.0"
+      }
+     },
+     {
+      "range_F": "<40",
+      "k_range": "0.20 to 0.26",
+      "mean_rating_temp_F": 50,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "values_note": "Every cell equals the 90.1-2019 table (R30).",
+    "footnote_differences_vs_2019": [
+     "Direct-buried heating reduction floor: R32 'but not to thicknesses below 1 in.' vs 90.1-2019 base (R30) 'but not to thicknesses below 1.5 in.'",
+     "R32 prints 'For service water heating systems, see Table 7.4-2.' (R30 Addendum aq says 'see Table 7.4'.)"
+    ],
+    "section_text_quote": "Hot-water heating, steam heating, and steam condensate piping shall be insulated to the minimum thickness required in Tables 6.8.3-1 and 6.8.3-2 and shall either utilize insulation within the thermal conductivity ranges in the tables, or, when the insulation thermal conductivity is not within the range in the tables, the following equation shall be used to calculate the minimum insulation thickness:",
+    "armacell_statement": {
+     "src": [
+      "R35"
+     ],
+     "quotes": [
+      "All of the information in this bulletin is based on the 2022 version of ASHRAE 90.1 and the 2021 version of the IECC and is for general guidance only.",
+      "For pipes, Tables 6.8.3-1 and 7.4-2 in ASHRAE 90.1 and section C403.12.3 in the IECC contain the identical table that shows the insulation thickness required depending on the pipe operating temperature and the size of the pipe."
+     ]
+    }
+   },
+   {
+    "edition": "ASHRAE 90.1-2022 Addendum bt (process piping, new Table 10.8-7; approved 2025-10-31)",
+    "src": [
+     "R31"
+    ],
+    "heading_verbatim": "Table 10.8-7 Minimum Piping Insulation Thickness for Process Applications a",
+    "rows_F": [
+     {
+      "range_F": ">350",
+      "k_range": "0.32 to 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_nps": {
+       "<1": "4.5",
+       "1 to <1 1/2": "5.0",
+       "1 1/2 to <4": "5.0",
+       "4 to <8": "5.0",
+       ">=8": "5.0"
+      }
+     },
+     {
+      "range_F": "251 to 350",
+      "k_range": "0.29 to 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_nps": {
+       "<1": "3.0",
+       "1 to <1 1/2": "4.0",
+       "1 1/2 to <4": "4.5",
+       "4 to <8": "4.5",
+       ">=8": "4.5"
+      }
+     },
+     {
+      "range_F": "201 to 250",
+      "k_range": "0.27 to 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_nps": {
+       "<1": "2.5",
+       "1 to <1 1/2": "2.5",
+       "1 1/2 to <4": "2.5",
+       "4 to <8": "3.0",
+       ">=8": "3.0"
+      }
+     },
+     {
+      "range_F": "141 to 200",
+      "k_range": "0.25 to 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_nps": {
+       "<1": "1.5",
+       "1 to <1 1/2": "1.5",
+       "1 1/2 to <4": "2.0",
+       "4 to <8": "2.0",
+       ">=8": "2.0"
+      }
+     },
+     {
+      "range_F": "105 to 140",
+      "k_range": "0.22 to 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_nps": {
+       "<1": "1.0",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.5",
+       "4 to <8": "1.5",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "values_note": "All five rows equal the heating rows of 90.1-2019 Table 6.8.3-1 (R30). Addendum bt has no cooling rows.",
+    "foreword_quote": "The insulation must meet or exceed the minimum thickness and thermal conductivity standards specified for water heating and HVAC piping currently required in ASHRAE/IES Standard 90.1-2022.",
+    "internal_inconsistency": "The instruction line reads 'Add new Section 6.8.4 as shown (I-P and SI).' but the section added is numbered '10.4.9 Process Pipe Insulation.'"
+   },
+   {
+    "edition": "ASHRAE Handbook—Fundamentals ch. 23 Table 3A (F17, F21, F25 identical)",
+    "src": [
+     "R2",
+     "R3",
+     "R4"
+    ],
+    "values": "already transcribed in validation-cases.json preset_temperatures.ashrae_90_1_fluid_temperature_ranges (src V10); not repeated here",
+    "edition_claim_quote": "Tables 2 to 3 contain minimum insulation levels for ducts and pipes, excerpted from ANSI/ASHRAE Standard 90.1-2010.",
+    "differences_vs_90_1_2010_and_2019": [
+     "251–350°F, <1 in.: Handbook 3.5 vs 3.0 (2010 R25, 2019 R30, 2022-NYS R32, IECC-2018-family R36, Addendum bt R31).",
+     "201–250°F, 1-1/2 to <4 in.: Handbook 3.0 vs 2.5 (same sources).",
+     "Cooling conductivity ranges: Handbook 0.22 to 0.28 for both rows vs 0.21–0.27 (40–60°F) and 0.20–0.26 (<40°F) in all 90.1 sources read.",
+     "<40°F, ≥8 in.: Handbook 1.5 equals 2019/2022; the 2010 figure (R25) prints 1.0."
+    ],
+    "conclusion": "Table 3A does not match any 90.1 edition read, despite the 'excerpted from 90.1-2010' sentence. For code-minimum logic use the 90.1-2019/2022 tables above."
+   },
+   {
+    "edition": "unlabeled older 90.1 table reproduced by JM (edition unverified)",
+    "src": [
+     "R24"
+    ],
+    "heading_description": "HOT AND COLD APPLICATIONS ASHRAE STD. 90.1 / Minimum Pipe Insulation (the table with a 'Run Outs a up to 2\"' column)",
+    "heating_rows_F": [
+     {
+      "range_F": "Above 350",
+      "k_range": "0.32 - 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "1.5",
+       "1\" and less": "2.5",
+       "1-1/4\" to 2\"": "2.5",
+       "2-1/2\" to 4\"": "3.0",
+       "5\" & 6\"": "3.5",
+       "8\" & up": "3.5"
+      }
+     },
+     {
+      "range_F": "251 - 350",
+      "k_range": "0.29 - 0.31",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "1.5",
+       "1\" and less": "2.0",
+       "1-1/4\" to 2\"": "2.5",
+       "2-1/2\" to 4\"": "2.5",
+       "5\" & 6\"": "3.5",
+       "8\" & up": "3.5"
+      }
+     },
+     {
+      "range_F": "201 - 250",
+      "k_range": "0.27 - 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "1.0",
+       "1\" and less": "1.5",
+       "1-1/4\" to 2\"": "1.5",
+       "2-1/2\" to 4\"": "2.0",
+       "5\" & 6\"": "2.0",
+       "8\" & up": "3.5"
+      }
+     },
+     {
+      "range_F": "141 - 200",
+      "k_range": "0.25 - 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "0.5",
+       "1\" and less": "1.5",
+       "1-1/4\" to 2\"": "1.5",
+       "2-1/2\" to 4\"": "1.5",
+       "5\" & 6\"": "1.5",
+       "8\" & up": "1.5"
+      }
+     },
+     {
+      "range_F": "105 - 140",
+      "k_range": "0.24 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "0.5",
+       "1\" and less": "1.0",
+       "1-1/4\" to 2\"": "1.0",
+       "2-1/2\" to 4\"": "1.0",
+       "5\" & 6\"": "1.5",
+       "8\" & up": "1.5"
+      }
+     }
+    ],
+    "domestic_service_hot_water_rows_F": [
+     {
+      "range_F": "105 and Greater",
+      "k_range": "0.24 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "0.5",
+       "1\" and less": "1.0",
+       "1-1/4\" to 2\"": "1.0",
+       "2-1/2\" to 4\"": "1.5",
+       "5\" & 6\"": "1.5",
+       "8\" & up": "1.5"
+      }
+     }
+    ],
+    "cooling_rows_F": [
+     {
+      "range_F": "40 - 55",
+      "k_range": "0.23 - 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "0.5",
+       "1\" and less": "0.5",
+       "1-1/4\" to 2\"": "0.75",
+       "2-1/2\" to 4\"": "1.0",
+       "5\" & 6\"": "1.0",
+       "8\" & up": "1.0"
+      }
+     },
+     {
+      "range_F": "Below 40",
+      "k_range": "0.23 - 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_column": {
+       "Run Outs up to 2\"": "1.0",
+       "1\" and less": "1.0",
+       "1-1/4\" to 2\"": "1.5",
+       "2-1/2\" to 4\"": "1.5",
+       "5\" & 6\"": "1.5",
+       "8\" & up": "1.5"
+      }
+     }
+    ],
+    "footnote_quotes": [
+     "a Runouts to individual terminal units not exceeding 12 ft. (3.66 m) in length.",
+     "c The required minimum thicknesses do not consider water vapor transmission and condensation. Additional insulation, vapor retarders, or both, may be required to limit water vapor transmission and condensation."
+    ],
+    "note": "Pre-2010 by content (R25: 2010 values are 'greater than or equal to those in the 2007 standard'); the exact edition is not printed. Kept only for history; not for a current code check."
+   },
+   {
+    "edition": "unlabeled 90.1 table reproduced by JM (edition unverified)",
+    "src": [
+     "R24"
+    ],
+    "heading_description": "HOT AND COLD APPLICATIONS ASHRAE STD. 90.1 / Minimum Pipe Insulation (the table with 'Less than 1\"' ... '8\" & up' columns)",
+    "heating_rows_F": [
+     {
+      "range_F": "Above 350",
+      "k_range": "0.32 - 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "2.5",
+       "1\" to less than 1-1/2\"": "3.0",
+       "1-1/2\" to less than 4\"": "3.0",
+       "4\" to less than 8\"": "4.0",
+       "8\" & up": "4.0"
+      }
+     },
+     {
+      "range_F": "251 - 350",
+      "k_range": "0.29 - 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "1.5",
+       "1\" to less than 1-1/2\"": "2.5",
+       "1-1/2\" to less than 4\"": "3.0",
+       "4\" to less than 8\"": "3.0",
+       "8\" & up": "3.0"
+      }
+     },
+     {
+      "range_F": "201 - 250",
+      "k_range": "0.27 - 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "1.5",
+       "1\" to less than 1-1/2\"": "1.5",
+       "1-1/2\" to less than 4\"": "2.0",
+       "4\" to less than 8\"": "2.0",
+       "8\" & up": "2.0"
+      }
+     },
+     {
+      "range_F": "141 - 200",
+      "k_range": "0.25 - 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "1.0",
+       "1\" to less than 1-1/2\"": "1.0",
+       "1-1/2\" to less than 4\"": "1.0",
+       "4\" to less than 8\"": "1.5",
+       "8\" & up": "1.5"
+      }
+     },
+     {
+      "range_F": "105 - 140",
+      "k_range": "0.22 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "0.5",
+       "1\" to less than 1-1/2\"": "0.5",
+       "1-1/2\" to less than 4\"": "1.0",
+       "4\" to less than 8\"": "1.0",
+       "8\" & up": "1.0"
+      }
+     }
+    ],
+    "domestic_service_hot_water_rows_F": [
+     {
+      "range_F": "105 and Greater",
+      "k_range": "0.22 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "0.5",
+       "1\" to less than 1-1/2\"": "0.5",
+       "1-1/2\" to less than 4\"": "1.0",
+       "4\" to less than 8\"": "1.0",
+       "8\" & up": "1.0"
+      }
+     }
+    ],
+    "cooling_rows_F": [
+     {
+      "range_F": "40 - 60",
+      "k_range": "0.22 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "0.5",
+       "1\" to less than 1-1/2\"": "0.5",
+       "1-1/2\" to less than 4\"": "1.0",
+       "4\" to less than 8\"": "1.0",
+       "8\" & up": "1.0"
+      }
+     },
+     {
+      "range_F": "Below 40",
+      "k_range": "0.22 - 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_column": {
+       "Less than 1\"": "0.5",
+       "1\" to less than 1-1/2\"": "1.0",
+       "1-1/2\" to less than 4\"": "1.0",
+       "4\" to less than 8\"": "1.0",
+       "8\" & up": "1.5"
+      }
+     }
+    ],
+    "guidebook_quote": "Please consult your local Building Code to determine which version compliance is required.",
+    "note": "Its 'Above 350' row (4.0 in. on the larger sizes) matches R25's description of the pre-2010 requirement ('will increase from 4 in. to 5 in.'), so this is probably 90.1-2007 — that edition label is inference and unverified. Its cooling rows print mean rating temperature 100°F, unlike every other source (75/50°F)."
+   }
+  ],
+  "iecc": {
+   "iecc_2018_family_table": {
+    "edition": "IECC-based state code labelled 'Office of the State Architect (OSA) Energy Conservation Code 2018', Table C403.11.3",
+    "src": [
+     "R36"
+    ],
+    "heading_verbatim": "TABLE C403.11.3 MINIMUM PIPE INSULATION THICKNESS (in inches)^a, c",
+    "rows_F": [
+     {
+      "range_F": "> 350",
+      "k_range": "0.32 — 0.34",
+      "mean_rating_temp_F": 250,
+      "min_thickness_in_by_nps": {
+       "<1": "4.5",
+       "1 to <1 1/2": "5.0",
+       "1 1/2 to <4": "5.0",
+       "4 to <8": "5.0",
+       ">=8": "5.0"
+      }
+     },
+     {
+      "range_F": "251 — 350",
+      "k_range": "0.29 — 0.32",
+      "mean_rating_temp_F": 200,
+      "min_thickness_in_by_nps": {
+       "<1": "3.0",
+       "1 to <1 1/2": "4.0",
+       "1 1/2 to <4": "4.5",
+       "4 to <8": "4.5",
+       ">=8": "4.5"
+      }
+     },
+     {
+      "range_F": "201 — 250",
+      "k_range": "0.27 — 0.30",
+      "mean_rating_temp_F": 150,
+      "min_thickness_in_by_nps": {
+       "<1": "2.5",
+       "1 to <1 1/2": "2.5",
+       "1 1/2 to <4": "2.5",
+       "4 to <8": "3.0",
+       ">=8": "3.0"
+      }
+     },
+     {
+      "range_F": "141 — 200",
+      "k_range": "0.25 — 0.29",
+      "mean_rating_temp_F": 125,
+      "min_thickness_in_by_nps": {
+       "<1": "1.5",
+       "1 to <1 1/2": "1.5",
+       "1 1/2 to <4": "2.0",
+       "4 to <8": "2.0",
+       ">=8": "2.0"
+      }
+     },
+     {
+      "range_F": "105 — 140",
+      "k_range": "0.21 — 0.28",
+      "mean_rating_temp_F": 100,
+      "min_thickness_in_by_nps": {
+       "<1": "1.0",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.5",
+       "4 to <8": "1.5",
+       ">=8": "1.5"
+      }
+     },
+     {
+      "range_F": "40 — 60",
+      "k_range": "0.21 — 0.27",
+      "mean_rating_temp_F": 75,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "0.5",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.0"
+      }
+     },
+     {
+      "range_F": "< 40",
+      "k_range": "0.20 — 0.26",
+      "mean_rating_temp_F": 50,
+      "min_thickness_in_by_nps": {
+       "<1": "0.5",
+       "1 to <1 1/2": "1.0",
+       "1 1/2 to <4": "1.0",
+       "4 to <8": "1.0",
+       ">=8": "1.5"
+      }
+     }
+    ],
+    "differences_vs_90_1_2019": [
+     "105–140°F conductivity range 0.21 — 0.28 (90.1-2019: 0.22 to 0.28).",
+     "Heating and cooling rows are in one table (rows 40 — 60 and < 40 follow 105 — 140)."
+    ],
+    "notes_quotes": [
+     "For piping smaller than 1^1/_2 inches and located in partitions within conditioned spaces, reduction of these thicknesses by 1 inch shall be permitted (before thickness adjustment required in footnote b) but not to a thickness less than 1 inch.",
+     "For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows: where: T = minimum insulation thickness, r = actual outside radius of pipe, t = insulation thickness listed in the table for applicable fluid temperature and pipe size, K = conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu • in/h • ft^2 • °F) and k = the upper value of the conductivity range listed in the table for the applicable fluid temperature.",
+     "For direct-buried heating and hot water system piping, reduction of these thicknesses by 1^1/_2 inches (38 mm) shall be permitted (before thickness adjustment required in footnote b but not to thicknesses less than 1 inch."
+    ],
+    "exceptions_quote": "Piping that conveys fluids that have a design operating temperature range between 60°F (15°C) and 105°F (41°C).",
+    "note": "The equation image did not come through on R36; the same note on R37 (2020 ECCCNYS, IECC-family) prints the exponent form (see correction_formula)."
+   },
+   "iecc_2021_C403_12_3": "unverified — codes.iccsafe.org (R40) serves only a JavaScript shell to curl and HTTP 403 to WebFetch; not bypassed. Armacell (R35) states the IECC 2021 C403.12.3 table is 'identical' to 90.1 (2022) Table 6.8.3-1, but this is a manufacturer claim and R36 shows at least one IECC-family difference (0.21 vs 0.22 lower conductivity bound, 105–140°F).",
+   "iecc_2024_C403_12_3": "unverified (not read)"
+  },
+  "state_amendment_example": {
+   "src": [
+    "R38"
+   ],
+   "quotes": [
+    "ASHRAE 90.1 Table 6.8.3-1 Minimum piping insulation thickness heating and hot-water systems.",
+    "ASHRAE 90.1 Table 6.8.3-1 is amended to add footnote \"f\" to read as follows:",
+    "f. Insulation requirements do not apply to those sections of piping used as the radiant heat source for radiant heating systems."
+   ],
+   "note": "Minnesota (edition of 90.1 amended not stated on the page read)."
+  },
+  "relation_to_validation_cases": "validation-cases.json preset_temperatures.ashrae_90_1_fluid_temperature_ranges transcribes the Handbook Table 3A (V10) and marks its edition 'unverified'. This file shows Table 3A matches no 90.1 edition read; the 90.1-2019 table (R30), unchanged in the 2025 NYS/NYC adoption of 90.1-2022 (R32), differs from it in four places (listed above). The edition_note there should point here; that file was not edited.",
+  "discrepancies": [
+   "Correction equation: footnote form T = r{(1 + t/r)^(K/k) − 1} (all footnote sources) vs body-text form t_alt = r[(1 + t_table/r) × k_alt/k_upper – 1] printed in Addendum aq to 90.1-2019 (R30), Addendum bt to 90.1-2022 (R31) and the NYC 2025 code (R32). The addendum says the move does not change requirements, so the '×' is treated as a typesetting error.",
+   "<40°F cooling, ≥8 in.: 1.0 in. in the 90.1-2010 figure (R25) vs 1.5 in. in 90.1-2019 (R30), the 2025 NYC/NYS 90.1-2022 text (R32), the IECC-2018-family table (R36) and the Handbook Table 3A (R2). R26 says 2013 did not change 2010; whether the change came in 2016 or the R25 figure is wrong is unverified.",
+   "Direct-buried heating floor: 'not to thicknesses below 1 in.' (2010 R25, NYC 2025 R32, IECC-family R36) vs 'below 1.5 in.' (90.1-2019 base text R30).",
+   "Handbook Table 3A vs 90.1 tables: see tables[Handbook].differences_vs_90_1_2010_and_2019."
+  ]
+ },
+ "unverified": [
+  "ASHRAE 90.1-2016 Table 6.8.3-1/6.8.3-2 cell values (only titles and errata read).",
+  "National (non-NYS) ASHRAE 90.1-2022 Table 6.8.3-1/6.8.3-2 text; values here come from the 2025 NYS/NYC adoption (R32).",
+  "IECC 2021 and IECC 2024 Table C403.12.3 values (ICC site not readable; not bypassed).",
+  "Which 90.1 edition the JM guidebook's two tables reproduce (R24 prints no edition).",
+  "Whether the 90.1-2010 cooling cell '<40°F, ≥8 in. = 1.0' (R25 figure) is correct; later editions read print 1.5.",
+  "An official ASHRAE erratum for the '×' vs exponent form of the moved correction equation.",
+  "ASTM C1136 per-type maximum permeance (Types I–X) and the definitions of Types VII–X (paywalled).",
+  "ASTM C755 numeric water-vapor-transmission recommendations by service (paywalled); only MIDG's citation (<0.05 perm, 33°F–ambient) was read.",
+  "ASTM C921 class limits read only as quoted by MIDG (R9); C921 itself not read.",
+  "Childers CP-34 / CP-30 / CP-35 permeance (hbfullerproducts.com AWS WAF; distributor page HTTP 403).",
+  "Phenolic pipe insulation product permeability (Resolco Insul-Phen, Kingspan Kooltherm): no data sheet read prints one.",
+  "Mineral wool and fiberglass product permeability (manufacturers publish none; only ASHRAE generic permeances read).",
+  "A manufacturer temperature threshold below which Armacell AP ArmaFlex or K-FLEX Insul-Tube needs an added vapor retarder (none published in the documents read; K-FLEX gives a humidity condition only).",
+  "A cylindrical (radial) vapor-diffusion formula for pipe insulation; the flat-layer equation is the only one sourced.",
+  "The vapor drive used in the NIA/ASTM E96 worked example (15.1 gal / 2.4 pints per 100 ft²·yr); it does not reproduce with the 0.41 inHg Procedure A drive stated on the same slides.",
+  "ASHRAE Handbook—Refrigeration R26 and Fundamentals F25 publication years (URLs carry edition codes only; R1 refers to 'the 2025 ASHRAE Handbook—Fundamentals')."
+ ]
+}

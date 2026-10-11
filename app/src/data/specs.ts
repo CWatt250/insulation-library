@@ -3,6 +3,8 @@
 // scoped per material. Values the dataset marks "unverified" are omitted or listed in `gaps`.
 // Manufacturer values are typical/nominal; confirm against the current sheet before a submittal.
 
+import { SPECS2 } from './specs2'
+
 export interface Source { id: string; label: string; url: string }
 export interface KPoint { meanF: number; k: number } // Btu·in/(hr·ft²·°F), ASTM C335 unless noted
 export interface ProductSpec {
@@ -18,7 +20,7 @@ export interface ProductSpec {
   sources: string[]       // Source ids used by this product
 }
 export interface MaterialSpec {
-  id: 'fiberglass' | 'mineral-wool' | 'calsil' | 'cellular-glass' | 'elastomeric' | 'phenolic'
+  id: 'fiberglass' | 'mineral-wool' | 'calsil' | 'cellular-glass' | 'elastomeric' | 'phenolic' | 'pir' | 'aerogel' | 'perlite' | 'polyolefin'
   name: string            // e.g. "Calcium Silicate"
   astm: string            // e.g. "ASTM C533 Type I"
   summary: string         // 1–2 plain sentences an estimator would find useful
@@ -31,7 +33,7 @@ export interface MaterialSpec {
   sources: Source[]       // only sources referenced by this material's entries; label = manufacturer + doc title + pub/date
 }
 
-export const SPECS: Record<MaterialSpec['id'], MaterialSpec> = {
+const SPECS1: Record<Exclude<MaterialSpec['id'], keyof typeof SPECS2>, MaterialSpec> = {
   fiberglass: {
     id: 'fiberglass',
     name: "Fiberglass",
@@ -408,3 +410,5 @@ export const SPECS: Record<MaterialSpec['id'], MaterialSpec> = {
     ],
   },
 }
+
+export const SPECS: Record<MaterialSpec['id'], MaterialSpec> = { ...SPECS1, ...SPECS2 }
