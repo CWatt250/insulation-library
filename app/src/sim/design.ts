@@ -2,7 +2,7 @@ import { INSULATION, INSULATIONS, layerCount, snapThickness, type InsulationId }
 import { THICKNESSES } from '../data/pipe'
 import { codeMinimum } from './code'
 import { availability, physicsMode, caseFor, evaluateSide, kProducts, meets, recommend, thicknessOptions, type Goal, type Recommendation, type Side } from './model'
-import { DUCT_INSULATIONS, ductProduct, ductRequirement, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
+import { DUCT_CODES, DUCT_INSULATIONS, ductProduct, ductRequirement, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
 import type { SimMode, SimState } from './types'
 import { IN_M } from './units'
 
@@ -142,7 +142,7 @@ export function materialOptions(s: SimState, mode: SimMode): MaterialOption[] {
 
 /** The duct's code minimum for its type, location and climate zone (ASHRAE 90.1-2019 Table 6.8.2, C19). */
 export function ductCode(s: SimState): DuctCodeResult {
-  return ductRequirement(s.ductType, s.ductLocation, s.ductService, s.climateZone)
+  return ductRequirement(s.ductType, s.ductLocation, s.ductService, s.climateZone, s.ductCodeBasis, Math.abs(s.processF - s.ambientF))
 }
 
 function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
@@ -158,7 +158,7 @@ function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
   }
   // ductwork is designed to the energy code first: its minimum is always a requirement
   const c = ductCode(s)
-  if (c.R !== null) out.push({ id: 'code', label: `Energy code (ASHRAE 90.1-2019): installed ≥ R-${c.R}`, goal: { kind: 'minR', R: c.R }, src: c.src })
+  if (c.R !== null) out.push({ id: 'code', label: `Energy code (${DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}): installed ≥ R-${c.R}`, goal: { kind: 'minR', R: c.R }, src: c.src })
   return out
 }
 

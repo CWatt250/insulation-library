@@ -166,7 +166,7 @@ ${cost ? row('Annual cost saved', esc(money(cost.saved)), esc(`${cost.basis}${co
 <table>
 ${r.design.rows.map((x) => row(x.c.label, esc(x.rec.thicknessIn === null ? `more than ${inchLabel(x.rec.maxIn)}` : inchLabel(x.rec.thicknessIn)), esc(x.c.src.join(', ')))).join('')}
 ${row('Design thickness', `<b>${esc(r.design.thicknessIn === null ? 'not achievable with this material' : inchLabel(r.design.thicknessIn))}</b>`, esc(r.design.governing ? `governed by ${r.design.governing.label.split(':')[0].toLowerCase()}${r.design.exactIn ? ` · calculated minimum ≈ ${r.design.exactIn.toFixed(2)}"` : ''}` : ''))}
-${duct ? row('ASHRAE 90.1-2019 minimum', esc(dc.R === null ? 'none required' : `installed R-${dc.R}`), esc(`Table 6.8.2, ${dc.label.replace(/^Installed R-[\d.]+ \(|^No minimum \(/, '').replace(/\)$/, '')}${dc.R !== null ? ' · included in the design' : ''}`)) : ''}
+${duct ? row(`${s.ductCodeBasis === 'iecc' ? 'IECC 2021 / 2024' : 'ASHRAE 90.1-2019'} minimum`, esc(dc.R === null ? 'none required' : `installed R-${dc.R}`), esc(`${dc.label}${dc.derived ? ' (derived from definitions)' : ''}${dc.R !== null ? ' · included in the design' : ''}`)) : ''}
 ${!duct && 'minIn' in code ? row(`${code.edition} minimum`, esc(`${code.minIn.toFixed(2)}"`), esc(`${code.table}, ${code.row}: ${code.tableIn}" in the table${code.corrected ? `, corrected for k ${code.K.toFixed(3)}` : ''}${s.applyCode ? ' · included' : ' · shown for reference'}`)) : ''}
 ${r.others.map((o) => row(o.label, esc(o.rec.thicknessIn === null ? `more than ${inchLabel(o.rec.maxIn)}` : inchLabel(o.rec.thicknessIn)))).join('')}
 </table>

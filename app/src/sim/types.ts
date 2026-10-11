@@ -1,7 +1,7 @@
 import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
 import type { Component } from '../geo/assembly'
 import type { PipeMaterial } from '../data/pipe'
-import type { DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
+import type { DuctCodeBasis, DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
 import type { DuctService } from '../data/ductData'
 
 /** Pipe modes, plus Ductwork, which is driven by duct type and location rather than hot/cold. */
@@ -32,6 +32,8 @@ export interface SimState {
   /** For the ASHRAE 90.1 duct table. */
   ductLocation: DuctPlace
   ductService: DuctService
+  /** Which energy code sets the duct minimum. */
+  ductCodeBasis: DuctCodeBasis
   climateZone: number
   /** Include the inside air film (otherwise the duct wall is at the air temperature, as in 3E Plus). */
   insideFilm: boolean

@@ -13,7 +13,7 @@ import type { SimMode, SimState } from '../../sim/types'
 import { currentMaterial, noun, type MaterialId } from '../../sim/system'
 import { ductCode } from '../../sim/design'
 import { recommend } from '../../sim/model'
-import { DUCT_TYPES } from '../../sim/duct'
+import { DUCT_CODES, DUCT_TYPES } from '../../sim/duct'
 import type { DuctFaceResult } from '../../sim/duct'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { DUCT_LEARN, INTRO, LEARN, TOPICS } from '../../sim/learn'
@@ -109,10 +109,11 @@ function explain(ev: Evaluation, s: SimState, units: UnitSystem): string {
 function DuctCodeRow({ s }: { s: SimState }) {
   const c = ductCode(s)
   const ref = refsFor(c.src)[0]
-  if (c.R === null) return <p className="field-note">Energy code: ASHRAE 90.1-2019 Table 6.8.2 — {c.label.toLowerCase()}{ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}.</p>
+  const code = DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label
+  if (c.R === null) return <p className="field-note">Energy code ({code}): {c.label}{ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}.</p>
   return (
     <p className="field-note">
-      Energy code: ASHRAE 90.1-2019 Table 6.8.2, installed R-{c.R} ({c.label.replace(/^Installed R-[\d.]+ \(/, '').replace(/\)$/, '')}); installed R at 75°F mean, duct wrap at 25% compression
+      Energy code ({code}): {c.label}; installed R at 75°F mean, duct wrap at 25% compression
       {ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}. Always part of the duct design.
     </p>
   )
@@ -443,7 +444,6 @@ function DuctCodeHero({ s, ev, mode, onApply }: { s: SimState; ev: Evaluation; m
   const R = ev.ins.ratedR ?? 0
   const ok = c.R === null || R + 1e-9 >= c.R
   const fix = c.R !== null && !ok ? recommend(s, mode, { kind: 'minR', R: c.R }).thicknessIn : null
-  const ref = refsFor(c.src)[0]
   const type = DUCT_TYPES.find((t) => t.id === s.ductType)!.label
   return (
     <div className={`hero code-hero ${c.R === null ? '' : ok ? 'good' : 'bad'}`}>
@@ -451,10 +451,12 @@ function DuctCodeHero({ s, ev, mode, onApply }: { s: SimState; ev: Evaluation; m
         <CodeChip s={s} ev={ev} small={false} />
         <span className="hero-tag">Energy code</span>
       </div>
-      <div className="hero-big">{c.R === null ? (c.pending ? '—' : 'None') : `R-${c.R}`}<small>{c.R === null ? (c.pending ? 'not verified yet' : 'no minimum') : 'installed, minimum'}</small></div>
+      <div className="hero-big">{c.R === null ? (c.notStated ? '—' : 'None') : `R-${c.R}`}<small>{c.R === null ? (c.notStated ? 'no R-value set' : 'no minimum') : 'installed, minimum'}</small></div>
       <p className="hero-sub">
-        {type} · {c.label}{ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}
+        <b>{DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}</b> · {type} · {c.label}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}
       </p>
+      {c.derived && <p className="hero-sub muted">Derived from the code's definitions rather than stated outright — confirm with your authority having jurisdiction.</p>}
+      {(s.ductType === 'outdoor' || s.ductType === 'exhaust') && <p className="hero-sub muted">The IMC still requires preventing condensation on the exterior of any duct (603.12) — checked below.</p>}
       <p className="hero-sub">This insulation: <b>R-{R.toFixed(1)} installed</b>{c.R !== null ? (ok ? ' — meets it.' : ' — below the minimum.') : '.'}</p>
       {fix !== null && fix !== s.thicknessIn && <button className="apply" onClick={() => onApply(fix)}>Use {inchLabel(fix)} to meet code</button>}
       {mode !== 'hot' && <p className="hero-sub muted">The code minimum is for energy; condensation is checked below.</p>}

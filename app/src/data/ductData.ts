@@ -79,3 +79,21 @@ export const TABLE_6_8_2_NOTES = {
   c: "Includes return air plenums with or without exposed roofs above.",
   d: "Return ducts in this duct location do not require insulation.",
 }
+
+/** DOE/PNNL code note, Figure 1 locations: what the note says for each (2009/2012 IECC, 90.1-2007/2010) [D_C27]. */
+export const DOE_SPOT_NOTES: Record<number, { quote: string; page: number }> = {
+  1: { quote: "No insulation requirement. Factory-installed ductwork within unit casings is exempt from insulation requirements.", page: 3 },
+  2: { quote: "No insulation requirement. Insulation requirements are specified only for supply and return ductwork, not for exhaust ducts.", page: 3 },
+  3: { quote: "Insulation R-value requirements for unconditioned spaces in the IECC or for a vented attic in ASHRAE 90.1 must be met.", page: 3 },
+  4: { quote: "Insulation R-value requirements for exterior or outdoor locations must be met.", page: 3 },
+  5: { quote: "Insulation R-value requirements for unconditioned spaces in the IECC or for unconditioned spaces in ASHRAE 90.1 must be met.", page: 3 },
+  6: { quote: "Insulation R-value requirement for unconditioned spaces in the IECC or for unvented attics in ASHRAE 90.1 must be met.", page: 3 },
+  7: { quote: "No insulation requirement. ASHRAE 90.1 has no insulating requirements for indirectly conditioned spaces. In the IECC, such spaces would be considered conditioned spaces, also with no duct insulation requirement.", page: 3 },
+  8: { quote: "Insulation R-value must meet either the requirement for above-grade walls or for exterior ducts. If the lesser R-value (most likely the duct R-value) is chosen, the envelope of the building must be shown to comply with a performance-based option.", page: 3 },
+  9: { quote: "Insulation R-value to match the supply duct.", page: 3 },
+  10: { quote: "No insulation requirement beyond what is integral to flexible duct, unless the length of flex duct exceeds 10 ft.", page: 3 },
+  11: { quote: "No insulation requirement in the IECC. If following ASHRAE 90.1, ducts must meet the requirements for indirectly conditioned space.", page: 3 },
+  12: { quote: "No insulation requirement in IECC. These ducts are located in conditioned space. Insulation may be installed for sound-reduction purposes or to control condensate, but it is not required.", page: 3 },
+  13: { quote: "Insulation R-value requirements for unconditioned spaces in the IECC or for an unvented attic in ASHRAE 90.1 must be met.", page: 3 },
+  14: { quote: "Insulation R-value requirements for locations outside the building must be met if adhering to IECC. If ASHRAE is being followed, these ducts must be insulated to the level required for buried ducts.", page: 3 },
+}

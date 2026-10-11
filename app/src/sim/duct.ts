@@ -307,23 +307,63 @@ export function ductCodeR(service: DuctService, zone: number, location: DuctLoca
   return row ? row[location] : null
 }
 
+export type DuctCodeBasis = 'ashrae' | 'iecc'
+
+export const DUCT_CODES: { id: DuctCodeBasis; label: string; short: string }[] = [
+  { id: 'ashrae', label: 'ASHRAE 90.1-2019', short: 'ASHRAE 90.1' },
+  { id: 'iecc', label: 'IECC 2021 / 2024 commercial', short: 'IECC' },
+]
+
 export interface DuctCodeResult {
-  /** Minimum installed R; null = none required, or not yet verified (`pending`). */
+  /** Minimum installed R; null = none required (or not stated: `notStated`). */
   R: number | null
   label: string
   src: string[]
-  /** The rule for this duct type or location hasn't been verified against the code text yet. */
+  /** The code sets no R for this case, or leaves it open (shown as "not stated", not "none"). */
+  notStated?: boolean
+  /** An interpretation from the code's definitions rather than stated text — users may read it differently. */
+  derived?: boolean
+  /** Still being verified (unused once every case is sourced). */
   pending?: boolean
 }
 
-/** Energy-code minimum for a duct type in a location and climate zone (ASHRAE 90.1-2019, C19). */
-export function ductRequirement(type: DuctType, location: DuctPlace, service: DuctService, zone: number): DuctCodeResult {
+/**
+ * Energy-code minimum for a duct type in a location and climate zone.
+ * ASHRAE 90.1-2019 6.4.4.1.2 and Table 6.8.2 (C19); IECC 2021 C403.12.1 /
+ * 2024 C403.13.1 (C1, C3), research/duct-code-verified.json. Neither code sets
+ * an R-value for outside-air, exhaust or relief ducts: both clauses cover
+ * supply and return ducts only (DM-12, DM-24).
+ * @param dT design temperature difference across the duct wall, °F (IECC exception 2)
+ */
+export function ductRequirement(type: DuctType, location: DuctPlace, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae', dT = Infinity): DuctCodeResult {
   const place = DUCT_LOCATIONS.find((l) => l.id === location)!
   const where = `${place.short.toLowerCase()}, climate zone ${zone}`
   if (type === 'outdoor' || type === 'exhaust') {
-    return { R: null, pending: true, label: `${type === 'outdoor' ? 'Outside-air' : 'Exhaust'} ducts: code rule not verified yet`, src: [] }
+    const what = type === 'outdoor' ? 'outside-air' : 'exhaust'
+    return basis === 'ashrae'
+      ? { R: null, notStated: true, label: `No R-value for ${what} ducts — 90.1-2019 6.4.4.1.2 covers supply and return ducts only`, src: ['C19'] }
+      : { R: null, notStated: true, label: `No R-value for ${what} ducts — IECC C403.12.1 covers supply and return ducts only`, src: ['C1', 'C3'] }
   }
-  if (place.column === null) return { R: null, label: `None — ducts in heated, semiheated or cooled spaces (90.1-2019 6.4.4.1.2 exception 2)`, src: ['C19'] }
+  if (basis === 'iecc') {
+    if (dT <= 15) return { R: null, label: `None — design temperature difference ${Math.round(dT)}°F is not over 15°F (IECC C403.12.1 exception 2)`, src: ['C1', 'C3'] }
+    switch (location) {
+      case 'exterior': {
+        const R = zone <= 4 ? 8 : 12
+        return { R, label: `Installed R-${R} — outside the building, climate zone ${zone}`, src: ['C1', 'C3'] }
+      }
+      case 'unconditioned':
+        return { R: 6, label: `Installed R-6 — unconditioned space (${where})`, src: ['C1', 'C3'] }
+      case 'attic': case 'crawl': case 'garage':
+        return { R: 6, derived: true, label: `Installed R-6 — read as "unconditioned space" (DOE's reading; IECC doesn't name ${place.short.toLowerCase()}s)`, src: ['C1', 'C3', 'D_C27'] }
+      case 'buried':
+        return { R: null, notStated: true, label: 'Underground: "insulated as required in this section" or a listed equivalent thermal distribution efficiency — the R-value is not singled out', src: ['C1', 'C3'] }
+      case 'indirect':
+        return { R: null, derived: true, label: 'None — inside the thermal envelope counts as conditioned space (DOE\'s reading)', src: ['D_C1', 'D_C27'] }
+      case 'conditioned':
+        return { R: null, label: 'None — C403.12.1 sets no requirement in conditioned space', src: ['C1', 'C3'] }
+    }
+  }
+  if (place.column === null) return { R: null, label: 'None — ducts in heated, semiheated or cooled spaces (90.1-2019 6.4.4.1.2 exception 2)', src: ['C19'] }
   if (type === 'return' && place.column === 'indirect') {
     // note d: "Return ducts in this duct location do not require insulation."
     return { R: null, label: 'None — return ducts in indirectly conditioned space (Table 6.8.2 note d)', src: ['C19'] }
@@ -331,5 +371,11 @@ export function ductRequirement(type: DuctType, location: DuctPlace, service: Du
   const R = ductCodeR(service, zone, place.column)
   const svc = DUCT_SERVICES.find((x) => x.id === service)!.label.toLowerCase()
   const col = place.column === 'exterior' ? 'Exterior' : place.column === 'indirect' ? 'Indirectly Conditioned' : 'Unconditioned Space and Buried Ducts'
-  return { R, label: R === null ? `None required (${svc}, ${where})` : `Installed R-${R} — ${col} column (${svc}, ${where})`, src: ['C19'] }
+  return {
+    R,
+    // an unconditioned shaft isn't named in the table: an enclosed, unconditioned space falls in that column
+    derived: location === 'unconditioned',
+    label: R === null ? `None required (${svc}, ${where})` : `Installed R-${R} — ${col} column (${svc}, ${where})`,
+    src: ['C19'],
+  }
 }

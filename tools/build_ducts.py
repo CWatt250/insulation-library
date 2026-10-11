@@ -147,5 +147,16 @@ o += [
     "}",
     "",
 ]
+# DOE/PNNL code note (2012 editions): what it says for each of its 14 Figure 1 locations
+DC = json.loads((ROOT / "research/duct-code-verified.json").read_text())
+dl = DC["doe_duct_locations"]
+assert dl["source"] == "D_C27"
+o += [
+    "/** DOE/PNNL code note, Figure 1 locations: what the note says for each (2009/2012 IECC, 90.1-2007/2010) [D_C27]. */",
+    "export const DOE_SPOT_NOTES: Record<number, { quote: string; page: number }> = {",
+    *[f"  {it['n']}: {{ quote: {json.dumps(it['quote'])}, page: {it['page']} }}," for it in dl["items"]],
+    "}",
+    "",
+]
 (ROOT / "app/src/data/ductData.ts").write_text("\n".join(o))
 print("wrap types:", {t: [x[0] for x in w["thick"]] for t, w in wrap.items()}, "| 6.8.2 rows:", len(rows682))

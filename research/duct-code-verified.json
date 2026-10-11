@@ -1,0 +1,4096 @@
+{
+ "dataset": "Sourced energy-code and mechanical-code requirements for insulating HVAC ductwork by duct type (supply, return, outdoor-air intake incl. combustion/makeup air, exhaust, relief, transfer) and duct location (conditioned, unconditioned incl. attic/crawl space/garage, indirectly conditioned incl. return plenums, semiheated, outdoors, buried/underground, within the building envelope assembly), with verbatim definitions, exceptions, residential rules, condensation/vapor clauses, the DOE 2012 code-note duct-location key, and notes on conflicts. Companion to code-requirements-verified.json (DUCT-1..DUCT-16), which is cited, not repeated.",
+ "generated": "2026-10-11",
+ "conventions": {
+  "unverified": "The literal string 'unverified' (or an entry in the top-level 'unverified' list) means no fetched source stated the item. Nothing was guessed, interpolated or filled from memory.",
+  "src": "Every item carries 'src', a list of source ids. 'D_C1'...'D_C27' are records in this file's 'sources' array. Plain 'C1'...'C35' ids are the source records of code-requirements-verified.json (same documents re-read for this file); their titles are repeated in 'reused_source_ids' below. D_C19, D_C20 and D_C26 document searches or files that yielded no requirement text.",
+  "reused_source_ids": {
+   "C1": "IECC 2021 Chapter 4 [CE] (UpCodes, Colorado, Adopts Without Amendments)",
+   "C2": "IECC 2021 Chapter 4 [RE] (UpCodes, Colorado)",
+   "C3": "IECC 2024 Chapter 4 [CE] (UpCodes, Colorado)",
+   "C4": "IECC 2024 Chapter 4 [RE] (UpCodes, Colorado)",
+   "C5": "IECC 2018 Chapter 4 [RE] (UpCodes, Colorado)",
+   "C6": "IMC 2021 Chapter 6 Duct Systems (UpCodes, Illinois)",
+   "C10": "IMC 2024 Chapter 6 Duct Systems (UpCodes, Illinois)",
+   "C15": "IRC 2021 Chapter 16 Duct Systems (UpCodes, Colorado)",
+   "C17": "IRC 2024 Chapter 16 Duct Systems (UpCodes, Texas)",
+   "C19": "ASHRAE addenda be...cy to 90.1-2016 consolidated reprint (treated as 90.1-2019 text)",
+   "C20": "ASHRAE Addendum r to 90.1-2022",
+   "C21": "ASHRAE Standards Addenda index + bulk search of 195 90.1 addenda PDFs",
+   "C22": "NYC Energy Code 2025 6.8.2 Duct Insulation Tables (UpCodes snippet)",
+   "C23": "NYC Energy Code 2025 Chapter 6 (90.1-2022 as amended by NYC)",
+   "C24": "PNNL 90.1-2019 HVAC training slides (PNNL-SA-153210)",
+   "C31": "California Title 24 Part 6, 2022 (CEC-400-2022-010-CMF)"
+  },
+  "cross_refs": "'see' fields such as 'DUCT-1' or 'DUCT-15' point to requirement ids in code-requirements-verified.json; 'DM-n' are cells of this file's requirements_matrix, 'EX-n' exceptions, 'RES-n' residential rows, 'CV-n' condensation/vapor items, 'DEF-n' definitions, 'DL-n' DOE duct-location items.",
+  "quotes": "'quote', '*_quote(s)', 'definition' and 'check*' strings are verbatim from the fetched page text or pdftotext output with line breaks joined and runs of spaces collapsed; for PDFs, words split by a line-end hyphen were rejoined (e.g. 'sys- tem' -> 'system'). Every such string was machine-checked as a substring of the downloaded source text when this file was built (whitespace-collapsed; for PDFs also hyphenation-insensitive). Strings read from a rendered page image instead of the text layer are in fields ending '_image_read'.",
+  "upcodes_formatting": "UpCodes text loses superscripts: 'ft2' means ft^2, 'R-valuea,b' means R-value with footnotes a,b; ' | ' separates table cells.",
+  "icc_via_state_adoptions": "ICC model codes (IECC, IMC, IRC) were read from UpCodes pages of state adoptions whose header says 'Adopts Without Amendments'; the edition shown is the model edition named on that page.",
+  "state_amendments": "Washington (D_C21) and Minnesota (D_C22, D_C23) are STATE amendments, not model code. They are included only because they are the sources found that assign R-values to outdoor-air, exhaust and relief ducts; never apply them outside those states.",
+  "status_values": {
+   "stated": "the code text itself states the requirement for this duct type and location",
+   "none_stated": "the code text explicitly says no insulation (e.g. 'None', 'do not require insulation', an exception)",
+   "not_addressed": "the code's duct-insulation clause is limited to other duct types or locations, so it sets no R-value here (other clauses such as IMC 603.12 condensation control may still apply)",
+   "derived": "the requirement follows from combining quoted definitions with quoted requirement text; this is the agent's reading and is flagged so a user can override it",
+   "partially_verified": "values verified for some climate zones only",
+   "unverified": "not found in any fetched source"
+  },
+  "summaries": "Fields named 'note', 'reading', 'parsed', 'difference' or 'summary' are the agent's paraphrase or structured reading of the quotes; the quotes govern.",
+  "units": {
+   "R": "h·ft²·°F/Btu, installed (see code-requirements-verified.json DUCT-9..DUCT-12 for installed-thickness rules)",
+   "temperature": "°F"
+  },
+  "climate_zones": "ASHRAE 90.1/IECC zones 0-8 unless noted. California Title 24 uses California climate zones 1-16. Washington tables list only zones 4C and 5B."
+ },
+ "sources": [
+  {
+   "id": "D_C1",
+   "title": "IECC 2021 Chapter 2 [CE] Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2021/chapter/CE_2/ce-definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Division of Fire Prevention and Control (DFPC) Energy Conservation Code 2021 - page header: 'Adopts Without Amendments' / 'International Energy Conservation Code 2021 (IECC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C2",
+   "title": "IECC 2021 Chapter 2 [RE] Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2021/chapter/RE_2/re-definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "DFPC Energy Conservation Code 2021 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2021 (IECC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C3",
+   "title": "IECC 2024 Chapter 2 [CE] Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2024/chapter/CE_2/ce-definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Office of the State Architect (OSA) Energy Conservation Code 2024 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2024 (IECC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C4",
+   "title": "IECC 2024 Chapter 2 [RE] Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2024/chapter/RE_2/re-definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "OSA Energy Conservation Code 2024 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2024 (IECC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C5",
+   "title": "IMC 2021 Chapter 2 Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/2/definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C6",
+   "title": "IMC 2024 Chapter 2 Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/2/definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C7",
+   "title": "IMC 2021 Chapter 4 Ventilation",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/4/ventilation",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Used for a negative search only (case-insensitive 'insulat' and 'condensat': no hits)."
+  },
+  {
+   "id": "D_C8",
+   "title": "IMC 2021 Chapter 5 Exhaust Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/5/exhaust-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Case-insensitive search: 'insulat' occurs only in Section 506.3.1.2 (makeup air ducts); 'condensat' occurs only in a grease-filter clause ('grease or other condensate')."
+  },
+  {
+   "id": "D_C9",
+   "title": "IMC 2024 Chapter 4 Ventilation",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/4/ventilation",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Used for a negative search only ('insulat', 'condensat': no hits)."
+  },
+  {
+   "id": "D_C10",
+   "title": "IMC 2024 Chapter 5 Exhaust Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/5/exhaust-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Case-insensitive search: 'insulat' occurs only in Section 508.1.2 (makeup air ducts); 'condensat' occurs only in a grease-filter clause."
+  },
+  {
+   "id": "D_C11",
+   "title": "IRC 2021 Chapter 2 Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/irc-2021/chapter/2/definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Division of Fire Prevention and Control (DFPC) Residential Code 2021 - 'Adopts Without Amendments' / 'International Residential Code 2021 (IRC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C12",
+   "title": "IRC 2024 Chapter 2 Definitions",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/texas/irc-2024/chapter/2/definitions",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Texas Windstorm Insurance Association Residential Code 2024 - 'Adopts Without Amendments' / 'International Residential Code 2024 (IRC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "D_C13",
+   "title": "IRC 2021 Chapter 15 Exhaust Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/irc-2021/chapter/15/exhaust-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "DFPC Residential Code 2021 - 'Adopts Without Amendments' / 'International Residential Code 2021 (IRC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Used for a negative search only ('insulat', 'condensat': no hits in the chapter text)."
+  },
+  {
+   "id": "D_C14",
+   "title": "IRC 2024 Chapter 15 Exhaust Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/texas/irc-2024/chapter/15/exhaust-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Texas Windstorm Insurance Association Residential Code 2024 - 'Adopts Without Amendments' / 'International Residential Code 2024 (IRC 2024)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated cells). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page). Used for a negative search only (the only 'insulat' hit is a navigation link to Appendix NF; no 'condensat')."
+  },
+  {
+   "id": "D_C15",
+   "title": "NYC Energy Code 2025 - Chapter 3 Definitions, Abbreviations, and Acronyms (2025 NYC ASHRAE 90.1, i.e. ASHRAE 90.1-2022 as amended by NYC)",
+   "publisher": "UpCodes",
+   "url": "https://up.codes/viewer/new_york_city/nyc-energy-conservation-code-2025/chapter/3/definitions-abbreviations-and-acronyms",
+   "doc_type": "code-hosting web page (full chapter)",
+   "pub_no_or_date": "page header 'NYC Energy Code 2025 / Adopts With Amendments' (UpCodes labels the base model as IECC 2024; this chapter is the '2025 NYC ASHRAE 90.1' volume, same publication as code-requirements-verified.json C23)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text). NYC amends the standard; definitions quoted here were not compared against unamended 90.1-2022 except where noted."
+  },
+  {
+   "id": "D_C16",
+   "title": "ANSI/ASHRAE/IES Addenda k, o, x, ab, ac, ad, ae, ag, ah, ak, am to ANSI/ASHRAE/IES Standard 90.1-2016 (consolidated package with Section 3 reprint)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90.1-2016/90_1_2016_k_o_x_ab_ac_ad_ae_ag_ah_ak_am_20210324.pdf",
+   "doc_type": "official standard addenda package PDF (131 pp.; shows changes in red strikethrough/underline)",
+   "pub_no_or_date": "PDF created 2021-03-24",
+   "accessed": "2026-10-11",
+   "retrieval": "PDF downloaded for code-requirements-verified.json C21 (same corpus), pdftotext -layout; PDF pages 5 and 30 rendered at 90 dpi: the 'building envelope', 'exterior building envelope', 'semiexterior building envelope' and 'transfer air' definitions carry no change marks. Other definitions on these pages show duplicated words where pdftotext merges struck and underlined text (e.g. 'floor areafloor area'); those were not quoted from this source."
+  },
+  {
+   "id": "D_C17",
+   "title": "ANSI/ASHRAE Addendum r to ANSI/ASHRAE Standard 62.1-2016 (Ventilation for Acceptable Indoor Air Quality)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/62.1-2016/62_1_2016_r_20181030.pdf",
+   "doc_type": "official standard addendum PDF (8 pp.; strikethrough/underline)",
+   "pub_no_or_date": "cover: approved by the ASHRAE Standards Committee June 23, 2018, the ASHRAE Board June 27, 2018 and ANSI July 25, 2018; file name dated 2018-10-30",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (-layout and -raw); printed page 2 (PDF p. 4) rendered at 110 dpi and a crop at 220 dpi read visually: in 5.14.2 the 's' of 'Exceptions' and the '1.' are struck, 'A management plan ... provided to the owner.' is underlined (added) and exception 2 is struck (deleted)."
+  },
+  {
+   "id": "D_C18",
+   "title": "ANSI/ASHRAE Addendum h to ANSI/ASHRAE Standard 62.1-2013",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/62_1_2013_h_20160302.pdf",
+   "doc_type": "official standard addendum PDF (strikethrough/underline)",
+   "pub_no_or_date": "cover: approved by the ASHRAE Standards Committee January 23, 2016 and the ASHRAE Board January 27, 2016; file name dated 2016-03-02",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (-layout and -raw); printed page 2 (PDF p. 4) rendered at 110 dpi and read visually to identify struck/underlined words. Only unmarked text is quoted."
+  },
+  {
+   "id": "D_C19",
+   "title": "Bulk text search of every ANSI/ASHRAE Standard 62.1 addendum PDF linked from the ASHRAE Standards Addenda page",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/technical-resources/standards-and-guidelines/standards-addenda",
+   "doc_type": "index web page + bulk PDF text search",
+   "pub_no_or_date": "index as served 2026-10-11 (same index file as code-requirements-verified.json C21)",
+   "accessed": "2026-10-11",
+   "retrieval": "93 linked 62.1 PDFs (62.1-2007 through 62.1-2025 addenda and one 62.1-2022 errata file) downloaded with curl, pdftotext -layout, case-insensitive grep for 'insulat', 'condensation', 'dew-point'/'dew point'. Insulation of ducts appears only in Section 5.14.2 (addenda h to 62.1-2013 and r to 62.1-2016) and in inspection/maintenance checklists; addendum v to 62.1-2022 reuses the number 5.14.2 for an exhaust-duct routing rule."
+  },
+  {
+   "id": "D_C20",
+   "title": "ASHRAE Standards Interpretations index pages for Standard 90.1 (1999, 2001, 2004, 2007, 2010, 2013, 2016, 2019, 2022 editions)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/technical-resources/standards-and-guidelines/standards-interpretations",
+   "doc_type": "index web pages",
+   "pub_no_or_date": "as served 2026-10-11",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; each edition page converted to text and searched for 'duct', '6.8.2', '6.4.4.1'. Only hits: 90.1-2010-01 (6.4.4.1.3 piping insulation), 90.1-2013-14 (6.4.4.2.1 duct sealing), 90.1-2004-11 (zone air volume). No published interpretation on duct insulation of outdoor-air, exhaust or relief ducts was found. (The 1989-edition interpretation IC 90.1-1989-7 surfaced by a web search was not read.)"
+  },
+  {
+   "id": "D_C21",
+   "title": "WAC 51-11C-40391 Section C403.10 - Construction of HVAC system elements (Washington State Energy Code, Commercial Provisions)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40391",
+   "doc_type": "state administrative code web page (state amendment of IECC-based commercial energy code)",
+   "pub_no_or_date": "history note on page: 'WSR 22-14-091, 23-12-101, and 23-20-021, § 51-11C-40391, filed 7/1/22, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text; table cells as ' | '). Climate zones in the tables are Washington's 4C and 5B only. An archived version 'effective until October 29, 2023' was also downloaded but not used."
+  },
+  {
+   "id": "D_C22",
+   "title": "Minnesota Rules 1322.0403 SECTION R403, SYSTEMS (Minnesota Residential Energy Code amendment of IECC Section R403.2.1)",
+   "publisher": "Minnesota Office of the Revisor of Statutes",
+   "url": "https://www.revisor.mn.gov/rules/1322.0403/",
+   "doc_type": "state administrative rule web page",
+   "pub_no_or_date": "page: 'Published Electronically: April 15, 2015'; History: 39 SR 232; 39 SR 1425",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text). The rule amends an IECC residential edition whose section R403.2.1 was 'Insulation (prescriptive)' (the IECC edition is not named on the page)."
+  },
+  {
+   "id": "D_C23",
+   "title": "Minnesota Rules 1323.0680 SECTION 6.8, MINIMUM EQUIPMENT EFFICIENCY TABLES (Minnesota Commercial Energy Code replacement of ASHRAE 90.1 Table 6.8.2)",
+   "publisher": "Minnesota Office of the Revisor of Statutes",
+   "url": "https://www.revisor.mn.gov/rules/1323.0680/",
+   "doc_type": "state administrative rule web page",
+   "pub_no_or_date": "page: 'Published Electronically: December 7, 2023'; History: 47 SR 983",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text; table cells as ' | '). Same rule part as vapor-code-verified.json R38 (which used its piping subpart).",
+   "note": "The ASHRAE 90.1 edition amended is not named on this page."
+  },
+  {
+   "id": "D_C24",
+   "title": "ASHRAE Handbook - Fundamentals, Chapter 23: Insulation for Mechanical Systems (I-P), F25 edition: Tables 2 and 4 (duct insulation, 'excerpted from ANSI/ASHRAE Standard 90.1-2010')",
+   "publisher": "ASHRAE",
+   "url": "https://handbook.ashrae.org/Handbooks/F25/IP/F25_Ch23/f25_ch23_ip.aspx",
+   "doc_type": "handbook chapter (online HTML)",
+   "pub_no_or_date": "URL edition code 'F25' (same document as vapor-code-verified.json R2)",
+   "accessed": "2026-10-11",
+   "retrieval": "HTML downloaded for vapor-code-verified.json R2 (curl, no login); Tables 2 and 4 parsed from <table> markup row by row; the same rows were compared with the F17 and F21 editions (R4, R3): identical, including Table 4 'R-4' in climate zone 1 exterior."
+  },
+  {
+   "id": "D_C25",
+   "title": "NECB 2011 Intent Statement for Sentence 5.2.4.2.(3)",
+   "publisher": "National Research Council Canada (Codes Canada)",
+   "url": "https://codes-guides.nrc.ca/IA/11NECB/intents-intentions/i014222-eng.html",
+   "doc_type": "official intent statement web page (informative)",
+   "pub_no_or_date": "National Energy Code of Canada for Buildings 2011 intent statements",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (HTML to text). Only the intent statement was read; the Sentence 5.2.4.2.(3) requirement text itself was not read.",
+   "note": "Canadian code, out of the US scope; recorded only because it is where the 'ducts between dampers and the building envelope' concept was found."
+  },
+  {
+   "id": "D_C26",
+   "title": "2025 Oregon Energy Efficiency Specialty Code (25oeesc.pdf)",
+   "publisher": "Oregon Building Codes Division",
+   "url": "https://www.oregon.gov/bcd/codes-stand/Documents/25oeesc.pdf",
+   "doc_type": "state code PDF (5 pp.)",
+   "pub_no_or_date": "PDF created 2025-03-04",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext. NOT USEFUL: the file holds only Oregon's administrative chapter/amendments (5 pages) and does not reprint ASHRAE 90.1-2022 Section 6.8.2 ('6.8.2': 0 hits). No values taken."
+  },
+  {
+   "id": "D_C27",
+   "title": "Duct Insulation and Sealing Requirements in Commercial Buildings (Code Notes; 2009 and 2012 IECC; ASHRAE 90.1-2007 and 2010; 2009 and 2012 IMC)",
+   "publisher": "U.S. Department of Energy, EERE Building Technologies Program / Building Energy Codes Program (PNNL-prepared); hosted on OSTI.GOV",
+   "url": "https://www.osti.gov/servlets/purl/1764644",
+   "doc_type": "government code-note PDF (8 pp.; OCR text layer)",
+   "pub_no_or_date": "PNNL-SA-88299, May 2012 (OSTI ID 1764644, record https://www.osti.gov/biblio/1764644; report numbers 'PNNL-SA-88299; 8610'; record date May 31, 2012)",
+   "accessed": "2026-10-11",
+   "retrieval": "OSTI search for the title -> biblio record 1764644 -> curl of the /servlets/purl/1764644 full text (no login). The PDF text layer is OCR (Producer 'ABBYY Recognition Server'), so pdftotext (-layout and -raw) output was checked against PDF pages 2-6 rendered at 100 dpi and read visually. OCR errors seen and NOT used: 'G.4.4.2.2' (image: 6.4.4.2.2), '6.4.4.12' (image: 6.4.4.1.2). Figure 1 and the table column headings exist only in the image and were read visually; table cell values agree between the OCR text and the image."
+  }
+ ],
+ "definitions": {
+  "note": "Verbatim definitions by concept. 'concept' groups the same idea across codes. Definitions not found are listed in 'not_found'.",
+  "items": [
+   {
+    "id": "DEF-1",
+    "concept": "conditioned_space",
+    "code": "ASHRAE 90.1-2019",
+    "term_as_printed": "space / conditioned space",
+    "src": [
+     "C19"
+    ],
+    "definition": "space: an enclosed space within a building. The classifications of spaces are as follows for the purpose of determining building envelope requirements: conditioned space: a cooled space, heated space, or indirectly conditioned space defined as follows:",
+    "sub_definitions": [
+     "a. cooled space: an enclosed space within a building that is cooled by a cooling system whose sensible output capacity is",
+     "heated space: an enclosed space within a building that is heated by a heating system whose output capacity relative to the floor area is greater than or equal to the criteria in Table 3.2."
+    ],
+    "glyph_note": "In C19 the comparison sign before '3.4 Btu/h·ft2 of floor area' in 'cooled space' is a missing glyph in both the text layer and the rendered page (PDF p. 24, read at 100 dpi); the 90.1-2022 text (DEF-2) and the D_C16 package print '≥3.4'.",
+    "note": "90.1 counts indirectly conditioned space as conditioned space by definition, yet Table 6.8.2 has a separate 'Indirectly Conditioned Space' column and Exception 2 to 6.4.4.1.2 exempts only heated, semiheated and cooled spaces (see notes, N-1)."
+   },
+   {
+    "id": "DEF-2",
+    "concept": "conditioned_space",
+    "code": "ASHRAE 90.1-2022 (NYC 2025 amended text)",
+    "term_as_printed": "space / conditioned space / cooled space",
+    "src": [
+     "D_C15"
+    ],
+    "definition": "cooled space: an enclosed space within a building that is cooled by a cooling system whose sensible output capacity is ≥3.4 Btu/h•ft2 of floor area.",
+    "also_quotes": [
+     "conditioned space: a cooled space, heated space, or indirectly conditioned space defined as follows:",
+     "heated space: an enclosed space within a building that is heated by a heating system whose output capacity relative to the floor area is greater than or equal to the criteria in Table 3.2."
+    ],
+    "cross_check": {
+     "src": [
+      "C20"
+     ],
+     "quote": "capacity is ≥3.4 Btu/h·ft2 of floor floor area.",
+     "note": "ASHRAE Addendum r to 90.1-2022 shows the national 2022 'cooled space' text with 'floor' struck and re-inserted as a defined term (pdftotext prints both)."
+    }
+   },
+   {
+    "id": "DEF-3",
+    "concept": "conditioned_space",
+    "code": "IECC 2021 commercial",
+    "term_as_printed": "Conditioned Space",
+    "src": [
+     "D_C1"
+    ],
+    "definition": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled. Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling."
+   },
+   {
+    "id": "DEF-4",
+    "concept": "conditioned_space",
+    "code": "IECC 2024 commercial",
+    "term_as_printed": "Conditioned Space",
+    "src": [
+     "D_C3"
+    ],
+    "definition": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled. Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling."
+   },
+   {
+    "id": "DEF-5",
+    "concept": "conditioned_space",
+    "code": "IECC 2021 and 2024 residential",
+    "term_as_printed": "Conditioned Space",
+    "src": [
+     "D_C2",
+     "D_C4"
+    ],
+    "definition": "An area, room or space that is enclosed within the building thermal envelope and that is directly or indirectly heated or cooled. Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling."
+   },
+   {
+    "id": "DEF-6",
+    "concept": "conditioned_space",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Conditioned Space",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "An area, room or space that is enclosed within the building thermal envelope and that is directly heated or cooled or that is indirectly heated or cooled. Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling."
+   },
+   {
+    "id": "DEF-7",
+    "concept": "conditioned_space",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "CONDITIONED SPACE / CONDITIONED SPACE, DIRECTLY",
+    "src": [
+     "C31"
+    ],
+    "definition": "CONDITIONED SPACE is an enclosed space within a building that is directly conditioned or indirectly conditioned.",
+    "also_quotes": [
+     "CONDITIONED SPACE, DIRECTLY is an enclosed space that is provided with wood heating, mechanical heating that has a capacity exceeding 10 Btu/hr-ft², or mechanical cooling that has a capacity exceeding 5 Btu/hr-ft², ."
+    ]
+   },
+   {
+    "id": "DEF-8",
+    "concept": "indirectly_conditioned_space",
+    "code": "ASHRAE 90.1-2019",
+    "term_as_printed": "indirectly conditioned space",
+    "src": [
+     "C19"
+    ],
+    "definition": "indirectly conditioned space: an enclosed space within a building that is not a heated space or a cooled space, which is heated or cooled indirectly by being connected to adjacent spaces, provided:",
+    "conditions": [
+     "the product of the U-factors and surface areas of the space adjacent to connected spaces exceeds the combined sum of the product of the U-factors and surface areas of the space adjoining the outdoors, unconditioned spaces, and to or from semiheated spaces (e.g., corridors) or",
+     "that air from heated or cooled spaces is intentionally transferred (naturally or mechanically) into the space at a rate exceeding 3 ach (e.g., atria)."
+    ],
+    "table_link": {
+     "src": [
+      "C19"
+     ],
+     "quote": "Includes return air plenums with or without exposed roofs above.",
+     "note": "Table 6.8.2 footnote c on the 'Indirectly Conditioned Space' column (DUCT-1)."
+    }
+   },
+   {
+    "id": "DEF-9",
+    "concept": "indirectly_conditioned_space",
+    "code": "ASHRAE 90.1-2022 (NYC 2025 amended text)",
+    "term_as_printed": "indirectly conditioned space",
+    "src": [
+     "D_C15"
+    ],
+    "definition": "indirectly conditioned space: an enclosed space within a building that is not a heated space or a cooled space, which is heated or cooled indirectly by being connected to adjacent spaces, provided",
+    "conditions": [
+     "the product of the U-factors and surface areas of the space adjacent to connected spaces exceeds the combined sum of the product of the U-factors and surface areas of the space adjoining the outdoors, unconditioned spaces, and to or from semiheated spaces (e.g., corridors) or",
+     "that air from heated or cooled spaces is intentionally transferred (naturally or mechanically) into the space at a rate exceeding 3 ach (e.g., atria)."
+    ]
+   },
+   {
+    "id": "DEF-10",
+    "concept": "indirectly_conditioned_space",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "CONDITIONED SPACE, INDIRECTLY",
+    "src": [
+     "C31"
+    ],
+    "definition": "CONDITIONED SPACE, INDIRECTLY is enclosed space that (1) is not directly conditioned space; and (2) either (a) has a thermal transmittance area product (UA) to directly conditioned space exceeding that to the outdoors or to unconditioned space and does not have fixed vents or openings to the outdoors or to unconditioned space, or (b) is a space through which air from directly conditioned spaces is transferred at a rate exceeding three air changes per hour."
+   },
+   {
+    "id": "DEF-11",
+    "concept": "indirectly_conditioned_space",
+    "code": "IECC 2021/2024, IMC 2021/2024",
+    "term_as_printed": "(no separate term)",
+    "src": [
+     "D_C1",
+     "D_C2",
+     "D_C3",
+     "D_C4",
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling.",
+    "note": "The ICC codes have no 'indirectly conditioned space' term; indirectly heated or cooled spaces are part of 'Conditioned Space' (DEF-3..DEF-6)."
+   },
+   {
+    "id": "DEF-12",
+    "concept": "semiheated_space",
+    "code": "ASHRAE 90.1-2019",
+    "term_as_printed": "semiheated space",
+    "src": [
+     "C19"
+    ],
+    "definition": "semiheated space: an enclosed space within a building that is heated by a heating system whose output capacity is greater than or equal to 3.4 Btu/h·ft2 of floor area but is not a conditioned space."
+   },
+   {
+    "id": "DEF-13",
+    "concept": "semiheated_space",
+    "code": "ASHRAE 90.1-2022 (NYC 2025 amended text)",
+    "term_as_printed": "semiheated space",
+    "src": [
+     "D_C15"
+    ],
+    "definition": "semiheated space: an enclosed space within a building that is heated by a heating system whose output capacity is greater than or equal to 3.4 Btu/h•ft2 of floor area but is not a conditioned space.",
+    "note": "No 'semiheated space' definition was found in IECC 2021/2024 Chapter 2 (CE or RE), IMC 2021/2024 Chapter 2 or the Title 24 2022 definitions searched."
+   },
+   {
+    "id": "DEF-14",
+    "concept": "unconditioned_space",
+    "code": "ASHRAE 90.1-2019",
+    "term_as_printed": "unconditioned space",
+    "src": [
+     "C19"
+    ],
+    "definition": "unconditioned space: an enclosed space within a building that is not a conditioned space or a semiheated space. Crawlspaces, attics, and parking garages with natural or mechanical ventilation are not considered enclosed spaces."
+   },
+   {
+    "id": "DEF-15",
+    "concept": "unconditioned_space",
+    "code": "ASHRAE 90.1-2022 (NYC 2025 amended text)",
+    "term_as_printed": "unconditioned space",
+    "src": [
+     "D_C15"
+    ],
+    "definition": "unconditioned space: an enclosed space within a building that is not a conditioned space or a semi-heated space. Crawlspaces, attics, and parking garages with natural or mechanical ventilation are not considered enclosed spaces.",
+    "note": "NYC prints 'semi-heated' with a hyphen here (as served)."
+   },
+   {
+    "id": "DEF-16",
+    "concept": "unconditioned_space",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "UNCONDITIONED SPACE",
+    "src": [
+     "C31"
+    ],
+    "definition": "UNCONDITIONED SPACE is enclosed space within a building that is not directly conditioned, or indirectly conditioned."
+   },
+   {
+    "id": "DEF-17",
+    "concept": "unconditioned_space",
+    "code": "IECC 2021/2024 (commercial and residential)",
+    "term_as_printed": "Building Thermal Envelope (no 'unconditioned space' definition)",
+    "src": [
+     "D_C1",
+     "D_C3"
+    ],
+    "definition": "The basement walls, exterior walls, floors, ceilings, roofs and any other building element assemblies that enclose conditioned space or provide a boundary between conditioned space and exempt or unconditioned space.",
+    "residential_variant": {
+     "src": [
+      "D_C2",
+      "D_C4"
+     ],
+     "quote": "The basement walls, exterior walls, floors, ceiling, roofs and any other building element assemblies that enclose conditioned space or provide a boundary between conditioned space and exempt or unconditioned space."
+    },
+    "note": "IECC Chapter 2 (CE and RE, 2021 and 2024) uses 'unconditioned space' but does not define it; C201.3/R201.3 sends undefined terms to the other I-codes and C201.4/R201.4 to ordinary meaning (see the 'terms_defined_in_other_codes' definition)."
+   },
+   {
+    "id": "DEF-18",
+    "concept": "enclosed_space",
+    "code": "IECC 2021 and 2024 commercial",
+    "term_as_printed": "Enclosed Space",
+    "src": [
+     "D_C1",
+     "D_C3"
+    ],
+    "definition": "A volume surrounded by solid surfaces such as walls, floors, roofs and openable devices, such as doors and operable windows."
+   },
+   {
+    "id": "DEF-19",
+    "concept": "enclosed_space",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "ENCLOSED SPACE",
+    "src": [
+     "C31"
+    ],
+    "definition": "ENCLOSED SPACE is space that is substantially surrounded by solid surfaces, including walls, ceilings or roofs, doors, fenestration areas, and floors or ground."
+   },
+   {
+    "id": "DEF-20",
+    "concept": "exterior_outdoors",
+    "code": "ASHRAE 90.1 (2016 addenda package text; same wording in NYC 2025 / 90.1-2022)",
+    "term_as_printed": "building envelope / exterior building envelope / semiexterior building envelope",
+    "src": [
+     "D_C16",
+     "D_C15"
+    ],
+    "definition": "building envelope: the exterior plus the semiexterior portions of a building. For the purposes of determining building envelope requirements, the classifications are defined as follows: exterior building envelope: the elements of a building that separate conditioned spaces from the exterior. semiexterior building envelope: the elements of a building that separate conditioned space from unconditioned space or that enclose semiheated spaces through which thermal energy may be transferred to or from the exterior, to or from unconditioned spaces, or to or from conditioned spaces.",
+    "note": "90.1 has no stand-alone definition of 'exterior' in the texts read. For ducts, Table 6.8.2 footnote b widens the 'Exterior' column: 'Includes attics above insulated ceilings, parking garages and crawl spaces.' (DUCT-1, C19).",
+    "table_link": {
+     "src": [
+      "C19"
+     ],
+     "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces."
+    }
+   },
+   {
+    "id": "DEF-21",
+    "concept": "exterior_outdoors",
+    "code": "IECC 2021/2024 commercial",
+    "term_as_printed": "(no definition; C403.12.1 / C403.13.1 wording)",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "definition": "where located outside the building with not less than R-8 insulation in Climate Zones 0 through 4",
+    "note": "IECC uses 'outside the building' (commercial) and 'outside conditioned space' (residential) without defining them."
+   },
+   {
+    "id": "DEF-22",
+    "concept": "exterior_outdoors",
+    "code": "California Title 24 Part 6 (2022) 120.4(a)",
+    "term_as_printed": "Outdoors (list item)",
+    "src": [
+     "C31"
+    ],
+    "definition": "Outdoors; or"
+   },
+   {
+    "id": "DEF-23",
+    "concept": "plenum",
+    "code": "ASHRAE 90.1-2019 and 90.1-2022 (NYC)",
+    "term_as_printed": "plenum",
+    "src": [
+     "C19",
+     "D_C15"
+    ],
+    "definition": "plenum: a compartment or chamber to which one or more ducts are connected, that forms a part of the air distribution system, and that is not used for occupancy or storage. A plenum often is formed in part or in total by portions of the building."
+   },
+   {
+    "id": "DEF-24",
+    "concept": "plenum",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Plenum",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "An enclosed portion of the building structure, other than an occupiable space being conditioned, that is designed to allow air movement, and thereby serve as part of an air distribution system."
+   },
+   {
+    "id": "DEF-25",
+    "concept": "plenum",
+    "code": "IECC 2024 residential",
+    "term_as_printed": "Plenum",
+    "src": [
+     "D_C4"
+    ],
+    "definition": "An enclosed portion of the building structure, other than an occupiable space being conditioned, that is designed to allow air movement and thereby serve as part of the supply or return ductwork.",
+    "note": "No 'Plenum' definition in IECC 2021 CE/RE or IECC 2024 CE chapter 2 as served."
+   },
+   {
+    "id": "DEF-26",
+    "concept": "plenum",
+    "code": "IRC 2021 and 2024",
+    "term_as_printed": "[MP] Plenum",
+    "src": [
+     "D_C11",
+     "D_C12"
+    ],
+    "definition": "A chamber that forms part of an air-circulation system other than the occupied space being conditioned."
+   },
+   {
+    "id": "DEF-27",
+    "concept": "attic",
+    "code": "IRC 2021 and 2024 (applies in the IECC through C201.3/R201.3)",
+    "term_as_printed": "[RB] Attic",
+    "src": [
+     "D_C11",
+     "D_C12"
+    ],
+    "definition": "The unfinished space between the ceiling assembly and the roof assembly."
+   },
+   {
+    "id": "DEF-28",
+    "concept": "attic",
+    "code": "ASHRAE 90.1-2019 / 90.1-2022 (roof classification only)",
+    "term_as_printed": "attic and other roofs",
+    "src": [
+     "C19",
+     "D_C15"
+    ],
+    "definition": "attic and other roofs: all other roofs, including roofs with insulation entirely below (inside of) the roof structure (i.e., attics, cathedral ceilings, and single-rafter ceilings), roofs with insulation both above and below the roof structure, and roofs without insulation but excluding metal building roofs.",
+    "note": "This is an envelope (roof) category, not a duct-location definition. For duct location, 90.1-2019 uses footnote b of Table 6.8.2 ('attics above insulated ceilings') and the 'unconditioned space' definition ('Crawlspaces, attics, and parking garages with natural or mechanical ventilation are not considered enclosed spaces.')."
+   },
+   {
+    "id": "DEF-29",
+    "concept": "attic",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "ATTIC",
+    "src": [
+     "C31"
+    ],
+    "definition": "ATTIC is an enclosed space directly below the roof deck and above the ceiling beams."
+   },
+   {
+    "id": "DEF-30",
+    "concept": "crawl_space",
+    "code": "IRC 2021 and 2024",
+    "term_as_printed": "[RB] Crawl Space",
+    "src": [
+     "D_C11",
+     "D_C12"
+    ],
+    "definition": "An underfloor space that is not a basement."
+   },
+   {
+    "id": "DEF-31",
+    "concept": "crawl_space",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "CRAWL SPACE",
+    "src": [
+     "C31"
+    ],
+    "definition": "CRAWL SPACE is a space immediately under the first floor of a building adjacent to grade."
+   },
+   {
+    "id": "DEF-32",
+    "concept": "terms_defined_in_other_codes",
+    "code": "IECC 2021 and 2024 (CE and RE)",
+    "term_as_printed": "C201.3 / R201.3 Terms Defined in Other Codes; C201.4 / R201.4",
+    "src": [
+     "D_C1",
+     "D_C2",
+     "D_C3",
+     "D_C4"
+    ],
+    "definition": "Terms that are not defined in this code but are defined in the International Building Code, International Fire Code, International Fuel Gas Code, International Mechanical Code, International Plumbing Code or the International Residential Code shall have the meanings ascribed to them in those codes.",
+    "also_quotes": [
+     "Terms not defined by this chapter shall have ordinarily accepted meanings such as the context implies."
+    ]
+   },
+   {
+    "id": "DEF-33",
+    "concept": "supply_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Supply Air; Supply Air System",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "That air delivered to each or any space supplied by the air distribution system or the total air delivered to all spaces supplied by the air distribution system, which is provided for ventilating, heating, cooling, humidification, dehumidification and other similar purposes.",
+    "also_quotes": [
+     "An assembly of connected ducts, plenums, fittings, registers and grilles through which air, heated or cooled, is conducted from the supply unit to the space or spaces to be heated or cooled"
+    ]
+   },
+   {
+    "id": "DEF-34",
+    "concept": "supply_air",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "AIR, SUPPLY",
+    "src": [
+     "C31"
+    ],
+    "definition": "AIR, SUPPLY is air entering a space from an air-conditioning, heating, or ventilating system for the purpose of comfort conditioning. Supply air is generally filtered, fan-forced, and heated, cooled, humidified or dehumidified as necessary to maintain specified temperature and humidity conditions."
+   },
+   {
+    "id": "DEF-35",
+    "concept": "supply_return_ventilation_ductwork",
+    "code": "IECC 2024 residential",
+    "term_as_printed": "Ductwork",
+    "src": [
+     "D_C4"
+    ],
+    "definition": "The assemblies of connected ducts, plenums, boots, fittings, dampers, supply registers, return grilles, and filter grilles through which air is supplied to or returned from the space to be heated, cooled, or ventilated. Supply ductwork delivers air to the spaces from the space conditioning equipment. Return ductwork conveys air from the spaces back to the space conditioning equipment. Ventilation ductwork conveys air to or from any space."
+   },
+   {
+    "id": "DEF-36",
+    "concept": "return_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Return Air; Return Air System",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Air removed from an approved conditioned space or location and recirculated or exhausted.",
+    "also_quotes": [
+     "An assembly of connected ducts, plenums, fittings, registers and grilles through which air from the space or spaces to be heated or cooled is conducted back to the supply unit"
+    ]
+   },
+   {
+    "id": "DEF-37",
+    "concept": "outdoor_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Air, Outdoor; Outdoor Air",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Ambient air that enters a building through a ventilation system, through intentional openings for natural ventilation, or by infiltration.",
+    "also_quotes": [
+     "Air taken from the outdoors, and therefore not previously circulated through the system."
+    ],
+    "note": "The IMC defines the term twice ('Air, Outdoor' and 'Outdoor Air'); both are quoted."
+   },
+   {
+    "id": "DEF-38",
+    "concept": "outdoor_air",
+    "code": "ASHRAE 90.1-2019 and 90.1-2022 (NYC)",
+    "term_as_printed": "outdoor (outside) air",
+    "src": [
+     "C19",
+     "D_C15"
+    ],
+    "definition": "outdoor (outside) air: air that is outside the building envelope or is taken from outside the building that has not been previously circulated through the building."
+   },
+   {
+    "id": "DEF-39",
+    "concept": "outdoor_air",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "OUTDOOR AIR (Outside air)",
+    "src": [
+     "C31"
+    ],
+    "definition": "OUTDOOR AIR (Outside air) is air taken from outdoors and not previously circulated in the building."
+   },
+   {
+    "id": "DEF-40",
+    "concept": "ventilation_air",
+    "code": "IECC 2021/2024 (CE and RE)",
+    "term_as_printed": "Ventilation Air; Ventilation",
+    "src": [
+     "D_C1",
+     "D_C2",
+     "D_C3",
+     "D_C4"
+    ],
+    "definition": "That portion of supply air that comes from outside (outdoors) plus any recirculated air that has been treated to maintain the desired quality of air within a designated space.",
+    "also_quotes": [
+     "The natural or mechanical process of supplying conditioned or unconditioned air to, or removing such air from, any space."
+    ]
+   },
+   {
+    "id": "DEF-41",
+    "concept": "makeup_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Air, Makeup",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Any combination of outdoor and transfer air intended to replace exhaust air and exfiltration."
+   },
+   {
+    "id": "DEF-42",
+    "concept": "makeup_air",
+    "code": "ASHRAE 90.1-2019 and 90.1-2022 (NYC)",
+    "term_as_printed": "makeup air (dedicated replacement air)",
+    "src": [
+     "C19",
+     "D_C15"
+    ],
+    "definition": "makeup air (dedicated replacement air): outdoor air deliberately brought into the building from the outside and supplied to the vicinity of an exhaust hood to replace air, vapor, and contaminants being exhausted. Makeup air is generally filtered and fan-forced, and it may be heated or cooled depending on the requirements of the application. Makeup air may be delivered through outlets integral to the exhaust hood or through outlets in the same room."
+   },
+   {
+    "id": "DEF-43",
+    "concept": "exhaust_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Air, Exhaust; Exhaust System; Environmental Air",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Air being removed from any space, appliance or piece of equipment and conveyed directly to the atmosphere by means of openings or ducts.",
+    "also_quotes": [
+     "An assembly of connected ducts, plenums, fittings, registers, grilles and hoods through which air is conducted from the space or spaces and exhausted to the outdoor atmosphere.",
+     "Air that is conveyed to or from occupied areas through ducts that are not part of the heating or air-conditioning system, such as ventilation for human usage, domestic kitchen range exhaust, bathroom exhaust, domestic clothes dryer exhaust and parking garage exhaust."
+    ]
+   },
+   {
+    "id": "DEF-44",
+    "concept": "relief_air",
+    "code": "IMC 2021 (usage only; no definition)",
+    "term_as_printed": "601.2 Air Movement in Egress Elements",
+    "src": [
+     "C6"
+    ],
+    "definition": "Corridors shall not serve as supply, return, exhaust, relief or ventilation air ducts.",
+    "note": "No definition of 'relief air' was found in IMC 2021/2024 Chapter 2, the 90.1 texts read (C19, D_C15, D_C16) or the Title 24 2022 definitions. The term appears only in usage such as this sentence and 90.1 6.4.3.4.2 'exhaust/relief dampers'.",
+    "status": "unverified (no definition found)"
+   },
+   {
+    "id": "DEF-45",
+    "concept": "transfer_air",
+    "code": "IMC 2021 and 2024",
+    "term_as_printed": "Air, Transfer",
+    "src": [
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "Air moved from one indoor space to another."
+   },
+   {
+    "id": "DEF-46",
+    "concept": "transfer_air",
+    "code": "ASHRAE 90.1 (2016 addenda package text; same wording in NYC 2025 / 90.1-2022)",
+    "term_as_printed": "transfer air",
+    "src": [
+     "D_C16",
+     "D_C15"
+    ],
+    "definition": "transfer air: air transferred from one room to another through openings in the room envelope, whether it is transferred intentionally or not. The driving force for transfer air is generally a small pressure differential between the rooms, although one or more fans may be used."
+   },
+   {
+    "id": "DEF-47",
+    "concept": "transfer_air",
+    "code": "California Title 24 Part 6 (2022)",
+    "term_as_printed": "AIR, TRANSFER",
+    "src": [
+     "C31"
+    ],
+    "definition": "AIR, TRANSFER is air transferred, whether actively by fans or passively by pressure differentials, from one room to another within a building through openings in the room envelope."
+   },
+   {
+    "id": "DEF-48",
+    "concept": "duct_and_duct_system",
+    "code": "IECC 2021/2024 commercial, IMC 2021/2024",
+    "term_as_printed": "Duct; Duct System",
+    "src": [
+     "D_C1",
+     "D_C3",
+     "D_C5",
+     "D_C6"
+    ],
+    "definition": "A tube or conduit utilized for conveying air. The air passages of self-contained systems are not to be construed as air ducts.",
+    "also_quotes": [
+     "A continuous passageway for the transmission of air that, in addition to ducts, includes duct fittings, dampers, plenums, fans and accessory air-handling equipment and appliances."
+    ]
+   },
+   {
+    "id": "DEF-49",
+    "concept": "duct_and_duct_system",
+    "code": "ASHRAE 90.1-2019 and 90.1-2022 (NYC)",
+    "term_as_printed": "ductwork",
+    "src": [
+     "C19",
+     "D_C15"
+    ],
+    "definition": "ductwork: a system of ducts for distribution and extraction of air."
+   },
+   {
+    "id": "DEF-50",
+    "concept": "air_distribution_system",
+    "code": "IMC 2021",
+    "term_as_printed": "Air Distribution System; Air-Conditioning System",
+    "src": [
+     "D_C5"
+    ],
+    "definition": "Any system of ducts, plenums and air-handling equipment that circulates air within a space or spaces and includes systems made up of one or more air-handling units.",
+    "also_quotes": [
+     "A system that consists of heat exchangers, blowers, filters, supply, exhaust and return ducts, and shall include any apparatus installed in connection therewith."
+    ]
+   }
+  ],
+  "not_found": [
+   "ASHRAE 62.1 definitions of supply/return/outdoor/exhaust/relief/transfer air: the standard itself is sold or behind ASHRAE's sign-up read-only viewer (not used); none of the 93 addenda searched (D_C19) reprints them except 'recirculated air'.",
+   "ASHRAE 90.1 definitions of 'supply air', 'return air', 'exhaust air', 'relief air': not found in C19, D_C15 or D_C16 (not proven absent from the standard).",
+   "'relief air' in any code read (see DEF entry for relief_air).",
+   "IECC 2021/2024 definitions of 'unconditioned space', 'semiheated space', 'attic', 'exterior/outdoors'.",
+   "IBC definition of 'attic' (IBC not fetched); the IRC definition is given instead."
+  ]
+ },
+ "duct_types": {
+  "note": "How each code scopes its duct-insulation rule by duct type. 'defs' points to DEF ids.",
+  "items": [
+   {
+    "key": "supply",
+    "defs": [
+     "supply_air",
+     "supply_return_ventilation_ductwork"
+    ],
+    "covered_by_R_value_rules": [
+     "ASHRAE 90.1-2019/2022 6.4.4.1.2 + Table 6.8.2 (DUCT-1, DUCT-2)",
+     "IECC 2021 C403.12.1 / 2024 C403.13.1 (DUCT-3, DUCT-4)",
+     "IECC residential R403.3.x (DUCT-5..DUCT-7)",
+     "Title 24 120.4(a), 150.0(m)1B (DUCT-16)"
+    ],
+    "scope_quotes": [
+     {
+      "code": "ASHRAE 90.1-2019 6.4.4.1.2",
+      "src": [
+       "C19"
+      ],
+      "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2."
+     },
+     {
+      "code": "IECC 2021 C403.12.1",
+      "src": [
+       "C1"
+      ],
+      "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces"
+     },
+     {
+      "code": "Title 24 2022 120.4(a)",
+      "src": [
+       "C31"
+      ],
+      "quote": "Portions of supply-air and return-air ducts conveying heated or cooled air located in one or more of the following spaces shall be insulated to a minimum installed level of R-8:"
+     }
+    ]
+   },
+   {
+    "key": "return",
+    "defs": [
+     "return_air"
+    ],
+    "covered_by_R_value_rules": [
+     "same clauses as supply"
+    ],
+    "type_specific": [
+     {
+      "code": "ASHRAE 90.1-2019 Table 6.8.2 footnote d (Indirectly Conditioned Space column)",
+      "src": [
+       "C19"
+      ],
+      "quote": "Return ducts in this duct location do not require insulation."
+     },
+     {
+      "code": "Title 24 2022 120.4(a)",
+      "src": [
+       "C31"
+      ],
+      "quote": "Portions of supply-air ducts that are not in one of these spaces, including ducts buried in concrete slab, shall be insulated to a minimum installed level of R-4.2 or be enclosed in directly conditioned space.",
+      "reading": "the R-4.2 clause names only supply-air ducts, so return ducts outside the five listed spaces have no Title 24 120.4 requirement (status 'derived')."
+     }
+    ]
+   },
+   {
+    "key": "outdoor_air_intake",
+    "defs": [
+     "outdoor_air",
+     "ventilation_air",
+     "makeup_air"
+    ],
+    "covered_by_R_value_rules": [
+     "none in ASHRAE 90.1-2019/2022, IECC 2021/2024 C403.12.1/C403.13.1, IECC residential R403.3, Title 24 120.4 (all scoped to supply and return)",
+     "exception: combustion-air ducts through conditioned space, IECC C402.5.5 item 2.5 (2021) / C402.1.5 (2024) and R402.4.4 (2021) / R402.1.6 (2024): R-8 (DM cells, CV notes)",
+     "state amendments: Washington C403.10.1.1 (Table C403.10.1.1), Minnesota 1322.0403 and 1323.0680"
+    ],
+    "residential_2024_exception": {
+     "src": [
+      "C4"
+     ],
+     "quote": "Exception: Ventilation ductwork that is not integrated with duct systems serving heating or cooling systems."
+    },
+    "note": "An outdoor-air duct that joins a mixing box ahead of the air handler carries outdoor air, not supply air, until the mixing point; none of the model codes read assigns it an R-value. IMC 603.12 (condensation) still applies to it (CV-1)."
+   },
+   {
+    "key": "exhaust",
+    "defs": [
+     "exhaust_air"
+    ],
+    "covered_by_R_value_rules": [
+     "none in the model codes read; DOE code note (D_C27) states this explicitly for 90.1-2007/2010 and IECC 2009/2012 (DL-2)",
+     "state amendments: Washington Table C403.10.1.2, Minnesota 1322.0403 and 1323.0680"
+    ],
+    "doe_quote": {
+     "src": [
+      "D_C27"
+     ],
+     "quote": "No insulation requirement. Insulation requirements are specified only for supply and return ductwork, not for exhaust ducts.",
+     "page": 3
+    },
+    "other_clauses": [
+     "IMC 604.2 surface temperature limit (>120°F ducts) applies to any duct (DUCT-15)",
+     "IMC 603.12 condensation applies to any duct (CV-1)"
+    ]
+   },
+   {
+    "key": "relief",
+    "defs": [
+     "relief_air"
+    ],
+    "covered_by_R_value_rules": [
+     "none in the model codes read",
+     "state amendments: Washington Table C403.10.1.2 ('Relief or exhaust air'), Minnesota 1323.0680 ('Exhaust Duct and Relief Duct Requirements')"
+    ]
+   },
+   {
+    "key": "transfer",
+    "defs": [
+     "transfer_air"
+    ],
+    "covered_by_R_value_rules": [
+     "none found in any code read"
+    ]
+   },
+   {
+    "key": "combustion_air",
+    "defs": [
+     "outdoor_air"
+    ],
+    "covered_by_R_value_rules": [
+     "IECC 2021 C402.5.5 item 2.5 / IECC 2024 C402.1.5 (commercial); IECC 2021 R402.4.4 / IECC 2024 R402.1.6 (residential): R-8 where it passes through conditioned space, climate zones 3-8, see DM-c cells"
+    ]
+   },
+   {
+    "key": "kitchen_makeup_air",
+    "defs": [
+     "makeup_air"
+    ],
+    "covered_by_R_value_rules": [
+     "none; IMC 506.3.1.2 (2021) / 508.1.2 (2024) apply 603.12 condensation and a noncombustibility rule near Type I hoods (CV-6)"
+    ]
+   }
+  ]
+ },
+ "requirements_matrix": {
+  "how_to_read": "One cell per (code, duct type(s), location). 'requirement' holds the parsed R-value(s); 'status' says how direct the text is (see conventions.status_values). R-values are installed R (h·ft²·°F/Btu). 'R_by_service_and_climate_zone' keys for ASHRAE 90.1 are the Table 6.8.2 row groups: heating_and_cooling = 'Supply and Return Ducts for Heating and Cooling', heating_only, cooling_only. 'None' is the table's own word.",
+  "location_keys": {
+   "conditioned": "directly heated or cooled space (90.1: heated or cooled space)",
+   "semiheated": "90.1 semiheated space (no IECC equivalent)",
+   "indirectly_conditioned": "90.1 indirectly conditioned space incl. return-air plenums (Table 6.8.2 footnote c); in the IECC/IMC these are part of conditioned space",
+   "unconditioned_enclosed": "enclosed space inside the building that is not conditioned or semiheated (e.g. unconditioned shaft or storage room)",
+   "attic": "attic above an insulated ceiling unless stated otherwise",
+   "crawl_space": "crawl space (vented or not unless stated)",
+   "garage": "parking garage",
+   "outdoors": "exterior of the building, exposed to weather",
+   "buried": "underground / beneath the building / in slab",
+   "envelope_assembly": "duct or plenum within a wall, roof or floor assembly of the building (thermal) envelope, or envelope used as plenum enclosure"
+  },
+  "cells": [
+   {
+    "id": "DM-1",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "outdoors",
+    "status": "stated",
+    "requirement": {
+     "column": "Exterior",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-8",
+       "5-8": "R-12"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-12"
+      },
+      "cooling_only": {
+       "0-6": "R-8",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "checks": [
+     "Supply and Return Ducts for Heating and Cooling 0 to 4 R-8 R-6 R-1.9",
+     "5 to 8 R-12 R-6 R-1.9",
+     "Climate Zone Exteriorb Unconditioned Space and Buried Ducts Indirectly Conditioned Space c,d"
+    ]
+   },
+   {
+    "id": "DM-2",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "attic",
+    "status": "stated",
+    "requirement": {
+     "column": "Exterior (via footnote b)",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-8",
+       "5-8": "R-12"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-12"
+      },
+      "cooling_only": {
+       "0-6": "R-8",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces.",
+    "note": "Footnote b on the 'Exterior' column names attics above insulated ceilings. Footnote b does not distinguish vented/unvented attics or crawl spaces; an attic that is not 'above an insulated ceiling' (e.g. insulation at the roof deck) is not named (see notes)."
+   },
+   {
+    "id": "DM-3",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "garage",
+    "status": "stated",
+    "requirement": {
+     "column": "Exterior (via footnote b)",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-8",
+       "5-8": "R-12"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-12"
+      },
+      "cooling_only": {
+       "0-6": "R-8",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces.",
+    "note": "Footnote b on the 'Exterior' column names parking garages. Footnote b does not distinguish vented/unvented attics or crawl spaces; an attic that is not 'above an insulated ceiling' (e.g. insulation at the roof deck) is not named (see notes)."
+   },
+   {
+    "id": "DM-4",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "crawl_space",
+    "status": "stated",
+    "requirement": {
+     "column": "Exterior (via footnote b)",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-8",
+       "5-8": "R-12"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-12"
+      },
+      "cooling_only": {
+       "0-6": "R-8",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces.",
+    "note": "Footnote b on the 'Exterior' column names crawl spaces. Footnote b does not distinguish vented/unvented attics or crawl spaces; an attic that is not 'above an insulated ceiling' (e.g. insulation at the roof deck) is not named (see notes)."
+   },
+   {
+    "id": "DM-5",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "unconditioned_enclosed",
+    "status": "stated",
+    "requirement": {
+     "column": "Unconditioned Space and Buried Ducts",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-6",
+       "5-8": "R-6"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-6"
+      },
+      "cooling_only": {
+       "0-6": "R-6",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "unconditioned space: an enclosed space within a building that is not a conditioned space or a semiheated space. Crawlspaces, attics, and parking garages with natural or mechanical ventilation are not considered enclosed spaces.",
+    "note": "Covers enclosed unconditioned spaces such as unconditioned shafts or storage; ventilated crawl spaces, attics and parking garages are not 'enclosed spaces' by definition and go to the Exterior column via footnote b."
+   },
+   {
+    "id": "DM-6",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "buried",
+    "status": "stated",
+    "requirement": {
+     "column": "Unconditioned Space and Buried Ducts",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-6",
+       "5-8": "R-6"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-6",
+       "5-8": "R-6"
+      },
+      "cooling_only": {
+       "0-6": "R-6",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "checks": [
+     "Unconditioned Space and Buried Ducts"
+    ]
+   },
+   {
+    "id": "DM-7",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply"
+    ],
+    "location": "indirectly_conditioned",
+    "status": "stated",
+    "requirement": {
+     "column": "Indirectly Conditioned Space (footnotes c, d)",
+     "R_by_service_and_climate_zone": {
+      "heating_and_cooling": {
+       "0-4": "R-1.9",
+       "5-8": "R-1.9"
+      },
+      "heating_only": {
+       "0-1": "None",
+       "2-4": "R-1.9",
+       "5-8": "R-1.9"
+      },
+      "cooling_only": {
+       "0-6": "R-1.9",
+       "7-8": "R-1.9"
+      }
+     }
+    },
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Includes return air plenums with or without exposed roofs above."
+   },
+   {
+    "id": "DM-8",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "return"
+    ],
+    "location": "indirectly_conditioned",
+    "status": "none_stated",
+    "requirement": "none",
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Return ducts in this duct location do not require insulation."
+   },
+   {
+    "id": "DM-9",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "conditioned",
+    "status": "none_stated",
+    "requirement": "none (heated, cooled or semiheated space)",
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces.",
+    "note": "Exception 2 to 6.4.4.1.2."
+   },
+   {
+    "id": "DM-10",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "semiheated",
+    "status": "none_stated",
+    "requirement": "none",
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces."
+   },
+   {
+    "id": "DM-11",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "envelope_assembly",
+    "status": "stated",
+    "requirement": "building envelope insulation per the most restrictive of Section 6.4.4.1 or Section 5 where the envelope forms a plenum enclosure",
+    "src": [
+     "C19"
+    ],
+    "see": "DUCT-1",
+    "quote": "Where portions of the building envelope are used as a plenum enclosure, building envelope insulation shall be as required by the most restrictive condition of Section 6.4.4.1 or Section 5, depending on whether the plenum is located in the roof, wall, or floor."
+   },
+   {
+    "id": "DM-12",
+    "code": "ASHRAE 90.1-2019",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all",
+    "status": "not_addressed",
+    "requirement": "no R-value: 6.4.4.1.2 covers supply and return ducts and plenums only",
+    "src": [
+     "C19"
+    ],
+    "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2.",
+    "related_quotes": [
+     "All outdoor air intake and exhaust systems shall be equipped with motorized dampers that will automatically shut when the systems or spaces served are not in use."
+    ],
+    "note": "6.4.3.4.2 (shutoff dampers) is the only 90.1 clause found that is specific to outdoor-air intake and exhaust systems; it sets damper, not insulation, requirements. A full-text search of 195 90.1 addenda (C21) for 'outdoor air duct', 'exhaust duct', 'relief duct', 'intake duct', 'ducts conveying outdoor/exhaust' found no insulation provision (only hit: Addendum a to 90.1-2019, a fan-efficiency exception for 'dryer exhaust duct power ventilators')."
+   },
+   {
+    "id": "DM-13",
+    "code": "ASHRAE 90.1-2022",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "all (same three columns and footnotes as 2019)",
+    "status": "partially_verified",
+    "requirement": {
+     "verified_climate_zones": "4 to 6 (NYC 2025 prints only these)",
+     "values": "equal to ASHRAE 90.1-2019 for zones 4-6 (DUCT-2)",
+     "zones_0_to_3_and_7_to_8": "unverified"
+    },
+    "src": [
+     "C22",
+     "C20",
+     "C23"
+    ],
+    "see": "DUCT-2",
+    "scope": {
+     "src": [
+      "C23"
+     ],
+     "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2."
+    },
+    "note": "Addendum r to 90.1-2022 (C20) changes footnote a only ('envelope floor'). No addendum to 90.1-2019 or 90.1-2022 found that adds outdoor-air or exhaust rows (C21 corpus re-searched for this file)."
+   },
+   {
+    "id": "DM-14",
+    "code": "ASHRAE 90.1-2022",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all",
+    "status": "not_addressed",
+    "requirement": "no R-value (6.4.4.1.2 scope unchanged)",
+    "src": [
+     "C23"
+    ],
+    "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2."
+   },
+   {
+    "id": "DM-15",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "unconditioned_enclosed",
+    "status": "stated",
+    "requirement": {
+     "all_climate_zones": "R-6"
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces"
+   },
+   {
+    "id": "DM-16",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "outdoors",
+    "status": "stated",
+    "requirement": {
+     "0-4": "R-8",
+     "5-8": "R-12"
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "where located outside the building with not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8."
+   },
+   {
+    "id": "DM-17",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "envelope_assembly",
+    "status": "stated",
+    "requirement": {
+     "separation_from_exterior_or_unconditioned_or_exempt_space": {
+      "0-4": "R-8",
+      "5-8": "R-12"
+     }
+    },
+    "src": [
+     "C1"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "Where located within a building envelope assembly, the duct or plenum shall be separated from the building exterior or unconditioned or exempt spaces by not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8.",
+    "note": "IECC 2024 says 'building thermal envelope assembly' (DUCT-4 check)."
+   },
+   {
+    "id": "DM-18",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "buried",
+    "status": "stated",
+    "requirement": "insulated 'as required in this section' (R value not singled out for underground) or listed/labeled equivalent thermal distribution efficiency",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3",
+    "quote": "Ducts located underground beneath buildings shall be insulated as required in this section or have an equivalent thermal distribution efficiency. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency.",
+    "note": "The clause does not say whether underground ducts take the 'unconditioned' (R-6) or 'outside the building' (R-8/R-12) value. The 2012 DOE code note read IECC 2009/2012 buried ducts as 'locations outside the building' (DL-14)."
+   },
+   {
+    "id": "DM-19",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "attic",
+    "status": "derived",
+    "requirement": {
+     "if_inside_building_but_outside_thermal_envelope": "R-6 (unconditioned space)",
+     "if_treated_as_outside_the_building": {
+      "0-4": "R-8",
+      "5-8": "R-12"
+     }
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces",
+    "definition_basis": {
+     "src": [
+      "D_C1",
+      "D_C3"
+     ],
+     "quote": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled."
+    },
+    "doe_basis": {
+     "src": [
+      "D_C27"
+     ],
+     "page": 3,
+     "quotes": [
+      "Insulation R-value requirements for unconditioned spaces in the IECC or for a vented attic in ASHRAE 90.1 must be met.",
+      "Insulation R-value requirement for unconditioned spaces in the IECC or for unvented attics in ASHRAE 90.1 must be met."
+     ]
+    },
+    "reading": "IECC does not name attics, crawl spaces or garages in C403.12.1/C403.13.1 and does not define 'unconditioned space'. A space outside the building thermal envelope is not 'Conditioned Space' (DEF IECC). DOE's 2012 code note (D_C27, DL-3/DL-6/DL-13) applies the IECC 'unconditioned spaces' requirement to ducts in vented attics, unvented attics and vented crawl spaces under the same clause wording."
+   },
+   {
+    "id": "DM-20",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "crawl_space",
+    "status": "derived",
+    "requirement": {
+     "if_inside_building_but_outside_thermal_envelope": "R-6 (unconditioned space)",
+     "if_treated_as_outside_the_building": {
+      "0-4": "R-8",
+      "5-8": "R-12"
+     }
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces",
+    "definition_basis": {
+     "src": [
+      "D_C1",
+      "D_C3"
+     ],
+     "quote": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled."
+    },
+    "doe_basis": {
+     "src": [
+      "D_C27"
+     ],
+     "page": 3,
+     "quotes": [
+      "Insulation R-value requirements for unconditioned spaces in the IECC or for an unvented attic in ASHRAE 90.1 must be met."
+     ]
+    },
+    "reading": "IECC does not name attics, crawl spaces or garages in C403.12.1/C403.13.1 and does not define 'unconditioned space'. A space outside the building thermal envelope is not 'Conditioned Space' (DEF IECC). DOE's 2012 code note (D_C27, DL-3/DL-6/DL-13) applies the IECC 'unconditioned spaces' requirement to ducts in vented attics, unvented attics and vented crawl spaces under the same clause wording."
+   },
+   {
+    "id": "DM-21",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "garage",
+    "status": "derived",
+    "requirement": {
+     "if_inside_building_but_outside_thermal_envelope": "R-6 (unconditioned space)",
+     "if_treated_as_outside_the_building": {
+      "0-4": "R-8",
+      "5-8": "R-12"
+     }
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "see": "DUCT-3, DUCT-4",
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces",
+    "definition_basis": {
+     "src": [
+      "D_C1",
+      "D_C3"
+     ],
+     "quote": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled."
+    },
+    "reading": "IECC does not name attics, crawl spaces or garages in C403.12.1/C403.13.1 and does not define 'unconditioned space'. A space outside the building thermal envelope is not 'Conditioned Space' (DEF IECC). No source read classifies garages for IECC commercial ducts."
+   },
+   {
+    "id": "DM-22",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "indirectly_conditioned",
+    "status": "derived",
+    "requirement": "none (inside the thermal envelope = conditioned space; C403.12.1 lists no requirement there)",
+    "src": [
+     "D_C1",
+     "D_C3"
+    ],
+    "quote": "Spaces are indirectly heated or cooled where they communicate through openings with conditioned spaces, where they are separated from conditioned spaces by uninsulated walls, floors or ceilings, or where they contain uninsulated ducts, piping or other sources of heating or cooling.",
+    "doe_basis": {
+     "src": [
+      "D_C27"
+     ],
+     "page": 3,
+     "quote": "In the IECC, such spaces would be considered conditioned spaces, also with no duct insulation requirement."
+    }
+   },
+   {
+    "id": "DM-23",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "conditioned",
+    "status": "not_addressed",
+    "requirement": "none (location not listed in C403.12.1/C403.13.1)",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "doe_basis": {
+     "src": [
+      "D_C27"
+     ],
+     "page": 3,
+     "quote": "No insulation requirement in IECC. These ducts are located in conditioned space. Insulation may be installed for sound-reduction purposes or to control condensate, but it is not required."
+    }
+   },
+   {
+    "id": "DM-24",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 (commercial)",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all",
+    "status": "not_addressed",
+    "requirement": "no R-value (C403.12.1/C403.13.1 cover supply and return air ducts and plenums only)",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Supply and return air ducts and plenums shall be insulated",
+    "related": "C403.7.7 shutoff dampers (2021 and 2024) require Class I motorized dampers on outdoor air intake and exhaust openings; no insulation clause.",
+    "related_quotes": [
+     "Outdoor air intake and exhaust openings and stairway and shaft vents shall be provided with Class I motorized dampers."
+    ]
+   },
+   {
+    "id": "DM-25",
+    "code": "IECC 2021 C402.5.5 item 2.5 / IECC 2024 C402.1.5 (commercial)",
+    "duct_types": [
+     "combustion_air (outdoor air)"
+    ],
+    "location": "conditioned (duct passing through)",
+    "status": "stated",
+    "requirement": {
+     "climate_zones": "3-8",
+     "R": "R-8",
+     "condition": "where combustion air is supplied through openings in an exterior wall to a room containing a space-conditioning fuel-burning appliance and the room is enclosed and isolated from conditioned space (option 2)"
+    },
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Where an air duct supplying combustion air to the enclosed room or space passes through conditioned space, the duct shall be insulated to an R-value of not less than R-8.",
+    "context_quote": "In Climate Zones 3 through 8, where combustion air is supplied through openings in an exterior wall to a room or space containing a space-conditioning fuel-burning appliance, one of the following shall apply:",
+    "exception_quote": "Exception: Fireplaces and stoves complying with Sections 901 through 905 of the International Mechanical Code, and Section 2111.14 of the International Building Code."
+   },
+   {
+    "id": "DM-26",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3 (residential)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "outside_conditioned_space (attic, crawl space, garage, outdoors, unconditioned)",
+    "status": "stated",
+    "requirement": {
+     "duct_diameter_3_in_and_larger": "R-8",
+     "duct_diameter_under_3_in": "R-6",
+     "climate_zones": "all"
+    },
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "see": "DUCT-5, DUCT-7",
+    "quote": "located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter."
+   },
+   {
+    "id": "DM-27",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3 (residential)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "buried",
+    "status": "stated",
+    "requirement": "as for outside conditioned space, or listed/labeled equivalent thermal distribution efficiency",
+    "src": [
+     "C2"
+    ],
+    "see": "DUCT-5",
+    "quote": "Ducts buried beneath a building shall be insulated as required per this section or have an equivalent thermal distribution efficiency."
+   },
+   {
+    "id": "DM-28",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3 (residential)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "attic (buried in ceiling insulation)",
+    "status": "stated",
+    "requirement": "see residential RES rows (R-8 duct + R-19 total ceiling insulation; R-13 supply fully buried in CZ 0A-3A)",
+    "src": [
+     "C2"
+    ],
+    "see": "DUCT-6, DUCT-7",
+    "quote": "The supply and return ducts shall have an insulation R-value not less than R-8.",
+    "iecc_2024": {
+     "src": [
+      "C4"
+     ],
+     "quote": "The supply and return ductwork shall be insulated with not less than R-8 insulation."
+    }
+   },
+   {
+    "id": "DM-29",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3 (residential)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "conditioned",
+    "status": "derived",
+    "requirement": "none (rule applies only outside conditioned space; R403.3.2 (2021) / R403.3.4 (2024) set the tests for counting a duct as inside)",
+    "src": [
+     "C2"
+    ],
+    "quote": "For ductwork to be considered inside a conditioned space, it shall comply with one of the following:",
+    "iecc_2024": {
+     "src": [
+      "C4"
+     ],
+     "quote": "For duct systems to be considered inside a conditioned space, the space conditioning equipment shall be located completely on the conditioned side of the building thermal envelope."
+    },
+    "iecc_2018_exception": {
+     "src": [
+      "C5"
+     ],
+     "quote": "Ducts or portions thereof located completely inside the building thermal envelope."
+    }
+   },
+   {
+    "id": "DM-30",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3 (residential)",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "envelope_assembly",
+    "status": "stated",
+    "requirement": "see RES rows (2021 floor cavity R-19 / exterior wall R-10; 2024 R-10 or 50% of Table R402.1.3)",
+    "src": [
+     "C2"
+    ],
+    "quote": "Minimum R-10 insulation installed in the cavity width separating the duct from the outside sheathing.",
+    "iecc_2024": {
+     "src": [
+      "C4"
+     ],
+     "quote": "Not less than R-10 insulation, or not less than 50 percent of the required insulation R-value specified in Table R402.1.3, whichever is greater, shall be located between the ductwork and the unconditioned space."
+    }
+   },
+   {
+    "id": "DM-31",
+    "code": "IECC 2024 R403.3 (residential)",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust"
+    ],
+    "location": "all",
+    "status": "none_stated",
+    "requirement": "ventilation ductwork not integrated with heating/cooling duct systems is excepted from R403.3",
+    "src": [
+     "C4"
+    ],
+    "quote": "Exception: Ventilation ductwork that is not integrated with duct systems serving heating or cooling systems."
+   },
+   {
+    "id": "DM-32",
+    "code": "IECC 2021 R403.3 (residential)",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust",
+     "relief"
+    ],
+    "location": "all",
+    "status": "not_addressed",
+    "requirement": "no R-value (R403.3.1 covers supply and return ducts)",
+    "src": [
+     "C2"
+    ],
+    "quote": "Supply and return ducts located outside conditioned space shall be insulated",
+    "related_quotes": [
+     "Outdoor air intakes and exhausts shall have automatic or gravity dampers that close when the ventilation system is not operating."
+    ]
+   },
+   {
+    "id": "DM-33",
+    "code": "IECC 2021 R402.4.4 / IECC 2024 R402.1.6 (residential)",
+    "duct_types": [
+     "combustion_air (outdoor air)"
+    ],
+    "location": "conditioned (duct passing through)",
+    "status": "stated",
+    "requirement": {
+     "climate_zones": "3-8",
+     "R": "R-8"
+    },
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "quote": "The combustion air duct shall be insulated where it passes through conditioned space to an R-value of not less than R-8.",
+    "exceptions_quotes": [
+     "Direct vent appliances with both intake and exhaust pipes installed continuous to the outside."
+    ]
+   },
+   {
+    "id": "DM-34",
+    "code": "IMC 2021 and 2024 (Chapter 6)",
+    "duct_types": [
+     "supply",
+     "return",
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all",
+    "status": "stated",
+    "requirement": "provisions to prevent exterior condensation (no R-value); R-values are deferred to the IECC",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "see": "DUCT-15",
+    "quote": "Provisions shall be made to prevent the formation of condensation on the exterior of any duct.",
+    "scope_quote": "Duct systems used for the movement of air in air-conditioning, heating, ventilating and exhaust systems shall conform to the provisions of this chapter except as otherwise specified in Chapters 5 and 7.",
+    "iecc_link_quote": "Duct insulation shall conform to the requirements of Sections 604.2 through 604.13 and the International Energy Conservation Code."
+   },
+   {
+    "id": "DM-35",
+    "code": "IMC 2021 and 2024 (Chapter 6)",
+    "duct_types": [
+     "supply",
+     "return",
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all (ducts operating above 120°F)",
+    "status": "stated",
+    "requirement": "insulate to limit exposed surface temperature to 120°F",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "see": "DUCT-15",
+    "quote": "Ducts that operate at temperatures exceeding 120°F (49°C) shall have sufficient thermal insulation to limit the exposed surface temperature to 120°F (49°C)."
+   },
+   {
+    "id": "DM-36",
+    "code": "IMC 2021 and 2024 (Chapter 6)",
+    "duct_types": [
+     "supply",
+     "return",
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "outdoors",
+    "status": "stated",
+    "requirement": "weather protection; insulated exterior ducts need an approved weatherproof barrier",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "see": "OUT-6",
+    "quote": "Insulated exterior ducts shall be protected with an approved weatherproof barrier."
+   },
+   {
+    "id": "DM-37",
+    "code": "IMC 2021 and 2024 (Chapter 6)",
+    "duct_types": [
+     "supply",
+     "return",
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "buried",
+    "status": "stated",
+    "requirement": "ducts approved for underground installation; uncoated metallic ducts encased in at least 2 in. of concrete (no R-value)",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "quote": "Ducts shall be approved for underground installation. Metallic ducts not having an approved protective coating shall be completely encased in not less than 2 inches (51 mm) of concrete."
+   },
+   {
+    "id": "DM-38",
+    "code": "California Title 24 Part 6 (2022) 120.4(a) nonresidential/hotel-motel",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "outdoors | attic (between roof and insulated ceiling, or directly under a roof with fixed vents) | unconditioned crawlspace | other unconditioned spaces",
+    "status": "stated",
+    "requirement": {
+     "R": "R-8 installed"
+    },
+    "src": [
+     "C31"
+    ],
+    "see": "DUCT-16",
+    "quote": "Portions of supply-air and return-air ducts conveying heated or cooled air located in one or more of the following spaces shall be insulated to a minimum installed level of R-8:",
+    "list_quotes": [
+     "In a space between the roof and an insulated ceiling; or",
+     "In a space directly under a roof with fixed vents or openings to the outside or unconditioned spaces; or",
+     "In an unconditioned crawlspace; or",
+     "In other unconditioned spaces."
+    ]
+   },
+   {
+    "id": "DM-39",
+    "code": "California Title 24 Part 6 (2022) 120.4(a) nonresidential/hotel-motel",
+    "duct_types": [
+     "supply"
+    ],
+    "location": "indirectly_conditioned | buried (concrete slab) | any space not listed above",
+    "status": "stated",
+    "requirement": {
+     "R": "R-4.2 installed, or enclose in directly conditioned space"
+    },
+    "src": [
+     "C31"
+    ],
+    "see": "DUCT-16",
+    "quote": "Portions of supply-air ducts that are not in one of these spaces, including ducts buried in concrete slab, shall be insulated to a minimum installed level of R-4.2 or be enclosed in directly conditioned space."
+   },
+   {
+    "id": "DM-40",
+    "code": "California Title 24 Part 6 (2022) 120.4(a) nonresidential/hotel-motel",
+    "duct_types": [
+     "return"
+    ],
+    "location": "indirectly_conditioned | buried | any space not listed",
+    "status": "derived",
+    "requirement": "none (the R-4.2 sentence names supply-air ducts only)",
+    "src": [
+     "C31"
+    ],
+    "quote": "Portions of supply-air ducts that are not in one of these spaces"
+   },
+   {
+    "id": "DM-41",
+    "code": "California Title 24 Part 6 (2022) 120.4(a) nonresidential/hotel-motel",
+    "duct_types": [
+     "supply"
+    ],
+    "location": "conditioned (directly)",
+    "status": "none_stated",
+    "requirement": "none ('or be enclosed in directly conditioned space')",
+    "src": [
+     "C31"
+    ],
+    "quote": "or be enclosed in directly conditioned space."
+   },
+   {
+    "id": "DM-42",
+    "code": "California Title 24 Part 6 (2022) 120.4(a) nonresidential/hotel-motel",
+    "duct_types": [
+     "outdoor_air_intake",
+     "exhaust",
+     "relief",
+     "transfer"
+    ],
+    "location": "all",
+    "status": "not_addressed",
+    "requirement": "no R-value (scope: supply-air and return-air ducts conveying heated or cooled air)",
+    "src": [
+     "C31"
+    ],
+    "quote": "Portions of supply-air and return-air ducts conveying heated or cooled air"
+   },
+   {
+    "id": "DM-43",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "outdoor_air_intake"
+    ],
+    "location": "all locations from the building exterior to the automatic shutoff damper or equipment",
+    "status": "stated",
+    "requirement": "insulated continuously; shafts and plenums conveying outdoor air meet envelope air-leakage and insulation requirements of C402",
+    "src": [
+     "D_C21"
+    ],
+    "quote": "Ducts conveying outdoor air shall be insulated continuously from the building exterior to an automatic shutoff damper or heating or cooling equipment.",
+    "also_quotes": [
+     "Shafts and plenums conveying outdoor air from the exterior of the building to the mechanical system shall meet all air leakage and building envelope insulation requirements of Section C402, plus building envelope vapor control requirements from the International Building Code."
+    ]
+   },
+   {
+    "id": "DM-44",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "outdoor_air_intake"
+    ],
+    "location": "conditioned, upstream of automatic shutoff damper (>= 2800 cfm)",
+    "status": "stated",
+    "requirement": {
+     "4C and 5B": "R-16"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "check": "Outdoor Air | Inside conditioned space and upstream of automatic shutoff damper | 4C and 5B | ≥ 2800 CFM | R-16"
+   },
+   {
+    "id": "DM-45",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "outdoor_air_intake"
+    ],
+    "location": "conditioned, downstream of automatic shutoff damper to HVAC unit or room (>= 2800 cfm)",
+    "status": "stated",
+    "requirement": {
+     "4C": "R-8",
+     "5B": "R-12"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "checks": [
+     "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 4C | ≥ 2800 CFM | R-8",
+     "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 5B | ≥ 2800 CFM | R-12"
+    ]
+   },
+   {
+    "id": "DM-46",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "outdoor_air_intake"
+    ],
+    "location": "conditioned (<= 2800 cfm; units < 2,800 cfm exception)",
+    "status": "stated",
+    "requirement": {
+     "4C and 5B": "R-7"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "check": "Outdoor Air | Inside conditioned space | 4C and 5B | ≤ 2800 CFM | R-7",
+    "exception_quote": "Outdoor air ducts serving individual supply air units with less than 2,800 cfm of total supply air capacity, provided these are insulated to the minimum insulation values in Table C403.10.1.1."
+   },
+   {
+    "id": "DM-47",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "outdoors (incl. attics above insulated ceilings, parking garages, crawl spaces per footnote c)",
+    "status": "stated",
+    "requirement": {
+     "4C": "R-8",
+     "5B": "R-12"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "checks": [
+     "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 4C | R-8",
+     "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 5B | R-12"
+    ],
+    "footnote_quote": "Includes attics above insulated ceilings, parking garages and crawl spaces."
+   },
+   {
+    "id": "DM-48",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "unconditioned_enclosed",
+    "status": "stated",
+    "requirement": {
+     "4C and 5B": "R-6",
+     "if duct air within 15°F of surrounding unconditioned space": "R-3.3"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "checks": [
+     "Supply air or return air | Unconditioned space (enclosed but not in the building conditioned envelope) | 4C and 5B | R-6",
+     "Supply air or return air | Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space | 4C and 5B | R-3.3"
+    ]
+   },
+   {
+    "id": "DM-49",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return"
+    ],
+    "location": "envelope_assembly",
+    "status": "stated",
+    "requirement": {
+     "4C and 5B": "R-16"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "check": "Supply air or return air | Where located in a building envelope assembly | 4C and 5B | R-16"
+   },
+   {
+    "id": "DM-50",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "supply"
+    ],
+    "location": "conditioned",
+    "status": "stated",
+    "requirement": {
+     "supply air < 55°F or > 105°F": "R-3.3",
+     "same, within the zone the duct directly serves": "None",
+     "supply air 55-105°F": "None"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "checks": [
+     "Supply air | Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | R-3.3",
+     "Supply air | Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | None",
+     "Supply air | Within conditioned space where the supply duct conveys air that is 55°F or greater and 105°F or less | 4C and 5B | None"
+    ],
+    "exception_quote": "Ductwork exposed to view within a zone that serves that zone is not required to be insulated."
+   },
+   {
+    "id": "DM-51",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "return",
+     "exhaust"
+    ],
+    "location": "conditioned, downstream of energy recovery media, upstream of automatic shutoff damper",
+    "status": "stated",
+    "requirement": {
+     "4C": "R-8",
+     "5B": "R-12"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "checks": [
+     "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 4C | R-8",
+     "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 5B | R-12"
+    ]
+   },
+   {
+    "id": "DM-52",
+    "code": "Washington State Energy Code - Commercial (WAC 51-11C-40391, effective 3/15/24) - STATE AMENDMENT",
+    "duct_types": [
+     "relief",
+     "exhaust"
+    ],
+    "location": "conditioned, downstream of automatic shutoff damper",
+    "status": "stated",
+    "requirement": {
+     "4C and 5B": "R-16"
+    },
+    "src": [
+     "D_C21"
+    ],
+    "check": "Relief or exhaust air | Conditioned space and downstream of an automatic shutoff damper | 4C and 5B | R-16"
+   },
+   {
+    "id": "DM-53",
+    "code": "Minnesota Rules 1323.0680 Table 6.8.2 (ducts other than dwelling units) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return",
+     "exhaust",
+     "relief"
+    ],
+    "location": "outdoors",
+    "status": "stated",
+    "requirement": {
+     "supply": "R-12, V and W",
+     "return": "R-12, V and W",
+     "exhaust_and_relief": "R-12, V and W"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "check": "Exterior of building | R-12, V and W | R-12, V and W | R-12, V and W |",
+    "footnote_g_quote": "Insulation is not required on the exterior if low leak dampers are installed at roof or wall line or the exhaust is designed to be operated continuously."
+   },
+   {
+    "id": "DM-54",
+    "code": "Minnesota Rules 1323.0680 Table 6.8.2 (ducts other than dwelling units) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return",
+     "exhaust",
+     "relief"
+    ],
+    "location": "attic | garage | ventilated crawl space",
+    "status": "stated",
+    "requirement": {
+     "supply": "R-12 and V",
+     "return": "R-12 and V",
+     "exhaust_and_relief": "R-6 and V"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "check": "Attics, garages, and ventilated crawl spaces | R-12 and V | R-12 and V | R-6 and V |"
+   },
+   {
+    "id": "DM-55",
+    "code": "Minnesota Rules 1323.0680 Table 6.8.2 (ducts other than dwelling units) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return",
+     "exhaust",
+     "relief"
+    ],
+    "location": "other locations by duct-to-ambient TD",
+    "status": "stated",
+    "requirement": {
+     "TD > 40°F": {
+      "supply": "R-5 and V",
+      "return": "None",
+      "exhaust_and_relief": "R-5 and V"
+     },
+     "15°F < TD <= 40°F": {
+      "supply": "R-3.3 and V",
+      "return": "None",
+      "exhaust_and_relief": "R-3.3 and V"
+     },
+     "TD <= 15°F": "None"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "checks": [
+     "TD greater than 40°F | R-5 and V | None | R-5 and V |",
+     "TD greater than 15°F and less than or equal to 40°F | R-3.3 and V | None | R-3.3 and V |",
+     "TD less than or equal to 15°F | None | None | None |"
+    ],
+    "footnote_b_quote": "TD = Design temperature difference between the air in the duct and the ambient temperature outside of the duct, unless the duct type and location are specifically identified above."
+   },
+   {
+    "id": "DM-56",
+    "code": "Minnesota Rules 1323.0680 Table 6.8.2 (ducts other than dwelling units) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return",
+     "exhaust",
+     "relief"
+    ],
+    "location": "buried (within concrete slab or within ground)",
+    "status": "stated",
+    "requirement": {
+     "supply": "R-3.5 and V",
+     "return": "R-3.5 and V",
+     "exhaust_and_relief": "None"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "check": "Within concrete slab or within ground | R-3.5 and V | R-3.5 and V | None |"
+   },
+   {
+    "id": "DM-57",
+    "code": "Minnesota Rules 1323.0680 Table 6.8.2 (ducts other than dwelling units) - STATE AMENDMENT",
+    "duct_types": [
+     "supply",
+     "return",
+     "exhaust",
+     "relief"
+    ],
+    "location": "conditioned",
+    "status": "stated",
+    "requirement": {
+     "supply": "None (footnote f)",
+     "return": "None",
+     "exhaust_and_relief": "None (header footnote e: insulation only within 3 ft of exterior/unconditioned space)"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "check": "Within conditioned spaces | Nonef | None | None |",
+    "footnote_e_quote": "Insulation is only required in the conditioned space for a distance of three feet (914 mm) from the exterior or unconditioned space.",
+    "footnote_f_quote": "If the temperature rise is greater than 3°F from the supply air connection of the air handling unit to the furthest outlet, duct insulation shall be required for the entire length or for sufficient length to limit the temperature rise to 3°F.",
+    "note": "Footnote e is attached to the 'Exhaust Duct and Relief Duct Requirements' column heading while the conditioned-space cell reads 'None'; how the two combine is not explained on the page."
+   }
+  ],
+  "model_code_summary": [
+   {
+    "duct_type": "supply",
+    "ASHRAE_90.1-2019": "Exterior/attic/garage/crawl: R-8 or R-12 (H&C), see DM; unconditioned & buried: R-6 (R-1.9 cooling-only CZ7-8); indirectly conditioned: R-1.9; conditioned/semiheated: none",
+    "IECC_2021_2024_commercial": "unconditioned: R-6; outside building: R-8 (CZ0-4)/R-12 (CZ5-8); envelope assembly: R-8/R-12 separation; conditioned (incl. plenums): none; attic/crawl/garage: derived R-6",
+    "IECC_2021_2024_residential": "outside conditioned space: R-8 (>=3 in.)/R-6 (<3 in.); inside: none",
+    "Title24_2022_nonres": "R-8 outdoors/attic/unconditioned crawl/other unconditioned; R-4.2 elsewhere unless in directly conditioned space"
+   },
+   {
+    "duct_type": "return",
+    "ASHRAE_90.1-2019": "as supply except indirectly conditioned (return plenum): none (footnote d)",
+    "IECC_2021_2024_commercial": "as supply",
+    "IECC_2021_2024_residential": "as supply",
+    "Title24_2022_nonres": "R-8 in the five listed spaces; elsewhere none (derived)"
+   },
+   {
+    "duct_type": "outdoor_air_intake",
+    "ASHRAE_90.1-2019": "not addressed",
+    "IECC_2021_2024_commercial": "not addressed, except combustion-air duct through conditioned space R-8 (CZ3-8)",
+    "IECC_2021_2024_residential": "2021 not addressed; 2024 excepted if not integrated with heating/cooling ducts; combustion-air duct R-8 (CZ3-8)",
+    "Title24_2022_nonres": "not addressed"
+   },
+   {
+    "duct_type": "exhaust",
+    "ASHRAE_90.1-2019": "not addressed",
+    "IECC_2021_2024_commercial": "not addressed",
+    "IECC_2021_2024_residential": "2021 not addressed; 2024 excepted if not integrated",
+    "Title24_2022_nonres": "not addressed"
+   },
+   {
+    "duct_type": "relief",
+    "ASHRAE_90.1-2019": "not addressed",
+    "IECC_2021_2024_commercial": "not addressed",
+    "IECC_2021_2024_residential": "not addressed",
+    "Title24_2022_nonres": "not addressed"
+   },
+   {
+    "duct_type": "all",
+    "IMC_2021_2024": "condensation prevention on any duct (603.12); 120°F surface limit (604.2); vapor retarder on externally insulated cooling ducts (604.11); weatherproof barrier outdoors (604.12)"
+   }
+  ]
+ },
+ "exceptions": {
+  "note": "Verbatim exceptions relevant to duct type/location. Model codes first, then state amendments and the DOE code note.",
+  "items": [
+   {
+    "id": "EX-1",
+    "code": "ASHRAE 90.1-2019 / 2022 6.4.4.1.2 Exception 1",
+    "applies_to": "ducts within equipment",
+    "src": [
+     "C19",
+     "C23"
+    ],
+    "quote": "Factory-installed plenums, casings, or ductwork furnished as a part of HVAC equipment tested and rated in accordance with Section 6.4.1.",
+    "see": "DUCT-1"
+   },
+   {
+    "id": "EX-2",
+    "code": "ASHRAE 90.1-2019 / 2022 6.4.4.1.2 Exception 2",
+    "applies_to": "ducts in conditioned space (heated, cooled) and semiheated space",
+    "src": [
+     "C19",
+     "C23"
+    ],
+    "quote": "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces.",
+    "see": "DUCT-1",
+    "note": "Indirectly conditioned space is not in this list; Table 6.8.2 sets R-1.9 there for supply ducts (DM cells)."
+   },
+   {
+    "id": "EX-3",
+    "code": "ASHRAE 90.1-2019 / 2022 6.4.4.1.2 Exception 3",
+    "applies_to": "runouts < 10 ft",
+    "src": [
+     "C19",
+     "C23"
+    ],
+    "quote": "For runouts less than 10 ft in length to air terminals or air outlets, the rated R-value of insulation need not exceed R-3.5.",
+    "see": "DUCT-1",
+    "note": "A cap, not an exemption: where the table requires less than R-3.5 (e.g. R-1.9 in indirectly conditioned space) the table value still applies."
+   },
+   {
+    "id": "EX-4",
+    "code": "ASHRAE 90.1-2019 / 2022 6.4.4.1.2 Exception 4",
+    "applies_to": "backs of air outlets / outlet plenums",
+    "src": [
+     "C23"
+    ],
+    "quote": "Backs of air outlets and outlet plenums exposed to unconditioned space or indirectly conditioned space with face areas exceeding 5 ft2 need not exceed R-2; those 5 ft2 or smaller need not be insulated.",
+    "see": "DUCT-1",
+    "note": "Quoted whole from NYC 2025 (C23); C19 splits it across a page break (DUCT-1)."
+   },
+   {
+    "id": "EX-5",
+    "code": "ASHRAE 90.1-2019 Table 6.8.2 footnote d",
+    "applies_to": "return ducts in indirectly conditioned space (incl. return air plenums)",
+    "src": [
+     "C19"
+    ],
+    "quote": "Return ducts in this duct location do not require insulation.",
+    "see": "DUCT-1"
+   },
+   {
+    "id": "EX-6",
+    "code": "ASHRAE 90.1-2019 Table 6.8.2",
+    "applies_to": "heating-only ducts in climate zones 0-1 (all locations)",
+    "src": [
+     "C19"
+    ],
+    "quote": "Supply and Return Ducts for Heating Only 0 to 1 None None None",
+    "field_type_note": "table row used as quote"
+   },
+   {
+    "id": "EX-7",
+    "code": "ASHRAE 90.1-2019 6.1.1.3 Exceptions (alterations)",
+    "applies_to": "new/replacement ductwork in alterations with insufficient space or access",
+    "src": [
+     "C19"
+    ],
+    "quote": "for ducts and piping where there is insufficient space or access to meet these requirements.",
+    "context_quotes": [
+     "New and replacement ductwork shall comply with Sections 6.4.4.1 and 6.4.4.2.",
+     "Compliance shall not be required"
+    ]
+   },
+   {
+    "id": "EX-8",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 Exception 1",
+    "applies_to": "ducts within equipment",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Where located within equipment.",
+    "see": "DUCT-3, DUCT-4"
+   },
+   {
+    "id": "EX-9",
+    "code": "IECC 2021 C403.12.1 / IECC 2024 C403.13.1 Exception 2",
+    "applies_to": "design temperature difference <= 15°F",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Where the design temperature difference between the interior and exterior of the duct or plenum is not greater than 15°F (8°C).",
+    "see": "DUCT-3, DUCT-4",
+    "note": "Washington (state) replaces this with R-3.3 for supply/return ducts in unconditioned space within 15°F (DM cells); ASHRAE 90.1-2019 has no equivalent ΔT exception."
+   },
+   {
+    "id": "EX-10",
+    "code": "IECC 2021 R403.3.3 Exception",
+    "applies_to": "buried-duct rules: supply duct within 3 ft of the outlet",
+    "src": [
+     "C2"
+    ],
+    "quote": "Sections of the supply duct that are less than 3 feet (914 mm) from the supply outlet shall not be required to comply with these requirements.",
+    "see": "DUCT-6"
+   },
+   {
+    "id": "EX-11",
+    "code": "IECC 2024 R403.3.5 Exceptions",
+    "applies_to": "buried-duct rules: supply ductwork within 3 ft of the outlet",
+    "src": [
+     "C4"
+    ],
+    "quote": "Exception: Sections of the supply ductwork that are less than 3 feet (914 mm) from the supply outlet.",
+    "see": "DUCT-7"
+   },
+   {
+    "id": "EX-12",
+    "code": "IECC 2024 R403.3 Exception",
+    "applies_to": "ventilation (outdoor-air/exhaust) ductwork not integrated with heating/cooling ducts",
+    "src": [
+     "C4"
+    ],
+    "quote": "Exception: Ventilation ductwork that is not integrated with duct systems serving heating or cooling systems."
+   },
+   {
+    "id": "EX-13",
+    "code": "IECC 2024 R403.3.4 item 3 Exception",
+    "applies_to": "ductwork inside wall/floor assemblies separating conditioned and unconditioned space",
+    "src": [
+     "C4"
+    ],
+    "quote": "Exception: Where the building assembly cavities containing ductwork have been air sealed in accordance with Section R402.5.1 and insulated in accordance with Item 3.3, duct insulation is not required."
+   },
+   {
+    "id": "EX-14",
+    "code": "IECC 2018 R403.3.1 Exception",
+    "applies_to": "ducts completely inside the building thermal envelope",
+    "src": [
+     "C5"
+    ],
+    "quote": "Ducts or portions thereof located completely inside the building thermal envelope.",
+    "see": "DUCT-8"
+   },
+   {
+    "id": "EX-15",
+    "code": "IECC 2021 C402.5.5 / IECC 2024 C402.1.5 Exception (combustion-air rooms)",
+    "applies_to": "fireplaces and stoves",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Exception: Fireplaces and stoves complying with Sections 901 through 905 of the International Mechanical Code, and Section 2111.14 of the International Building Code."
+   },
+   {
+    "id": "EX-16",
+    "code": "IECC 2021 R402.4.4 / IECC 2024 R402.1.6 Exceptions (combustion-air rooms)",
+    "applies_to": "direct-vent appliances",
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "quote": "Direct vent appliances with both intake and exhaust pipes installed continuous to the outside."
+   },
+   {
+    "id": "EX-17",
+    "code": "IMC 2021 / 2024 604.11 Exception",
+    "applies_to": "vapor retarder on spray polyurethane foam",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "quote": "A vapor retarder is not required for spray polyurethane foam insulation having a water vapor permeance of not greater than 3 perms per inch",
+    "see": "DUCT-15"
+   },
+   {
+    "id": "EX-18",
+    "code": "Title 24 2022 Exception to 120.4",
+    "applies_to": "healthcare facilities",
+    "src": [
+     "C31"
+    ],
+    "quote": "Exception to Section 120.4: Systems serving healthcare facilities shall comply with the applicable requirements of the California Mechanical Code."
+   },
+   {
+    "id": "EX-19",
+    "code": "Title 24 2022 Exception to 150.0(m)1",
+    "applies_to": "wood heaters / fireplaces",
+    "src": [
+     "C31"
+    ],
+    "quote": "Exception to Section 150.0(m)1: Ducts and fans integral to a wood heater or fireplace."
+   },
+   {
+    "id": "EX-20",
+    "code": "Title 24 2022 Exception to 150.0(m)1Bi",
+    "applies_to": "residential ducts in conditioned space below the attic ceiling",
+    "src": [
+     "C31"
+    ],
+    "quote": "Exception to Section 150.0(m)1Bi: Portions of the duct system located in conditioned space below the ceiling separating the occupiable space from the attic are not required to be insulated if all of the following conditions are met:"
+   },
+   {
+    "id": "EX-21",
+    "code": "Washington C403.10.1.1 Exception (STATE)",
+    "applies_to": "outdoor-air ducts of units < 2,800 cfm",
+    "src": [
+     "D_C21"
+    ],
+    "quote": "Outdoor air ducts serving individual supply air units with less than 2,800 cfm of total supply air capacity, provided these are insulated to the minimum insulation values in Table C403.10.1.1."
+   },
+   {
+    "id": "EX-22",
+    "code": "Washington C403.10.1.2 Exceptions (STATE)",
+    "applies_to": "within equipment; ΔT <= 15°F with Table C403.10.1.2 insulation; exposed ductwork in the zone served",
+    "src": [
+     "D_C21"
+    ],
+    "quote": "2. Supply and return ductwork located in unconditioned spaces where the design temperature difference between the interior and exterior of the duct or plenum does not exceed 15°F (8°C) and are insulated in accordance with Table C403.10.1.2.",
+    "also_quotes": [
+     "1. Where located within equipment.",
+     "Ductwork exposed to view within a zone that serves that zone is not required to be insulated."
+    ]
+   },
+   {
+    "id": "EX-23",
+    "code": "Minnesota 1323.0680 Table 6.8.2 footnotes e, f, g (STATE)",
+    "applies_to": "exhaust/relief ducts in conditioned space; supply temperature rise; exterior exhaust with low-leak dampers",
+    "src": [
+     "D_C23"
+    ],
+    "quote": "Insulation is not required on the exterior if low leak dampers are installed at roof or wall line or the exhaust is designed to be operated continuously.",
+    "also_quotes": [
+     "Insulation is only required in the conditioned space for a distance of three feet (914 mm) from the exterior or unconditioned space.",
+     "If the temperature rise is greater than 3°F from the supply air connection of the air handling unit to the furthest outlet, duct insulation shall be required for the entire length or for sufficient length to limit the temperature rise to 3°F."
+    ]
+   },
+   {
+    "id": "EX-24",
+    "code": "DOE 2012 code note (secondary source; 90.1-2007/2010, IECC 2009/2012)",
+    "applies_to": "exhaust ducts",
+    "src": [
+     "D_C27"
+    ],
+    "quote": "No insulation requirement. Insulation requirements are specified only for supply and return ductwork, not for exhaust ducts.",
+    "page": 3
+   }
+  ]
+ },
+ "residential": {
+  "note": "Compact residential duct-insulation table. Size threshold is duct diameter 3 in. (IECC). IECC residential does not split by climate zone except the CZ 0A-3A buried-duct and CZ 3-8 combustion-air rules.",
+  "items": [
+   {
+    "id": "RES-1",
+    "code": "IECC 2021 R403.3.1",
+    "location": "supply and return ducts outside conditioned space (any climate zone)",
+    "requirement": {
+     ">=3 in. diameter": "R-8",
+     "<3 in. diameter": "R-6"
+    },
+    "src": [
+     "C2"
+    ],
+    "quote": "Supply and return ducts located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter.",
+    "see": "DUCT-5"
+   },
+   {
+    "id": "RES-2",
+    "code": "IECC 2024 R403.3.3",
+    "location": "supply and return ductwork outside conditioned space (any climate zone)",
+    "requirement": {
+     ">=3 in. diameter": "R-8",
+     "<3 in. diameter": "R-6"
+    },
+    "src": [
+     "C4"
+    ],
+    "quote": "Supply and return ductwork located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter.",
+    "see": "DUCT-7"
+   },
+   {
+    "id": "RES-3",
+    "code": "IECC 2021 R403.3.1 / IECC 2024 R403.3.3",
+    "location": "ducts buried beneath a building",
+    "requirement": "as above, or listed and labeled equivalent thermal distribution efficiency",
+    "src": [
+     "C2"
+    ],
+    "quote": "Ducts buried beneath a building shall be insulated as required per this section or have an equivalent thermal distribution efficiency.",
+    "iecc_2024": {
+     "src": [
+      "C4"
+     ],
+     "quote": "Ductwork buried beneath a building shall be insulated as required per this section or have an equivalent thermal distribution efficiency."
+    }
+   },
+   {
+    "id": "RES-4",
+    "code": "IECC 2021 R403.3.3 / IECC 2024 R403.3.5",
+    "location": "ducts partially or completely buried in attic ceiling insulation",
+    "requirement": {
+     "duct insulation": "R-8",
+     "ceiling insulation above + below duct, excluding duct insulation": ">= R-19",
+     "CZ 0A, 1A, 2A, 3A supply ducts": "completely buried, R-13, vapor retarder per IMC 604.11 / IRC M1601.4.6"
+    },
+    "src": [
+     "C2"
+    ],
+    "quote": "At all points along each duct, the sum of the ceiling insulation R-value against and above the top of the duct, and against and below the bottom of the duct, shall be not less than R-19, excluding the R-value of the duct insulation.",
+    "see": "DUCT-6, DUCT-7",
+    "cz_quote": "In Climate Zones 0A, 1A, 2A and 3A, the supply ducts shall be completely buried within ceiling insulation, insulated to an R-value of not less than R-13 and in compliance with the vapor retarder requirements of Section 604.11 of the International Mechanical Code or Section M1601.4.6 of the International Residential Code, as applicable."
+   },
+   {
+    "id": "RES-5",
+    "code": "IECC 2024 R403.3.5",
+    "location": "unvented attic with vapor diffusion ports, CZ 0A-3A, supply ductwork",
+    "requirement": {
+     "supply duct insulation": "R-8, completely buried in the ceiling-assembly insulation at the attic floor, vapor retarder"
+    },
+    "src": [
+     "C4"
+    ],
+    "quote": "In Climate Zones 0A, 1A, 2A and 3A where installed in an unvented attic with vapor diffusion ports, the supply ductwork shall be completely buried within the insulation in the ceiling assembly at the floor of the attic, insulated to an R-value of not less than R-8 and in compliance with the vapor retarder requirements of Section 604.11 of the International Mechanical Code or Section M1601.4.6 of the International Residential Code, as applicable.",
+    "see": "DUCT-7"
+   },
+   {
+    "id": "RES-6",
+    "code": "IECC 2021 R403.3.3.1 / IECC 2024 R403.3.5.1 (performance path only)",
+    "location": "deeply buried ducts",
+    "requirement": {
+     "effective duct R for R405 modeling": "R-25"
+    },
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "quote": "shall be considered as having an effective duct insulation R-value of R-25.",
+    "see": "DUCT-6"
+   },
+   {
+    "id": "RES-7",
+    "code": "IECC 2021 R403.3.2",
+    "location": "ducts counted as inside conditioned space",
+    "requirement": {
+     "item 1": "completely within the continuous air barrier and building thermal envelope",
+     "item 2 (ventilated attic, buried)": "air handler inside; leakage <= 1.5 cfm/100 ft2 CFA; ceiling R above duct >= proposed ceiling R minus duct R",
+     "item 3 (floor cavity over unconditioned space)": "air barrier + R-19 between duct and unconditioned space",
+     "item 4 (exterior wall)": "air barrier + R-10 between duct and sheathing, rest of cavity insulated"
+    },
+    "src": [
+     "C2"
+    ],
+    "quote": "The duct system shall be located completely within the continuous air barrier and within the building thermal envelope.",
+    "also_quotes": [
+     "A minimum R-19 insulation installed in the cavity width separating the duct from unconditioned space.",
+     "Minimum R-10 insulation installed in the cavity width separating the duct from the outside sheathing.",
+     "The remainder of the cavity insulation shall be fully insulated to the drywall side."
+    ]
+   },
+   {
+    "id": "RES-8",
+    "code": "IECC 2024 R403.3.4",
+    "location": "duct systems counted as inside conditioned space",
+    "requirement": {
+     "equipment": "completely on the conditioned side of the building thermal envelope",
+     "item 2 (vented attic or unvented attic with vapor diffusion ports, buried)": "leakage <= 1.5 cfm/100 ft2 CFA; ceiling R test",
+     "item 3 (wall/floor assemblies)": "air barrier; duct insulation per R403.3.3 unless cavity air sealed and insulated; >= R-10 or 50% of Table R402.1.3 between duct and unconditioned space; not 'completely inside' for R405/R406"
+    },
+    "src": [
+     "C4"
+    ],
+    "quote": "Segments of ductwork contained within these building assemblies shall not be considered completely inside conditioned space for compliance with Section R405 or R406.",
+    "also_quotes": [
+     "Not less than R-10 insulation, or not less than 50 percent of the required insulation R-value specified in Table R402.1.3, whichever is greater, shall be located between the ductwork and the unconditioned space."
+    ]
+   },
+   {
+    "id": "RES-9",
+    "code": "IECC 2018 R403.3.1 (history)",
+    "location": "attic vs other locations",
+    "requirement": {
+     "attic >=3 in.": "R-8",
+     "attic <3 in.": "R-6",
+     "other portions >=3 in.": "R-6",
+     "other portions <3 in.": "R-4.2",
+     "completely inside thermal envelope": "none"
+    },
+    "src": [
+     "C5"
+    ],
+    "quote": "Supply and return ducts in other portions of the building shall be insulated to not less than R-6 for ducts 3 inches (76 mm) in diameter and not less than R-4.2 for ducts smaller than 3 inches (76 mm) in diameter.",
+    "see": "DUCT-8"
+   },
+   {
+    "id": "RES-10",
+    "code": "IECC 2021 R402.4.4 / IECC 2024 R402.1.6",
+    "location": "combustion-air duct passing through conditioned space (CZ 3-8, open-combustion appliances in an isolated room)",
+    "requirement": {
+     "R": "R-8"
+    },
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "quote": "The combustion air duct shall be insulated where it passes through conditioned space to an R-value of not less than R-8."
+   },
+   {
+    "id": "RES-11",
+    "code": "IECC 2024 R403.3",
+    "location": "ventilation ductwork not integrated with heating/cooling ducts",
+    "requirement": "excepted from R403.3",
+    "src": [
+     "C4"
+    ],
+    "quote": "Exception: Ventilation ductwork that is not integrated with duct systems serving heating or cooling systems."
+   },
+   {
+    "id": "RES-12",
+    "code": "IRC 2021 / 2024 M1601.4.6",
+    "location": "cooling supply ducts through unconditioned spaces conducive to condensation",
+    "requirement": "vapor retarder <= 0.05 perm or 2-mil foil (except SPF <= 3 perm/in.)",
+    "src": [
+     "C15",
+     "C17"
+    ],
+    "quote": "shall be installed on the exterior of insulation on cooling supply ducts that pass through unconditioned spaces conducive to condensation",
+    "see": "DUCT-14"
+   },
+   {
+    "id": "RES-13",
+    "code": "Title 24 2022 150.0(m)1B (mandatory, single-family)",
+    "location": "supply and return ducts of space heating/cooling systems",
+    "requirement": {
+     "minimum": "R-6.0 installed",
+     "alternative": "none if the duct system is entirely in conditioned space, verified per RA3.1.4.3.8"
+    },
+    "src": [
+     "C31"
+    ],
+    "quote": "Ducts shall have a minimum installed level of R-6.0, or",
+    "also_quotes": [
+     "Ducts do not require insulation when the duct system is located entirely in conditioned space as confirmed through field verification and diagnostic testing in accordance with the requirements of Reference Residential Appendix RA3.1.4.3.8."
+    ]
+   },
+   {
+    "id": "RES-14",
+    "code": "Title 24 2022 Table 150.1-A (prescriptive package, single-family; California climate zones)",
+    "location": "ducts",
+    "requirement": {
+     "Roof/Ceiling Options B": {
+      "R-8": "CZ 1, 2, 4, 8, 9, 10, 11, 12, 13, 14, 15, 16",
+      "R-6": "CZ 3, 5, 6, 7"
+     },
+     "Roof/Ceiling Option C": {
+      "R-6": "all CZ 1-16",
+      "§150.1(c)9B": "REQ"
+     }
+    },
+    "src": [
+     "C31"
+    ],
+    "quote": "TABLE 150.1-A COMPONENT PACKAGE – Single- Family Standard Building Design (continued)",
+    "check": "Duct Insulation R-8 R-8 R- 6 R-8 R- 6 R- 6 R- 6 R-8 R-8 R-8 R-8 R-8 R-8 R-8 R-8 R-8",
+    "check_option_c": "Duct Insulation R-6 R-6 R-6 R-6 R-6 R-6 R-6 R-6 R-6 R-6 R- 6 R-6 R-6 R- 6 R- 6 R- 6",
+    "verification_note": "PDF page 358 (printed page 342) rendered at 90 dpi and read visually; the row labels 'Roof/Ceiling Options B' and 'Roof/Ceiling Option C' are rotated text read from the image."
+   },
+   {
+    "id": "RES-15",
+    "code": "Minnesota 1322.0403 Table R403.2.1 (STATE, dwelling units)",
+    "location": "by location and duct type",
+    "requirement": {
+     "exterior of building": "R-8, V, and W",
+     "attics, garages, ventilated crawl spaces": "R-8 and V",
+     "outdoor air intakes within conditioned spaces": "R-3.3 and V",
+     "exhaust ducts within conditioned spaces": "R-3.3 and V",
+     "within concrete slab or ground": "R-3.5 and V",
+     "within conditioned spaces and in basements with insulated walls": "None required"
+    },
+    "src": [
+     "D_C22"
+    ],
+    "quote": "R403.2.1 Insulation (prescriptive). All outdoor air intakes, exhaust, supply, and return air ducts and plenums shall be insulated according to Table R403.2.1.",
+    "checks": [
+     "Exterior of building | R-8, V, and W |",
+     "Attics, garages, and ventilated crawl spaces | R-8 and V |",
+     "Outdoor air intakes within conditioned spaces | R-3.3 and V |",
+     "Exhaust ducts within conditioned spaces | R-3.3 and V |",
+     "Within concrete slab or within ground | R-3.5 and V |",
+     "Within conditioned spaces and in basements with insulated walls | None required |"
+    ],
+    "footnote_quotes": [
+     "a. Insulation is only required in the conditioned space for a distance of 3 feet (914 mm) from the exterior or unconditioned space.",
+     "b. V means the vapor retarder required in accordance with IMC section 604.11. When a vapor retarder is required, duct insulation required by this section shall be installed without respect to other building envelope insulation.",
+     "c. W means an approved weatherproof barrier."
+    ]
+   },
+   {
+    "id": "RES-16",
+    "code": "Minnesota 1323.0680 Table 6.8.2, 'Ducts for Dwelling Units' (STATE, commercial code)",
+    "location": "by location and duct type",
+    "requirement": {
+     "exterior of building": "R-12, V and W",
+     "attics, garages, ventilated crawl spaces (except exhaust ducts)": "R-12 and V",
+     "exhaust ducts in attics, garages, ventilated crawl spaces": "R-3.3 and V",
+     "outdoor air intakes within conditioned spaces": "R-3.3 and V",
+     "exhaust ducts within conditioned spaces (footnote e)": "R-3.3 and V",
+     "within concrete slab or ground": "R-3.5 and V",
+     "within conditioned spaces": "None"
+    },
+    "src": [
+     "D_C23"
+    ],
+    "quote": "Ducts for Dwelling Unitsa",
+    "checks": [
+     "Attics, garages, and ventilated crawl spaces (except exhaust ducts) | R-12 and V |",
+     "Exhaust ducts in attics, garages, and ventilated crawl spaces | R-3.3 and V |",
+     "Outdoor air intakes within conditioned spaces | R-3.3 and V |",
+     "Exhaust ducts within conditioned spacese | R-3.3 and V |"
+    ]
+   }
+  ]
+ },
+ "condensation_and_vapor": {
+  "summary": "No model code read (ASHRAE 90.1-2019/2022, IECC 2021/2024, IMC 2021/2024, Title 24 2022) assigns an R-value or vapor retarder specifically to outdoor-air intake ducts. Condensation control for them rests on IMC 603.12 (any duct) and ASHRAE 62.1 5.14.2 (any duct whose surface falls below the surrounding dew point). Only state amendments (Washington, Minnesota) attach vapor control explicitly to outdoor-air and exhaust ducts.",
+  "items": [
+   {
+    "id": "CV-1",
+    "code": "IMC 2021 / 2024 603.12 Condensation (scope 601.1 includes ventilating and exhaust ducts)",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "quote": "Provisions shall be made to prevent the formation of condensation on the exterior of any duct.",
+    "applies_to": "every duct type and location",
+    "scope_quote": "Duct systems used for the movement of air in air-conditioning, heating, ventilating and exhaust systems shall conform to the provisions of this chapter except as otherwise specified in Chapters 5 and 7.",
+    "see": "DUCT-15"
+   },
+   {
+    "id": "CV-2",
+    "code": "IMC 2021 / 2024 604.11 Vapor Retarders",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "quote": "Where ducts used for cooling are externally insulated, the insulation shall be covered with a vapor retarder having a maximum permeance of 0.05 perm",
+    "see": "DUCT-15",
+    "reading": "Applies to 'ducts used for cooling'; the text does not say whether an outdoor-air intake duct (which carries untreated air) is such a duct."
+   },
+   {
+    "id": "CV-3",
+    "code": "ASHRAE 90.1-2019 / 2022 6.4.4.1.1(b)",
+    "src": [
+     "C19",
+     "C23"
+    ],
+    "quote": "Insulation covering chilled-water piping, refrigerant suction piping, or cooling ducts located outside the conditioned space shall include a vapor retardant located outside the insulation (unless the insulation is inherently vapor retardant), all penetrations and joints of which shall be sealed."
+   },
+   {
+    "id": "CV-4",
+    "code": "ASHRAE 90.1-2019 Table 6.8.2 footnote a (and 90.1-2022 footnote a)",
+    "src": [
+     "C19",
+     "C20"
+    ],
+    "quote": "The required minimum thicknesses do not consider water vapor transmission and possible surface condensation.",
+    "see": "DUCT-1, DUCT-2",
+    "reading": "Code minimum R-values are energy minimums; condensation control may need more (a separate dew-point calculation)."
+   },
+   {
+    "id": "CV-5",
+    "code": "ASHRAE 62.1-2016 Section 5.14.2 as modified by Addendum r (approved 2018)",
+    "src": [
+     "D_C17"
+    ],
+    "quote": "5.14.2 Condensation on Interior Surfaces. Pipes, ducts, and other surfaces within the building whose surface temperatures are expected to fall below the surrounding dew-point temperature shall be insulated. The insulation system thermal resistance and material characteristics shall prevent condensate from forming on the exposed surface and within the insulating material.",
+    "exception_after_addendum_image_read": "Exception: Where condensate will wet only surfaces that will be managed to prevent or control mold growth. A management plan must be submitted along with the design specifying design assumptions and limits of the plan. The plan must be provided to the owner.",
+    "exception_parts_quotes": [
+     "Where condensate will wet only surfaces that will be managed to prevent or control mold growth.",
+     "A management plan must be submitted along with the design specifying design assumptions and limits of the plan. The plan must be provided to the owner."
+    ],
+    "deleted_by_addendum_quote": "Where local practice has demonstrated that condensation does not result in mold growth.",
+    "foreword_quote": "If condensation is to be managed (Exception 5.14.2), then a management plan must be developed.",
+    "note": "Change marks read from the rendered page (D_C17 retrieval). Applies to any duct, including outdoor-air intake ducts inside the building that run below the room dew point. Whether and under what number this clause appears in 62.1-2019/2022 was not read: Addendum v to 62.1-2022 uses '5.14.2' for an exhaust-duct routing rule (D_C19)."
+   },
+   {
+    "id": "CV-6",
+    "code": "ASHRAE 62.1-2013 Section 5.5.4(b) via Addendum h (unmarked text)",
+    "src": [
+     "D_C18"
+    ],
+    "quote": "b. Outdoor air ductwork or plenums shall pitch to drains designed in accordance with the requirements of Section 5.10.",
+    "context_quote": "Where climate dictates, outdoor air intakes that are part of the mechanical ventilation system shall be designed to manage water from snow,",
+    "note": "Moisture management (snow) for outdoor-air ductwork, not insulation; edition currency after 62.1-2013 not checked."
+   },
+   {
+    "id": "CV-7",
+    "code": "IMC 2021 506.3.1.2 / IMC 2024 508.1.2 Makeup Air Ducts (Type I hoods)",
+    "src": [
+     "D_C8",
+     "D_C10"
+    ],
+    "quote": "Makeup air ducts connecting to or within 18 inches (457 mm) of a Type I hood shall be constructed and installed in accordance with Sections 603.1, 603.3, 603.4, 603.9, 603.10 and 603.12. Duct insulation installed within 18 inches (457 mm) of a Type I hood shall be noncombustible or shall be listed for the application."
+   },
+   {
+    "id": "CV-8",
+    "code": "IRC 2021 / 2024 M1601.4.6",
+    "src": [
+     "C15",
+     "C17"
+    ],
+    "quote": "on cooling supply ducts that pass through unconditioned spaces conducive to condensation",
+    "see": "DUCT-14"
+   },
+   {
+    "id": "CV-9",
+    "code": "IECC 2021 R403.3.3 / 2024 R403.3.5 (buried attic ducts, CZ 0A-3A)",
+    "src": [
+     "C2",
+     "C4"
+    ],
+    "quote": "in compliance with the vapor retarder requirements of Section 604.11 of the International Mechanical Code or Section M1601.4.6 of the International Residential Code, as applicable.",
+    "see": "DUCT-6, DUCT-7"
+   },
+   {
+    "id": "CV-10",
+    "code": "Washington C403.10.1.1 (STATE): outdoor-air shafts/plenums",
+    "src": [
+     "D_C21"
+    ],
+    "quote": "plus building envelope vapor control requirements from the International Building Code.",
+    "table_footnote_quotes": [
+     "The required minimum thicknesses do not consider water vapor transmission and possible surface condensation.",
+     "See International Mechanical Code Sections 603.12 and 604 for further details on duct insulation requirements."
+    ]
+   },
+   {
+    "id": "CV-11",
+    "code": "Minnesota 1323.0680 / 1322.0403 (STATE): 'V' on outdoor-air intake and exhaust duct rows",
+    "src": [
+     "D_C23"
+    ],
+    "quote": "V = Vapor retarder required in accordance with Minnesota Rules, chapter 1346. When a vapor retarder is required, duct insulation required by this section shall be installed without respect to other building envelope insulation."
+   },
+   {
+    "id": "CV-12",
+    "code": "ASHRAE Handbook - Fundamentals F25 Ch. 23 (guidance, not code)",
+    "src": [
+     "D_C24"
+    ],
+    "quote": "For outdoor applications (or for unconditioned spaces vented to outdoor air), there are always some hours per year where the ambient air is saturated or nearly saturated. For these times, no amount of insulation will prevent surface condensation."
+   },
+   {
+    "id": "CV-13",
+    "code": "DOE 2012 code note (secondary)",
+    "src": [
+     "D_C27"
+    ],
+    "quote": "Insulation may be installed for sound-reduction purposes or to control condensate, but it is not required.",
+    "page": 3,
+    "context": "item 12, supply duct in conditioned space"
+   }
+  ]
+ },
+ "notes": [
+  {
+   "id": "N-1",
+   "note": "ASHRAE 90.1 defines 'conditioned space' to include indirectly conditioned space, but Table 6.8.2 gives indirectly conditioned space (incl. return-air plenums) its own column and Exception 2 to 6.4.4.1.2 exempts only heated, semiheated and cooled spaces. Result: in 90.1-2019 a SUPPLY duct in a return plenum needs R-1.9 (heating-only CZ 0-1: None) while a RETURN duct there needs none (footnote d); a duct in a semiheated space needs none.",
+   "src": [
+    "C19"
+   ],
+   "quotes": [
+    "conditioned space: a cooled space, heated space, or indirectly conditioned space defined as follows:",
+    "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces."
+   ]
+  },
+  {
+   "id": "N-2",
+   "note": "Attic, crawl space and parking garage conflict: 90.1-2019 puts 'attics above insulated ceilings, parking garages and crawl spaces' in the Exterior column (H&C R-8 CZ 0-4, R-12 CZ 5-8), while IECC 2021/2024 commercial names only 'unconditioned spaces' (R-6) and 'outside the building' (R-8/R-12). Treating these spaces as IECC 'unconditioned' (DOE's 2012 reading of the same wording) gives R-6 where 90.1 gives R-12 in CZ 5-8. The simulator should show both and label the IECC value 'derived'.",
+   "src": [
+    "C19",
+    "C1",
+    "D_C27"
+   ]
+  },
+  {
+   "id": "N-3",
+   "note": "Service type matters only under ASHRAE 90.1: Table 6.8.2 has separate rows for heating-and-cooling, heating-only and cooling-only ducts (e.g. cooling-only CZ 7-8 is R-1.9 in every location; heating-only CZ 0-1 is None). IECC, Title 24 and IECC residential do not split by service.",
+   "src": [
+    "C19"
+   ]
+  },
+  {
+   "id": "N-4",
+   "note": "Outdoor-air intake, exhaust, relief and transfer ducts: none of ASHRAE 90.1-2019/2022, IECC 2021/2024 (commercial C403.12.1/C403.13.1, residential R403.3) or Title 24 2022 120.4 assigns them an R-value; the DOE 2012 code note says so explicitly for exhaust. What does apply: IMC 603.12 (prevent exterior condensation on any duct), IMC 604.2 (120°F surface limit), ASHRAE 62.1 5.14.2 (insulate surfaces below the surrounding dew point), and the IECC combustion-air duct rule (R-8 through conditioned space, CZ 3-8). For these duct types a simulator should report 'no code-minimum R (not addressed)' and size insulation by condensation/heat-gain calculation, unless a state amendment (Washington, Minnesota) is selected.",
+   "src": [
+    "C19",
+    "C1",
+    "C3",
+    "C2",
+    "C4",
+    "C31",
+    "C6",
+    "D_C17",
+    "D_C27"
+   ]
+  },
+  {
+   "id": "N-5",
+   "note": "Shutoff dampers vs insulation: 90.1 6.4.3.4.2 and IECC C403.7.7 require motorized (or, in listed cases, gravity) dampers on outdoor-air intake and exhaust openings, but neither ties duct insulation to the damper position. The 'insulate from the building exterior to the automatic shutoff damper' concept was found only in Washington C403.10.1.1 (state) and in the intent statement of Canada's NECB 2011 Sentence 5.2.4.2.(3) ('ducts located between dampers and the building envelope'); it was not found in any ASHRAE 90.1 or IECC text read.",
+   "src": [
+    "C19",
+    "C1",
+    "D_C21",
+    "D_C25"
+   ],
+   "quoted": [
+    {
+     "src": [
+      "D_C21"
+     ],
+     "quote": "Ducts conveying outdoor air shall be insulated continuously from the building exterior to an automatic shutoff damper or heating or cooling equipment."
+    },
+    {
+     "src": [
+      "D_C25"
+     ],
+     "quote": "To limit the probability of insufficient insulation in ducts located between dampers and the building envelope"
+    }
+   ]
+  },
+  {
+   "id": "N-6",
+   "note": "Climate-zone systems differ: ASHRAE 90.1 and IECC use zones 0-8 (with A/B/C moisture letters used only in a few residential buried-duct rules); Title 24 uses California climate zones 1-16; Washington tables list only 4C and 5B. Do not map one system onto another without a source."
+  },
+  {
+   "id": "N-7",
+   "note": "IECC 2024 vs 2021: commercial duct R-values unchanged (C403.12.1 renumbered C403.13.1; 'building envelope assembly' -> 'building thermal envelope assembly'). Residential: R403.3.1 -> R403.3.3, new Exception for stand-alone ventilation ductwork, new unvented-attic-with-vapor-diffusion-ports buried-duct rule (R-8), and revised 'inside conditioned space' tests (R403.3.4). Combustion-air room sections renumbered (C402.5.5 -> C402.1.5; R402.4.4 -> R402.1.6) with the same R-8 duct rule.",
+   "src": [
+    "C1",
+    "C3",
+    "C2",
+    "C4"
+   ]
+  },
+  {
+   "id": "N-8",
+   "note": "ASHRAE 90.1-2022: no addendum found that adds outdoor-air or exhaust duct rows or otherwise changes Table 6.8.2 body; Addendum r changes footnote a wording only ('envelope floor'). 90.1-2022 cells for CZ 0-3 and 7-8 remain unverified (DUCT-2).",
+   "src": [
+    "C20",
+    "C21",
+    "C22"
+   ]
+  },
+  {
+   "id": "N-9",
+   "note": "IMC 2024 vs 2021: 601.1, 603.8, 603.12, 603.16, 604.1, 604.2, 604.11, 604.12 read identically (sentence-level check of the served text).",
+   "src": [
+    "C6",
+    "C10"
+   ]
+  },
+  {
+   "id": "N-10",
+   "note": "The ΔT <= 15°F exception exists in the IECC commercial clause only; ASHRAE 90.1-2019 has no such exception; Washington replaces it with R-3.3.",
+   "src": [
+    "C1",
+    "C19",
+    "D_C21"
+   ]
+  },
+  {
+   "id": "N-11",
+   "note": "All code R-values are installed insulation R without air films (90.1 footnote a, IMC 604.7, Title 24 120.4(c)), and 90.1 footnote a states the minimums 'do not consider water vapor transmission and possible surface condensation'. A code-compliant R can still sweat; check dew point separately (e.g. calc-method-verified.json).",
+   "src": [
+    "C19"
+   ]
+  },
+  {
+   "id": "N-12",
+   "note": "Title 24 2022 nonresidential: SUPPLY ducts in any space not among the five R-8 spaces (e.g. indirectly conditioned plenums, slab) need R-4.2 unless enclosed in directly conditioned space; RETURN ducts there have no stated requirement. This differs from IECC (none) and 90.1-2019 (supply R-1.9).",
+   "src": [
+    "C31"
+   ]
+  },
+  {
+   "id": "N-13",
+   "note": "Residential IECC 2021/2024 rules depend on duct diameter (3 in. threshold) and on whether the duct is outside conditioned space, not on climate zone (except CZ 0A-3A buried-attic-duct and CZ 3-8 combustion-air rules).",
+   "src": [
+    "C2",
+    "C4"
+   ]
+  },
+  {
+   "id": "N-14",
+   "note": "IECC commercial underground ducts: 'insulated as required in this section' does not say whether the unconditioned (R-6) or outside-building (R-8/R-12) value applies; 90.1-2019 puts buried ducts with unconditioned space (H&C R-6). DOE 2012 read IECC buried ducts as 'locations outside the building'.",
+   "src": [
+    "C1",
+    "C19",
+    "D_C27"
+   ]
+  },
+  {
+   "id": "N-15",
+   "note": "Plenums formed by the building envelope: 90.1 footnote a requires envelope insulation per the most restrictive of 6.4.4.1 or Section 5; IECC requires R-8 (CZ 0-4) / R-12 (CZ 5-8) separation for ducts/plenums within an envelope assembly; Washington requires R-16 or the exterior-wall value.",
+   "src": [
+    "C19",
+    "C1",
+    "D_C21"
+   ]
+  },
+  {
+   "id": "N-16",
+   "note": "Runout exception (90.1 Exception 3) is a cap ('need not exceed R-3.5'), not an exemption; it does not reduce the R-1.9 required for supply runouts in return plenums.",
+   "src": [
+    "C19"
+   ]
+  },
+  {
+   "id": "N-17",
+   "note": "Historical 90.1-2007/2010 tables (separate ventilated/unvented attic columns) are transcribed under doe_duct_locations for mapping only. The ASHRAE Handbook (F17/F21/F25 Ch. 23) and the DOE code note disagree on three Table 6.8.2B exterior cells (CZ 1, 6, 7); use neither as current code.",
+   "src": [
+    "D_C27",
+    "D_C24"
+   ]
+  },
+  {
+   "id": "N-18",
+   "note": "Suggested user-facing location choices that the sources support directly: conditioned; semiheated (90.1 only); indirectly conditioned / return plenum (90.1 and Title 24 treat it separately; IECC treats it as conditioned); unconditioned enclosed space (e.g. shaft); attic above insulated ceiling; crawl space; parking garage; outdoors; buried; within envelope assembly. Vented-vs-unvented attic and roof-insulated attic are NOT distinguished by any current code read and should not be offered as separate code categories (they are 2007/2010 categories).",
+   "src": [
+    "C19",
+    "C1",
+    "C31"
+   ]
+  }
+ ],
+ "unverified": [
+  "ASHRAE 90.1-2022 national Table 6.8.2 cells for climate zones 0-3 and 7-8 (NYC prints 4-6 only; the 2025 Oregon OEESC PDF D_C26 does not reprint the table; UpCodes 90.1 chapter-6 adoption pages show a sign-up wall and were not used).",
+  "ASHRAE 62.1-2019 and 62.1-2022: whether the 5.14.2 'Condensation on Interior Surfaces' text (as amended by Addendum r to 62.1-2016) is in those editions and under which number (Addendum v to 62.1-2022 uses 5.14.2 for exhaust-duct routing). ASHRAE 62.1 air-type definitions not read (standard not openly readable).",
+  "ASHRAE 90.1 definitions of 'supply air', 'return air', 'exhaust air', 'relief air' (not in the reprints read). No definition of 'relief air' found in IMC 2021/2024, 90.1 texts read or Title 24 2022.",
+  "IECC 2021/2024 commercial classification of attics, crawl spaces and parking garages ('unconditioned spaces' vs 'outside the building'): not stated in the code; the R-6 reading is derived (supported by DOE's 2012 code note for attics and vented crawl spaces only).",
+  "ASHRAE 90.1-2019 classification of unvented attics insulated at the roof deck and of unconditioned shafts: not named in Table 6.8.2; the cells given are derived from the space definitions.",
+  "Which R-value IECC 2021/2024 C403.12.1/C403.13.1 intends for 'Ducts located underground beneath buildings'.",
+  "Whether IMC 604.11 ('ducts used for cooling') covers outdoor-air intake ducts.",
+  "Canada NECB 2011 Sentence 5.2.4.2.(3) requirement text (only its intent statement was read) and later NECB editions.",
+  "Washington WAC 51-11C-40391: earlier versions (an archived 'effective until October 29, 2023' file was downloaded but not compared); Seattle amendments not read.",
+  "Minnesota 1322.0403: which IECC edition it amends and whether a newer Minnesota residential energy code supersedes it (page shows 'Published Electronically: April 15, 2015').",
+  "Uniform Mechanical Code duct-insulation provisions (IAPMO ePubs returned HTTP 403; see code-requirements-verified.json C34).",
+  "California Title 24 2025 edition (only 2022 read).",
+  "IFGC / IMC Chapter 7 combustion-air duct provisions (not fetched); only the IECC R-8 combustion-air duct rule was read.",
+  "Published ASHRAE 90.1-2010 Table 6.8.2B exterior cells for CZ 1, 6, 7 (DOE code note: R-6, R-8, R-8; ASHRAE Handbook F17/F21/F25 Table 4: R-4, R-6, R-6).",
+  "An energycodes.gov / DOE FAQ on outdoor-air duct insulation: searched, none found (absence not proven).",
+  "ASHRAE interpretation IC 90.1-1989-7 (surfaced by web search; not read) and any 90.1 interpretation on outdoor-air/exhaust duct insulation (none listed on the 1999-2022 index pages, D_C20).",
+  "North Carolina SL 2022-46 temporary reduction of duct insulation (surfaced by web search; not read).",
+  "SMACNA / NAIMA / NIA guidance specific to insulating and vapor-retarding outdoor-air intake ducts in cooling climates (not found among readable sources).",
+  "IECC definition or list of 'exempt' spaces referred to in C403.12.1 ('unconditioned or exempt spaces') was not quoted."
+ ],
+ "doe_duct_locations": {
+  "source": "D_C27",
+  "scope_quote": {
+   "src": [
+    "D_C27"
+   ],
+   "page": 1,
+   "quote": "2009 and 2012 IECC; ASHRAE 90.1-2007 and 2010; 2009 and 2012 IMC"
+  },
+  "figure_1_key": {
+   "src": [
+    "D_C27"
+   ],
+   "page": 2,
+   "figure_key_image_read": [
+    "1. INSULATION OF UNIT CASING",
+    "2. EXHAUST",
+    "3. SUPPLY & RETURN IN VENTED ATTIC",
+    "4. SUPPLY & RETURN OUTSIDE OF BUILDING",
+    "5. SUPPLY & RETURN IN UNCONDITIONED SHAFT",
+    "6. SUPPLY IN UNVENTED ATTIC",
+    "7. RETURN IN INDIRECTLY CONDITIONED CEILING SPACE",
+    "8. EXTERIOR WALL OF RETURN PLENUM",
+    "9. SUPPLY OUTLET IN PLENUM",
+    "10. SUPPLY RUNOUT IN RETURN PLENUM",
+    "11. SUPPLY IN RETURN PLENUM",
+    "12. SUPPLY IN CONDITIONED SPACE",
+    "13. SUPPLY IN VENTED CRAWL SPACE",
+    "14. BURIED SUPPLY"
+   ],
+   "note": "Figure 1 is a section drawing (heating/cooling unit and exhaust fan on the roof, vented attic, return plenum, conditioned floors, vented crawl space). Key read from the rendered page 2 image; the OCR text layer carries the same words."
+  },
+  "required_locations_page1": {
+   "src": [
+    "D_C27"
+   ],
+   "page": 1,
+   "quotes": [
+    "Supply and return ducts/plenums in unconditioned spaces",
+    "Supply and return ducts or plenums located outside the building",
+    "Supply and return ducts or plenums located within exterior components (floors, walls, or roofs) where the duct or plenum touches the exterior component."
+   ]
+  },
+  "iecc_2009_2012_text_quoted_by_note": {
+   "src": [
+    "D_C27"
+   ],
+   "page": "3-4",
+   "quotes": [
+    "All supply and return air ducts and plenums shall be insulated with a minimum of R-5 [R-6] insulation when located in unconditioned spaces and a minimum of R-8 insulation when located outside the building.",
+    "shall be separated from the building exterior or unconditioned or exempt spaces by a minimum of R-8 insulation.",
+    "When the design temperature difference between the interior and exterior of the duct or plenum does not exceed 15°F (8°C)."
+   ],
+   "note": "Brackets are the note's own: 2009 IECC 503.2.7 value, [2012 IECC C403.2.7 value]."
+  },
+  "ashrae_2007_2010_exceptions_quoted_by_note": {
+   "src": [
+    "D_C27"
+   ],
+   "page": 4,
+   "quotes": [
+    "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces.",
+    "For runouts less than 10 ft in length to air terminals or air outlets, the rated R-value of insulation need not exceed R-3.5.",
+    "Backs of air outlets and outlet plenums exposed to unconditioned or indirectly conditioned spaces with face areas exceeding 5 ft2 need not exceed R-2; those 5 ft2 or smaller need not be insulated."
+   ],
+   "section_heading_image_read": "ASHRAE 90.1-2007/2010, Section 6.4.4.1.2, Duct and Plenum Insulation"
+  },
+  "items": [
+   {
+    "id": "DL-1",
+    "n": 1,
+    "figure_key_label": "INSULATION OF UNIT CASING",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement. Factory-installed ductwork within unit casings is exempt from insulation requirements.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "exempt (within equipment)",
+     "ashrae_90_1_2007_2010": "exempt (factory-installed, Exception a)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "none: Exception 1 to 6.4.4.1.2 (same as 2007/2010)",
+     "iecc_2021_2024": "none: 'Where located within equipment.'",
+     "changed": false
+    }
+   },
+   {
+    "id": "DL-2",
+    "n": 2,
+    "figure_key_label": "EXHAUST",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement. Insulation requirements are specified only for supply and return ductwork, not for exhaust ducts.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "none (exhaust not covered)",
+     "ashrae_90_1_2007_2010": "none (exhaust not covered)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "not addressed (6.4.4.1.2 covers supply and return only)",
+     "iecc_2021_2024": "not addressed (C403.12.1/C403.13.1 cover supply and return only)",
+     "changed": false
+    }
+   },
+   {
+    "id": "DL-3",
+    "n": 3,
+    "figure_key_label": "SUPPLY & RETURN IN VENTED ATTIC",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirements for unconditioned spaces in the IECC or for a vented attic in ASHRAE 90.1 must be met.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "unconditioned spaces: R-5 (2009) / R-6 (2012)",
+     "ashrae_90_1_2007_2010": "Ventilated Attic"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "Exterior column via footnote b if the attic is above an insulated ceiling (H&C: R-8 CZ0-4, R-12 CZ5-8); ventilated attics are not 'enclosed spaces', so not 'unconditioned space'",
+     "iecc_2021_2024": "same clause wording; 'unconditioned spaces' R-6 per DOE reading (derived); 2009 IECC was R-5",
+     "changed": true,
+     "difference": "90.1 dropped the 'Ventilated Attic' column; vented attics above insulated ceilings now take the Exterior value (e.g. CZ 5 H&C supply R-6 in 2007/2010 Table 6.8.2B -> R-12 in 2019)."
+    }
+   },
+   {
+    "id": "DL-4",
+    "n": 4,
+    "figure_key_label": "SUPPLY & RETURN OUTSIDE OF BUILDING",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirements for exterior or outdoor locations must be met.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "outside the building: R-8",
+     "ashrae_90_1_2007_2010": "Exterior"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "Exterior column (H&C R-8 CZ0-4 / R-12 CZ5-8; heating-only and cooling-only rows differ)",
+     "iecc_2021_2024": "outside the building: R-8 CZ0-4, R-12 CZ5-8",
+     "changed": true,
+     "difference": "IECC 2009/2012 required R-8 in every zone; 2021/2024 require R-12 in CZ 5-8."
+    }
+   },
+   {
+    "id": "DL-5",
+    "n": 5,
+    "figure_key_label": "SUPPLY & RETURN IN UNCONDITIONED SHAFT",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirements for unconditioned spaces in the IECC or for unconditioned spaces in ASHRAE 90.1 must be met.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "unconditioned spaces: R-5 (2009) / R-6 (2012)",
+     "ashrae_90_1_2007_2010": "Unconditioned Space"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "'Unconditioned Space and Buried Ducts' column if the shaft is an enclosed unconditioned space (shafts are not named; derived)",
+     "iecc_2021_2024": "unconditioned spaces: R-6",
+     "changed": true,
+     "difference": "90.1-2007/2010 supply in unconditioned space was R-3.5 (CZ1-7) / R-6 (CZ8) in Table 6.8.2B; 90.1-2019 H&C is R-6 all zones."
+    }
+   },
+   {
+    "id": "DL-6",
+    "n": 6,
+    "figure_key_label": "SUPPLY IN UNVENTED ATTIC",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirement for unconditioned spaces in the IECC or for unvented attics in ASHRAE 90.1 must be met.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "unconditioned spaces: R-5 (2009) / R-6 (2012)",
+     "ashrae_90_1_2007_2010": "Unvented Attic (above insulated ceiling or with roof insulation; the note does not say which)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "attic above an insulated ceiling -> Exterior (footnote b); an unvented attic insulated at the roof deck is not named in Table 6.8.2 (classify by 90.1 space definitions: indirectly conditioned, semiheated or unconditioned; derived)",
+     "iecc_2021_2024": "outside the thermal envelope -> unconditioned R-6 (derived, DOE reading); if the roof deck is the thermal envelope the attic is conditioned space -> none (derived)",
+     "changed": true,
+     "difference": "The 2007/2010 'Unvented Attic above Insulated Ceiling' and 'Unvented Attic with Roof Insulation' columns no longer exist."
+    }
+   },
+   {
+    "id": "DL-7",
+    "n": 7,
+    "figure_key_label": "RETURN IN INDIRECTLY CONDITIONED CEILING SPACE",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement. ASHRAE 90.1 has no insulating requirements for indirectly conditioned spaces. In the IECC, such spaces would be considered conditioned spaces, also with no duct insulation requirement.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "none (conditioned space)",
+     "ashrae_90_1_2007_2010": "none (Indirectly Conditioned Space column: 'none' for return)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "none: Table 6.8.2 footnote d ('Return ducts in this duct location do not require insulation.')",
+     "iecc_2021_2024": "none (conditioned space; derived)",
+     "changed": false
+    }
+   },
+   {
+    "id": "DL-8",
+    "n": 8,
+    "figure_key_label": "EXTERIOR WALL OF RETURN PLENUM",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value must meet either the requirement for above-grade walls or for exterior ducts. If the lesser R-value (most likely the duct R-value) is chosen, the envelope of the building must be shown to comply with a performance-based option.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "within a building assembly: R-8 separation (code citation on p. 3-4)",
+     "ashrae_90_1_2007_2010": "footnote a: wall insulation per most restrictive of 6.4.4.2 or Section 5"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "footnote a: envelope insulation per most restrictive of 6.4.4.1 or Section 5 (roof, wall, or floor)",
+     "iecc_2021_2024": "within a building (thermal) envelope assembly: separated from exterior/unconditioned/exempt space by R-8 (CZ0-4) / R-12 (CZ5-8)",
+     "changed": true,
+     "difference": "IECC separation R-value rose from R-8 (all zones, 2009/2012) to R-12 in CZ 5-8; 90.1 footnote a now names roof, wall or floor instead of 'exterior walls'."
+    }
+   },
+   {
+    "id": "DL-9",
+    "n": 9,
+    "figure_key_label": "SUPPLY OUTLET IN PLENUM",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value to match the supply duct.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "(not stated separately)",
+     "ashrae_90_1_2007_2010": "match the supply duct; Exception d (backs of outlets) quoted on p. 4"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "Exception 4 (backs of outlets > 5 ft2: need not exceed R-2; <= 5 ft2: none); otherwise supply in indirectly conditioned space R-1.9",
+     "iecc_2021_2024": "none (conditioned space; derived)",
+     "changed": true,
+     "difference": "Under 2019 the supply duct in a return plenum is R-1.9, so 'match the supply duct' now means R-1.9 (capped by Exception 4)."
+    }
+   },
+   {
+    "id": "DL-10",
+    "n": 10,
+    "figure_key_label": "SUPPLY RUNOUT IN RETURN PLENUM",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement beyond what is integral to flexible duct, unless the length of flex duct exceeds 10 ft.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "(not stated separately)",
+     "ashrae_90_1_2007_2010": "no requirement beyond flex-duct integral insulation unless > 10 ft (runout Exception c caps R-3.5)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "supply in indirectly conditioned space: R-1.9 (heating-only CZ0-1: None); Exception 3 caps runouts < 10 ft at R-3.5 but does not remove the R-1.9 (derived)",
+     "iecc_2021_2024": "none (derived)",
+     "changed": true,
+     "difference": "2007/2010 had 'none' for supply ducts in indirectly conditioned space, so runouts needed no added insulation; 2019 requires R-1.9."
+    }
+   },
+   {
+    "id": "DL-11",
+    "n": 11,
+    "figure_key_label": "SUPPLY IN RETURN PLENUM",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement in the IECC. If following ASHRAE 90.1, ducts must meet the requirements for indirectly conditioned space.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "none",
+     "ashrae_90_1_2007_2010": "Indirectly Conditioned Space column ('none' in every Table 6.8.2A/B row)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "Indirectly Conditioned Space column: R-1.9 for supply (heating-only CZ0-1: None)",
+     "iecc_2021_2024": "none (derived; DOE note says the same for 2009/2012)",
+     "changed": true,
+     "difference": "Biggest classification change: supply ducts in return plenums went from 'none' (90.1-2007/2010) to R-1.9 (90.1-2019)."
+    }
+   },
+   {
+    "id": "DL-12",
+    "n": 12,
+    "figure_key_label": "SUPPLY IN CONDITIONED SPACE",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "No insulation requirement in IECC. These ducts are located in conditioned space. Insulation may be installed for sound-reduction purposes or to control condensate, but it is not required.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "none",
+     "ashrae_90_1_2007_2010": "none (Exception b)"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "none: Exception 2",
+     "iecc_2021_2024": "none (not listed)",
+     "changed": false
+    }
+   },
+   {
+    "id": "DL-13",
+    "n": 13,
+    "figure_key_label": "SUPPLY IN VENTED CRAWL SPACE",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirements for unconditioned spaces in the IECC or for an unvented attic in ASHRAE 90.1 must be met.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "unconditioned spaces: R-5 (2009) / R-6 (2012)",
+     "ashrae_90_1_2007_2010": "Unvented Attic column (as the note says; but Table footnote b puts crawlspaces in 'Unconditioned Space')"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "Exterior column via footnote b ('crawl spaces'); ventilated crawlspaces are not enclosed spaces by definition",
+     "iecc_2021_2024": "unconditioned spaces R-6 (DOE reading; derived)",
+     "changed": true,
+     "difference": "2007/2010 placed crawlspaces 'both ventilated and nonventilated' in 'Unconditioned Space' (footnote b), while the code note text points to the unvented-attic column; 2019 moves crawl spaces to the Exterior column."
+    }
+   },
+   {
+    "id": "DL-14",
+    "n": 14,
+    "figure_key_label": "BURIED SUPPLY",
+    "src": [
+     "D_C27"
+    ],
+    "page": 3,
+    "quote": "Insulation R-value requirements for locations outside the building must be met if adhering to IECC. If ASHRAE is being followed, these ducts must be insulated to the level required for buried ducts.",
+    "doe_2012_classification": {
+     "iecc_2009_2012": "outside the building: R-8",
+     "ashrae_90_1_2007_2010": "Buried"
+    },
+    "current_codes": {
+     "ashrae_90_1_2019": "'Unconditioned Space and Buried Ducts' column (H&C R-6)",
+     "iecc_2021_2024": "'Ducts located underground beneath buildings shall be insulated as required in this section or have an equivalent thermal distribution efficiency' (which R is not specified; DOE read 2009/2012 as 'outside the building')",
+     "changed": true,
+     "difference": "90.1-2007/2010 Buried column: supply R-3.5 (CZ1-7) / R-6 (CZ8); 2019: R-6 (H&C). IECC 2021 added the thermal-distribution-efficiency alternative."
+    }
+   }
+  ],
+  "tables_ashrae_90_1_2007_2010": {
+   "src": [
+    "D_C27"
+   ],
+   "note": "Transcribed from the code note pages 5-6 (image read; every row also matched as 'check' against the OCR text). These are 90.1-2007/2010 values, NOT current; kept to map the DOE location key to its old columns.",
+   "columns": [
+    "Exterior",
+    "Ventilated Attic",
+    "Unvented Attic above Insulated Ceiling",
+    "Unvented Attic with Roof Insulation (footnote a)",
+    "Unconditioned Space (footnote b)",
+    "Indirectly Conditioned Space (footnote c)",
+    "Buried"
+   ],
+   "table_6_8_2A": {
+    "title_image_read": "Table 6.8.2A. Minimum Duct Insulation R-Value,a Cooling and Heating Only Supply Ducts and Return Ducts",
+    "page": 5,
+    "rows": [
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "1, 2",
+      "Exterior": "none",
+      "Ventilated Attic": "none",
+      "Unvented Attic above Insulated Ceiling": "none",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "1,2 none none none none none none none"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "3",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "none",
+      "Unvented Attic above Insulated Ceiling": "none",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "3 R-3.5 none none none none none none"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "4",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "none",
+      "Unvented Attic above Insulated Ceiling": "none",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "4 R-3.5 none none none none none none"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "5",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-3.5",
+      "Unvented Attic above Insulated Ceiling": "none",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "5 R-6 R-3.5 none none none none R-3.5"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "6",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-3.5",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "6 R-6 R-6 R-3.5 none none none R-3.5"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "7",
+      "Exterior": "R-8",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "7 R-8 R-6 R-6 none R-3.5 none R-3.5"
+     },
+     {
+      "group": "Heating-Only Ducts",
+      "climate_zone": "8",
+      "Exterior": "R-8",
+      "Ventilated Attic": "R-8",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "R-6",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-6",
+      "check": "8 R-8 R-8 R-6 none R-6 none R-6"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "1",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-8",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "1 R-6 R-6 R-8 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "2",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "2 R-6 R-6 R-6 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "3",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-1.9",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "3 R-6 R-6 R-6 R-3.5 R-1.9 none none"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "4",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "R-3.5",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-1.9",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "4 R-3.5 R-3.5 R-6 R-1.9 R-1.9 none none"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "5, 6",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "R-1.9",
+      "Unvented Attic above Insulated Ceiling": "R-3.5",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-1.9",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "5,6 R-3.5 R-1.9 R-3.5 R-1.9 R-1.9 none none"
+     },
+     {
+      "group": "Cooling-Only Ducts",
+      "climate_zone": "7,8",
+      "Exterior": "R-1.9",
+      "Ventilated Attic": "R-1.9",
+      "Unvented Attic above Insulated Ceiling": "R-1.9",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-1.9",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "7,8 R-1.9 R-1.9 R-1.9 R-1.9 R-1.9 none none"
+     },
+     {
+      "group": "Return Ducts",
+      "climate_zone": "1 to 8",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "R-3.5",
+      "Unvented Attic above Insulated Ceiling": "R-3.5",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "1 to 8 R-3.5 R-3.5 R-3.5 none none none none"
+     }
+    ]
+   },
+   "table_6_8_2B": {
+    "title_image_read": "Table 6.8.2B. Minimum Duct Insulation R-Value,a Combined Heating and Cooling Supply Ducts and Return Ducts",
+    "page": 6,
+    "rows": [
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "1",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-8",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "1 R-6 R-6 R-8 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "2",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "2 R-6 R-6 R-6 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "3",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "3 R-6 R-6 R-6 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "4",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-3.5",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "4 R-6 R-6 R-6 R-3.5 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "5",
+      "Exterior": "R-6",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "5 R-6 R-6 R-6 R-1.9 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "6",
+      "Exterior": "R-8",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "6 R-8 R-6 R-6 R-1.9 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "7",
+      "Exterior": "R-8",
+      "Ventilated Attic": "R-6",
+      "Unvented Attic above Insulated Ceiling": "R-6",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-3.5",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-3.5",
+      "check": "7 R-8 R-6 R-6 R-1.9 R-3.5 none R-3.5"
+     },
+     {
+      "group": "Supply Ducts",
+      "climate_zone": "8",
+      "Exterior": "R-8",
+      "Ventilated Attic": "R-8",
+      "Unvented Attic above Insulated Ceiling": "R-8",
+      "Unvented Attic with Roof Insulation (footnote a)": "R-1.9",
+      "Unconditioned Space (footnote b)": "R-6",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "R-6",
+      "check": "8 R-8 R-8 R-8 R-1.9 R-6 none R-6"
+     },
+     {
+      "group": "Return Ducts",
+      "climate_zone": "1 to 8",
+      "Exterior": "R-3.5",
+      "Ventilated Attic": "R-3.5",
+      "Unvented Attic above Insulated Ceiling": "R-3.5",
+      "Unvented Attic with Roof Insulation (footnote a)": "none",
+      "Unconditioned Space (footnote b)": "none",
+      "Indirectly Conditioned Space (footnote c)": "none",
+      "Buried": "none",
+      "check": "1 to 8 R-3.5 R-3.5 R-3.5 none none none none"
+     }
+    ]
+   },
+   "footnote_quotes": [
+    "Includes crawlspaces, both ventilated and nonventilated.",
+    "Includes return air plenums with or without exposed roofs above."
+   ],
+   "footnote_a_quote": "The required minimum thicknesses do not consider water vapor transmission and possible surface condensation. Where exterior walls are used as plenum walls, wall insulation shall be as required by the most restrictive condition of Section 6.4.4.2 or Section 5.",
+   "seal_level_note": "Page 6 also reprints 90.1-2007 Table 6.4.4.2A 'Minimum Duct Seal Levels' with an 'Exhaust' column (seal levels, not insulation).",
+   "cross_check_with_ashrae_handbook": {
+    "src": [
+     "D_C24"
+    ],
+    "result": "Handbook F25/F21/F17 Ch. 23 Table 2 equals code-note Table 6.8.2A in every cell. Handbook Table 4 differs from code-note Table 6.8.2B in the cells listed; the code note was read from its rendered image, the handbook from HTML. Which matches the published 90.1-2010 is unverified.",
+    "differences": [
+     {
+      "table": "6.8.2B / Handbook Table 4",
+      "group": "Supply Ducts",
+      "climate_zone": "1",
+      "column": "Exterior",
+      "doe_code_note_D_C27": "R-6",
+      "ashrae_handbook_D_C24": "R-4"
+     },
+     {
+      "table": "6.8.2B / Handbook Table 4",
+      "group": "Supply Ducts",
+      "climate_zone": "6",
+      "column": "Exterior",
+      "doe_code_note_D_C27": "R-8",
+      "ashrae_handbook_D_C24": "R-6"
+     },
+     {
+      "table": "6.8.2B / Handbook Table 4",
+      "group": "Supply Ducts",
+      "climate_zone": "7",
+      "column": "Exterior",
+      "doe_code_note_D_C27": "R-8",
+      "ashrae_handbook_D_C24": "R-6"
+     }
+    ],
+    "handbook_title_quote": "Table 4 Minimum Duct Insulation R-Value,^a Combined Heating and Cooling Supply Ducts and Return Ducts",
+    "handbook_footnote_quote": "Climate zones for the continental United States defined in ASHRAE Standard 90.1-2010."
+   }
+  },
+  "current_classification_quotes": {
+   "ashrae_90_1_2019": [
+    {
+     "what": "Exterior column carries footnote b",
+     "src": [
+      "C19"
+     ],
+     "check": "Climate Zone Exteriorb Unconditioned Space and Buried Ducts Indirectly Conditioned Space c,d"
+    },
+    {
+     "what": "footnote b",
+     "src": [
+      "C19"
+     ],
+     "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces."
+    },
+    {
+     "what": "footnote c (return plenums = indirectly conditioned)",
+     "src": [
+      "C19"
+     ],
+     "quote": "Includes return air plenums with or without exposed roofs above."
+    },
+    {
+     "what": "footnote d",
+     "src": [
+      "C19"
+     ],
+     "quote": "Return ducts in this duct location do not require insulation."
+    },
+    {
+     "what": "ventilated attics/crawlspaces/garages are not enclosed (so not 'unconditioned space')",
+     "src": [
+      "C19"
+     ],
+     "quote": "Crawlspaces, attics, and parking garages with natural or mechanical ventilation are not considered enclosed spaces."
+    },
+    {
+     "what": "buried ducts share the unconditioned column",
+     "src": [
+      "C19"
+     ],
+     "check": "Unconditioned Space and Buried Ducts"
+    },
+    {
+     "what": "vented vs unvented attics",
+     "src": [
+      "C19"
+     ],
+     "note": "Table 6.8.2 (2019) has no separate vented/unvented attic columns; only 'attics above insulated ceilings' are named (footnote b).",
+     "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces."
+    },
+    {
+     "what": "unconditioned shafts",
+     "note": "Not named in 90.1-2019 Table 6.8.2 or its footnotes (derived: an enclosed, unconditioned shaft falls under 'Unconditioned Space and Buried Ducts')."
+    }
+   ],
+   "iecc_2021_2024_commercial": [
+    {
+     "what": "the only location words in the clause",
+     "src": [
+      "C1",
+      "C3"
+     ],
+     "quote": "where located in unconditioned spaces and where located outside the building"
+    },
+    {
+     "what": "no attic/crawl-space/garage wording; conditioned space defined by the thermal envelope",
+     "src": [
+      "D_C1",
+      "D_C3"
+     ],
+     "quote": "An area, room or space that is enclosed within the building thermal envelope and is directly or indirectly heated or cooled."
+    },
+    {
+     "what": "DOE 2012 reading of the same clause wording",
+     "src": [
+      "D_C27"
+     ],
+     "page": 3,
+     "quote": "Insulation R-value requirements for unconditioned spaces in the IECC or for a vented attic in ASHRAE 90.1 must be met."
+    }
+   ]
+  },
+  "summary_of_differences": [
+   "Supply ducts in return plenums / indirectly conditioned space: 'none' in 90.1-2007/2010 (and DOE items 10-11) -> R-1.9 in 90.1-2019 (heating-only CZ 0-1: None). Return ducts there stay uninsulated (footnote d). IECC: none, then and now.",
+   "Attics above insulated ceilings, crawl spaces and parking garages: separate attic columns / 'Unconditioned Space' in 90.1-2007/2010 -> 'Exterior' column in 90.1-2019 (footnote b). IECC keeps the same 'unconditioned spaces' wording (DOE read it as R-5/R-6 for vented and unvented attics and vented crawl spaces).",
+   "Vented vs unvented attic distinction and the 'unvented attic with roof insulation' column disappeared in 90.1-2019.",
+   "Outside the building: IECC R-8 everywhere (2009/2012) -> R-8 CZ 0-4 / R-12 CZ 5-8 (2021/2024). Unconditioned: R-5 (2009) -> R-6 (2012 onward).",
+   "Buried: 90.1-2007/2010 'Buried' column -> 90.1-2019 'Unconditioned Space and Buried Ducts'. IECC: DOE read buried as 'outside the building' (R-8); 2021/2024 text says 'as required in this section or ... equivalent thermal distribution efficiency' without naming which R.",
+   "Exhaust ducts: no insulation requirement then or now in the model codes read.",
+   "Internal inconsistency in the DOE note: item 13 sends a vented crawl space to the 90.1 'unvented attic' column, but the note's own Table 6.8.2A/B footnote b puts crawlspaces 'both ventilated and nonventilated' in 'Unconditioned Space'."
+  ]
+ }
+}

@@ -1,5 +1,5 @@
 import { DUCT_WRAP, ELASTOMERIC_SHEET } from '../../data/ductData'
-import { DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, ductSurface, ductThicknesses, installedIn, ratedR, type DuctInsulation, type DuctType } from '../../sim/duct'
+import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, ductSurface, ductThicknesses, installedIn, ratedR, type DuctCodeBasis, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { physicsMode } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -86,6 +86,10 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
         </button>
       )}
       <div className="field">
+        <span className="field-label">Energy code</span>
+        <Segmented<DuctCodeBasis> size="sm" label="Energy code" value={s.ductCodeBasis} onChange={(v) => set({ ductCodeBasis: v })} options={DUCT_CODES.map((c) => ({ id: c.id, label: c.label }))} />
+      </div>
+      <div className="field">
         <span className="field-label">Duct type</span>
         <Segmented<DuctType> size="sm" label="Duct type" value={s.ductType} onChange={(v) => set({ ductType: v })} options={DUCT_TYPES.map((t) => ({ id: t.id, label: t.short }))} />
       </div>
@@ -97,7 +101,7 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
           ))}
         </div>
       </div>
-      {(s.ductType === 'supply' || s.ductType === 'return') && (
+      {s.ductCodeBasis === 'ashrae' && (s.ductType === 'supply' || s.ductType === 'return') && (
         <div className="field">
           <span className="field-label">System serves <small className="muted">Table 6.8.2 rows</small></span>
           <Segmented<SimState['ductService']> size="sm" label="Duct service" value={s.ductService} onChange={(v) => set({ ductService: v })} options={DUCT_SERVICES.map((l) => ({ id: l.id, label: l.label }))} />

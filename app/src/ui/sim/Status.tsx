@@ -36,7 +36,7 @@ export function SafetyChip({ safe, small }: { safe: boolean; small?: boolean }) 
 export function CodeChip({ s, ev, small = true }: { s: SimState; ev: Evaluation; small?: boolean }) {
   const c = ductCode(s)
   if (c.R === null) {
-    return <span className={`status-chip ${small ? 'sm' : ''}`}><Icon name="info" size={small ? 12 : 14} />{c.pending ? 'Code: not verified' : 'No code minimum'}</span>
+    return <span className={`status-chip ${small ? 'sm' : ''}`}><Icon name="info" size={small ? 12 : 14} />{c.notStated ? 'No code R-value' : 'No code minimum'}</span>
   }
   const ok = (ev.ins.ratedR ?? 0) + 1e-9 >= c.R
   return (

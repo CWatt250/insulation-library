@@ -88,8 +88,10 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Locations:**
   - The options are conditioned space, return plenum, unconditioned space, attic, crawl space, parking garage, outdoors and buried.
   - Each maps to its ASHRAE 90.1-2019 Table 6.8.2 column through the table's notes. Note b puts attics above insulated ceilings, crawl spaces and parking garages in the Exterior column; note c puts return plenums under Indirectly Conditioned; exception 2 exempts heated, semiheated or cooled spaces.
-- **Location guide:** "Where does my duct run?" (also `?mode=duct&guide=1`) is a redrawn building section with DOE's 14 duct locations (BECP commercial duct-insulation guide, Figure 1). Pick one to see its classification, the minimum at your climate zone and any exception (short runouts, outlet backs, equipment casings, plenum walls), then send it to the simulator.
-- **Not yet verified:** outside-air and exhaust ducts, and unvented attics, show "not verified" until the code text is on file.
+- **Location guide:** "Where does my duct run?" (also `?mode=duct&guide=1`) is a redrawn building section with DOE's 14 duct locations (BECP commercial duct-insulation guide, Figure 1). Pick one to see what ASHRAE 90.1-2019 and the IECC require there at your climate zone, any exception (short runouts, outlet backs, equipment casings, plenum walls) and what DOE's 2012 note said, then send it to the simulator.
+- **Energy code:** choose ASHRAE 90.1-2019 or IECC 2021/2024 commercial (C403.12.1 / C403.13.1; outside the building R-8/R-12, unconditioned space R-6, exempt where the design ΔT is 15°F or less).
+  - IECC readings that come from definitions rather than stated text (attics, crawl spaces and garages as "unconditioned space"; return plenums as conditioned) are flagged as derived.
+- **Outside-air, exhaust and relief ducts:** neither code sets an R-value; both cover supply and return ducts only (`research/duct-code-verified.json`, D_C-ids). The IMC 603.12 condensation duty still applies, and the app checks it.
 - **Design:** the code minimum is always part of the duct design; condensation is still checked.
 - **Code minimum:** the result leads with the installed R the code requires (ASHRAE 90.1-2019 Table 6.8.2) and whether the insulation meets it.
 - **Condensation:** checked whenever the duct air is colder than its surroundings.

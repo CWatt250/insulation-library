@@ -100,6 +100,32 @@ describe('duct location → code column (90.1-2019 notes b, c, d; exception 2)',
   })
 })
 
+describe('IECC 2021/2024 commercial (C403.12.1 / C403.13.1) and duct types outside both codes', () => {
+  it('maps locations and the 15°F exception', () => {
+    expect(ductRequirement('supply', 'exterior', 'both', 4, 'iecc', 30).R).toBe(8)
+    expect(ductRequirement('supply', 'exterior', 'both', 5, 'iecc', 30).R).toBe(12)
+    expect(ductRequirement('supply', 'unconditioned', 'both', 7, 'iecc', 30).R).toBe(6)
+    // attics, crawl spaces and garages: "unconditioned space" is DOE's reading, flagged as derived
+    const attic = ductRequirement('supply', 'attic', 'both', 4, 'iecc', 30)
+    expect(attic.R).toBe(6)
+    expect(attic.derived).toBe(true)
+    expect(ductRequirement('supply', 'buried', 'both', 4, 'iecc', 30).notStated).toBe(true)
+    expect(ductRequirement('supply', 'indirect', 'both', 4, 'iecc', 30).R).toBeNull()
+    expect(ductRequirement('supply', 'conditioned', 'both', 4, 'iecc', 30).R).toBeNull()
+    // exception 2: design temperature difference not over 15°F
+    expect(ductRequirement('supply', 'exterior', 'both', 4, 'iecc', 15).R).toBeNull()
+  })
+  it('sets no R-value for outside-air or exhaust ducts in either code (supply and return only)', () => {
+    for (const basis of ['ashrae', 'iecc'] as const) {
+      for (const type of ['outdoor', 'exhaust'] as const) {
+        const r = ductRequirement(type, 'attic', 'both', 4, basis, 30)
+        expect(r.R).toBeNull()
+        expect(r.notStated).toBe(true)
+      }
+    }
+  })
+})
+
 describe('duct solver', () => {
   const cold = { ...initialState('cold'), system: 'duct' as const, processF: 55, ambientF: 85, rh: 70, ductW: 24, ductH: 12 }
   it('bare: the sheet sits at the air temperature (no inside film)', () => {
@@ -141,7 +167,7 @@ describe('duct sources', () => {
     const { PRESETS } = await import('./presets')
     const ids = [
       ...Object.values(DUCT_SURFACES).flatMap((x) => [...x.src, ...(x.limitSrc ?? [])]),
-      ...DUCT_WRAP.src, ...ELASTOMERIC_SHEET.src, 'C19', 'C6', 'U1', 'U9', 'U14', 'U15',
+      ...DUCT_WRAP.src, ...ELASTOMERIC_SHEET.src, 'C19', 'C1', 'C3', 'C6', 'D_C1', 'D_C27', 'U1', 'U9', 'U14', 'U15',
       ...PRESETS.filter((p) => p.set.system === 'duct').flatMap((p) => p.range?.src ?? []),
     ]
     for (const id of ids) expect(CALC_REFS[id], id).toBeTruthy()

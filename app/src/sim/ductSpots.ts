@@ -1,4 +1,4 @@
-import { ductRequirement, type DuctCodeResult, type DuctPlace, type DuctType } from './duct'
+import { ductRequirement, type DuctCodeBasis, type DuctCodeResult, type DuctPlace, type DuctType } from './duct'
 import type { DuctService } from '../data/ductData'
 
 /**
@@ -25,11 +25,12 @@ export interface DuctSpot {
 export const DUCT_SPOTS: DuctSpot[] = [
   { n: 1, label: 'Insulation of unit casing', type: null, place: null, x: 470, y: 85,
     rule: 'Exempt: "Factory-installed plenums, casings, or ductwork furnished as a part of HVAC equipment tested and rated in accordance with Section 6.4.1" (6.4.4.1.2 exception 1).' },
-  { n: 2, label: 'Exhaust', type: 'exhaust', place: 'attic', x: 786, y: 140, pending: true },
+  { n: 2, label: 'Exhaust', type: 'exhaust', place: 'attic', x: 786, y: 140 },
   { n: 3, label: 'Supply & return in vented attic', type: 'supply', place: 'attic', x: 560, y: 145 },
   { n: 4, label: 'Supply & return outside of building', type: 'supply', place: 'exterior', x: 398, y: 86 },
   { n: 5, label: 'Supply & return in unconditioned shaft', type: 'supply', place: 'unconditioned', x: 370, y: 280 },
-  { n: 6, label: 'Supply in unvented attic', type: 'supply', place: null, x: 250, y: 232, pending: true },
+  { n: 6, label: 'Supply in unvented attic', type: 'supply', place: 'attic', x: 250, y: 232,
+    rule: 'Read as an attic above an insulated ceiling (Table 6.8.2 note b). If the attic is insulated at the roof deck instead, Table 6.8.2 does not name it — classify it by 90.1\'s space definitions (indirectly conditioned, semiheated or unconditioned).' },
   { n: 7, label: 'Return in indirectly conditioned ceiling space', type: 'return', place: 'indirect', x: 560, y: 188 },
   { n: 8, label: 'Exterior wall of return plenum', type: null, place: null, x: 861, y: 338,
     rule: 'Building envelope, not duct insulation: "Where portions of the building envelope are used as a plenum enclosure, building envelope insulation shall be as required by the most restrictive condition of Section 6.4.4.1 or Section 5" (Table 6.8.2 note a).' },
@@ -44,7 +45,7 @@ export const DUCT_SPOTS: DuctSpot[] = [
 ]
 
 /** What the code asks of a spot, at the user's climate zone and system service. */
-export function spotRequirement(spot: DuctSpot, service: DuctService, zone: number): DuctCodeResult | null {
+export function spotRequirement(spot: DuctSpot, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae'): DuctCodeResult | null {
   if (spot.pending || !spot.type || !spot.place) return null
-  return ductRequirement(spot.type, spot.place, service, zone)
+  return ductRequirement(spot.type, spot.place, service, zone, basis)
 }
