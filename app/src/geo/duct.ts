@@ -71,6 +71,8 @@ function withArc(p: [number, number][], n: [number, number][]): Outline {
   return { p, n, s }
 }
 
+type V3 = [number, number, number]
+
 class Builder {
   pos: number[] = []
   nor: number[] = []
@@ -148,6 +150,53 @@ class Builder {
     this.cap(inner, outer, z0, -1, m.end)
     this.cap(inner, outer, z1, 1, m.end)
   }
+  /** A quad wound to face `n`. */
+  quad(a: V3, b: V3, c: V3, d: V3, n: V3, uv: [number, number][], mat: number) {
+    const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
+    const e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+    const fx = e1[1] * e2[2] - e1[2] * e2[1]
+    const fy = e1[2] * e2[0] - e1[0] * e2[2]
+    const fz = e1[0] * e2[1] - e1[1] * e2[0]
+    if (fx * n[0] + fy * n[1] + fz * n[2] >= 0) {
+      this.tri(a, b, c, n, n, n, uv[0], uv[1], uv[2], mat)
+      this.tri(a, c, d, n, n, n, uv[0], uv[2], uv[3], mat)
+    } else {
+      this.tri(a, c, b, n, n, n, uv[0], uv[2], uv[1], mat)
+      this.tri(a, d, c, n, n, n, uv[0], uv[3], uv[2], mat)
+    }
+  }
+  /**
+   * Part of a shell: only the outline points listed in `idx` (in path order),
+   * with the cut faces where the shell has been cut back along the run.
+   */
+  partial(inner: Outline, outer: Outline, idx: number[], z0: number, z1: number, m: { outer: number; inner: number; end: number }) {
+    const sub = (o: Outline): Outline => {
+      const p = idx.map((i) => o.p[i])
+      const n = idx.map((i) => o.n[i])
+      const s2 = [0]
+      for (let k = 1; k < p.length; k++) s2.push(s2[k - 1] + Math.hypot(p[k][0] - p[k - 1][0], p[k][1] - p[k - 1][1]))
+      return { p, n, s: s2 }
+    }
+    const I = sub(inner)
+    const O = sub(outer)
+    const last = idx.length - 1
+    for (let k = 0; k < last; k++) {
+      const A = O.p[k], B = O.p[k + 1], a = I.p[k], b = I.p[k + 1]
+      this.quad([A[0], A[1], z0], [B[0], B[1], z0], [B[0], B[1], z1], [A[0], A[1], z1], [(O.n[k][0] + O.n[k + 1][0]) / 2, (O.n[k][1] + O.n[k + 1][1]) / 2, 0], [[O.s[k], z0], [O.s[k + 1], z0], [O.s[k + 1], z1], [O.s[k], z1]], m.outer)
+      this.quad([a[0], a[1], z0], [b[0], b[1], z0], [b[0], b[1], z1], [a[0], a[1], z1], [-(I.n[k][0] + I.n[k + 1][0]) / 2, -(I.n[k][1] + I.n[k + 1][1]) / 2, 0], [[I.s[k], z0], [I.s[k + 1], z0], [I.s[k + 1], z1], [I.s[k], z1]], m.inner)
+      for (const [z, dir] of [[z0, -1], [z1, 1]] as const) {
+        this.quad([a[0], a[1], z], [b[0], b[1], z], [B[0], B[1], z], [A[0], A[1], z], [0, 0, dir], [[a[0], a[1]], [b[0], b[1]], [B[0], B[1]], [A[0], A[1]]], m.end)
+      }
+    }
+    // the two long cut faces: each faces along the path, away from what's kept
+    for (const [k, sgn] of [[0, -1], [last, 1]] as const) {
+      const A = O.p[k], a = I.p[k]
+      const nn = O.n[k]
+      const tang: V3 = [-nn[1] * sgn, nn[0] * sgn, 0]
+      const depth = Math.hypot(A[0] - a[0], A[1] - a[1])
+      this.quad([a[0], a[1], z0], [A[0], A[1], z0], [A[0], A[1], z1], [a[0], a[1], z1], tang, [[0, z0], [depth, z0], [depth, z1], [0, z1]], m.end)
+    }
+  }
   box(cx: number, cy: number, cz: number, sx: number, sy: number, sz: number, mat: number) {
     const g = new THREE.BoxGeometry(sx, sy, sz).toNonIndexed()
     g.translate(cx, cy, cz)
@@ -189,9 +238,13 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   const outH = hh + t
   const len = Math.max(1.6, 2.4 * Math.max(outW, outH))
   const cut = d.view === 'cutaway'
-  // insulation ends short of the duct end; the cutaway leaves a longer bare stub
-  const stub = cut ? Math.max(0.16, 0.5 * Math.min(outW, outH) + 0.08) : 0.07
+  // insulation ends just short of the duct end
+  const stub = 0.07
   const zIns = len - stub
+  // cutaway: along the far part of the run the top and near side are stripped in steps —
+  // facing first, then the blanket — so facing, blanket and sheet metal each show
+  const zFacing = len * 0.42
+  const zBlanket = len * 0.6
   const parts: Part[] = []
   const nArc = 10
 
@@ -226,6 +279,7 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   }
   parts.push({ key: 'duct', geometry: metal.geometry(), layer: 'pipe' })
 
+  let cutWedge: [number, number] | null = null
   const callouts: Callout[] = [{ title: round ? 'Spiral duct' : 'Galvanized duct', detail: round ? `${(d.d / IN).toFixed(0)}" round, galvanized` : `${(d.w / IN).toFixed(0)}" × ${(d.h / IN).toFixed(0)}", 24 ga galvanized`, pos: [hw * 0.7, hh, len - stub * 0.5], layer: 'pipe' }]
 
   if (insulated) {
@@ -233,8 +287,18 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     const insIn = round ? circle(hw + 0.0004) : roundedRect(hw + 0.0004, hh + 0.0004, 0.0015, nArc)
     const rCorner = d.insulation === 'wrap' ? t * 0.9 : t * 0.5
     const insOut = round ? circle(outW) : roundedRect(outW, outH, rCorner, nArc)
+    // what the cutaway keeps: the far side and underside (rect: corner 2 → corner 0; round: 180° → 90°)
+    const nC = nArc + 1
+    const kept = round
+      ? [...Array.from({ length: 48 }, (_, i) => 48 + i), ...Array.from({ length: 25 }, (_, i) => i)]
+      : [...Array.from({ length: 2 * nC }, (_, i) => 2 * nC + i), ...Array.from({ length: nC }, (_, i) => i)]
+    cutWedge = round ? [Math.PI / 2, Math.PI] : [Math.atan2(outH, outW - rCorner), Math.PI + Math.atan2(outH - rCorner, outW)]
     const ins = new Builder()
-    ins.shell(insIn, insOut, 0.002, zIns, { outer: Slot.InsSkin, inner: Slot.InsBore, end: Slot.InsCut })
+    const insMats = { outer: Slot.InsSkin, inner: Slot.InsBore, end: Slot.InsCut }
+    if (cut) {
+      ins.shell(insIn, insOut, 0.002, zBlanket, insMats)
+      ins.partial(insIn, insOut, kept, zBlanket, zIns, insMats)
+    } else ins.shell(insIn, insOut, 0.002, zIns, insMats)
     parts.push({ key: 'insulation', geometry: ins.geometry(), layer: 'insulation' })
     callouts.push({
       title: d.insulation === 'wrap' ? 'Fiberglass duct wrap' : 'Elastomeric sheet',
@@ -243,21 +307,26 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     })
 
     if (d.insulation === 'wrap') {
-      // ---- FSK facing: a thin skin over the blanket, peeled back a little at the cut end
-      const fz1 = cut ? zIns - 0.035 : zIns
+      // ---- FSK facing: a thin skin over the blanket (cutaway: peeled off the top and near side first)
+      const fz1 = zIns
+      const tapeEnd = cut ? zFacing : fz1
       const fIn = round ? circle(outW + 0.0002) : roundedRect(outW + 0.0002, outH + 0.0002, rCorner + 0.0002, nArc)
       const fOut = round ? circle(outW + 0.0007) : roundedRect(outW + 0.0007, outH + 0.0007, rCorner + 0.0007, nArc)
       const fac = new Builder()
-      fac.shell(fIn, fOut, 0.002, fz1, { outer: Slot.DuctFacing, inner: Slot.FacingInner, end: Slot.FacingEdge })
+      const facMats = { outer: Slot.DuctFacing, inner: Slot.FacingInner, end: Slot.FacingEdge }
+      if (cut) {
+        fac.shell(fIn, fOut, 0.002, zFacing, facMats)
+        fac.partial(fIn, fOut, kept, zFacing, fz1, facMats)
+      } else fac.shell(fIn, fOut, 0.002, fz1, facMats)
       // ---- 3" foil tape: butt joints between 48" rolls, and the longitudinal flange seam on top
       const tIn = fOut
       const tOut = round ? circle(outW + 0.0011) : roundedRect(outW + 0.0011, outH + 0.0011, rCorner + 0.0011, nArc)
-      for (let z = 48 * IN * 0.62; z < fz1 - 2 * IN; z += 48 * IN) fac.shell(tIn, tOut, z - 1.5 * IN, z + 1.5 * IN, { outer: Slot.Tape, inner: Slot.Tape, end: Slot.Tape })
+      for (let z = 48 * IN * 0.62; z < tapeEnd - 2 * IN; z += 48 * IN) fac.shell(tIn, tOut, z - 1.5 * IN, z + 1.5 * IN, { outer: Slot.Tape, inner: Slot.Tape, end: Slot.Tape })
       if (round) {
-        fac.box(-outW * 0.55, outH * 0.84, fz1 / 2, 3 * IN, 0.0012, fz1 - 0.01, Slot.Tape)
+        fac.box(-outW * 0.55, outH * 0.84, tapeEnd / 2, 3 * IN, 0.0012, tapeEnd - 0.01, Slot.Tape)
       } else {
         const x = outW - rCorner - 2.2 * IN
-        fac.box(x, outH + 0.0012, (0.002 + fz1) / 2, 3 * IN, 0.0012, fz1 - 0.004, Slot.Tape)
+        fac.box(x, outH + 0.0012, (0.002 + tapeEnd) / 2, 3 * IN, 0.0012, tapeEnd - 0.004, Slot.Tape)
         // ---- pins and speed clips under ducts 24" and wider, 18" on center
         if (d.w >= 24 * IN - 1e-6) {
           const across = Math.max(1, Math.round(d.w / (18 * IN)))
@@ -278,8 +347,8 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   const minHalf = Math.min(outW, outH)
   const zones: SimZone[] = [
     round
-      ? { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: outW + 0.001, rBare: hw, bareZ: [0, len] }
-      : { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: minHalf, rBare: Math.min(hw, hh), bareZ: [0, len], box: [outW + 0.001, outH + 0.001], boxBare: [hw, hh] },
+      ? { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: outW + 0.001, rBare: hw, bareZ: [0, len], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) }
+      : { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: minHalf, rBare: Math.min(hw, hh), bareZ: [0, len], box: [outW + 0.001, outH + 0.001], boxBare: [hw, hh], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) },
     round
       ? { key: 'stub', kind: 'stub', z0: zIns + 0.004, z1: len, radius: hw, rBare: hw }
       : { key: 'stub', kind: 'stub', z0: zIns + 0.004, z1: len, radius: Math.min(hw, hh), rBare: Math.min(hw, hh), box: [hw, hh], boxBare: [hw, hh] },

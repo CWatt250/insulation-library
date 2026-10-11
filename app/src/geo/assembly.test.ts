@@ -47,3 +47,24 @@ describe('copper and PVC pipe', () => {
     }
   }
 })
+
+describe('ductwork assembly', () => {
+  for (const shape of ['rect', 'round'] as const) {
+    for (const insulation of ['wrap', 'elastomeric'] as const) {
+      it(`builds a ${shape} duct with ${insulation}, installed and cut away`, () => {
+        for (const view of ['installed', 'cutaway'] as const) {
+          const a = buildAssembly({ component: 'straight', npsIndex: 0, thicknessIn: 1, insulation: 'fiberglass', jacket: 'none', view, duct: { shape, w: 0.61, h: 0.3, d: 0.36, t: 0.038, insulation } })
+          expect(a.parts.length).toBeGreaterThan(1)
+          for (const p of a.parts) {
+            const pos = p.geometry.getAttribute('position')
+            expect(pos.count).toBeGreaterThan(0)
+            for (let i = 0; i < pos.count; i += 97) expect(Number.isFinite(pos.getX(i) + pos.getY(i) + pos.getZ(i))).toBe(true)
+            p.geometry.dispose()
+          }
+          // the cutaway hides effects where the insulation is stripped
+          expect(!!a.zones?.[0].wedge).toBe(view === 'cutaway')
+        }
+      })
+    }
+  }
+})
