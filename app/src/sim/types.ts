@@ -6,7 +6,7 @@ import type { DuctService } from '../data/ductData'
 
 /** Pipe modes, plus Ductwork, which is driven by duct type and location rather than hot/cold. */
 export type SimMode = 'hot' | 'cold' | 'condensate' | 'duct'
-export type AppMode = 'explore' | SimMode
+export type AppMode = 'explore' | 'recommend' | SimMode
 
 /** Field quality of the vapor-retarder system (cold and condensate work). */
 export type VrQuality = 'ideal' | 'good' | 'fair' | 'poor'

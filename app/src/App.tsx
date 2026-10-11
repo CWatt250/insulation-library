@@ -10,6 +10,7 @@ import { describeLayers } from './data/layers'
 import { SpecContent, SpecPanel } from './ui/SpecPanel'
 import type { PhotoProgress } from './scene/PhotoMode'
 import { Simulator } from './ui/sim/Simulator'
+import { Recommend } from './ui/sim/Recommend'
 import { Icon } from './ui/controls'
 import type { AppMode } from './sim/types'
 import type { UnitSystem } from './sim/units'
@@ -47,18 +48,19 @@ function readParams() {
     photo: q.get('photo') === '1',
     cam: vec(q.get('cam')),
     target: vec(q.get('tgt')),
-    mode: (readShareHash(location.hash)?.mode ?? (['explore', 'hot', 'cold', 'condensate', 'duct'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore')) as AppMode,
+    mode: (readShareHash(location.hash)?.mode ?? (['explore', 'hot', 'cold', 'condensate', 'duct', 'recommend'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore')) as AppMode,
     share: readShareHash(location.hash),
     units: (q.get('units') === 'si' ? 'si' : 'ip') as UnitSystem,
   }
 }
 
-const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' | 'wind' }[] = [
+const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' | 'wind' | 'target' }[] = [
   { id: 'explore', label: 'Explore', short: 'Explore', icon: 'cube' },
   { id: 'hot', label: 'Hot Pipe', short: 'Hot', icon: 'flame' },
   { id: 'cold', label: 'Cold Pipe', short: 'Cold', icon: 'snow' },
   { id: 'condensate', label: 'Condensate', short: 'Condensate', icon: 'drop' },
   { id: 'duct', label: 'Ductwork', short: 'Duct', icon: 'wind' },
+  { id: 'recommend', label: 'Recommend', short: 'Recommend', icon: 'target' },
 ]
 
 function ModeBar({ mode, onChange, mobile }: { mode: AppMode; onChange: (m: AppMode) => void; mobile: boolean }) {
@@ -108,6 +110,8 @@ export default function App() {
   const [init] = useState(readParams)
   const [mode, setModeState] = useState<AppMode>(init.mode)
   const [units, setUnits] = useState<UnitSystem>(init.units)
+  // a scenario from a share link, or a recommendation opened in the simulator
+  const [handoff, setHandoff] = useState(init.share)
   const setMode = (m: AppMode) => {
     setModeState(m)
     const q = new URLSearchParams(location.search)
@@ -342,11 +346,20 @@ export default function App() {
   const summary = `${ins.label} · ${service === 'hot' ? 'Hot' : 'Cold'} · ${jacket === 'none' ? (facing === 'asj' ? 'ASJ' : 'Bare') : JACKETS[jacket].label} · NPS ${NPS[npsIndex].nps}" · ${thicknessIn}"`
   const spec = { id: insulation, jacket, facing, service, thicknessIn, npsIndex }
 
+  if (mode === 'recommend') {
+    return (
+      <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
+        <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
+        <Recommend mobile={mobile} units={units} onOpen={(m, st) => { setHandoff({ mode: m, state: st }); setMode(m) }} />
+      </div>
+    )
+  }
+
   if (mode !== 'explore') {
     return (
       <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
         <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
-        <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} share={init.share} onMode={setMode} />
+        <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} share={handoff} onMode={setMode} />
       </div>
     )
   }

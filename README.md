@@ -105,6 +105,16 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **3D model:** galvanized rectangular or spiral duct, compressed wrap, FSK with foil-taped seams, pins under ducts 24" and wider, flat-topped stands. The effects run on the flat faces too.
 - **Data:** `tools/build_ducts.py` generates `app/src/data/ductData.ts` from `research/duct-verified.json` (U-ids) and `research/code-requirements-verified.json` (C-ids).
 
+**Recommend (Phase 6): answer a few questions, get a thickness.**
+- **Pipe:** pick steel, copper or PVC and the size. Optional "what does it carry?" quick fills set typical temperatures from the presets. Choose indoors or outdoors, and mark condensate drains.
+- **Duct:** pick the duct type and where it runs (with the location guide), the energy code and the climate zone.
+- **Then:** set the temperatures and humidity, and choose an insulation or "best fit" (the thinnest that meets everything).
+- **The answer:** the design thickness, with every requirement and its source — no condensation (dew point + 0.75°F), the energy code (ASHRAE 90.1 pipe or duct tables, or IECC for ducts), personnel protection and finish limits. The governing requirement is called out.
+- **Extra notes:** the vapor-retarder check, outdoor protection (IECC C403.12.3.1), condensate-drain code status and the IMC 604.11 duct vapor retarder.
+- **Alternatives:** the other insulations, compared side by side.
+- **Open in the simulator:** hands the result to the matching tab.
+- **Code:** `app/src/sim/recommend.ts`, tested in `recommend.test.ts`.
+
 **Engine** (`app/src/sim/`): steady-state ASTM C680 approach.
 - Conduction uses temperature-dependent k, integrated through the layer, from the manufacturer's published k-vs-mean points.
 - The outer surface coefficient is the C680 form:
