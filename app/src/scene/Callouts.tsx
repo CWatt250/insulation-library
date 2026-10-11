@@ -9,7 +9,13 @@ import type { Callout } from '../geo/assembly'
  * frame: anchors are projected, then each label is pushed further from the
  * pipe until it no longer overlaps a label already placed on the same side.
  */
-export function Callouts({ items, parent }: { items: Callout[]; parent: React.RefObject<THREE.Object3D | null> }) {
+export function Callouts({ items, parent, insetRight = 0, extent }: {
+  items: Callout[]
+  parent: React.RefObject<THREE.Object3D | null>
+  insetRight?: number
+  /** Model points the right-hand label column must clear. */
+  extent?: [number, number, number][]
+}) {
   const size = useThree((s) => s.size)
   const camera = useThree((s) => s.camera)
   const gl = useThree((s) => s.gl)
@@ -36,6 +42,9 @@ export function Callouts({ items, parent }: { items: Callout[]; parent: React.Re
         return { i, side: c.side ?? 'up', x: ox + ((v.x + 1) / 2) * size.width, y: oy + ((1 - v.y) / 2) * size.height, behind: v.z > 1 }
       })
       .sort((a, b) => (a.side === 'right' && b.side === 'right' ? a.y - b.y : a.x - b.x))
+    // right-hand labels share one column just past the right-most anchor
+    const ext = (extent ?? []).map((p) => ox + ((v.set(...p).applyMatrix4(obj.matrixWorld).project(camera).x + 1) / 2) * size.width)
+    const rightX = Math.max(-Infinity, ...ext, ...order.filter((a) => a.side === 'right' && !a.behind).map((a) => a.x)) + 40
     for (const a of order) {
       const el = labels.current[a.i]
       const ln = lines.current[a.i]
@@ -45,7 +54,7 @@ export function Callouts({ items, parent }: { items: Callout[]; parent: React.Re
       const h = el.offsetHeight
       if (a.side === 'right') {
         // horizontal leader to a label column on the right; slide down past collisions
-        const lx = a.x + 70
+        const lx = Math.max(ox + 8, Math.min(rightX, ox + size.width - insetRight - w - 8))
         let ty = a.y - h / 2
         let rect = { x0: lx - 6, x1: lx + w + 6, y0: ty - 4, y1: ty + h + 4 }
         for (let k = 0; k < 20 && placed.some((p) => rect.x0 < p.x1 && rect.x1 > p.x0 && rect.y0 < p.y1 && rect.y1 > p.y0); k++) {

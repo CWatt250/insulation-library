@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Viewer } from './scene/Viewer'
 import { NPS, THICKNESSES } from './data/pipe'
-import { INSULATIONS, INSULATION, JACKETS, type InsulationId, type JacketId } from './data/catalog'
+import {
+  INSULATIONS, INSULATION, JACKETS, LAYER_ORDER, layerCount,
+  type FacingId, type InsulationId, type LayerId, type OuterJacketId, type ServiceId,
+} from './data/catalog'
 import type { Component, ViewMode } from './geo/assembly'
+import { describeLayers } from './data/layers'
 import { SpecContent, SpecPanel } from './ui/SpecPanel'
 import type { PhotoProgress } from './scene/PhotoMode'
 import './App.css'
@@ -14,14 +18,25 @@ type Stage = 'studio' | 'plant' | 'room'
 function readParams() {
   const q = new URLSearchParams(location.search)
   const ins = (q.get('ins') ?? 'calsil') as InsulationId
+  let jacket = q.get('jacket')
+  let facing = q.get('fac') as FacingId | null
+  // older links: jacket=asj / fsk meant an ASJ-faced section with no outer jacket
+  if (jacket === 'asj' || jacket === 'fsk') {
+    facing = 'asj'
+    jacket = 'none'
+  }
   return {
     ins: INSULATION[ins] ? ins : 'calsil',
     nps: Number(q.get('nps') ?? 8),
     thk: Number(q.get('thk') ?? 2),
-    jacket: q.get('jacket') as JacketId | null,
+    jacket: jacket as OuterJacketId | null,
+    facing,
+    service: q.get('svc') as ServiceId | null,
     view: (q.get('view') ?? 'cutaway') as ViewMode,
     component: (q.get('comp') ?? 'straight') as Component,
     stage: (q.get('stage') ?? 'studio') as Stage,
+    hidden: (q.get('hide')?.split(',').filter(Boolean) ?? []) as LayerId[],
+    selected: q.get('sel') as LayerId | null,
     ui: q.get('ui') !== '0',
     photo: q.get('photo') === '1',
     cam: vec(q.get('cam')),
@@ -44,37 +59,70 @@ function useIsMobile() {
 
 const COMPONENT_LABEL: Record<Component, string> = { straight: 'Straight', elbow: '90° elbow', valve: 'Valve' }
 const STAGE_LABEL: Record<Stage, string> = { studio: 'Studio', plant: 'Plant', room: 'Mech room' }
+const VIEW_LABEL: Record<ViewMode, string> = { installed: 'Installed', cutaway: 'Cutaway', layers: 'Layers', exploded: 'Exploded', section: 'Section' }
+const SERVICE_LABEL: Record<ServiceId, string> = { hot: 'Hot', cold: 'Cold (below ambient)' }
+const SERVICE_SHORT: Record<ServiceId, string> = { hot: 'Hot', cold: 'Cold' }
+const FACING_LABEL: Record<FacingId, string> = { asj: 'ASJ', none: 'None (plain)' }
+
+function Eye({ off }: { off: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+      {off && <path d="M4 4l16 16" />}
+    </svg>
+  )
+}
 
 export default function App() {
   const [init] = useState(readParams)
   const [insulation, setInsulation] = useState<InsulationId>(init.ins as InsulationId)
   const [npsIndex, setNps] = useState(init.nps)
-  const [thicknessIn, setThk] = useState(init.thk)
-  const [jacket, setJacket] = useState<JacketId>(init.jacket ?? INSULATION[init.ins as InsulationId].jackets[0])
+  const [thkWant, setThk] = useState(init.thk)
+  // "wanted" choices persist across materials; each material resolves what it supports
+  const [jacketWant, setJacket] = useState<OuterJacketId | null>(init.jacket)
+  const [facingWant, setFacing] = useState<FacingId | null>(init.facing)
+  const [serviceWant, setService] = useState<ServiceId | null>(init.service)
   const [view, setView] = useState<ViewMode>(init.view)
   const [component, setComponent] = useState<Component>(init.component)
   const [stage, setStage] = useState<Stage>(init.stage)
   const [photo, setPhoto] = useState(init.photo)
   const [progress, setProgress] = useState<PhotoProgress | null>(null)
+  const [hidden, setHidden] = useState<LayerId[]>(init.hidden)
+  const [selected, setSelected] = useState<LayerId | null>(init.selected)
   const mobile = useIsMobile()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [tab, setTab] = useState<'configure' | 'specs'>('configure')
 
   const ins = INSULATION[insulation]
   const thicknesses = THICKNESSES.filter((t) => t <= ins.maxThicknessIn)
-
-  // Keep jacket and thickness valid for the selected material.
-  useEffect(() => {
-    if (!ins.jackets.includes(jacket)) setJacket(ins.jackets[0])
-    if (thicknessIn > ins.maxThicknessIn) setThk(ins.maxThicknessIn)
-  }, [ins, jacket, thicknessIn])
+  const thicknessIn = Math.min(thkWant, ins.maxThicknessIn)
+  const service: ServiceId = serviceWant && ins.services.includes(serviceWant) ? serviceWant : ins.services[0]
+  const jacket: OuterJacketId = jacketWant && ins.jackets.includes(jacketWant) ? jacketWant : ins.jackets[0]
+  // on cold lines the ASJ is the vapor retarder, so a fibrous section keeps it
+  const facingLocked = service === 'cold' && ins.vapor.kind === 'facing' && ins.facings.includes('asj')
+  const facings: FacingId[] = facingLocked ? ['asj'] : ins.facings
+  const facing: FacingId = facingLocked ? 'asj' : facingWant && ins.facings.includes(facingWant) ? facingWant : ins.facings[0]
+  // exploded and section views show a straight run
+  const straightOnly = view === 'exploded' || view === 'section'
+  const comp: Component = straightOnly ? 'straight' : component
 
   // Path tracing is a desktop-GPU feature.
   useEffect(() => {
     if (mobile && photo) setPhoto(false)
   }, [mobile, photo])
 
-  const valid = ins.jackets.includes(jacket) && thicknessIn <= ins.maxThicknessIn
+  const params = { component: comp, npsIndex, thicknessIn, insulation, jacket, facing, service, view }
+  const layers = useMemo(() => describeLayers(params), [comp, npsIndex, thicknessIn, insulation, jacket, facing, service, view]) // eslint-disable-line react-hooks/exhaustive-deps
+  const selectedInfo = layers.find((l) => l.id === selected) ?? null
+
+  const toggleHidden = (id: LayerId) => setHidden((h) => (h.includes(id) ? h.filter((x) => x !== id) : [...h, id]))
+  /** Hide everything outside this layer, so it is the outermost thing you see. */
+  const peelTo = (id: LayerId) => {
+    const i = LAYER_ORDER.indexOf(id)
+    setHidden(layers.filter((l) => l.present && LAYER_ORDER.indexOf(l.id) > i).map((l) => l.id))
+  }
+  const pick = (id: LayerId | null) => setSelected((s) => (id === null ? null : s === id ? null : id))
 
   const materials = (
     <div className="materials">
@@ -87,6 +135,48 @@ export default function App() {
     </div>
   )
 
+  const buildup = (
+    <section className="buildup">
+      <h2>Build-up <small>inside → out</small></h2>
+      <ol className="layers">
+        {layers.map((l) => {
+          const off = hidden.includes(l.id)
+          return (
+            <li key={l.id} className={`layer ${l.present ? '' : 'absent'} ${selected === l.id ? 'sel' : ''} ${off && l.present ? 'off' : ''}`}>
+              <button className="layer-main" onClick={() => pick(l.id)} aria-pressed={selected === l.id}>
+                <span className="layer-name">{l.name}</span>
+                <span className="layer-value">{l.value}</span>
+              </button>
+              {l.present ? (
+                <button className="eye" onClick={() => toggleHidden(l.id)} aria-label={`${off ? 'Show' : 'Hide'} ${l.name.toLowerCase()}`} aria-pressed={!off}>
+                  <Eye off={off} />
+                </button>
+              ) : (
+                <span className="eye placeholder" aria-hidden="true" />
+              )}
+            </li>
+          )
+        })}
+      </ol>
+      {selectedInfo && (
+        <div className="layer-detail" aria-live="polite">
+          <strong>{selectedInfo.name}: {selectedInfo.value}</strong>
+          <p>{selectedInfo.detail}</p>
+          {selectedInfo.present && (
+            <div className="layer-actions">
+              <button onClick={() => peelTo(selectedInfo.id)}>Peel to this layer</button>
+              {hidden.length > 0 && <button onClick={() => setHidden([])}>Show all</button>}
+            </div>
+          )}
+        </div>
+      )}
+      {!selectedInfo && hidden.length > 0 && (
+        <div className="layer-actions"><button onClick={() => setHidden([])}>Show all layers</button></div>
+      )}
+      <p className="hint">Tap a layer here or on the model to highlight it.</p>
+    </section>
+  )
+
   const controls = (
     <>
       {!mobile && (
@@ -97,11 +187,48 @@ export default function App() {
       )}
 
       <section>
+        <h2>Service</h2>
+        <div className="seg">
+          {(['hot', 'cold'] as const).map((v) => (
+            <button
+              key={v}
+              className={v === service ? 'on' : ''}
+              disabled={!ins.services.includes(v)}
+              title={ins.services.includes(v) ? undefined : `${ins.label} is listed for hot service only`}
+              onClick={() => setService(v)}
+              aria-label={SERVICE_LABEL[v]}
+            >
+              {SERVICE_SHORT[v]}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {ins.facings.length > 1 && (
+        <section>
+          <h2>Facing</h2>
+          <div className="chips">
+            {ins.facings.map((f) => (
+              <button
+                key={f}
+                className={f === facing ? 'on' : ''}
+                disabled={!facings.includes(f)}
+                title={facings.includes(f) ? undefined : 'Cold service: the ASJ is the vapor retarder'}
+                onClick={() => setFacing(f)}
+              >
+                {FACING_LABEL[f]}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section>
         <h2>Jacket</h2>
         <div className="chips">
           {ins.jackets.map((j) => (
             <button key={j} className={j === jacket ? 'on' : ''} onClick={() => setJacket(j)}>
-              {JACKETS[j].label}
+              {j === 'none' ? (facing === 'asj' ? 'None (ASJ finish)' : 'None (bare)') : JACKETS[j].label}
             </button>
           ))}
         </div>
@@ -120,28 +247,31 @@ export default function App() {
           <h2>Thickness</h2>
           <select value={thicknessIn} onChange={(e) => setThk(Number(e.target.value))}>
             {thicknesses.map((t) => (
-              <option key={t} value={t}>{t}"{t > 3 ? ' (2 layers)' : ''}</option>
+              <option key={t} value={t}>{t}"{layerCount(ins, t) > 1 ? ' (2 layers)' : ''}</option>
             ))}
           </select>
         </label>
       </section>
 
       <section>
-        <h2>Component</h2>
-        <div className="seg">
-          {(['straight', 'elbow', 'valve'] as const).map((v) => (
-            <button key={v} className={v === component ? 'on' : ''} onClick={() => setComponent(v)}>
-              {COMPONENT_LABEL[v]}
-            </button>
+        <h2>View</h2>
+        <div className="seg views">
+          {(['installed', 'cutaway', 'layers', 'exploded', 'section'] as const).map((v) => (
+            <button key={v} className={v === view ? 'on' : ''} onClick={() => setView(v)}>{VIEW_LABEL[v]}</button>
           ))}
         </div>
-      </section>
-
-      <section>
-        <h2>View</h2>
         <div className="seg">
-          {(['installed', 'cutaway', 'layers'] as const).map((v) => (
-            <button key={v} className={v === view ? 'on' : ''} onClick={() => setView(v)}>{v}</button>
+          {(['straight', 'elbow', 'valve'] as const).map((v) => (
+            <button
+              key={v}
+              className={v === comp ? 'on' : ''}
+              onClick={() => {
+                setComponent(v)
+                if (straightOnly && v !== 'straight') setView('cutaway')
+              }}
+            >
+              {COMPONENT_LABEL[v]}
+            </button>
           ))}
         </div>
         <div className="seg">
@@ -150,6 +280,9 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      {buildup}
+
       {!mobile && (
         <section>
           <button className={`photo ${photo ? 'on' : ''}`} onClick={() => setPhoto(!photo)}>
@@ -167,27 +300,33 @@ export default function App() {
     </>
   )
 
-  const summary = `${ins.label} · ${JACKETS[jacket]?.label ?? ''} · NPS ${NPS[npsIndex].nps}" · ${thicknessIn}"`
+  const summary = `${ins.label} · ${service === 'hot' ? 'Hot' : 'Cold'} · ${jacket === 'none' ? (facing === 'asj' ? 'ASJ' : 'Bare') : JACKETS[jacket].label} · NPS ${NPS[npsIndex].nps}" · ${thicknessIn}"`
+  const spec = { id: insulation, jacket, facing, service, thicknessIn, npsIndex }
 
   return (
-    <div className={`app ${mobile ? 'is-mobile' : ''}`}>
+    <div className={`app ${mobile ? 'is-mobile' : ''} ${init.ui ? '' : 'no-ui'}`}>
       <div className="stage">
-        {valid && (
-          <Viewer
-            insulation={insulation}
-            npsIndex={npsIndex}
-            thicknessIn={thicknessIn}
-            jacket={jacket}
-            view={view}
-            component={component}
-            stage={stage}
-            cam={init.cam}
-            target={init.target}
-            photo={photo}
-            onPhotoProgress={setProgress}
-            mobile={mobile}
-          />
-        )}
+        <Viewer
+          insulation={insulation}
+          npsIndex={npsIndex}
+          thicknessIn={thicknessIn}
+          jacket={jacket}
+          facing={facing}
+          service={service}
+          view={view}
+          component={comp}
+          stage={stage}
+          cam={init.cam}
+          target={init.target}
+          photo={photo}
+          onPhotoProgress={setProgress}
+          mobile={mobile}
+          hidden={hidden}
+          selected={selected}
+          onSelect={pick}
+          insetRight={init.ui && !mobile ? 372 : 0}
+          insetLeft={init.ui && !mobile ? 312 : 0}
+        />
       </div>
       {init.ui && !mobile && (
         <>
@@ -198,7 +337,7 @@ export default function App() {
             </header>
             {controls}
           </aside>
-          <SpecPanel id={insulation} />
+          <SpecPanel {...spec} />
         </>
       )}
       {init.ui && mobile && (
@@ -230,7 +369,7 @@ export default function App() {
           {!sheetOpen && <p className="sheet-summary">{summary}</p>}
           <div className="sheet-materials">{materials}</div>
           <div className="sheet-body">
-            {tab === 'configure' ? <div className="controls-body">{controls}</div> : <SpecContent id={insulation} showTitle />}
+            {tab === 'configure' ? <div className="controls-body">{controls}</div> : <SpecContent {...spec} showTitle />}
           </div>
         </section>
       )}

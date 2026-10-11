@@ -93,12 +93,20 @@ export const Slot = {
   BlanketCore: 21,
   /** Stainless lacing anchors and lacing wire. */
   Hardware: 22,
+  /** Factory ASJ facing on the insulation: white face, kraft back, cut edge, butt strips. */
+  Facing: 23,
+  FacingInner: 24,
+  FacingEdge: 25,
+  FacingTape: 26,
+  /** Vapor-retarder membrane over the insulation (cold service). */
+  Vapor: 27,
+  VaporEdge: 28,
 } as const
-export const SLOT_COUNT = 23
+export const SLOT_COUNT = 29
 
 const steelOuter = () => pbr('steel-millscale', { metalness: 0.75 })
 const steelBore = () => plain({ color: '#2a2622', roughness: 0.85, metalness: 0.3 })
-const steelEnd = () => pbr('steel-millscale', { metalness: 1, color: '#c9cbcd', roughness: 0.55 })
+const steelEnd = () => pbr('steel-millscale', { metalness: 0.6, color: '#c3c6c9', roughness: 0.5 })
 const pvc = () => pbr('pvc-white', { clearcoat: 0.3, clearcoatRoughness: 0.25 })
 
 function insulation(id: InsulationId) {
@@ -184,6 +192,19 @@ export function buildSlots(ins: InsulationId, jac: JacketId): THREE.Material[] {
   slots[Slot.Hardware] = pbr('ss-2b', { metalness: 0.9, roughness: 1.6, color: '#c9ccd0' })
   slots[Slot.Screw] = pbr('ss-2b', { metalness: 1, roughness: 1.5, color: '#8c9095' })
   slots[Slot.Tape] = jac === 'fsk' ? pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }) : j.outer
+  const f = jacket('asj')
+  slots[Slot.Facing] = f.outer
+  slots[Slot.FacingInner] = f.inner
+  slots[Slot.FacingEdge] = f.edge
+  slots[Slot.FacingTape] = pbr('asj', { normalStrength: 0.7 })
+  // the vapor-retarder membrane as made: white (Insulrap 30-NG), silver foil (PITTWRAP IW50 AL) or black coating
+  const look = INSULATION[ins].vapor.membrane?.look ?? 'black'
+  slots[Slot.Vapor] = look === 'foil'
+    ? pbr('foil-scrim', { metalness: 1, normalStrength: 1.2, roughness: 0.9 })
+    : look === 'white'
+      ? pbr('pvc-white', { color: '#e9e8e3', roughness: 0.85, clearcoat: 0.1, normalStrength: 0.8 })
+      : pbr('pvc-white', { color: '#2c2e30', roughness: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.35, normalStrength: 0.6 })
+  slots[Slot.VaporEdge] = plain({ color: look === 'white' ? '#d8d6cf' : look === 'foil' ? '#2a2a28' : '#242527', roughness: 0.6 })
   Object.entries(Slot).forEach(([name, i]) => {
     if (!slots[i].name) slots[i].name = name
   })

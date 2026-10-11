@@ -1,0 +1,679 @@
+{
+  "dataset": "Pipe insulation jackets, facings, vapor retarders and vapor-retarder coatings: verified data for jacket compatibility, temperature limits and vapor-retarder notes",
+  "generated": "2026-10-10",
+  "units": {
+    "temperature": "°F (°C as printed in quotes)",
+    "thickness": "mil = 0.001 in; metal gauges in inches",
+    "permeance": "perms (grains/hr·ft²·in Hg) unless the source prints another unit; perm-in = permeability of a material, not permeance",
+    "wvtr": "g/100 in²·day as printed"
+  },
+  "conventions": {
+    "unverified": "The literal string 'unverified' means no fetched primary source stated the value. Nothing was guessed, averaged, converted or filled from memory. No permeance was computed from a permeability.",
+    "src": "Every fact carries 'src', a list of ids in the top-level 'sources' array. One shared sources array is used here because several documents (e.g. the JM Metal Jacketing Install Guide) cover more than one item.",
+    "quotes": "'quote' strings are verbatim from the source text (pdftotext output or page text). Line breaks and hyphenation splits were joined; nothing else was changed. A broken 'ti' ligature in one Polyguard PDF was restored and this is noted where it applies.",
+    "service_vs_operating": "Jacket and coating temperature limits apply to the jacket or coated surface, not to the pipe operating temperature, unless the quote says otherwise. JM's Saranex sheets define it explicitly (see vapor_retarders: Saranex footnote).",
+    "typical_values": "Manufacturer values are typical, subject to change without notice. Confirm against the current sheet before using a number in a submittal."
+  },
+  "method": "Manufacturer PDFs were downloaded with curl and read with pdftotext (raw and -layout). ASTM scope text comes from the public store.astm.org pages; full ASTM tables (e.g. C1136 per-type permeance) are paywalled and not reproduced. Product pages were read from their HTML. The H.B. Fuller product site (hbfullerproducts.com) returned an AWS WAF challenge to every request, so the Foster 30-65 sheet was taken from H.B. Fuller's own fosterproducts.com domain (latest revision found there: R1119).",
+  "related_files": {
+    "pipe_insulation_materials": "materials-verified.json (holds the factory ASJ values for OC SSL II with ASJ Max and JM Micro-Lok HP ASJ, with their own sources)"
+  },
+  "app_summary_temperature_limits": [
+    {"jacket": "PVC fitting covers and jacketing, JM Zeston 2000 / 300 / Zeston PVC jacketing", "max_f": 150, "min_f": "unverified", "basis": "PVC cover/jacket temperature; insulation thickness must keep PVC below 150°F; keep away from direct or radiant heat", "src": ["J1", "J2", "J3", "J4"]},
+    {"jacket": "PVC fitting covers and jacketing, Proto LoSmoke", "max_f": 150, "min_f": -20, "basis": "exposed PVC surface", "src": ["J6", "J7"]},
+    {"jacket": "ASJ / flexible vapor retarders within ASTM C1136 scope", "max_f": 150, "min_f": -20, "basis": "C1136 scope: surface temperature of the vapor retarder", "src": ["J24"]},
+    {"jacket": "FSK facing, Lamtec R-3035", "max_f": "unverified", "min_f": "unverified", "basis": "Sheet gives test conditions only (4 h at -20°F and 4 h at 240°F, remains flexible, no delamination). No service rating printed.", "src": ["J25"]},
+    {"jacket": "Aluminum jacketing (JM) with 3-mil polyfilm moisture barrier (PFMB / 'polysurlyn')", "max_f": "unverified for the aluminum itself", "min_f": "unverified", "basis": "PFMB liner: 180°F max long-term, 200°F max intermittent, decomposition begins 410°F. JM: insulation systems are generally designed to keep jacket temperature from exceeding 140°F.", "src": ["J17", "J19"]},
+    {"jacket": "Stainless steel jacketing (JM T-304 / T-316)", "max_f": "unverified (only a melt point of approximately 2500°F is stated)", "min_f": "unverified", "basis": "Same 3-mil polyfilm liner as aluminum (PFMB limits above apply to the liner); JM also sells it without polyfilm on request.", "src": ["J22", "J23", "J17"]},
+    {"jacket": "PVDC film and tape, JM Saranex 540 CX / 560 CX film, 520 CX / 560 CX tape", "max_f": 250, "min_f": -40, "basis": "service temperature limit of the jacket over insulation (JM/NIA definition)", "src": ["J27", "J28", "J29", "J30"]},
+    {"jacket": "Polyguard Insulrap 30-NG membrane", "max_f": 160, "min_f": "unverified", "basis": "Service Temperature (Max), LAB = 160°F. Same sheet's Limitations: insulation surface temperature should not exceed 150°F during operation.", "src": ["J33", "J34"]},
+    {"jacket": "Owens Corning PITTWRAP IW50 AL", "max_f": 167, "min_f": -4, "basis": "approved exposure temperature at the jacket", "src": ["J35"]},
+    {"jacket": "Owens Corning PITTWRAP B100", "max_f": 284, "min_f": -58, "basis": "approved exposure temperature at the jacket", "src": ["J36"]},
+    {"jacket": "Owens Corning PITTCOTE 300E coating", "max_f": 200, "min_f": -40, "basis": "service temperature at coated surface", "src": ["J37"]},
+    {"jacket": "Foster 30-65 Vapor-Fas WB coating (H.B. Fuller)", "max_f": 180, "min_f": -20, "basis": "temperature at coated surface. The same sheet says it is designed for systems operating between 32°F and ambient.", "src": ["J38"]}
+  ],
+  "items": [
+    {
+      "id": "pvc_jacketing_fitting_covers",
+      "item": "PVC jacketing and PVC fitting covers",
+      "astm_specs": [
+        {
+          "designation": "ASTM C1917-23 (active; store page last updated Jan 05, 2024)",
+          "title": "Standard Specification for Rigid Polyvinyl Chloride (PVC) Jacketing for Insulation",
+          "scope_quotes": [
+            "1.1 This specification covers rigid polyvinyl (PVC) jacketing for thermal and acoustical insulation for pipe, rigid tubing and equipment operating at either above or below ambient temperatures in non-direct sunlight exposure.",
+            "1.2 This material specification does not cover exposure to direct sunlight. Refer to manufacturer’s guidelines for direct sunlight exposure.",
+            "1.3 This specification does not address PVC jacketing used as fitting covers over thermal insulation."
+          ],
+          "who_cites_it": "Proto's LoSmoke submittal lists 'ASTM C1917-23'. The JM Zeston sheets fetched (J1, J2, J3) do not cite C1917.",
+          "src": ["J10", "J6"]
+        },
+        {
+          "designation": "ASTM D1784-25 (active)",
+          "title": "Standard Classification System and Basis for Specification for Rigid Poly(Vinyl Chloride) (PVC) Compounds and Chlorinated Poly(Vinyl Chloride) (CPVC) Compounds",
+          "scope_quotes": [
+            "1.1 This classification system standard covers rigid PVC and CPVC compounds intended for general purpose use in extruded or molded form",
+            "1.3 The requirements in this classification system standard are intended for the quality control of compounds used to manufacture finished products. ... They are not directly applicable to finished products."
+          ],
+          "who_cites_it": "JM Zeston 2000, Zeston 300 and Zeston PVC jacketing and Proto LoSmoke all list 'ASTM D1784'. None of them prints a D1784 cell class.",
+          "cell_class": "unverified",
+          "src": ["J11", "J1", "J2", "J3", "J6"]
+        }
+      ],
+      "products": [
+        {
+          "product": "Johns Manville Zeston 2000 Series PVC insulated fitting covers (standard gauge) with Zeston PVC jacketing",
+          "manufacturer": "Johns Manville",
+          "max_temperature": {"value_f": 150, "applies_to": "PVC fitting cover / jacket", "quote": "Use proper insulation thickness to ensure PVC covers are kept below 150°F (66°C)", "src": ["J1"]},
+          "jacket_max_temperature": {"value_f": 150, "quote": "Operating Temperature Limits: PVC: up to 150°F (66˚C)", "src": ["J2"]},
+          "hot_rules": [
+            {"text": "Keep PVC away from heat sources.", "quote": "PVC covers should be kept away from contact with and/or exposure to sources of direct or radiated heat", "src": ["J1"]},
+            {"text": "Extra insert layers on hot fittings.", "quote": "For fittings where operating temperatures exceed 250°F (121°C) or where pipe insulation thickness is greater than 1½” (38mm), two or more layers of Hi-Lo Temp insulation inserts are required beneath the fitting cover", "src": ["J1"]},
+            {"text": "Insert count rule.", "quote": "JM recommends installing one (1) Zeston Hi-Lo Temp Insulation Insert for every 1” of corresponding pipe insulation thickness.", "src": ["J1"]},
+            {"text": "Hi-Lo Temp insert (2 in, 1.0 pcf fiberglass) service range.", "quote": "Zeston Hi-Lo Temp Insulation Inserts are used to insulate PVC fittings in operating temps between 0°F-850°F/-18°C-454°C.", "src": ["J1"]},
+            {"text": "Slip joints on hot sealed runs.", "quote": "Slip-joints shall be formed by increasing the amount of circumferential overlap to 8 to 10 inches (203 mm to 254 mm) and by applying a white flexible caulking in the overlap area", "src": ["J4"]}
+          ],
+          "cold_rules": [
+            {"quote": "For fittings where operating temperature is below 45°F (7°C) or where the pipe insulation thickness is greater than 1½ “ (38mm), two or more layers of Hi-Lo Temp insulation inserts are required beneath fitting cover", "src": ["J1"]},
+            {"quote": "An approved vapor-barrier compatible with PVC must be applied between pipe insulation and fitting cover and on fitting cover throat overlap.", "src": ["J1"]},
+            {"text": "Refrigerant systems and cold systems in severe ambient conditions.", "quote": "An intermediate vapor-barrier compatible with PVC is required to completely seal the insulation prior to installing the Zeston 2000 PVC fitting cover", "src": ["J1"]},
+            {"quote": "secured with pressure-sensitive PVC Z-Tape along the throat seam and the circumferential edges overlapping itself 2” (51 mm) on the downward side.", "src": ["J4"]}
+          ],
+          "min_temperature": {"value_f": "unverified", "note": "No JM sheet states a minimum for the PVC itself. Z-Tape's installed range is stated separately.", "src": ["J1", "J2", "J5"]},
+          "z_tape_installed_range": {"value": "0°F to +150°F", "quote": "With an effective installed temperature range of 0°F to +150°F (-18°C to +66°C)", "src": ["J5"]},
+          "thickness": {
+            "roll_jacketing_mil": [10, 15, 20, 30],
+            "cut_and_curled_mil": [20, 30],
+            "fitting_cover_wall_mil": "unverified (JM publishes no fitting-cover gauge; '2000 Series' is called 'standard gauge', '300 Series' 'heavy gauge')",
+            "quotes": [
+              "Zeston PVC Roll Jacketing is available in standard thicknesses of 10, 15, 20 and 30 mil (0.3, 0.4, 0.5 and 0.8 mm), and in standard widths of 35½ and 48 inches",
+              "Zeston PVC Cut & Curled™ Jacketing is available in thicknesses of 20 and 30 mil (0.5 and 0.8 mm). It is available in factory-cut sizes to fit up to 30 inches (762 mm) O.D."
+            ],
+            "src": ["J2", "J5"]
+          },
+          "uv_outdoor": [
+            {"quote": "Zeston 2000 Series white is manufactured from high-impact, glossy, UV-resistant polyvinyl chloride jacketing.", "src": ["J1"]},
+            {"quote": "Zeston 2000 Series PVC fitting covers are ideally suited for indoor use on chilled water, hot water, steam and other piping systems", "src": ["J1"]},
+            {"quote": "All Zeston Color fittings and jacketing are not recommended for outdoor application.", "src": ["J1"]},
+            {"quote": "If applied in an outdoor setting or exposed to the sun, precautions should be taken to account for expansion joints.", "src": ["J1"]},
+            {"quote": "White only Zeston Cut & Curled jacketing contains a UV inhibitor. The 30 mil (0.8mm) thickness is recommended for outdoor applications.", "src": ["J2"]},
+            {"quote": "Grade: weatherable", "src": ["J2"]}
+          ],
+          "astm_e84": {"flame_spread": "25 or less", "smoke_developed": "50 or less", "src": ["J1", "J2"]},
+          "material_specs": {"value": "ASTM D1784 (no cell class printed); L-P-535E and L-P-1035A, Composition A, Type II, Grade GU; CAN/ULC S 102.2; CGSB 51-GP-53M; USDA", "src": ["J1", "J2"]},
+          "vapor_retarder": {"value": "JM calls the jacketing an 'inherent vapor retarder' but publishes no permeance.", "quote": "designed to provide an inherent vapor retarder and protection to insulated pipes", "permeance_perm": "unverified", "src": ["J2"]},
+          "fastening": [
+            {"service": "hot", "quote": "securing the throat of the Zeston PVC insert using either serrated tacks, Perma-Weld adhesive or Zeston Z-Tape", "src": ["J1"]},
+            {"service": "hot", "quote": "Insert two stainless steel serrated tacks", "src": ["J4"]},
+            {"service": "hot only", "quote": "Annular serrated white tacks that help speed installation of Zeston PVC insulated fitting covers on hot mechanical systems where a vapor retarder is not required.", "src": ["J5"]},
+            {"service": "cold", "text": "Vapor retarder mastic on the throat overlap and around the adjoining insulation, then Z-Tape on the throat seam and circumferential edges with a 2 in overlap on the downward side.", "src": ["J4"]},
+            {"service": "USDA/FDA totally sealed", "text": "20 or 30 mil jacketing; all seams solvent-welded with Perma-Weld; circumferential lap ≥1 in, longitudinal lap 1½–2 in; cure about 8–10 h.", "src": ["J1", "J4"]},
+            {"service": "solvent weld limit", "quote": "Perma-Weld adhesive can be used on 20 and 30 mil (0.5 and 0.8 mm) jacketing and most Zeston 2000 and Zeston 300 PVC insulated fitting covers.", "src": ["J5"]}
+          ],
+          "corrosion": {"quote": "Unlike aluminum or most stainless steel jacketing materials, Zeston PVC Jacketing is immune to galvanic or electrolytic corrosion.", "src": ["J2"]},
+          "datasheet": {"pub_no_or_date": "Zeston 2000 data sheet 05/26/26 (Replaces 06/19/25); Zeston PVC Jacketing MECH-264 05/26/26", "src": ["J1", "J2"]}
+        },
+        {
+          "product": "Johns Manville Zeston 300 Series PVC heavy-gauge fitting covers and jacketing",
+          "manufacturer": "Johns Manville",
+          "max_temperature": {"value_f": 150, "quote": "Operating Temperature Limits: PVC: up to 150°F (66˚C)", "src": ["J3"]},
+          "construction": {"quote": "Its two-piece or two-piece welded construction provides ease of fabrication in the field not available in a traditional one-piece fitting cover.", "src": ["J3"]},
+          "thickness": {"roll_jacketing_mil": [10, 15, 20, 30], "fitting_cover_wall_mil": "unverified", "src": ["J3"]},
+          "uv_outdoor": [
+            {"quote": "Zeston 300 Series PVC fitting covers are produced from a white, glossy, high-impact, UV-resistant polyvinyl chloride compound.", "src": ["J3"]},
+            {"text": "Color items.", "quote": "They are recommended for indoor use only and are not UV resistant.", "src": ["J3"]},
+            {"quote": "For insulating and protecting indoor and outdoor industrial and commercial piping systems.", "src": ["J3"]}
+          ],
+          "astm_e84": {"flame_spread": "25 or less", "smoke_developed": "50 or less", "src": ["J3"]},
+          "material_specs": {"value": "ASTM D1784 (no cell class printed); L-P-535E / L-P-1035A Composition A, Type II, Grade GU; New York City MEA #7-87; CAN S102-M88", "src": ["J3"]},
+          "fastening": {"quote": "The Zeston 300 Series fitting cover and jacketing are easy to apply with the special Perma-Weld 300 adhesive, which is similar in composition to the PVC jacketing material. The result is a monolithic system. Suitable bands may be used when required.", "src": ["J3"]},
+          "datasheet": {"pub_no_or_date": "CI-67 09/02/26 (Replaces 05/26/26)", "src": ["J3"]}
+        },
+        {
+          "product": "Proto LoSmoke PVC jacketing and fitting covers (Proto Corporation, Clearwater FL; also listed on Knauf Insulation's site)",
+          "manufacturer": "Proto Corporation",
+          "operating_temperature": {"min_f": -20, "max_f": 150, "applies_to": "exposed PVC surface", "quote": "PVC: -20° F (-29° C) to 150° F (66° C)", "quote_note": "The line below it in the table reads '(exposed surface)'.", "src": ["J6"]},
+          "insert_temperature": {"quote": "Inserts: - 20° F (-29° C) to 1000° F (538° C)", "src": ["J6"]},
+          "heat_deflection_and_vicat": {"hdt_264psi_f": 157, "vicat_f": 198, "table_values": "Heat Deflection Temp. (ASTMD-648) @ 264 PSI (8.95 kg/cm2): 157° F (70° C); VICAT Softening Temp. (ASTMD-1525): 198° F (92° C)", "src": ["J6"]},
+          "hot_rules": [
+            {"quote": "Use proper insulation thickness to ensure PVC covers are kept below 150°F (66°C). PVC jackets and fitting covers should be kept away from direct contact or exposure to radiated heat.", "src": ["J6"]},
+            {"quote": "For conditions where operating temperatures exceed 250°F (121°C) or where pipe insulation thickness is greater than 1” (25.4mm), two or more layers of insulation inserts are required beneath the fitting cover.", "src": ["J6"]},
+            {"quote": "Separate thermal calculations should be made to ensure that the external temperature of the system is at or below 150°F (66°C).", "src": ["J7"]}
+          ],
+          "cold_rules": [
+            {"quote": "Fitting systems below ambient temperature must have a continuous vapor retarder or vapor retardant mastic as specified by the engineer.", "src": ["J6"]},
+            {"text": "At or below 45°F and severe service.", "quote": "An intermediate vapor retarder system capable of providing a 0.02 perm or lower should be used. ASJ, FSK, or 2 mil aluminum foil compatible with the PVC shall be used to completely cover and seal the top surface of the insulation prior to installing the Proto PVC fitting cover.", "src": ["J8"]},
+            {"quote": "A serrated tack can be used to firmly lock the fitting cover into place provided that the tack is covered with vapor barrier mastic or Proto PVC tape.", "src": ["J8"]}
+          ],
+          "thickness": {
+            "fitting_covers": "'Standard and Heavy Duty' (no mil value printed; unverified)",
+            "jacketing_mil_range": "10 to 40",
+            "outdoor_min": "0.030 in; 0.040 in for any O.D. over 15 in",
+            "quotes": [
+              "Jacketing: PVC rolls and cut and curl are available in thickness ranging from 10 to 40 mil at a 35 1/2” and 48” width",
+              "Proto PVC Jacketing thickness for outdoor applications should be a minimum of 0.030” (0.8 mm) and 0.040”(1.0 mm) for any O.D. over 15”."
+            ],
+            "src": ["J6"]
+          },
+          "permeance": {
+            "method": "ASTM E96 Procedure A (French version of the sheet: 70°F & 50% RH)",
+            "values_perm": {"0.015 in": "≤0.058", "0.020 in": "≤0.047", "0.030 in": "≤0.027", "0.020 in tested over code-compliant vapor barrier (ASTM C1136 ≤0.02 perm)": "≤0.02"},
+            "src": ["J6"]
+          },
+          "uv_outdoor": [
+            {"quote": "one or two piece pre-molded high impact, UV resistant, LoSmoke® PVC fitting covers", "src": ["J6"]},
+            {"quote": "Colored PVC is manufactured from a LoSmoke® formula that is suitable for indoor use only.", "src": ["J6"]},
+            {"text": "Outdoors (for white only).", "quote": "The PVC Jacketing should overlap a minimum of 2” (51 mm) on the downside to shed water. All longitudinal and circumferential joints should be completely weather sealed with caulk adhesive. Additionally, a slip type expansion joint of 8” (202 mm) minimum width should be applied at least every 25 lineal feet (6.1 lineal meters) and between fittings.", "src": ["J6"]},
+            {"quote": "Proto jacketing can be used indoors or outdoors. It stays white, with exceptional outdoor weathering.", "src": ["J9"]}
+          ],
+          "astm_e84": {"flame_spread": "≤25", "smoke_developed": "≤50", "src": ["J6"]},
+          "material_specs": {"value": "ASTM D1784 (no cell class printed); ASTM C1917-23; LP-1035A and LP-535E PVC Type II Grade GU; CAN/CGSB 51.53.95; USDA; 'No plasticizers or phthalates'", "src": ["J6"]},
+          "fastening": [
+            {"service": "above ambient", "quote": "secured by using serrated stainless steel tacks or by taping.", "src": ["J6"]},
+            {"service": "above ambient", "quote": "Insert stainless steel serrated tacks (2+ tacks per fitting)", "src": ["J7"]},
+            {"service": "below ambient", "text": "Vapor barrier mastic on the throat seam and around the jacketed insulation; PVC tape on the circumferential joint overlapping itself at least 2 in on the downward side; solvent weld adhesive on the longitudinal seam.", "src": ["J8"]},
+            {"service": "USDA totally sealed", "quote": "20 mil (0.5 mm) minimum LoSmoke PVC jacketing should be applied to pipe insulation in conjunction with LoSmoke PVC fitting covers.", "src": ["J6"]}
+          ],
+          "datasheet": {"pub_no_or_date": "PTB04 Revised 7/25 (protocorporation.com); Knauf-hosted PTB04 Revised 8/24 has the same values", "src": ["J6"]}
+        },
+        {
+          "product": "Proto EXOD CPVC",
+          "status": "unverified",
+          "note": "Not found in Proto's current website product pages or literature list, nor in the PTB04 submittal (which covers LoSmoke PVC only). No manufacturer document was fetched.",
+          "src": ["J6", "J9"]
+        },
+        {
+          "product": "Ceel-Co 300",
+          "status": "unverified",
+          "note": "No manufacturer data sheet or product page was found.",
+          "src": []
+        }
+      ],
+      "discrepancies_between_products": [
+        "Insert-layer threshold on hot fittings: JM data sheet says insulation 'greater than 1½”' (JM catalog says '1½ inches or greater'); Proto says 'greater than 1”'. Both use 250°F as the temperature trigger. JM also uses 45°F as the cold trigger.",
+        "Minimum temperature: Proto prints -20°F (exposed surface). JM prints no minimum for the PVC (only Z-Tape's 0°F to +150°F installed range).",
+        "Outdoor PVC: JM recommends 30 mil Cut & Curled (white only) outdoors. Proto requires 0.030 in minimum and 0.040 in over 15 in O.D., white only, with caulked joints and 8 in slip joints every 25 ft. ASTM C1917 itself excludes direct-sunlight exposure and defers to the manufacturer.",
+        "Permeance: Proto publishes E96 values by thickness; JM publishes none.",
+        "JM Zeston 300 data sheet prints CT sizes 'from 5/8\" through 68\" (16 mm through 156 mm)'; 156 mm is about 6-1/8 in, so '68\"' looks like a typo. Not used."
+      ],
+      "unverified": [
+        "PVC fitting-cover wall thickness in mil (JM and Proto publish none)",
+        "ASTM D1784 cell class for any product",
+        "JM Zeston minimum service temperature",
+        "Zeston PVC jacketing permeance",
+        "Proto EXOD CPVC (all fields)",
+        "Ceel-Co 300 (all fields)",
+        "Web-search snippets of distributor listings quoted '-35 to 500 deg F' for Zeston and Proto PVC products. Those pages were not fetched and are not primary sources. The figure conflicts with the 150°F manufacturer limit and is not used."
+      ]
+    },
+    {
+      "id": "aluminum_jacketing",
+      "item": "Aluminum jacketing (roll, cut & roll, sheet, pressed elbows)",
+      "astm_specs": [
+        {
+          "designation": "ASTM C1729-26 (active; prior C1729-21 and earlier)",
+          "title": "Standard Specification for Aluminum Jacketing for Insulation",
+          "scope_quotes": [
+            "1.1 This specification covers aluminum jacketing for thermal and acoustical insulation operating at either above or below ambient temperatures and in both indoor and outdoor locations. It does not cover insulation jacketing made from other materials such as mastics, fiber reinforced plastic, PVC, or stainless steel nor does it cover the details of thermal or acoustical insulation systems.",
+            "1.2 This specification provides physical requirements for aluminum jacketing for thermal and acoustical insulation. Guide C1423 provides guidance in selecting jacketing materials and their safe use.",
+            "1.3 This is a material specification and does not imply any performance of the installed system using the materials specified herein."
+          ],
+          "classification_quote": "Classification of aluminum jacketing is based on three factors: outer surface treatment and emittance, alloy and temper per Specification B209, and moisture retarder.",
+          "classification_quote_src_note": "From the C1729-21 store-page abstract; the C1729-26 abstract does not repeat this sentence.",
+          "test_methods_quote": "Test methods cover total hemispherical emittance, surface burning characteristics, metal sheet thickness, pinholes in moisture retarder, pencil hardness, and water vapor transmission rate of the moisture retarder.",
+          "temperature_statement": "Only 'above or below ambient temperatures and in both indoor and outdoor locations'. No numeric temperature limit on the public page.",
+          "type_grade_class_definitions": "unverified (paywalled). See JM's property-to-classification pairings below.",
+          "src": ["J12", "J13"]
+        }
+      ],
+      "products": [
+        {
+          "product": "JM Aluminum Roll and Sheet jacketing (formerly Pabco/Childers Metals); JM Painted Aluminum Roll; JM Ell-Jacs Plus elbows",
+          "manufacturer": "Johns Manville",
+          "alloys": {"quote": "JM Aluminum Jacketing is typically manufactured using alloys 3105 or 3003 which have very similar composition and performance and are considered interchangeable for use as insulation jacketing.", "src": ["J15", "J16"]},
+          "c1729_classification_as_printed_by_jm": [
+            {"use": "Standard roll or sheet", "properties": "Bare surface, 3105/3003 alloy, H14 temper, 3 mil polyfilm moisture barrier", "classification": "Type I, Grade 1, Class A, 0.016-0.024” thick", "src": ["J20"]},
+            {"use": "Standard roll or sheet for extra corrosive environments", "properties": "Painted surface, 3105/3003 alloy, H14 temper, 3 mil polyfilm moisture barrier", "classification": "Type II, Grade 1, Class A, 0.016-0.024” thick", "src": ["J20"]},
+            {"use": "Heavy duty sheet or roll for high abuse areas", "properties": "Bare surface, 3105/3003 alloy, H12 temper, 3 mil polyfilm moisture barrier", "classification": "Type I, Grade 2, Class A, ≥0.032” thick", "src": ["J20"]},
+            {"use": "Ell-Jacs Plus two-piece aluminum elbows", "properties": "Clear painted outer surface, 1100 alloy, 0 temper, polyfilm moisture barrier", "classification": "Type III, Grade 3, Class A, 0.024” thick", "src": ["J20"]},
+            {"use": "Deep corrugated sheet", "properties": "Bare or painted surface, 3105/3003 alloy, H14 or H12 temper, 3 mil polyfilm moisture barrier", "classification": "Type I or II, Grade 1 or 2, Class A, 0.016-0.040” thick", "src": ["J20"]},
+            {"use": "Box rib sheet", "properties": "Bare surface, 3004 or Alclad 3004 alloy, no moisture barrier", "classification": "not printed", "src": ["J20"]}
+          ],
+          "standard_thicknesses_in": {"value": [0.016, 0.02, 0.024, 0.032, 0.04], "quote": "The most common gauges of aluminum utilized for smooth, stucco embossed or corrugated rolled jacketing are 0.016”, 0.020”, 0.024”, 0.032”, and 0.040”.", "src": ["J19"]},
+          "minimum_thickness_by_insulation_od_in": {
+            "rigid_definition": "A rigid insulation is defined as having a compressive strength of 15 psi or greater.",
+            "rows": [
+              {"od": "≤8", "rigid": 0.016, "non_rigid": 0.016},
+              {"od": "over 8 thru 11", "rigid": 0.016, "non_rigid": 0.02},
+              {"od": "over 11 thru 24", "rigid": 0.016, "non_rigid": 0.024},
+              {"od": "over 24 thru 36", "rigid": 0.02, "non_rigid": 0.032},
+              {"od": ">36", "rigid": 0.024, "non_rigid": 0.04}
+            ],
+            "corrugated_max": "This finish is available in a maximum thickness of 0.024 inches.",
+            "src": ["J15", "J20"]
+          },
+          "finishes": {"value": "Cross-Flo, smooth, stucco embossed, 3/16 in corrugated (cross-crimped); box-rib and deep corrugated sheets for large surfaces", "src": ["J15"]},
+          "moisture_barrier": {
+            "standard": "Polyfilm Moisture Barrier (PFMB), 3 mil, three-layer coextrusion (about 1 mil sealant, 1 mil Surlyn, 1 mil HDPE), factory heat-laminated to the interior. JM's tables call the same film 'polysurlyn'.",
+            "quotes": [
+              "Polyfilm Moisture Barrier (PFMB) is an engineered three layer coextruded film of polyethylene and Surlyn* polymers with a total film thickness of 3 mils (76 µm) that is heat laminated in the factory to the interior surface of aluminum jacketing.",
+              "PFMB Film is colored a light blue to distinguish it from other film types",
+              "PFMB replaces the old moisture barrier technology of 1 to 3 mil thick polykraft"
+            ],
+            "c1729_class": "Aluminum jacketing with 3 mil PFMB complies with ASTM C1729, Class A",
+            "other_options": "Painted aluminum is also available with a thin painted-on interior coating (washcoat) instead of PFMB. Box rib: no moisture barrier.",
+            "polykraft": "Older option: 1 layer, 1.5 mil PE film with kraft paper backing (JM sales sheet). JM no longer lists it as standard.",
+            "src": ["J15", "J16", "J17", "J18", "J20"]
+          },
+          "moisture_barrier_temperature_limits": {
+            "pfmb_max_long_term_f": 180,
+            "pfmb_max_intermittent_f": 200,
+            "pfmb_decomposition_begins_f": 410,
+            "pfmb_autoignition_f": ">600",
+            "jm_design_note": "Insulation systems are generally designed to keep the jacket temperature from exceeding 140˚F.",
+            "pfmb_ds_footnote_quote": "Note that most hot insulation systems are designed to keep the temperature of the jacketing from exceeding (60°C) for personal protection reasons.",
+            "polykraft_max_service_f": "unverified",
+            "polykraft_note": "JM gives only an autoignition figure for the exposed kraft paper: '~450°F (232°C)' (sales sheet) / 'approximately 450°F (233°C)' (brochure).",
+            "src": ["J17", "J18", "J19"]
+          },
+          "moisture_barrier_wvtr": {"pfmb_f1249_73f": "0.0544 g/100 in²·day (C1729 requirement <0.1)", "pfmb_f1249_100f": "0.194 g/100 in²·day", "pfmb_pinholes": "0 per 50 ft² (C1729 requirement <5)", "brochure_value": "0.048 g/100 in²·day at 73°F", "polykraft": "Poor (~1.0)", "src": ["J17", "J18", "J19"]},
+          "jacket_max_service_temperature": {"value": "unverified", "note": "No JM document or the C1729 public page states a maximum service temperature for the aluminum itself. The limits above belong to the PFMB liner."},
+          "astm_e84": {"value": "Flame Spread Index 0 / Smoke Developed Index 5 (aluminum with 3 mil polysurlyn, metal face exposed)", "src": ["J15", "J16"]},
+          "emittance": {"bare_oxidized": 0.1, "painted_colors": 0.8, "clear_epoxy": 0.5, "tb_quote": "superior emittance value (.80) versus bright new aluminum (.04)", "src": ["J15", "J16", "J21"]},
+          "not_a_vapor_retarder": {"quote": "Aluminum or stainless steel protective jacketing shall not be considered a vapor retarder.", "src": ["J20"]},
+          "galvanic_and_corrosion": [
+            {"quote": "JM recommends the use of PFMB on all aluminum jacketing to help prevent pitting, crevice, and galvanic corrosion of the interior surface of the metal jacketing and the insulated pipe, tank, or equipment.", "src": ["J15"]},
+            {"quote": "Polyfilm is very important in all applications but is essential in applications in which the metal jacketing comes in contact with dissimilar metals, e.g. wire mesh that is used around mineral wool blankets or tie wire used to hold pipe sections in place.", "src": ["J19"]},
+            {"quote": "ASJ that is wet most of the time may greatly increase the chance of the aluminum jacketing corroding within one to five years.", "src": ["J21"]},
+            {"quote": "Smooth finish is less susceptible to poultice/crevice corrosion than stucco embossed.", "src": ["J21"]},
+            {"quote": "Where maximum resistance to corrosion is required, JM stainless steel jacketing (T304 or T316) should be used.", "src": ["J15"]}
+          ],
+          "rooftop_cold_recommendation": {"text": "Ammonia/chilled-water rooftop piping: .016 or .020 in smooth white-painted aluminum with polyfilm, a paperless vapor retarder jacket (e.g. Saranex) beneath, longitudinal joints at 3 o'clock, 1/2 in x .020 in 300-series stainless bands on 12 in centers.", "src": ["J21"]},
+          "limitations": [
+            {"quote": "For applications where a maximum resistance to fire is required, stainless steel jacketing should be used", "src": ["J15"]},
+            {"text": "Roll jacketing for pipe and for vertical tanks up to 8 ft O.D. Above 8 ft, use deep corrugated sheet.", "src": ["J15"]}
+          ],
+          "fastening": [
+            {"quote": "Neatly secure straight sections of jacketing with bands and seals with a maximum spacing of 12 in (305 mm) on center. Secure end joints with bands and seals centered directly over joint. Do not use screws, staples, or other fasteners that can penetrate the vapor retarder.", "src": ["J20"]},
+            {"quote": "When used on above ambient systems, screws shall be installed at a maximum spacing of 8” on center on the longitudinal joint of straight pipe jacketing sections.", "src": ["J20"]},
+            {"quote": "Screws shall be installed at a maximum spacing of 3” on center on the longitudinal joint of elbow covers.", "src": ["J20"]},
+            {"quote": "In applications where the pipe is cold (below ambient temperature), banding should be used, unless unavoidable.", "src": ["J20"]},
+            {"text": "Where screws are unavoidable on cold work (heads, valves, nozzles, tees), JM says to install a sacrificial layer of elastomeric foam over the vapor retarder and recommends #8 x 1/2 in stainless screws.", "src": ["J20"]},
+            {"text": "Banding: stainless 0.020 in, T304/T316 annealed; 1/2 or 3/4 in wide below 16 in O.D., 3/4 in at 16 in O.D. and up. Aluminum banding (0.020 in, 3105/3003) only when all of the following hold: aluminum jacketing and covers; jacket no thicker than the band; no excessive forces; non-corrosive environment; insulation O.D. ≤8 in; non-rigid insulation.", "src": ["J20"]}
+          ],
+          "datasheet": {"pub_no_or_date": "Aluminum Roll & Sheet DS 09/26/25; Painted Aluminum Roll DS 01/03/23; PFMB DS 09/13/23; Metal Jacketing Install Guide 04/23/24", "src": ["J15", "J16", "J17", "J20"]}
+        },
+        {
+          "product": "RPR Products (Insul-Mate) aluminum jacketing",
+          "status": "unverified",
+          "note": "rpr-products.com and rprproducts.com did not resolve and insulmate.com is a parked domain. No RPR document was fetched. ITW Insulation Systems/Childers metal jacketing is now sold by JM ('Formerly Pabco/Childers Metals' on the JM sheets), so the JM sheets cover that line.",
+          "src": ["J15"]
+        }
+      ],
+      "discrepancies_between_products": [
+        "E84 for aluminum with 3-mil PFMB: JM aluminum data sheets print FS 0 / SD 5; the JM PFMB data sheet table prints 0/54 (footnote: 'FS/SD values are for aluminum jacketing with PFMB heat laminated to one surface').",
+        "PFMB WVTR at 73°F: PFMB data sheet 0.0544 g/100 in²·day vs the 2020 brochure's 0.048.",
+        "Kraft autoignition: sales sheet '~450°F (232°C)' vs brochure '450°F (233°C)'.",
+        "JM band and screw spacing changed between install-guide editions: 11/27/23 edition = bands 9 in o.c. max, screws 6 in o.c.; current 04/23/24 edition = bands 12 in o.c. max, screws 8 in o.c. (elbow screws 3 in o.c. in both). research/NOTES.md currently quotes the older 9 in / 6 in values."
+      ],
+      "unverified": [
+        "Maximum service temperature of the aluminum jacket itself",
+        "Polykraft maximum service temperature",
+        "ASTM C1729 Type/Grade/Class definitions (paywalled)",
+        "RPR Products data (site unreachable)"
+      ]
+    },
+    {
+      "id": "stainless_steel_jacketing",
+      "item": "Stainless steel jacketing",
+      "astm_specs": [
+        {
+          "designation": "ASTM C1767-26 (active; prior C1767-21 and earlier)",
+          "title": "Standard Specification for Stainless Steel Jacketing for Insulation",
+          "scope_quotes": [
+            "1.1 This specification covers stainless steel jacketing for thermal, acoustical, and fire protective insulation operating at either above or below ambient temperatures and in both indoor and outdoor locations. It does not cover insulation jacketing made from other materials such as mastics, fiber reinforced plastic, PVC, aluminum, or coated carbon steel (for example, aluminum-zinc, galvanized steel, or aluminized steel) nor does it cover the details of thermal, acoustical, or fire protective insulation systems.",
+            "1.2 While not intended to cover use inside the containment buildings of nuclear power plants, this standard does not preclude use of Class E material which does not have a moisture barrier in this containment building application."
+          ],
+          "temperature_statement": "Only 'above or below ambient temperatures'. No numeric limit on the public page.",
+          "src": ["J14"]
+        }
+      ],
+      "products": [
+        {
+          "product": "JM Stainless Steel Roll & Sheet jacketing (formerly Pabco/Childers Metals)",
+          "manufacturer": "Johns Manville",
+          "alloys": {"value": "T-304 and T-316 (install guide: T304/T304L, T316/T316L), ASTM A-240, soft-annealed temper, dull finish", "quote": "T-304 is normally used in all except the most corrosive areas, where T-316 is recommended.", "src": ["J22", "J20"]},
+          "chemistry": {"quote": "T-304 contains 18% chromium and 8% nickel. T-316 contains 16.5% chromium, 10% nickel and 2.2% molybdenum.", "src": ["J22"]},
+          "thickness": {
+            "offered": ".010 and .016 in standard; .020 and .024 in available",
+            "quote": "manufactured from T-304 (T-316 option) Stainless Steel with corrugations (or smooth option) in .010 and .016\" thickness (.020 and .024 available)",
+            "minimum_by_insulation_od_in": [
+              {"od": "≤8", "min": 0.01},
+              {"od": "over 8 thru 11", "min": 0.01},
+              {"od": "over 11 thru 24", "min": 0.01},
+              {"od": "over 24 thru 36", "min": 0.016},
+              {"od": ">36", "min": 0.02}
+            ],
+            "src": ["J22", "J20"]
+          },
+          "c1767_classification_as_printed_by_jm": [
+            {"use": "Standard roll or sheet", "properties": "Bare surface, T304/T304L alloy, annealed temper, 3 mil polyfilm moisture barrier", "classification": "Type I, Grade 1, Class A, 0.010-0.024” thick", "src": ["J20"]},
+            {"use": "Extra corrosive environments", "properties": "Bare surface, T316/T316L alloy, annealed temper, 3 mil polyfilm moisture barrier", "classification": "Type I, Grade 2, Class A, 0.010-0.024” thick", "src": ["J20"]},
+            {"use": "Two-piece elbows", "properties": "Bare surface, T316/T316L alloy, annealed temper", "classification": "Type I, Grade 2, Class E, 0.016” thick", "src": ["J20"]},
+            {"use": "Deep corrugated sheet", "properties": "Bare surface, T304/T304L or T316/T316L alloy, annealed temper, 3 mil polyfilm moisture barrier", "classification": "Type I, Grade 1 or 2, Class A, 0.010-0.024” thick", "src": ["J20"]}
+          ],
+          "moisture_barrier": {
+            "value": "3 mil polyethylene/Surlyn polyfilm heat-laminated to the inside. Also sold without polyfilm on request.",
+            "quotes": [
+              "Polyfilm consists of a 3 mil thickness of a co-extrusion of polyethylene and DuPont's Surlyn* which is heat laminated to the metal jacketing. Due to its superior performance characteristics, it replaces the old standard 1 mil and 3 mil polykraft moisture barriers. For cold rooftop and hot work cyclical applications, refer to Technical Information for recommendations.",
+              "Also Available without Polyfilm upon request"
+            ],
+            "liner_temperature_limits": "Same PFMB film as aluminum (see aluminum_jacketing: 180°F long-term / 200°F intermittent).",
+            "src": ["J22", "J23", "J17"]
+          },
+          "when_specified": [
+            {"quote": "Stainless steel jacketing shall be used when its superior flame or corrosion resistance is required.", "src": ["J20"]},
+            {"quote": "The 300 series Stainless Steels have a melt point of approximately 2500°F, providing optimum fire protection.", "src": ["J22"]},
+            {"text": "Listed markets: steel mills, paper mills, chemical plants and refineries, plus 'areas of high incidence of abuse on bridges, walkways and service roads, areas of high fire incidence, food processing facilities, packing plants and freeze facilities.'", "src": ["J22"]},
+            {"quote": "In extremely corrosive environments, smooth jacketing is recommended to facilitate run-off.", "src": ["J22"]},
+            {"quote": "Jacketing is recommended for insulated piping, tanks, and vessels less than 8 feet in diameter.", "src": ["J22"]}
+          ],
+          "washdown": "unverified (food processing facilities are listed, but no sheet mentions washdown)",
+          "high_temperature_rating": "unverified (only the ~2500°F melt point is stated; no service temperature is printed)",
+          "not_a_vapor_retarder": {"quote": "Aluminum or stainless steel protective jacketing shall not be considered a vapor retarder.", "src": ["J20"]},
+          "fastening": {"text": "Stainless bands/seals required with stainless jacketing and stainless elbow covers. The install guide's attachment rules cover all metal jacketing: bands at 12 in o.c. max; screws or rivets only on hot systems or where a continuous vapor retarder is not required.", "src": ["J20"]},
+          "related_rule_pipe_coating": {"text": "JM Appendix A: coat 300-series stainless pipe (5 mil epoxy primer + 5 mil finish, or reactive gel) when operating 140°F–300°F; coat carbon steel pipe when operating 32°F–350°F (or cycling in those ranges >20% of the time).", "src": ["J20"]},
+          "datasheet": {"pub_no_or_date": "Printed '09/26/15 (Replaces SSRJE-05/17/23)'; PDF modified 2025-09-26, so '15' is probably a typo for '25'", "src": ["J22"]}
+        }
+      ],
+      "unverified": [
+        "Maximum service temperature of stainless jacketing",
+        "Washdown as a stated selection reason",
+        "RPR / ITW stainless sheets (ITW/Childers metal line now sold by JM)"
+      ]
+    },
+    {
+      "id": "asj_all_service_jacket",
+      "item": "ASJ (all-service jacket) and flexible vapor retarders: ASTM C1136",
+      "astm_specs": [
+        {
+          "designation": "ASTM C1136-23 (active; store page last updated Mar 14, 2023)",
+          "title": "Standard Specification for Flexible, Low Permeance Vapor Retarders for Thermal Insulation",
+          "scope_quotes": [
+            "1.1 This specification covers vapor retarders for thermal insulation, specifically, flexible materials with permeance of 0.15 perm (8.63 ng·Pa –1 · s –1 · m –2 ) or lower and surface burning characteristics of 25 flame spread/50 smoke or lower. These materials are intended for use at surface temperatures of −20 to 150°F (−29 to 66°C). It does not cover mastics or barrier coatings applied in liquid form, nor materials intended for use as weather barriers."
+          ],
+          "abstract_quote": "Vapor retarders are classified based on vapor retardance and strength properties: Types I, II, III, IV, V, and VI.",
+          "max_permeance_per_type": "unverified (not on the public page; paywalled)",
+          "src": ["J24"]
+        }
+      ],
+      "products": [
+        {
+          "product": "Factory ASJ on fiberglass pipe insulation (OC ASJ Max; JM ASJ)",
+          "note": "Values already recorded in materials-verified.json with their own sources: OC ASJ Max -20°F to 150°F, 0.01 perm; JM ASJ 0.02 perms max, jacket surface ≤150°F. Not re-fetched here."
+        },
+        {
+          "product": "Lamtec WMP-ASJ (paperless: polypropylene / core / scrim / foil)",
+          "manufacturer": "Lamtec Corporation",
+          "c1136": "Meets ASTM C1136 Type I, II, III, IV, V, VI, X and UFGS 23 07 00",
+          "permeance": {"value": "≤0.01 perm", "method": "ASTM E96 Procedure A", "src": ["J26"]},
+          "temperature": {"rating": "unverified (no service rating printed)", "tests": "ASTM C1263: 4 h at -20°F and (modified) 4 h at 240°F, remains flexible, no delamination", "src": ["J26"]},
+          "burst_psi": 100,
+          "astm_e84": "Polypropylene side FS 0 / SD 40; foil side FS 0 / SD 0",
+          "emittance_white_side": 0.8,
+          "datasheet": {"pub_no_or_date": "10/24", "src": ["J26"]},
+          "src": ["J26"]
+        }
+      ],
+      "related_rules": [
+        {"text": "JM: under rooftop aluminum jacketing use a vapor retarder jacket with no paper, because paper holds water.", "quote": "A vapor retarder jacket that has no paper to absorb and retain moisture shall be used, such as Saranex®, or other suitable product.", "src": ["J21"]}
+      ],
+      "discrepancies_between_products": [
+        "C1136 'Type X': the public C1136-23 abstract lists Types I–VI only. Lamtec WMP-ASJ claims Types I–VI and X; OC ASJ Max (materials-verified.json) cites Types I, II, III, IV, X. Type X's definition is unverified."
+      ],
+      "unverified": ["Max permeance per C1136 type", "Definition of C1136 Type X"]
+    },
+    {
+      "id": "fsk_facing",
+      "item": "FSK (foil-scrim-kraft) facing",
+      "products": [
+        {
+          "product": "Lamtec R-3035 Foil/Scrim/Kraft",
+          "manufacturer": "Lamtec Corporation",
+          "c1136": {"quote": "Meets ASTM C1136 Type II, IV, VI", "src": ["J25"]},
+          "construction": "Aluminum foil 0.0003 in; elastomeric polymer barrier coating; tri-directional fiberglass scrim (MD 2/in, XD 3/in); flame-resistant adhesive; natural kraft 30 lb/3000 ft²",
+          "permeance": {"value": "≤0.02 perm", "method": "ASTM E96 Procedure A", "src": ["J25"]},
+          "temperature": {"rating": "unverified (no service rating printed)", "tests": "ASTM C1263, 4 hours at -20°F: remains flexible, no delamination. ASTM C1263 Modified, 4 hours at 240°F: remains flexible, no delamination.", "c1136_scope_range": "-20 to 150°F surface temperature for materials covered by C1136", "src": ["J25", "J24"]},
+          "burst_psi": 40,
+          "astm_e84": "Foil side FS 5 / SD 0; kraft side FS 25 / SD 10",
+          "emittance": 0.05,
+          "datasheet": {"pub_no_or_date": "6/24", "src": ["J25"]},
+          "src": ["J25"]
+        }
+      ],
+      "unverified": ["FSK service temperature rating (Lamtec prints test conditions only)", "Venture Tape FSK (not fetched)"]
+    },
+    {
+      "id": "vapor_retarder_films_tapes_membranes",
+      "item": "Vapor-retarder films, tapes and membranes for cold piping",
+      "products": [
+        {
+          "product": "Saranex 540 CX Vapor Retarder Film (PVDC; the 'Saran 540' film)",
+          "manufacturer": "Johns Manville (Saranex is a registered trademark of Transcendia, Inc.)",
+          "thickness_mil": 4,
+          "permeance": {"value_perm": 0.02, "method": "ASTM E96 (1 perm = 1 gr/hr/ft²/in·Hg @73°F, 50% R.H.)", "src": ["J27"]},
+          "wvtr": "ASTM F1249: 0.065 g/100in² per 24 hr @100°F, 90% R.H.",
+          "service_temperature": {"min_f": -40, "max_f": 250, "definition_quote": "Service temperature limits is defined as the temperature to which the jacket or coating may be subjected when applied over insulation. it does not refer to the operating temperature of the equipment, vessel, or pipe (Source: National Insulation Association).", "src": ["J27"]},
+          "install_ambient": "can be installed as low as 0°F; above 24°F recommended for flexibility",
+          "astm_e84": "Flame Spread 10 / Smoke Developed 20",
+          "color": "White",
+          "roll": "375 ft x 35.5 in",
+          "datasheet": {"pub_no_or_date": "02/02/21 (Replaces S54001- 12/26/19)", "src": ["J27"]},
+          "src": ["J27"]
+        },
+        {
+          "product": "Saranex 560 CX Vapor Retarder Film (PVDC; the 'Saran 560' film)",
+          "manufacturer": "Johns Manville",
+          "thickness_mil": 6,
+          "permeance": {"value_perm": 0.01, "method": "ASTM E96", "src": ["J28"]},
+          "service_temperature": {"min_f": -40, "max_f": 250, "src": ["J28"]},
+          "astm_e84": "Flame Spread 25 / Smoke Developed 50",
+          "color": "White",
+          "roll": "250 ft x 35.5 in",
+          "datasheet": {"pub_no_or_date": "12/26/19 (Replaces ST52001-0717)", "src": ["J28"]},
+          "src": ["J28"]
+        },
+        {
+          "product": "Saranex 520 CX Vapor Retarder Tape",
+          "manufacturer": "Johns Manville",
+          "backing_mil": 2,
+          "adhesive": "pressure-sensitive acrylic, 1.5 mil",
+          "permeance": {"value_perm": 0.03, "method": "ASTM E96", "src": ["J29"]},
+          "service_temperature": {"min_f": -40, "max_f": 250, "src": ["J29"]},
+          "astm_e84": "Flame Spread 0 / Smoke Developed 5",
+          "color": "White",
+          "roll": "50 yd; 1, 2, 3 in wide",
+          "src": ["J29"]
+        },
+        {
+          "product": "Saranex 560 CX Vapor Retarder Tape",
+          "manufacturer": "Johns Manville",
+          "backing_mil": 6,
+          "adhesive": "pressure-sensitive acrylic, 1.5 mil",
+          "permeance": {"value_perm": 0.01, "method": "ASTM E96", "src": ["J30"]},
+          "service_temperature": {"min_f": -40, "max_f": 250, "src": ["J30"]},
+          "astm_e84": "Flame Spread 0 / Smoke Developed 5",
+          "color": "White",
+          "roll": "50 yd; 2, 3 in wide",
+          "src": ["J30"]
+        },
+        {
+          "product": "Saranex CX system rules (JM Saranex install guide)",
+          "rules": [
+            {"quote": "Vapor retarder shall have a maximum permeance of 0.02 perms for applications at or below 32°F and a maximum permeance of 0.03 perms for applications above 32°F.", "src": ["J31"]},
+            {"quote": "Vapor retarder shall be Saranex 540 CX or 560 CX Vapor Retarder Film for service temperatures above 0°F and Saranex 560 CX Film in services at and below 0°F or where a permeance of 0.02 perm or better is required.", "src": ["J31"]},
+            {"text": "Elbows and fittings: 520 CX tape, two layers when pipe/tank is below 32°F or ≤0.02 perm is required, one layer above 32°F. Tape width 1 in up to 6 in O.D., 2 in over 6 to 18 in O.D., 3 in over 18 in O.D.", "src": ["J31"]},
+            {"quote": "Saranex CX Film and Saranex CX Tape shall not be used as the outer jacketing in outdoor applications.", "src": ["J31"]},
+            {"text": "Outdoor jacketing over Saranex: aluminum or stainless with 3 mil PFMB, secured with banding only (no rivets, screws or staples).", "src": ["J31"]},
+            {"text": "Indoor: may be left unjacketed where no mechanical abuse is expected and aesthetics are non-critical; otherwise usually Zeston PVC with solvent-welded joints, or metal where abuse, fire or appearance requires.", "src": ["J31"]},
+            {"quote": "After installation, Saranex CX Film and Saranex CX Tape can be left exposed for a maximum of two weeks before being covered with protective jacketing.", "src": ["J31"]}
+          ],
+          "datasheet": {"pub_no_or_date": "Saranex install guide 04/22/25 (Replaces 05/25/2022)", "src": ["J31"]},
+          "src": ["J31", "J32"]
+        },
+        {
+          "product": "Polyguard Insulrap 30-NG (current name of Insulrap 30)",
+          "manufacturer": "Polyguard Products, Inc. (Ennis, TX)",
+          "construction": "30 mil composite: polymer/foil laminate film coated with rubberized asphalt; peel-and-stick, self-healing, silicone release liner",
+          "thickness_mil": 30,
+          "permeance": {"value_perm": 0.0, "method": "ASTM E96-00 Procedure A", "quote": "Water Vapor Transmission ASTM E96-00 Procedure A 0.00 perms", "src": ["J33", "J34"]},
+          "service_temperature": {"max_f": 160, "max_basis": "Service Temperature (Max), LAB", "min_f": "unverified", "operating_limit_quote": "Insulation surface temperature should not exceed 150°F during operation.", "src": ["J33"]},
+          "application_temperature_note": {"quote": "The rubberized asphalt coating on I-30-NG can lose adhesiveness when temperatures are below 50°F.", "src": ["J33"]},
+          "color": "White",
+          "intended_use": [
+            {"text": "Moisture and vapor retarder under mechanical jacketing on insulated piping (ammonia refrigeration, oil and gas, LNG, cryogenic, chemical processing). The PIS text 'jacke ng' had a broken 'ti' ligature, restored here.", "src": ["J34"]},
+            {"quote": "I-30-NG should be covered with PVC, metal or suitable jacketing material as specified. It should not be left exposed to UV for more than 30 days.", "src": ["J33"]},
+            {"quote": "I-30-NG can be used in burial applications if covered with a mechanical jacket.", "src": ["J33"]}
+          ],
+          "laps": "cigarette wrap 3 in overlap on itself; joints 4 in; fabricator pre-applied 4 in butt laps",
+          "rolls": "4 in x 50 ft; 23 in and 35 in x 100 ft",
+          "datasheet": {"pub_no_or_date": "Data sheet footer 'R10-26-18' (PDF modified 2023-04-28); PIS REV022123", "src": ["J33", "J34"]},
+          "src": ["J33", "J34"]
+        },
+        {
+          "product": "Owens Corning PITTWRAP IW50 AL jacketing",
+          "manufacturer": "Owens Corning (Pittsburgh Corning, LLC)",
+          "construction": "50 mil self-sealing polymer-modified bituminous membrane with 1 mil aluminum foil top film and release film",
+          "thickness_mil": 50,
+          "permeance": {"value_perm": 0.0009, "method": "ASTM E96 Procedure A (0.05 ng/Pa-s-m²)", "src": ["J35"]},
+          "service_temperature": {"min_f": -4, "max_f": 167, "basis": "approved exposure temperature at the jacket", "src": ["J35"]},
+          "application_temperature": "min 50°F; 20°F with primer",
+          "color": "Silver (Aluminum)",
+          "intended_use": {"quote": "for protecting above-ground FOAMGLAS® insulation systems under a metal or UV-resistant jacket finish.", "src": ["J35"]},
+          "limitations": "Do not use over combustible insulations; no asphalt-dissolving solvents; not exposed to sunlight/weather more than six months; not intended for indoor use; above-ground only.",
+          "lap": "min 2 in overlap",
+          "roll": "36 in x 75 ft",
+          "datasheet": {"pub_no_or_date": "Pub. No. 10023702-A, July 2021", "src": ["J35"]},
+          "src": ["J35"]
+        },
+        {
+          "product": "Owens Corning PITTWRAP B100 jacketing",
+          "manufacturer": "Owens Corning (Pittsburgh Corning, LLC)",
+          "construction": "Self-sealing aluminum-butyl laminate: high-tack butyl adhesive, aluminum film between two polyester films",
+          "thickness": "1.2 ± 0.05 mm (47.3 ± 2 mil)",
+          "permeance": {"value_perm": 0.0005, "method": "ASTM E 96 Procedure A (0.027 ng/Pa-s-m²)", "src": ["J36"]},
+          "service_temperature": {"min_f": -58, "max_f": 284, "basis": "approved exposure temperature at the jacket", "src": ["J36"]},
+          "application_temperature": "41°F to 113°F",
+          "color": "Silver (Aluminum)",
+          "intended_use": {"quote": "used for protecting above ground FOAMGLAS® insulation systems on above and below ambient service pipelines. Protective jacketing must be used over the PITTWRAP® B100 jacketing for UV protection.", "src": ["J36"]},
+          "limitations": "Do not use below ground; no butyl-dissolving solvents; not exposed to sunlight/weather more than 6 months.",
+          "lap": "2 in overlap, 2 in offset",
+          "rolls": "3.9 in, 23.6 in, 39.4 in x 49.2 ft",
+          "datasheet": {"pub_no_or_date": "Pub. No. 10024472-A, March 2024", "src": ["J36"]},
+          "src": ["J36"]
+        },
+        {
+          "product": "Owens Corning PITTCOTE 300E coating",
+          "manufacturer": "Owens Corning (Pittsburgh Corning, LLC)",
+          "type": "liquid-applied moisture-cure elastomeric vapor retarder coating (for FOAMGLAS and PITTWRAP)",
+          "water_vapor_permeability": {"value": "0.13 perm-in", "method": "ASTM E96 (Water Method)", "note": "Printed as permeability (perm-in), not permeance. No permeance at a stated thickness is printed, and none was computed.", "src": ["J37"]},
+          "permeance_perm": "unverified",
+          "standard_thickness": "1.6 L/m² (4 gal/100 ft²) to achieve a cured coating thickness of 1.7 mm (65 mils), applied as a 3 gal/100 ft² tack coat with PC 150 mesh plus a 1 gal/100 ft² second coat",
+          "service_temperature": {"min_f": -40, "max_f": 200, "basis": "at coated surface", "src": ["J37"]},
+          "application_temperature": "material 67.5 ± 32.5°F; surface minimum 45°F",
+          "color": "Black",
+          "fire": "Reaction to fire, cured: Combustible",
+          "intended_use": [
+            {"quote": "It can be used as a protective/vapor retarder coating over FOAMGLAS® insulation under a metal jacket or other UV-resistant finish or as vapor retarder coating in direct-buried applications.", "src": ["J37"]},
+            {"quote": "DO NOT use above ground without a metal jacket or other UV protection.", "src": ["J37"]},
+            {"quote": "Although PITTCOTE® 300E coating has excellent weather resistance, it will degrade over time when exposed to UV light.", "src": ["J37"]}
+          ],
+          "datasheet": {"pub_no_or_date": "Pub. No. 10025345, April 2022", "src": ["J37"]},
+          "src": ["J37"]
+        }
+      ],
+      "discrepancies_between_products": [
+        "Polyguard Insulrap 30-NG: 'Service Temperature (Max) LAB 160°F' vs the same sheet's operating limit of 150°F insulation surface temperature.",
+        "'Saran 540 tape': JM's current lineup has 540 CX as film only; the tapes are 520 CX (0.03 perm) and 560 CX (0.01 perm)."
+      ],
+      "unverified": [
+        "Saranex outdoor UV rating beyond the two-week exposure limit",
+        "Polyguard Insulrap 30-NG minimum service temperature",
+        "PITTCOTE 300E permeance in perms at a stated dry film thickness"
+      ]
+    },
+    {
+      "id": "vapor_retarder_mastic",
+      "item": "Vapor-retarder mastic/coating for cold piping",
+      "products": [
+        {
+          "product": "Foster 30-65 Vapor-Fas WB Coating",
+          "manufacturer": "H.B. Fuller Construction Products Inc.",
+          "color": "White",
+          "service_temperature": {"min_f": -20, "max_f": 180, "basis": "Temperature at coated surface.", "src": ["J38"]},
+          "design_operating_range": {"quote": "designed for use on insulated pipes, vessels, ducts and equipment operating between 32°F (0°C) and ambient temperatures.", "src": ["J38"]},
+          "permeance": {
+            "f1249": "0.08 perms at 45 mils dry film thickness, tested at 100°F (38°C) and 50% RH",
+            "e96_procedure_a": "0.08 perms at 44 mils dry film thickness, tested at 72°F and 50% RH",
+            "tested_with": "reinforcing mesh",
+            "c755_quote": "Meets the permeance requirements of ASTM C755-19, Section 7.2.2 for below ambient vapor retarder coatings when used as a closure mastic in conjunction with ASJ and other vapor retarder membranes.",
+            "src": ["J38"]
+          },
+          "older_revision_permeance": {"quote": "ASTM E 96 Procedure A, 0.03 perms at 45 mils dry. Tested at 72°F and 50% RH.", "note": "From the superseded DSF30-65 R0512 sheet. Kept only to document the change; R1119 values above are used.", "src": ["J39"]},
+          "application": {"text": "Tack coat 2 gal/100 ft², embed Foster MAST-A-FAB white membrane (2 in seam overlap), finish coat 2 gal/100 ft² within 1/2 h.", "quote": "This application shall provide a minimum dry thickness of 31 mils (0.8 mm).", "src": ["J38"]},
+          "astm_e84": "Flame Spread 5 / Smoke Developed 30 (25 sq ft/gal on cement board)",
+          "indoor_outdoor": {"quote": "VAPOR-FAS™ WB COATING is formulated for indoor and outdoor commercial use.", "note": "Application section is headed 'INDOOR AND LIGHT DUTY OUTDOOR'; outdoor horizontal surfaces must drain (≥1/2 in per ft pitch).", "src": ["J38"]},
+          "store_and_apply": "between 40°F and 100°F; protect from freezing until dry",
+          "datasheet": {"pub_no_or_date": "Foster PDS 30-65 R1119 (fosterproducts.com; PDF modified 2019-11-12). The current hbfullerproducts.com TDS could not be fetched (AWS WAF challenge), so a newer revision may exist.", "src": ["J38"]},
+          "src": ["J38"]
+        }
+      ],
+      "discrepancies_between_products": [
+        "Foster 30-65 E96 permeance by revision: R1119 = 0.08 perms at 44 mils; the older DSF30-65 R0512 sheet = 0.03 perms at 45 mils. F1249 is 0.08 perms at 45 mils in both. R1119 is used.",
+        "Foster 30-65 service limit -20°F to 180°F at the coated surface vs 'designed for ... operating between 32°F (0°C) and ambient temperatures'. The first is a coating-surface limit, the second a recommended pipe operating range; the sheet does not reconcile them."
+      ],
+      "unverified": ["Childers CP-34 / CP-30 (H.B. Fuller site blocked; no TDS fetched)", "Foster 30-65 revision newer than R1119"]
+    }
+  ],
+  "sources": [
+    {"id": "J1", "title": "Zeston 2000 Series PVC Insulated Fitting Covers and Jacketing – Data Sheet (incl. Zeston Hi-Lo Temp Insulation Inserts page)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/mech-zeston-2000-pvc-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "05/26/26 (Replaces 06/19/25)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J2", "title": "Zeston PVC Jacketing – Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-mech-zeston-pvc-jacketing-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "MECH-264 05/26/26 (Replaces 02/28/22)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J3", "title": "Zeston 300 Series PVC Insulated Fitting Covers and Jacketing – Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-mech-zeston-300-series-pvc-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "CI-67 09/02/26 (Replaces 05/26/26)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J4", "title": "Zeston 2000/300 PVC Installation Guide (hot, cold, USDA/FDA guide specifications)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/installation-guide/jm-pvc-install-guide.pdf", "doc_type": "manufacturer installation guide PDF", "pub_no_or_date": "06/21/24 (Replaces 05/06/22)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext (identical text also at the older URL .../mechanical-insulation/pvc/JM_PVC%20install%20guide.pdf)"},
+    {"id": "J5", "title": "Zeston PVC Product Catalog (Pipe Fitting Covers, accessories and inserts)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/selector-guide/jm-pvc-zeston-product-catalog.pdf", "doc_type": "manufacturer catalog PDF", "pub_no_or_date": "Mech-258 03/04/26 (Replaces 09/24/21)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J6", "title": "LoSmoke PVC Jacketing and Fittings – Submittal Sheet", "publisher": "Proto Corporation", "url": "https://www.protocorporation.com/wp-content/uploads/2025/07/proto_technical_pvc_jacketing_fittings_updated_submittal_sheet.pdf", "doc_type": "manufacturer submittal sheet PDF", "pub_no_or_date": "PTB04 Revised 7/25", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout; compared with Knauf-hosted PTB04 Revised 8/24 (https://res.cloudinary.com/knauf-insulation/image/upload/v1726504307/Knauf%20Insulation/Proto%20PVC%20Fitting%20Covers/Literature/Proto-LoSmoke-PVC-Jacketing-and-Fittings-Submittal-Sheet.pdf): same values, wording only; French version proto_submittal_sheet_fr_5.25.25.pdf gives E96 test condition 70°F & 50% RH"},
+    {"id": "J7", "title": "Installation Guide – Hot Pipe System – Above Ambient Temperatures and Indoor Conditioned Spaces", "publisher": "Proto Corporation (hosted by Knauf Insulation)", "url": "https://res.cloudinary.com/knauf-insulation/image/upload/v1679336739/Knauf%20Insulation/Proto%20PVC%20Fitting%20Covers/Literature/Proto-PVC-Fitting-Covers-Installation-Guide-Hot-Pipe-System.pdf", "doc_type": "manufacturer installation guide PDF", "pub_no_or_date": "PTB08 Revised 6/20", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J8", "title": "Installation Guide – Cold Pipe System – Below Ambient Temperatures and Severe Service Conditions", "publisher": "Proto Corporation (hosted by Knauf Insulation)", "url": "https://res.cloudinary.com/knauf-insulation/image/upload/v1679338096/Knauf%20Insulation/Proto%20PVC%20Fitting%20Covers/Literature/Proto-PVC-Fitting-Covers-Installation-Guide-Cold.pdf", "doc_type": "manufacturer installation guide PDF", "pub_no_or_date": "PTB07 Revised 1/22", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J9", "title": "Jacketing / Cut & Curl product category page", "publisher": "Proto Corporation", "url": "https://www.protocorporation.com/product-category/jacketing-cut-curl/", "doc_type": "manufacturer web page", "pub_no_or_date": "undated web page", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J10", "title": "ASTM C1917-23 Standard Specification for Rigid Polyvinyl Chloride (PVC) Jacketing for Insulation – store scope page", "publisher": "ASTM International", "url": "https://store.astm.org/c1917-23.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "C1917-23 (DOI 10.1520/C1917-23); page last updated Jan 05, 2024", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J11", "title": "ASTM D1784-25 Standard Classification System and Basis for Specification for Rigid PVC Compounds and CPVC Compounds – store scope page", "publisher": "ASTM International", "url": "https://store.astm.org/d1784-25.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "D1784-25; page last updated Aug 05, 2025", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J12", "title": "ASTM C1729-26 Standard Specification for Aluminum Jacketing for Insulation – store scope page", "publisher": "ASTM International", "url": "https://store.astm.org/c1729-26.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "C1729-26 (active)", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J13", "title": "ASTM C1729-21 Standard Specification for Aluminum Jacketing for Insulation – store page (historical edition; abstract)", "publisher": "ASTM International", "url": "https://store.astm.org/c1729-21.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "C1729-21 (historical)", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J14", "title": "ASTM C1767-26 Standard Specification for Stainless Steel Jacketing for Insulation – store scope page", "publisher": "ASTM International", "url": "https://store.astm.org/c1767-26.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "C1767-26 (active); scope identical on C1767-21 page", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J15", "title": "JM Aluminum Roll and Sheet – Aluminum Metal Jacketing/Cladding – Data Sheet", "publisher": "Johns Manville (formerly Pabco/Childers Metals)", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-aluminumroll-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "09/26/25 (Replaces ACCS-05/17/23)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext (identical to .../industrial-insulation/metal-jacketing/aluminum-roll-jacketing/JM_IND_AluminumRoll_DS.pdf)"},
+    {"id": "J16", "title": "JM Painted Aluminum Roll – Aluminum Metal Jacketing – Data Sheet", "publisher": "Johns Manville (formerly Pabco/Childers Metal)", "url": "https://www.jm.com/content/dam/jm/global/en/industrial-insulation/metal-jacketing/painted-aluminum-roll-jacketing/JM_IND_PaintedAluminumRoll_DS.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "01/03/23 (Replaces ACCS- 05/11/20)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J17", "title": "Polyfilm Moisture Barrier – Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-polyfilmds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "09/13/23 (Replaces Poly-05/15/23)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J18", "title": "Polyfilm Moisture Barrier – Sales Sheet (Paint vs Polykraft vs PFMB comparison)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/marketing-bulletin/ind-pfmb-salessheet.pdf", "doc_type": "manufacturer sales sheet PDF", "pub_no_or_date": "no date printed; PDF modified 2023-09-20", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J19", "title": "Metal Jacketing Product Selection Guide (brochure)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/selector-guide/jm-ind-metal-jacketing-brochure.pdf", "doc_type": "manufacturer brochure PDF", "pub_no_or_date": "New 01/31/20", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J20", "title": "Metal Jacketing Installation Guide", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/installation-guide/jm-ind-metal-jacketing-install-guide.pdf", "doc_type": "manufacturer installation guide PDF", "pub_no_or_date": "04/23/24 (Replaces 11/27/23)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext; diffed against the 11/27/23 edition at https://www.jm.com/content/dam/jm/global/en/industrial-insulation/metal-jacketing/IND_MetalJacketing_Install_Guide.pdf (only band/screw spacing changed)"},
+    {"id": "J21", "title": "Jacketing Recommendations – Roof-Top Piping for Ammonia Cooling Systems, Chilled Water, and Hot Piping Systems (technical bulletin)", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/technical-bulletin/ind-jacketing-recommendation-tb.pdf", "doc_type": "manufacturer technical bulletin PDF", "pub_no_or_date": "04/03/2020 (Replaces PC-0915)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J22", "title": "Stainless Steel Roll & Sheet – Stainless Steel Metal Jacketing – Data Sheet", "publisher": "Johns Manville (formerly Pabco/Childers Metals)", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/industrial-stainless-steel-rolls-and-sheet-data-sheet.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "printed '09/26/15 (Replaces SSRJE-05/17/23)'; PDF modified 2025-09-26", "accessed": "2026-10-10", "retrieval": "curl+pdftotext (identical to .../industrial-insulation/metal-jacketing/stainless-steel-roll-jacketing/JM_IND_SSRoll_DS.pdf)"},
+    {"id": "J23", "title": "Stainless Steel Roll Jacketing product page", "publisher": "Johns Manville", "url": "https://www.jm.com/en/insulation-systems/industrial-insulation/stainless-steel-roll-jacketing/", "doc_type": "manufacturer web page", "pub_no_or_date": "undated web page", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J24", "title": "ASTM C1136-23 Standard Specification for Flexible, Low Permeance Vapor Retarders for Thermal Insulation – store scope page", "publisher": "ASTM International", "url": "https://store.astm.org/c1136-23.html", "doc_type": "ASTM store scope page", "pub_no_or_date": "C1136-23 (active); page last updated Mar 14, 2023", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J25", "title": "R-3035 Foil / Scrim / Kraft – data sheet", "publisher": "Lamtec Corporation", "url": "https://www.lamtec.com/specs/R-3035.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "6/24", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J26", "title": "WMP-ASJ Polypropylene / Core / Scrim / Foil – data sheet", "publisher": "Lamtec Corporation", "url": "https://www.lamtec.com/specs/WMP-ASJ.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "10/24", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J27", "title": "SARANEX 540 CX Vapor Retarder Film – Technical Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-saranex540cxfilm-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "02/02/21 (Replaces S54001- 12/26/19)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J28", "title": "SARANEX 560 CX Vapor Retarder Film – Technical Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-saranex560cxfilm-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "12/26/19 (Replaces ST52001-0717)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J29", "title": "SARANEX 520 CX Vapor Retarder Tape – Technical Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-saranex520cxtape-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "12/26/19 (Replaces ST52001-0717)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J30", "title": "SARANEX 560 CX Vapor Retarder Tape – Technical Data Sheet", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-saranex560cxtape-ds.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "12/26/19 (Replaces ST56001-0717)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J31", "title": "Saranex CX Vapor Retarder Film and Tape – Installation Instructions", "publisher": "Johns Manville", "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/installation-guide/jm-ind-saranex-install-guide.pdf", "doc_type": "manufacturer installation guide PDF", "pub_no_or_date": "04/22/25 (Replaces 05/25/2022)", "accessed": "2026-10-10", "retrieval": "curl+pdftotext"},
+    {"id": "J32", "title": "Saranex CX Vapor Retarder Tape product page", "publisher": "Johns Manville", "url": "https://www.jm.com/en/insulation-systems/industrial-insulation/saranex--cx-vapor-retarder-tape/", "doc_type": "manufacturer web page", "pub_no_or_date": "undated web page", "accessed": "2026-10-10", "retrieval": "curl, HTML to text"},
+    {"id": "J33", "title": "Insulrap 30-NG Vapor Barrier Membrane – data sheet", "publisher": "Polyguard Products, Inc.", "url": "https://assets.cdn.polyguard.com/resources/MECH_DATASHEET_Insulrap30NG-R10-26-18-2-copy-1.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "footer 'Insulrap I-30-SJ-NG.doc R10-26-18'; PDF modified 2023-04-28", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout (linked from https://polyguard.com/product/insulrap-30-ng)"},
+    {"id": "J34", "title": "Insulrap 30 NG – Product Information Sheet", "publisher": "Polyguard Products, Inc.", "url": "https://assets.cdn.polyguard.com/resources/MECHANICAL_PIS_Insulrap-30_NG.pdf", "doc_type": "manufacturer product information sheet PDF", "pub_no_or_date": "REV022123", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J35", "title": "Product Data Sheet – PITTWRAP IW50 AL Jacketing", "publisher": "Owens Corning / Pittsburgh Corning, LLC", "url": "https://www.owenscorning.com/dms/10023702", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "Pub. No. 10023702-A, July 2021", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout"},
+    {"id": "J36", "title": "Product Data Sheet – PITTWRAP B100 Jacketing", "publisher": "Owens Corning / Pittsburgh Corning, LLC", "url": "https://www.owenscorning.com/dms/10024472", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "Pub. No. 10024472-A, March 2024", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout (foamglas.com copy is the older Sept 2020 edition)"},
+    {"id": "J37", "title": "Product Data Sheet – PITTCOTE 300E Coating", "publisher": "Owens Corning / Pittsburgh Corning, LLC", "url": "https://www.owenscorning.com/dms/10025345", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "Pub. No. 10025345, April 2022", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout (same file as foamglas.com pds-pittcote-300e-coating-us.pdf)"},
+    {"id": "J38", "title": "Foster 30-65 Vapor-Fas WB Coating – Product Data Sheet and Application Guide", "publisher": "H.B. Fuller Construction Products Inc. (Foster brand)", "url": "https://fosterproducts.com/wp-content/uploads/2017/01/Foster-PDS-30-65-R1119.pdf", "doc_type": "manufacturer data sheet PDF", "pub_no_or_date": "Foster PDS 30-65 R1119", "accessed": "2026-10-10", "retrieval": "curl+pdftotext -layout; hbfullerproducts.com product page returned AWS WAF challenge (HTTP 202) and could not be read"},
+    {"id": "J39", "title": "Foster 30-65 Vapor-Fas WB Coating – Product Data Sheet (older revision, third-party hosted compilation)", "publisher": "H.B. Fuller Construction Products Inc. (hosted by University of Central Florida EHS)", "url": "https://ehs.ucf.edu/wp-content/uploads/sites/3/2019/11/Insulation-Mastic-Sealant-Adhesive.pdf", "doc_type": "manufacturer data sheet PDF (third-party copy)", "pub_no_or_date": "DSF30-65 R0512", "accessed": "2026-10-10", "retrieval": "curl+pdftotext; used only to document the revision discrepancy"}
+  ]
+}

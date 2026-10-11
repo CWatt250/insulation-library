@@ -2,7 +2,10 @@ import * as THREE from 'three'
 import { sweep, annulusProfile, bandProfile, type Profile, type ProfileEdge } from './sweep'
 import { IN, NPS, aluminumGauge, stainlessGauge } from '../data/pipe'
 import { Slot } from '../materials/library'
-import { INSULATION, JACKETS, type InsulationId, type JacketId, type InsulationVisual, type JacketVisual } from '../data/catalog'
+import {
+  INSULATION, JACKETS, layerCount,
+  type FacingId, type InsulationId, type JacketId, type InsulationVisual, type JacketVisual, type LayerId, type OuterJacketId, type ServiceId,
+} from '../data/catalog'
 
 /**
  * Insulated piping assemblies, built to field practice (JM Metal Jacketing
@@ -13,14 +16,15 @@ import { INSULATION, JACKETS, type InsulationId, type JacketId, type InsulationV
  *  - metal jacket in 36" sheets, 2" circumferential laps, longitudinal lap at
  *    ~4 o'clock opening down; gored elbow covers, each gore lapping the one
  *    below; upper pieces always lap over lower pieces to shed water
- *  - ½" × 0.020" SS bands on every circumferential lap and ≤9" o.c., wing seals
- *  - hot work: #8 screws 6" o.c. on straight seams, 3" o.c. on elbow gores
+ *  - ½" × 0.020" SS bands on every circumferential lap and ≤12" o.c., wing seals
+ *  - hot work only: #8 screws ≤8" o.c. on straight seams, 3" o.c. on elbow gores
+ *    (JM guide 04/23/24; never through a vapor retarder)
  *
  * Every piece is built in a local frame with the pipe axis on +z, then placed.
  * θ = 0 → local +x, θ = 90° → local +y.
  */
 
-export type ViewMode = 'installed' | 'cutaway' | 'layers'
+export type ViewMode = 'installed' | 'cutaway' | 'layers' | 'exploded' | 'section'
 export type Component = 'straight' | 'elbow' | 'valve'
 
 export interface AssemblyParams {
@@ -28,7 +32,12 @@ export interface AssemblyParams {
   npsIndex: number
   thicknessIn: number
   insulation: InsulationId
+  /** Outer jacket. Legacy 'asj' / 'fsk' mean an ASJ-faced section with no outer jacket. */
   jacket: JacketId
+  /** Factory facing; defaults to the material's first option. */
+  facing?: FacingId
+  /** Hot or cold (below-ambient) service; defaults to the material's first option. */
+  service?: ServiceId
   view: ViewMode
   /** Straight-run length (m) for long installed runs, e.g. wall to wall in the mech room. */
   span?: number
@@ -39,6 +48,9 @@ export interface AssemblyParams {
 export interface Part {
   key: string
   geometry: THREE.BufferGeometry
+  layer: LayerId
+  /** Exploded view: how far (m, local +y) this top half lifts off. */
+  lift?: number
 }
 
 /** A labelled point on the model (local frame) for the Layers view. */
@@ -50,6 +62,8 @@ export interface Callout {
   side?: 'up' | 'down' | 'right'
   /** Leader length tier (0, 1, 2). */
   tier?: number
+  /** Layer it describes, so labels hide with their layer. */
+  layer?: LayerId
 }
 
 export interface Assembly {
@@ -63,6 +77,8 @@ export interface Assembly {
   zMax: number
   yMax: number
   callouts: Callout[]
+  /** Model points the right-hand label column must clear (local frame). */
+  extent?: [number, number, number][]
 }
 
 const TAU = Math.PI * 2
@@ -117,17 +133,33 @@ interface Dims {
   rIns0: number
   rInsOut: number
   ins: InsulationVisual
+  /** Outer jacket (JACKETS.none when the facing or bare insulation is the finish). */
   J: JacketVisual
+  jacketId: OuterJacketId
   metal: boolean
-  /** Any jacket at all. */
+  /** An outer jacket at all. */
   jacketed: boolean
-  /** Hot service with metal jacket: screws on seams. */
+  service: ServiceId
+  cold: boolean
+  /** Factory facing (ASJ) on the insulation sections, or null. */
+  F: JacketVisual | null
+  rF: number
+  tF: number
+  /** Cold service: how the vapor retarder is provided. */
+  vaporBy: 'none' | 'facing' | 'integral' | 'membrane'
+  /** A separate vapor-retarder membrane is built. */
+  membrane: boolean
+  rV: number
+  tV: number
+  /** Hot service with metal jacket: screws on seams (never through a vapor retarder). */
   screws: boolean
   /** Resolved elbow covering. */
   elbow: 'pressed' | 'gores' | 'fitting-cover' | 'taped-gores' | 'none'
   npsNominal: number
   t: number
   rJ: number
+  /** Outermost finished surface on straight runs. */
+  rFinish: number
   odIn: number
   bandW: number
   bandT: number
@@ -137,6 +169,37 @@ interface Dims {
 
 const RAMP = 0.004
 
+/** Vapor-retarder membrane laid over the insulation: 36" widths, 2" laps both ways. */
+const MEMBRANE: JacketVisual = { id: 'none', label: 'Vapor retarder', metal: false, sheetIn: 36, circLapIn: 2, longLapIn: 2, bands: false, elbow: 'none' }
+
+/** Resolve facing, service and jacket into the system actually built (also used by the UI). */
+export function resolveSystem(p: Pick<AssemblyParams, 'insulation' | 'jacket' | 'facing' | 'service'>) {
+  const ins = INSULATION[p.insulation]
+  let jacketId = p.jacket as OuterJacketId
+  let facing: FacingId = p.facing ?? ins.facings[0]
+  if (p.jacket === 'asj' || p.jacket === 'fsk') {
+    facing = 'asj'
+    jacketId = 'none'
+  }
+  if (!ins.facings.includes(facing)) facing = ins.facings[0]
+  const service: ServiceId = p.service && ins.services.includes(p.service) ? p.service : ins.services[0]
+  // a cold fibrous system needs its ASJ: the facing is the vapor retarder
+  if (service === 'cold' && ins.vapor.kind === 'facing' && ins.facings.includes('asj')) facing = 'asj'
+  let vaporBy: Dims['vaporBy'] = 'none'
+  let membrane = false
+  if (service === 'cold') {
+    if (ins.vapor.kind === 'integral') vaporBy = 'integral'
+    else if (ins.vapor.kind === 'facing' && facing === 'asj') {
+      vaporBy = 'facing'
+      membrane = !!ins.vapor.membraneUnder?.includes(jacketId)
+    } else {
+      vaporBy = 'membrane'
+      membrane = true
+    }
+  }
+  return { ins, jacketId, facing, service, vaporBy, membrane }
+}
+
 function dims(p: AssemblyParams): Dims {
   const pipe = NPS[p.npsIndex]
   const rPipe = (pipe.od / 2) * IN
@@ -144,30 +207,60 @@ function dims(p: AssemblyParams): Dims {
   const rIns0 = rPipe + 0.0004
   const rInsOut = rIns0 + T
   const odIn = (rInsOut * 2) / IN
-  const ins = INSULATION[p.insulation]
-  const J = JACKETS[p.jacket]
+  const sys = resolveSystem(p)
+  const { ins, jacketId } = sys
+  const J = JACKETS[jacketId]
   const metal = J.metal
-  const t = metal ? (p.jacket === 'ss' ? stainlessGauge(odIn) : aluminumGauge(odIn, ins.rigid)) * IN : J.t ?? 0
+  const cold = sys.service === 'cold'
+  const F = sys.facing === 'asj' ? JACKETS.asj : null
+  const t = metal ? (jacketId === 'ss' ? stainlessGauge(odIn) : aluminumGauge(odIn, ins.rigid)) * IN : J.t ?? 0
+  // Each sheet layer clears the waviness of the one beneath it so ripples never touch.
+  const CLR = 0.0002
+  const WAVE = 0.0012
+  const wJ = metal ? 1 : jacketId === 'pvc' ? 0.45 : 0.25
+  const tF = F ? F.t ?? 0.0003 : 0
+  const rF = rInsOut + CLR + WAVE * 0.25
+  let outer = F ? rF + 2 * tF : rInsOut
+  let wPrev = F ? 0.25 : 0
+  const tV = sys.membrane ? (ins.vapor.membrane?.mil ?? 30) * 0.001 * IN : 0
+  const rV = outer + CLR + WAVE * (wPrev + 0.3)
+  if (sys.membrane) {
+    outer = rV + 2 * tV
+    wPrev = 0.3
+  }
+  const rJ = outer + CLR + WAVE * (wPrev + wJ)
+  const jacketed = jacketId !== 'none'
   return {
     ins,
     J,
-    jacketed: p.jacket !== 'none',
-    screws: metal && ins.hot,
-    elbow: J.elbow === 'gores'
+    jacketId,
+    jacketed,
+    service: sys.service,
+    cold,
+    F,
+    rF,
+    tF,
+    vaporBy: sys.vaporBy,
+    membrane: sys.membrane,
+    rV,
+    tV,
+    screws: metal && !cold,
+    elbow: metal
       ? (p.elbowCover === 'gored' || (p.elbowCover !== 'pressed' && npsValue(pipe.nps) > 12) ? 'gores' : 'pressed')
-      : J.elbow,
+      : jacketId === 'pvc' ? 'fitting-cover'
+      : F ? (ins.id === 'fiberglass' ? 'fitting-cover' : 'taped-gores')
+      : 'none',
     npsNominal: npsValue(pipe.nps),
     rPipe,
     rBore: rPipe - pipe.wall40 * IN,
     T,
-    // multi-layer above 3" (2" for elastomeric, which is limited to 2" per layer... and max 2" here)
-    layers: p.thicknessIn > 3 ? 2 : 1,
+    layers: layerCount(ins, p.thicknessIn),
     rIns0,
     rInsOut,
     metal,
     t,
-    // clearance covers the sheet waviness amplitude so ripples never dip into the insulation
-    rJ: rInsOut + 0.0002 + 0.0012 * (metal ? 1 : p.jacket === 'pvc' ? 0.45 : 0.25),
+    rJ,
+    rFinish: jacketed ? rJ + 2 * t : outer,
     odIn,
     bandW: (odIn >= 16 ? 0.75 : 0.5) * IN,
     bandT: 0.02 * IN,
@@ -210,6 +303,8 @@ interface SegOpts {
   pipeExt: [number, number]
   /** Stepped cutaway presentation at z1, removing this θ wedge. */
   cutaway: [number, number] | null
+  /** Where the wedge starts (default 18" from z1); -Infinity cuts the whole run. */
+  wedgeFrom?: number
   /** Jacket's first sheet rides up over the previous piece (it is the upper piece). */
   raisedStart: boolean
   /** The next piece laps over this one's end: add its lip here. */
@@ -221,27 +316,99 @@ interface SegOpts {
   /** Layers view: telescoping step-down at z1 (no wedge) with callouts. */
   steps?: boolean
   callouts?: Callout[]
+  /** Exploded view: build only this half; top halves get a lift per layer. */
+  half?: 'top' | 'bottom'
+  /** Skip the pipe (the exploded view builds it once, whole). */
+  noPipe?: boolean
+  /** Exploded view: lift (m) per layer index, counted outward from the first insulation layer. */
+  liftStep?: number
+}
+
+type AddFn = (key: string, g: THREE.BufferGeometry, layer: LayerId, lift?: number) => void
+
+/** One sheet layer over the insulation: factory facing, vapor-retarder membrane or outer jacket. */
+interface SheetSys {
+  layer: LayerId
+  J: JacketVisual
+  r: number
+  t: number
+  wavy: number
+  zEnd: number
+  longLap: number
+  seam: number
+  mats: { outer: number; inner: number; edge: number; tape: number }
+  /** Factory sections (ASJ): one sheet per insulation section, butt strips at the joints. */
+  factory: boolean
+  bands: boolean
+  screws: boolean
+  /** Carries the lap lip for the fitting cover that follows. */
+  outermost: boolean
+  lift: number
+}
+
+/** The sheet layers over the insulation, inside to out. */
+function sheetStack(d: Dims, o: { seamTheta: number }): Omit<SheetSys, 'zEnd' | 'lift'>[] {
+  const out: Omit<SheetSys, 'zEnd' | 'lift'>[] = []
+  if (d.F) {
+    out.push({
+      layer: 'facing', J: d.F, r: d.rF, t: d.tF, wavy: 0.25, longLap: d.F.longLapIn * IN, seam: o.seamTheta,
+      mats: { outer: Slot.Facing, inner: Slot.FacingInner, edge: Slot.FacingEdge, tape: Slot.FacingTape },
+      factory: true, bands: false, screws: false, outermost: false,
+    })
+  }
+  if (d.membrane) {
+    out.push({
+      layer: 'vapor', J: MEMBRANE, r: d.rV, t: d.tV, wavy: 0.3, longLap: MEMBRANE.longLapIn * IN, seam: o.seamTheta - 70 * DEG,
+      mats: { outer: Slot.Vapor, inner: Slot.Vapor, edge: Slot.VaporEdge, tape: Slot.Vapor },
+      factory: false, bands: false, screws: false, outermost: false,
+    })
+  }
+  if (d.jacketed) {
+    out.push({
+      layer: 'jacket', J: d.J, r: d.rJ, t: d.t, wavy: d.J.metal ? 1 : d.J.id === 'pvc' ? 0.45 : 0.25, longLap: d.longLap, seam: o.seamTheta,
+      mats: { outer: Slot.JacketOuter, inner: Slot.JacketInner, edge: Slot.JacketEdge, tape: Slot.Tape },
+      factory: false, bands: d.J.bands, screws: d.screws, outermost: false,
+    })
+  }
+  if (out.length) out[out.length - 1].outermost = true
+  return out
 }
 
 function straightSegment(d: Dims, o: SegOpts): Part[] {
   const parts: Part[] = []
-  const add = (key: string, geometry: THREE.BufferGeometry) => parts.push({ key: `${o.key}-${key}`, geometry })
+  const add: AddFn = (key, geometry, layer, lift = 0) => parts.push({ key: `${o.key}-${key}`, geometry, layer, lift: lift || undefined })
   const { z0, z1 } = o
   const cut = o.cutaway
-  const zWedge = cut ? z1 - 18 * IN : Infinity
+  const zWedge = cut ? o.wedgeFrom ?? z1 - 18 * IN : Infinity
+  const top = o.half === 'top'
+  const liftOf = (i: number) => (top ? (o.liftStep ?? 0) * (i + 1) : 0)
   // Layers view: each layer steps back from the one beneath it, like a
-  // catalogue section: pipe → inner layer → outer layer → barrier → jacket.
+  // catalogue section: pipe → inner layer → outer layer → facing → retarder → jacket.
   const STEP_INS = 2.5 * IN
-  const insEnd = (L: number) => (o.steps ? z1 - (d.layers - 1 - L) * STEP_INS : z1)
+  const insEnd = (L: number) => (o.steps ? z1 - L * STEP_INS : z1)
   const BARRIER_SHOW = d.metal && d.J.id !== 'ss' ? 1 * IN : 0
-  const zJacketEnd = cut ? z1 - 4 * IN : o.steps ? insEnd(0) - (d.layers - 1) * STEP_INS - 3 * IN - BARRIER_SHOW : z1
+  const stack = sheetStack(d, o)
+  const sheets: SheetSys[] = []
+  {
+    let zPrev = insEnd(d.layers - 1)
+    stack.forEach((s, i) => {
+      const isJacket = s.layer === 'jacket'
+      let zEnd = z1
+      if (o.steps) zEnd = zPrev - 3 * IN - (isJacket ? BARRIER_SHOW : 0)
+      else if (cut && !o.half) zEnd = isJacket ? z1 - 4 * IN : z1 - (1.5 + i) * IN
+      zPrev = zEnd
+      sheets.push({ ...s, zEnd, lift: liftOf(d.layers + i) })
+    })
+  }
 
   // Pipe
-  const pipeMats = { outer: Slot.PipeOuter, inner: Slot.PipeBore, end: Slot.PipeEnd }
-  add('pipe', sweep(
-    annulusProfile(d.rBore, d.rPipe, z0 - o.pipeExt[0], z1 + o.pipeExt[1], pipeMats, 0.0006, [o.pipeExt[0] > 0, o.pipeExt[1] > 0]),
-    { segments: 128 },
-  ))
+  if (!o.noPipe) {
+    const pipeMats = { outer: Slot.PipeOuter, inner: Slot.PipeBore, end: Slot.PipeEnd }
+    add('pipe', sweep(
+      annulusProfile(d.rBore, d.rPipe, z0 - o.pipeExt[0], z1 + o.pipeExt[1], pipeMats, 0.0006, [o.pipeExt[0] > 0, o.pipeExt[1] > 0]),
+      { segments: 128 },
+    ), 'pipe')
+  }
 
   // Insulation
   const insMats = { outer: Slot.InsSkin, inner: Slot.InsBore, end: Slot.InsCut }
@@ -271,7 +438,7 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
             add(`ins-${L}-${zs.toFixed(3)}-${si}-${h}-${ta.toFixed(3)}`, sweep(
               annulusProfile(rIn, rOut, a0, a1, insMats, bevel, [freeStart, freeEnd], endUv),
               { theta0: ta, theta1: tb, segments: 128, capMat: Slot.InsCut, capUv, tint: pieceTint(`${o.key}${L}-${zs.toFixed(3)}-${h}`) },
-            ))
+            ), 'insulation', liftOf(L))
           }
         })
       })
@@ -281,52 +448,74 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
   const C = o.callouts
   if (o.steps && C) {
     const pipe = NPS_LABEL(d)
-    C.push({ title: pipe.title, detail: pipe.detail, pos: [0, d.rPipe, z1 + o.pipeExt[1] * 0.55] })
+    C.push({ title: pipe.title, detail: pipe.detail, pos: [0, d.rPipe, z1 + o.pipeExt[1] * 0.55], layer: 'pipe' })
     for (let L = d.layers - 1; L >= 0; L--) {
       const rOut = d.rIns0 + (d.T * (L + 1)) / d.layers
-      const next = L === d.layers - 1 ? zJacketEnd + BARRIER_SHOW : insEnd(L + 1)
+      const next = L === d.layers - 1 ? (sheets[0] ? sheets[0].zEnd + (sheets[0].layer === 'jacket' ? BARRIER_SHOW : 0) : z1 - 4 * IN) : insEnd(L + 1)
       const each = d.T / d.layers / IN
       C.push({
         title: d.ins.label,
         detail: d.layers > 1 ? `${L === 0 ? 'Inner' : 'Outer'} layer, ${each}" · joints staggered` : `${d.T / IN}" thick`,
         pos: [0, rOut, (next + insEnd(L)) / 2],
+        layer: 'insulation',
       })
     }
   }
-  if (!d.jacketed) return parts
 
-  // Jacket sheets
-  const { t, rJ, J } = d
+  sheets.forEach((s, i) => {
+    const next = sheets[i + 1]
+    sheetLayer(d, o, s, add, cut, zWedge, BARRIER_SHOW)
+    if (o.steps && C && s.layer !== 'jacket') {
+      const zNext = next ? next.zEnd + (next.layer === 'jacket' ? BARRIER_SHOW : 0) : s.zEnd - 4 * IN
+      C.push({ ...sheetCallout(d, s.layer), pos: [0, s.r + s.t, (s.zEnd + zNext) / 2], layer: s.layer })
+    }
+  })
+  return parts
+}
+
+function sheetCallout(d: Dims, layer: LayerId): { title: string; detail: string } {
+  if (layer === 'facing') return { title: 'ASJ facing', detail: `Factory kraft/foil/scrim · ${d.F?.longLapIn}" self-seal lap` }
+  if (layer === 'vapor') return { title: 'Vapor retarder', detail: 'Sealed membrane, all laps and joints' }
+  return { title: d.J.label, detail: jacketDetail(d) }
+}
+
+function sheetLayer(d: Dims, o: SegOpts, s: SheetSys, add: AddFn, cut: [number, number] | null, zWedge: number, BARRIER_SHOW: number) {
+  const { z0, z1 } = o
+  const { t, J } = s
+  const rJ = s.r
+  const L = s.layer
+  const lift = s.lift
+  const zJacketEnd = s.zEnd
   const SHEET = J.sheetIn * IN
   const CIRC_LAP = J.circLapIn * IN
-  const longLapAng = d.longLap / rJ
-  const thEnd = o.seamTheta
+  const longLapAng = s.longLap / rJ
+  const thEnd = s.seam
   const thStart = thEnd - longLapAng - TAU
   const rampAng = RAMP / rJ
   const rOffset = (th: number) => {
-    const s = thEnd - longLapAng - rampAng
-    if (th <= s) return 0
+    const st = thEnd - longLapAng - rampAng
+    if (th <= st) return 0
     if (th >= thEnd - longLapAng) return t
-    return (t * (th - s)) / rampAng
+    return (t * (th - st)) / rampAng
   }
   const pitch = SHEET - CIRC_LAP
   const sheetStarts: number[] = []
-  // factory jackets (ASJ / foil facing) come on the insulation sections themselves
-  if (J.buttStripIn) {
+  // factory facings come on the insulation sections themselves
+  if (s.factory) {
     for (let z = z0; z < zJacketEnd - 1e-6; z += d.ins.sectionIn * IN) sheetStarts.push(z)
   } else
   for (let z = z0; z < zJacketEnd - 1e-6; z += pitch) sheetStarts.push(z)
 
-  // Band stations: one on every circumferential lap, intermediates ≤ 9" o.c.
+  // Band stations: one on every circumferential lap, intermediates ≤ 12" o.c.
   const bandZ: number[] = []
-  if (J.bands) {
+  if (s.bands) {
     sheetStarts.forEach((zs, k) => k > 0 && bandZ.push(zs + CIRC_LAP / 2))
     const startBand = z0 + (o.raisedStart ? 1.25 : 0.75) * IN
     const endBand = zJacketEnd - (o.lipAtEnd ? 1 : 0.75) * IN
     const anchors = [startBand, ...bandZ, endBand]
     for (let i = 0; i < anchors.length - 1; i++) {
       const span = anchors[i + 1] - anchors[i]
-      const nInt = Math.ceil(span / (9 * IN)) - 1
+      const nInt = Math.ceil(span / (12 * IN)) - 1
       for (let j = 1; j <= nInt; j++) bandZ.push(anchors[i] + (span * j) / (nInt + 1))
     }
     bandZ.push(startBand, endBand)
@@ -336,9 +525,10 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
   // long-wave waviness (0.4–0.8 mm over 60–400 mm), the run is faintly oval,
   // and the jacket is pulled in under every band and bulges between them.
   // Waves fade near sheet ends and bands so laps and straps still sit flush.
-  const wavy = J.metal ? 1 : J.id === 'pvc' ? 0.45 : 0.25
-  const hash = (k: number, salt: number) => {
-    const x = Math.sin((k + 1) * 127.1 + salt * 311.7 + o.key.length * 74.7) * 43758.5453
+  const wavy = s.wavy
+  const salt = L.length * 13.1
+  const hash = (k: number, sl: number) => {
+    const x = Math.sin((k + 1) * 127.1 + sl * 311.7 + o.key.length * 74.7 + salt) * 43758.5453
     return x - Math.floor(x)
   }
   const ovalPhase = hash(99, 1) * TAU
@@ -354,15 +544,15 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
         a1 * Math.sin((TAU * z) / l1 + p1) * (0.65 + 0.35 * Math.cos(th + cphi)) +
         a2 * Math.sin((TAU * z) / l2 + p2 + Math.sin(th * 2 + p1))
       const oval = 0.00025 * Math.cos(2 * (th - ovalPhase))
-      const pinch = J.bands ? -0.00028 * Math.exp(-((nearBand / 0.012) ** 2)) : 0
+      const pinch = s.bands ? -0.00028 * Math.exp(-((nearBand / 0.012) ** 2)) : 0
       return wavy * (free * waves + oval) + pinch
     }
   }
 
-  const edgeMat: ProfileEdge = { mat: Slot.JacketEdge, uv: 'planar' }
+  const edgeMat: ProfileEdge = { mat: s.mats.edge, uv: 'planar' }
   sheetStarts.forEach((zs, k) => {
-    const ze = Math.min(J.buttStripIn ? (sheetStarts[k + 1] ?? zJacketEnd) - 0.0002 : zs + SHEET, zJacketEnd)
-    const lapLen = k > 0 && CIRC_LAP > 0 ? CIRC_LAP : o.raisedStart && !J.buttStripIn ? 0 : -1
+    const ze = Math.min(s.factory ? (sheetStarts[k + 1] ?? zJacketEnd) - 0.0002 : zs + SHEET, zJacketEnd)
+    const lapLen = k > 0 && CIRC_LAP > 0 ? CIRC_LAP : o.raisedStart && !s.factory && s.outermost ? 0 : -1
     const rAt = (z: number) => {
       if (lapLen < 0) return rJ
       if (z <= zs + lapLen) return rJ + t
@@ -371,7 +561,10 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
     }
     const breaks = [zs, ze]
     if (lapLen >= 0) breaks.push(zs + lapLen, zs + lapLen + RAMP)
-    for (let z = zs + 0.015; z < ze - 0.005; z += 0.015) breaks.push(z) // resolves the waviness
+    // resolves the waviness; facings and membranes barely ripple, so they get a coarser mesh
+    const fine = s.wavy >= 0.45
+    const step = fine ? 0.015 : 0.05
+    for (let z = zs + step; z < ze - 0.005; z += step) breaks.push(z)
     const disp = sheetDisp(k, zs, ze)
     const shade = 1 + (hash(k, 8) - 0.5) * 0.08
     const tint: [number, number, number] = [shade, shade, shade * (1 + (hash(k, 9) - 0.5) * 0.01)]
@@ -386,50 +579,57 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
       const edges: ProfileEdge[] = []
       zz.forEach((z, j) => {
         pts.push([rAt(z), z])
-        edges.push(j < zz.length - 1 ? { mat: Slot.JacketInner } : edgeMat)
+        edges.push(j < zz.length - 1 ? { mat: s.mats.inner } : edgeMat)
       })
       for (let j = zz.length - 1; j >= 0; j--) {
         pts.push([rAt(zz[j]) + t, zz[j]])
-        edges.push(j > 0 ? { mat: Slot.JacketOuter } : edgeMat)
+        edges.push(j > 0 ? { mat: s.mats.outer } : edgeMat)
       }
       const wedged = a0 >= zWedge - 1e-9
       for (const [ta, tb] of visibleIntervals(thStart, thEnd, wedged ? cut : null)) {
-        add(`jk-${k}-${a0.toFixed(3)}-${ta.toFixed(3)}`, sweep({ pts, edges }, {
-          theta0: ta, theta1: tb, segments: 192, capMat: Slot.JacketEdge, rOffset, disp, tint, uvOffset,
-        }))
+        add(`${L}-${k}-${a0.toFixed(3)}-${ta.toFixed(3)}`, sweep({ pts, edges }, {
+          theta0: ta, theta1: tb, segments: fine ? 192 : 120, capMat: s.mats.edge, rOffset, disp, tint, uvOffset,
+        }), L, lift)
       }
     }
   })
 
+  const ringAt = (z: number) => visibleIntervals(0, TAU, z >= zWedge ? cut : null)
+
   // Lip of the next piece lapping over this segment's end.
-  if (o.lipAtEnd && (d.elbow === 'gores' || d.elbow === 'taped-gores')) {
+  if (s.outermost && o.lipAtEnd && (d.elbow === 'gores' || d.elbow === 'taped-gores')) {
     const lip = Math.max(CIRC_LAP, 0.75 * IN)
-    add('lip', sweep(lipProfile(rJ + t, t, z1 - lip, z1, J.metal ? Slot.JacketOuter : Slot.Tape), {
-      theta0: thStart, theta1: thEnd, segments: 160, capMat: Slot.JacketEdge, rOffset,
-    }))
+    for (const [a, b] of visibleIntervals(thStart, thEnd, z1 - lip >= zWedge ? cut : null)) {
+      add(`${L}-lip-${a.toFixed(3)}`, sweep(lipProfile(rJ + t, t, z1 - lip, z1, J.metal ? s.mats.outer : s.mats.tape, s.mats), {
+        theta0: a, theta1: b, segments: 160, capMat: s.mats.edge, rOffset,
+      }), L, lift)
+    }
   }
 
-  // Butt strips over each section joint (ASJ / foil-faced sections)
-  if (J.buttStripIn) {
+  // Butt strips over each section joint (factory facings)
+  if (s.factory && J.buttStripIn) {
     const w = J.buttStripIn * IN
     sheetStarts.forEach((zs, k) => {
       if (k === 0) return
       const z = zs - 0.0001
-      add(`strip-${k}`, sweep(lipProfile(rJ + t + 0.00002, t, z - w / 2, z + w / 2, Slot.Tape), {
-        theta0: 0, theta1: TAU, segments: 160, rOffset,
-      }))
+      for (const [a, b] of ringAt(z)) {
+        add(`${L}-strip-${k}-${a.toFixed(3)}`, sweep(lipProfile(rJ + t + 0.00002, t, z - w / 2, z + w / 2, s.mats.tape, s.mats), {
+          theta0: a, theta1: b, segments: 160, rOffset, capMat: s.mats.edge,
+        }), L, lift)
+      }
     })
   }
 
-  if (o.steps && BARRIER_SHOW > 0) {
+  const C = o.callouts
+  if (L === 'jacket' && o.steps && BARRIER_SHOW > 0) {
     // the bonded 3-mil polyfilm moisture barrier, exposed where the jacket is trimmed back
-    add('barrier', sweep(lipProfile(rJ, 0.0002, zJacketEnd, zJacketEnd + BARRIER_SHOW, Slot.Barrier), { segments: 160, capMat: Slot.Barrier }))
+    add('barrier', sweep(lipProfile(rJ, 0.0002, zJacketEnd, zJacketEnd + BARRIER_SHOW, Slot.Barrier), { segments: 160, capMat: Slot.Barrier }), L)
   }
-  if (o.steps && C) {
-    if (BARRIER_SHOW > 0) C.push({ title: 'Moisture barrier', detail: '3-mil polyfilm, bonded to jacket', pos: [0, rJ, zJacketEnd + BARRIER_SHOW / 2] })
-    C.push({ title: J.label, detail: jacketDetail(d), pos: [0, rJ + t, zJacketEnd - 5 * IN] })
+  if (L === 'jacket' && o.steps && C) {
+    if (BARRIER_SHOW > 0) C.push({ title: 'Moisture barrier', detail: '3-mil polyfilm, bonded to jacket', pos: [0, rJ, zJacketEnd + BARRIER_SHOW / 2], layer: 'jacket' })
+    C.push({ title: J.label, detail: jacketDetail(d), pos: [0, rJ + t, zJacketEnd - 5 * IN], layer: 'jacket' })
   }
-  if (!J.bands) return parts
+  if (!s.bands) return
   // Bands
   for (const zc of bandZ) {
     const onLap =
@@ -441,29 +641,28 @@ function straightSegment(d: Dims, o: SegOpts): Part[] {
     for (const [a, b] of visibleIntervals(0, TAU, wedged ? cut : null)) {
       add(`band-${zc.toFixed(4)}-${a.toFixed(3)}`, sweep(bandProfile(rB, d.bandT, zc, d.bandW, Slot.Band), {
         theta0: a, theta1: b, segments: 160, capMat: Slot.Band,
-      }))
+      }), L, lift)
     }
-    if (!wedged) add(`seal-${zc.toFixed(4)}`, wingSeal(rB + d.bandT, zc, d.bandW, o.sealTheta))
+    if (!wedged) add(`seal-${zc.toFixed(4)}`, wingSeal(rB + d.bandT, zc, d.bandW, o.sealTheta), L, lift)
   }
 
   if (o.steps && C && bandZ.length) {
     const zb = Math.max(...bandZ.filter((z) => z <= zJacketEnd))
-    C.push({ title: 'Stainless band', detail: `${d.bandW / IN === 0.5 ? '½' : '¾'}" × 0.020" with wing seal`, pos: [0, rJ + 2 * t + d.bandT, zb] })
+    C.push({ title: 'Stainless band', detail: `${d.bandW / IN === 0.5 ? '½' : '¾'}" × 0.020" with wing seal`, pos: [0, rJ + 2 * t + d.bandT, zb], layer: 'jacket' })
   }
 
   // Screws along the longitudinal lap (hot work)
-  if (d.screws) {
+  if (s.screws) {
     const screw = screwGeometry()
     const th = thEnd - longLapAng * 0.45
     const list: THREE.BufferGeometry[] = []
-    for (let z = z0 + 3 * IN; z < zJacketEnd - 2 * IN; z += 6 * IN) {
+    for (let z = z0 + 3 * IN; z < zJacketEnd - 2 * IN; z += 8 * IN) {
       if (bandZ.some((b) => Math.abs(b - z) < 1 * IN)) continue
       if (z >= zWedge) continue
       list.push(placeRadial(screw, rJ + 2 * t, th, z))
     }
-    if (list.length) add('screws', mergeGeos(list))
+    if (list.length) add('screws', mergeGeos(list), L, lift)
   }
-  return parts
 }
 
 /**
@@ -493,20 +692,29 @@ function npsLabel(v: number) {
   return whole && f ? `${whole}-${f}` : whole ? `${whole}` : f
 }
 
+/** What the outside of the straight run is, for labels. */
+function finishCallout(d: Dims): { title: string; detail: string; layer: LayerId } {
+  if (d.jacketed) return { title: d.J.label, detail: jacketDetail(d), layer: 'jacket' }
+  if (d.membrane) return { ...sheetCallout(d, 'vapor'), layer: 'vapor' }
+  if (d.F) return { ...sheetCallout(d, 'facing'), layer: 'facing' }
+  return { title: d.ins.label, detail: 'Bare insulation', layer: 'insulation' }
+}
+
 function jacketDetail(d: Dims) {
   const { J } = d
-  if (J.metal) return `${(d.t / IN).toFixed(3).replace(/^0/, '')}" thick · ${d.longLap / IN}" laps`
-  if (J.id === 'asj') return `Kraft/foil/scrim laminate · ${J.longLapIn}" self-seal lap`
-  if (J.id === 'fsk') return `Factory foil-scrim facing · ${J.longLapIn}" lap`
+  if (J.metal) return `${(d.t / IN).toFixed(3).replace(/^0/, '')}" thick · ${+(d.longLap / IN).toFixed(2)}" laps`
   if (J.id === 'pvc') return `20-mil PVC · ${J.longLapIn}" lap`
   return ''
 }
 
 /** Thin raised lip: the overlapping end of the piece above, riding on this piece. */
-function lipProfile(r: number, t: number, z0: number, z1: number, outer: number = Slot.JacketOuter): Profile {
+function lipProfile(
+  r: number, t: number, z0: number, z1: number, outer: number = Slot.JacketOuter,
+  m: { inner: number; edge: number } = { inner: Slot.JacketInner, edge: Slot.JacketEdge },
+): Profile {
   return {
     pts: [[r, z0], [r, z1], [r + t, z1], [r + t, z0]],
-    edges: [{ mat: Slot.JacketInner }, { mat: Slot.JacketEdge, uv: 'planar' }, { mat: outer }, { mat: Slot.JacketEdge, uv: 'planar' }],
+    edges: [{ mat: m.inner }, { mat: m.edge, uv: 'planar' }, { mat: outer }, { mat: m.edge, uv: 'planar' }],
   }
 }
 
@@ -637,11 +845,11 @@ function miterPieces(R: number, n: number) {
 function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts: Callout[] | null): Part[] {
   const parts: Part[] = []
   const R = d.bendR
-  const add = (key: string, g: THREE.BufferGeometry, m?: THREE.Matrix4) => {
+  const add = (key: string, g: THREE.BufferGeometry, layer: LayerId, m?: THREE.Matrix4) => {
     if (m) g.applyMatrix4(m)
-    parts.push({ key, geometry: g })
+    parts.push({ key, geometry: g, layer })
   }
-  add('elbow-pipe', bentShell(R, d.rBore, d.rPipe, Math.PI / 2, Slot.PipeOuter, Slot.PipeBore))
+  add('elbow-pipe', bentShell(R, d.rBore, d.rPipe, Math.PI / 2, Slot.PipeOuter, Slot.PipeBore), 'pipe')
 
   // Mitered insulation segments; same piece count as the cover so joints line up.
   const insMats = { outer: Slot.InsSkin, inner: Slot.InsBore, end: Slot.InsCut }
@@ -652,8 +860,9 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
   // Under a PVC fitting cover the insulation is a wrapped, compressed insert, and
   // under a pressed cover a prefabricated elbow; both follow the bend. Otherwise
   // it is mitered pipe-insulation segments.
-  if (d.elbow === 'fitting-cover' || d.elbow === 'pressed') {
-    add('elb-insert', bentShell(R, d.rIns0, d.rInsOut - 0.0008, Math.PI / 2, Slot.InsSkin, Slot.InsBore))
+  const insert = d.elbow === 'fitting-cover' || d.elbow === 'pressed'
+  if (insert) {
+    add('elb-insert', bentShell(R, d.rIns0, d.rInsOut - 0.0008, Math.PI / 2, Slot.InsSkin, Slot.InsBore), 'insulation')
   } else pieces.forEach((c, k) => {
     const gap = 0.0004
     for (let L = 0; L < d.layers; L++) {
@@ -665,10 +874,19 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
         add(`elb-ins-${k}-${L}-${hh}`, sweep(annulusProfile(rIn, rOut, c.z0 + g0, c.z1 - g1, insMats, 0, [false, false], endUv), {
           theta0: a, theta1: b, segments: 128, capMat: Slot.InsCut, capUv, zMap: c.zLerp,
           tint: pieceTint(`elb${k}${L}${hh}`),
-        }), c.m)
+        }), 'insulation', c.m)
       })
     }
   })
+
+  // Facing and vapor-retarder membrane over the fitting insulation, under the cover.
+  const finishedByFacing = !d.jacketed && d.elbow === 'taped-gores'
+  const skin = (layer: LayerId, r: number, t: number, outer: number, inner: number, edge: number) => {
+    if (insert) add(`elb-${layer}`, bentShell(R, r, r + t, Math.PI / 2, outer, inner), layer)
+    else pieces.forEach((c, k) => add(`elb-${layer}-${k}`, sweep(lipProfile(r, t, c.z0, c.z1, outer, { inner, edge }), { segments: 160, zMap: c.zLerp }), layer, c.m))
+  }
+  if (d.F && !finishedByFacing) skin('facing', d.rF, d.tF, Slot.Facing, Slot.FacingInner, Slot.FacingEdge)
+  if (d.membrane) skin('vapor', d.rV, d.tV, Slot.Vapor, Slot.Vapor, Slot.VaporEdge)
 
   const { t, rJ } = d
   const J_ = Slot.JacketInner, O = Slot.JacketOuter, E = Slot.JacketEdge
@@ -687,8 +905,8 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
         { mat: J_ }, { mat: J_ }, { mat: E, uv: 'planar' },
         { mat: O }, { mat: O }, { mat: E, uv: 'planar' },
       ]
-      add(`gore-${k}`, sweep({ pts, edges }, { segments: 160, zMap: c.zLerp }), c.m)
-      add(`gore-lip-${k}`, sweep(lipProfile(rJ + t, t, z1 - lap, z1), { segments: 160, zMap: c.zEnd }), c.m)
+      add(`gore-${k}`, sweep({ pts, edges }, { segments: 160, zMap: c.zLerp }), 'jacket', c.m)
+      add(`gore-lip-${k}`, sweep(lipProfile(rJ + t, t, z1 - lap, z1), { segments: 160, zMap: c.zEnd }), 'jacket', c.m)
       if (screw) {
         const list: THREE.BufferGeometry[] = []
         const rr = rJ + 2 * t
@@ -701,29 +919,33 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
           for (let v = 0; v < pos.count; v++) pos.setZ(v, pos.getZ(v) + c.zEnd(rr, zc, th))
           list.push(g)
         }
-        add(`gore-screws-${k}`, mergeGeos(list), c.m)
+        add(`gore-screws-${k}`, mergeGeos(list), 'jacket', c.m)
       }
     })
   } else if (d.elbow === 'taped-gores') {
-    // Foil-faced mitered segments, every miter joint wrapped with foil tape.
+    // Faced mitered segments, every miter joint wrapped with matching tape.
     const tw = 1 * IN
+    const [r0, t0, layer] = d.jacketed ? [rJ, t, 'jacket' as const] : [d.rF, d.tF, 'facing' as const]
+    const m = layer === 'facing'
+      ? { outer: Slot.Facing, inner: Slot.FacingInner, edge: Slot.FacingEdge, tape: Slot.FacingTape }
+      : { outer: O, inner: J_, edge: E, tape: Slot.Tape }
     pieces.forEach((c, k) => {
-      add(`face-${k}`, sweep(lipProfile(rJ, t, c.z0, c.z1), { segments: 160, zMap: c.zLerp }), c.m)
-      if (k < n - 1) add(`tape-a-${k}`, sweep(lipProfile(rJ + t, t, c.z1 - tw, c.z1, Slot.Tape), { segments: 160, zMap: c.zEnd }), c.m)
-      if (k > 0) add(`tape-b-${k}`, sweep(lipProfile(rJ + t, t, c.z0, c.z0 + tw, Slot.Tape), { segments: 160, zMap: c.zStart }), c.m)
+      add(`face-${k}`, sweep(lipProfile(r0, t0, c.z0, c.z1, m.outer, m), { segments: 160, zMap: c.zLerp }), layer, c.m)
+      if (k < n - 1) add(`tape-a-${k}`, sweep(lipProfile(r0 + t0, t0, c.z1 - tw, c.z1, m.tape, m), { segments: 160, zMap: c.zEnd }), layer, c.m)
+      if (k > 0) add(`tape-b-${k}`, sweep(lipProfile(r0 + t0, t0, c.z0, c.z0 + tw, m.tape, m), { segments: 160, zMap: c.zStart }), layer, c.m)
     })
   } else if (d.elbow === 'pressed') {
-    add('pressed', pressedElbowCover(R, rJ + 0.0004, t * 1.5, d.npsNominal))
+    add('pressed', pressedElbowCover(R, rJ + 0.0004, t * 1.5, d.npsNominal), 'jacket')
   } else if (d.elbow === 'fitting-cover') {
     // One-piece PVC fitting cover (Zeston/Proto style) with short cuffs that
-    // slip over the straight jacket on both sides.
+    // slip over the straight jacket (or the ASJ) on both sides.
     const tc = 0.02 * IN
-    const rc = rJ + t + 0.0003
-    add('cover', bentShell(R, rc, rc + tc, Math.PI / 2, Slot.Cover, Slot.Cover))
+    const rc = (d.jacketed ? rJ + t : d.rFinish) + 0.0003
+    add('cover', bentShell(R, rc, rc + tc, Math.PI / 2, Slot.Cover, Slot.Cover), 'jacket')
     const cuff = 1.5 * IN
     const coverMats = { outer: Slot.Cover, inner: Slot.Cover, end: Slot.Cover }
-    add('cover-cuff-a', sweep(annulusProfile(rc, rc + tc, -cuff, 0, coverMats, 0.0002, [true, false]), { segments: 160 }))
-    add('cover-cuff-b', sweep(annulusProfile(rc, rc + tc, 0, cuff, coverMats, 0.0002, [false, true]), { segments: 160 }), riserMatrix(R))
+    add('cover-cuff-a', sweep(annulusProfile(rc, rc + tc, -cuff, 0, coverMats, 0.0002, [true, false]), { segments: 160 }), 'jacket')
+    add('cover-cuff-b', sweep(annulusProfile(rc, rc + tc, 0, cuff, coverMats, 0.0002, [false, true]), { segments: 160 }), 'jacket', riserMatrix(R))
   }
 
   // Vertical riser after the elbow (upper piece: its jacket laps over the last gore).
@@ -734,7 +956,7 @@ function elbowAssembly(d: Dims, cutawayRiser: [number, number] | null, callouts:
     cutaway: cutawayRiser, raisedStart: d.elbow === 'gores', lipAtEnd: false,
     seamTheta: 203 * DEG, sealTheta: 222 * DEG,
     steps: !!callouts, callouts: local,
-  })) add(part.key, part.geometry, riserMatrix(R))
+  })) add(part.key, part.geometry, part.layer, riserMatrix(R))
   if (callouts) {
     // riser callouts: anchor on the right-hand silhouette as seen from the camera
     // (riser θ = 225°, between the front and the right side)
@@ -860,9 +1082,12 @@ function riserMatrix(R: number) {
 export function buildAssembly(p: AssemblyParams): Assembly {
   const d = dims(p)
   const callouts: Callout[] = []
-  const steps = p.view === 'layers' 
-  const outerRadius = d.metal ? d.rJ + 3 * d.t + d.bandT : d.jacketed ? d.rJ + 2 * d.t : d.rInsOut
+  const steps = p.view === 'layers'
+  const outerRadius = d.metal ? d.rJ + 3 * d.t + d.bandT : d.rFinish
   const cutaway = p.view === 'cutaway'
+  // exploded and section views are straight-run presentations
+  if (p.view === 'exploded') return explodedAssembly(d, outerRadius)
+  if (p.view === 'section') return sectionAssembly(d, outerRadius)
   if (p.component === 'valve') return valveAssembly(d, p.view, outerRadius)
   if (p.component === 'elbow') {
     const zMin = -0.85
@@ -889,6 +1114,101 @@ export function buildAssembly(p: AssemblyParams): Assembly {
   const nH = Math.max(2, Math.round(len / span))
   const cradles = long ? Array.from({ length: nH }, (_, i) => (len / nH) * (i + 0.5)) : [0.2, len - 0.55]
   return { parts, outerRadius, cradles, zMin: 0, zMax: len, yMax: outerRadius, callouts: arrangeCallouts(callouts) }
+}
+
+/** Radial extent of every layer, inside to out (cross-section labels and the UI). */
+function rings(d: Dims): { layer: LayerId; title: string; detail: string; rIn: number; rOut: number }[] {
+  const pipe = NPS_LABEL(d)
+  const out: ReturnType<typeof rings> = [{ layer: 'pipe', title: pipe.title, detail: pipe.detail, rIn: d.rBore, rOut: d.rPipe }]
+  const each = d.T / d.layers / IN
+  for (let L = 0; L < d.layers; L++) {
+    out.push({
+      layer: 'insulation',
+      title: d.layers > 1 ? `${d.ins.label} · ${L === 0 ? 'inner' : 'outer'}` : d.ins.label,
+      detail: d.layers > 1 ? `${each}" layer · joints staggered` : `${d.T / IN}" wall`,
+      rIn: d.rIns0 + (d.T * L) / d.layers,
+      rOut: d.rIns0 + (d.T * (L + 1)) / d.layers,
+    })
+  }
+  for (const s of sheetStack(d, { seamTheta: 0 })) {
+    out.push({ layer: s.layer, ...sheetCallout(d, s.layer), rIn: s.r, rOut: s.r + s.t })
+  }
+  return out
+}
+
+const fmtIn = (m: number) => `${(m / IN).toFixed(2).replace(/0$/, '')}"`
+
+/**
+ * Exploded view: the bottom half stays assembled on the pipe; the top half of
+ * every layer lifts off, each a step higher than the one beneath it, so each
+ * layer shows its own surfaces and its thickness at the split.
+ */
+function explodedAssembly(d: Dims, outerRadius: number): Assembly {
+  const len = 1.0
+  const liftStep = THREE.MathUtils.clamp(outerRadius * 0.55, 0.045, 0.15)
+  const base = {
+    key: 'run', z0: 0, z1: len, pipeExt: [4 * IN, 4 * IN] as [number, number], raisedStart: false, lipAtEnd: false,
+    seamTheta: 203 * DEG, sealTheta: 222 * DEG, wedgeFrom: -Infinity, liftStep,
+  }
+  const parts = [
+    ...straightSegment(d, { ...base, cutaway: [0, Math.PI], half: 'bottom' }),
+    ...straightSegment(d, { ...base, cutaway: [Math.PI, TAU], half: 'top', noPipe: true }),
+  ]
+  const callouts: Callout[] = []
+  const th = 98 * DEG
+  const pipe = NPS_LABEL(d)
+  callouts.push({ title: pipe.title, detail: pipe.detail, pos: [0, d.rPipe, len + 2.5 * IN], side: 'right', layer: 'pipe' })
+  rings(d).slice(1).forEach((r, i) => {
+    const lift = liftStep * (i + 1)
+    callouts.push({ title: r.title, detail: r.detail, pos: [r.rOut * Math.cos(th), r.rOut * Math.sin(th) + lift, len * 0.93], side: 'right', layer: r.layer })
+  })
+  const top = outerRadius + liftStep * (rings(d).length - 1)
+  const extent: [number, number, number][] = [[0, top, len], [0, -outerRadius, len], [-outerRadius, top, len], [outerRadius, top, len]]
+  return { parts, outerRadius, cradles: [0.2, len - 0.2], zMin: 0, zMax: len, yMax: top, callouts, extent }
+}
+
+/** Cross-section: every layer cut square at the end of the run, labelled ring by ring. */
+function sectionAssembly(d: Dims, outerRadius: number): Assembly {
+  const len = 1.0
+  const parts = straightSegment(d, {
+    key: 'run', z0: 0, z1: len, pipeExt: [4 * IN, 0], cutaway: null,
+    raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
+  })
+  const list = rings(d)
+  // anchors run down one radial line on the lower right of the face, so the
+  // labels read inside → out from top to bottom; thin sheet layers fan out a little
+  let thin = 0
+  const callouts: Callout[] = list.map((r) => {
+    const thick = r.rOut - r.rIn > 0.004
+    const th = (-18 - (thick ? 0 : 7 * ++thin)) * DEG
+    const rr = thick ? (r.rIn + r.rOut) / 2 : r.rOut
+    const detail = r.layer === 'insulation' && r.rOut >= d.rInsOut - 1e-6
+      ? `${r.detail} · OD ≈ ${fmtIn(2 * d.rPipe + 2 * d.T)} nominal`
+      : r.detail
+    return { title: r.title, detail, pos: [rr * Math.cos(th), rr * Math.sin(th), len], side: 'right' as const, layer: r.layer }
+  })
+  const extent = Array.from({ length: 12 }, (_, i) => [outerRadius * Math.cos((i * TAU) / 12), outerRadius * Math.sin((i * TAU) / 12), len] as [number, number, number])
+  return { parts, outerRadius, cradles: [0.2, len - 0.3], zMin: 0, zMax: len, yMax: outerRadius, callouts, extent }
+}
+
+/** Dimensions of the resolved system for the UI (radii in metres). */
+export function systemInfo(p: AssemblyParams) {
+  const d = dims(p)
+  return {
+    service: d.service,
+    vaporBy: d.vaporBy,
+    membrane: d.membrane,
+    facing: d.F ? ('asj' as const) : ('none' as const),
+    jacketId: d.jacketId,
+    jacketThicknessIn: d.t / IN,
+    longLapIn: d.longLap / IN,
+    bandWIn: d.bandW / IN,
+    screws: d.screws,
+    elbow: d.elbow,
+    rings: rings(d),
+    /** Pipe OD + 2 × thickness; ASTM C585 actual sizes vary slightly. */
+    insulationOdIn: (2 * d.rPipe + 2 * d.T) / IN,
+  }
 }
 
 /**
@@ -1084,9 +1404,10 @@ function cylPart(r: number, len: number, mat: number, m: THREE.Matrix4, seg = 24
 
 function valveAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
   const parts: Part[] = []
-  const add = (key: string, g: THREE.BufferGeometry, m?: THREE.Matrix4) => {
+  // valve, flanges and fasteners belong to the piping layer
+  const add = (key: string, g: THREE.BufferGeometry, m?: THREE.Matrix4, layer: LayerId = 'pipe') => {
     if (m) g.applyMatrix4(m)
-    parts.push({ key, geometry: g })
+    parts.push({ key, geometry: g, layer })
   }
   const nps = NPS_KEY(d)
   const [fOD, fT, fBC, nB, bD, fY] = FLANGE_150[nps].map((v, i) => (i === 3 ? v : v * IN)) as number[]
@@ -1189,11 +1510,11 @@ function valveAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
   for (const part of straightSegment(d, {
     key: 'runL', z0: -zEnd, z1: -zi, pipeExt: [4 * IN, zi - (L / 2 + fY) + 0.002],
     cutaway: null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
-  })) add(part.key, part.geometry)
+  })) parts.push(part)
   for (const part of straightSegment(d, {
     key: 'runR', z0: zi, z1: zEnd, pipeExt: [zi - (L / 2 + fY) + 0.002, 4 * IN],
     cutaway: null, raisedStart: false, lipAtEnd: false, seamTheta: 203 * DEG, sealTheta: 222 * DEG,
-  })) add(part.key, part.geometry)
+  })) parts.push(part)
 
   // --- removable blanket -----------------------------------------------------------
   const callouts: Callout[] = []
@@ -1205,16 +1526,16 @@ function valveAssembly(d: Dims, view: ViewMode, outerRadius: number): Assembly {
     bonnet: { r: bfR + 0.2 * IN, yTop: bonnetTop + 0.02 * D },
     halfOnly: view === 'cutaway' || view === 'layers',
   })
-  for (const [k, g] of blanket.geos) add(`blanket-${k}`, g)
+  for (const [k, g] of blanket.geos) add(`blanket-${k}`, g, undefined, 'blanket')
   if (view === 'layers') {
     const rb = blanket.rOuter
     callouts.push(
-      { title: 'Cold-face fabric', detail: 'Silicone-coated fiberglass cloth', pos: [0, -rb, -0.35 * zi], side: 'down', tier: 0 },
-      { title: 'Insulation', detail: '2 layers × 1" fiberglass mat', pos: [-(rb - IN) * Math.cos(20 * DEG), -(rb - IN) * Math.sin(20 * DEG), 0.1 * zi], side: 'down', tier: 1 },
-      { title: 'Hot-face fabric', detail: 'Fiberglass cloth, wire-mesh encased', pos: [-(rb - 2 * IN) * Math.cos(10 * DEG), -(rb - 2 * IN) * Math.sin(10 * DEG), 0.55 * zi], side: 'down', tier: 2 },
-      { title: 'Gate valve, flanged', detail: `NPS ${npsLabel(d.npsNominal)}" Class 150 · OS&Y`, pos: [0, bonnetTop, 0], side: 'up', tier: 0 },
-      { title: 'Lacing anchors + wire', detail: 'Stainless, laced across the closure', pos: blanket.hookAnchor, side: 'down', tier: 0 },
-      { title: d.J.label, detail: jacketDetail(d) || 'Bare insulation', pos: [0, outerRadius, zi + 8 * IN], side: 'up', tier: 1 },
+      { title: 'Cold-face fabric', detail: 'Silicone-coated fiberglass cloth', pos: [0, -rb, -0.35 * zi], side: 'down', tier: 0, layer: 'blanket' },
+      { title: 'Insulation', detail: '2 layers × 1" fiberglass mat', pos: [-(rb - IN) * Math.cos(20 * DEG), -(rb - IN) * Math.sin(20 * DEG), 0.1 * zi], side: 'down', tier: 1, layer: 'blanket' },
+      { title: 'Hot-face fabric', detail: 'Fiberglass cloth, wire-mesh encased', pos: [-(rb - 2 * IN) * Math.cos(10 * DEG), -(rb - 2 * IN) * Math.sin(10 * DEG), 0.55 * zi], side: 'down', tier: 2, layer: 'blanket' },
+      { title: 'Gate valve, flanged', detail: `NPS ${npsLabel(d.npsNominal)}" Class 150 · OS&Y`, pos: [0, bonnetTop, 0], side: 'up', tier: 0, layer: 'pipe' },
+      { title: 'Lacing anchors + wire', detail: 'Stainless, laced across the closure', pos: blanket.hookAnchor, side: 'down', tier: 0, layer: 'blanket' },
+      { ...finishCallout(d), pos: [0, outerRadius, zi + 8 * IN], side: 'up', tier: 1 },
     )
   }
   return {

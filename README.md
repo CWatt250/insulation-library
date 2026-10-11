@@ -4,18 +4,21 @@ Interactive, photoreal 3D library of mechanical insulation: pipe insulation mate
 
 ## What it does
 
-- **Materials:** calcium silicate, fiberglass, mineral wool, cellular glass, elastomeric and phenolic, each built to field practice. That covers half-shells or hinged sections, section lengths, joint staggering, and double layers above 3".
-- **Jacketing:** smooth or stucco aluminum, stainless, ASJ, foil-scrim facing and PVC.
+- **Materials:** calcium silicate, fiberglass, mineral wool, cellular glass, elastomeric and phenolic, each built to field practice. That covers half-shells or hinged sections, section lengths, joint staggering, and double layers above 3" (2½" for phenolic).
+- **Layer-by-layer build-up:** pipe → insulation → facing → vapor retarder → jacket, each one selectable (click it in the list or on the model), hideable, or "peeled to" so you see what is underneath.
+  - Hot or cold service decides the vapor retarder: the ASJ facing on fibrous systems, the closed-cell foam itself on elastomerics, or a separate sealed membrane (cellular glass; phenolic under metal).
+  - No screws through a vapor retarder on cold work.
+- **Facing and jacketing:** factory ASJ facing, plus smooth or stucco aluminum, stainless and PVC outer jackets.
   - Real laps, bands with wing seals, and screws on hot work.
   - Jacket gauge set from the JM Metal Jacketing Install Guide.
 - **Components:**
   - Straight run.
   - 90° elbow: pressed covers with throat pleats through 12" NPS, gored covers above, and PVC fitting covers.
   - Flanged gate valve with a removable blanket.
-- **Views:** Installed, Cutaway, and Layers (a telescoping step-down with spec-driven callouts).
+- **Views:** Installed, Cutaway, Layers (a telescoping step-down with spec-driven callouts), Exploded (each layer's top half lifts off) and Section (every layer cut square, labelled ring by ring).
 - **Settings:** studio, outdoor plant, and mechanical room.
 - **Photo mode:** progressive path tracing ([three-gpu-pathtracer](https://github.com/gkjohnson/three-gpu-pathtracer)) with denoising and depth of field.
-- **Spec panel:** service temperature, k-value curves, density, ASTM E84 and more. Every value comes from `research/materials-verified.json`, with a link to its source.
+- **Spec data card:** service temperature, k-factor at a stated mean temperature, density, ASTM standards, moisture and vapor behaviour, application tags, and jacket compatibility and temperature limits. It follows the current selection. Every value comes from `research/materials-verified.json` or `research/jackets-verified.json`, with a link to its source.
 
 ## Layout
 

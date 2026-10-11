@@ -21,11 +21,12 @@ Manufacturer photos are reference-only (copyrighted). Use them to match looks; n
 - Circumferential lap: ≥2". Sheets are 36" long.
 - Seam position on horizontal pipe: 3–4 or 8–9 o'clock, with the lap opening facing down.
 - Vertical pipe: the upper sheet overlaps the lower one.
-- Bands: one centered on every circumferential joint, plus intermediates at 9" on center maximum. 12" is common in specs.
+- Bands: one centered on every circumferential joint, plus intermediates at 12" on center maximum (JM guide 04/23/24; the 11/27/23 edition said 9").
   - Material: stainless, 0.020" thick.
   - Width: ½" below 16" OD, ¾" at 16" OD and up.
   - Wing seal: 0.032" thick, same width as the band, about 1" long.
-- Screws, hot work only: #8 × ½", 6" on center on straight runs, 3" on center on elbows.
+- Screws, hot work only: #8 × ½", 8" on center max on straight runs (11/27/23 edition: 6"), 3" on center on elbows. Never through a vapor retarder.
+- Aluminum liner: 3-mil polyethylene/Surlyn polyfilm (PFMB), 180°F long-term, 200°F intermittent. JM: metal jacketing is not a vapor retarder. Details and sources: `jackets-verified.json`.
 - Stucco emboss: irregular pebbles about 3–5 mm across, relief about 0.1–0.3 mm.
 - 3/16" corrugated: crimps at 4.8 mm pitch running along the axis.
 - Elbows:
@@ -38,7 +39,7 @@ Manufacturer photos are reference-only (copyrighted). Use them to match looks; n
 - Laps and bands follow the same rules as aluminum. Pressed elbows are T316, 0.016".
 
 ### PVC (Zeston / Proto)
-- Fitting covers: one-piece, 20 mil, slit at the throat.
+- Fitting covers: one-piece, slit at the throat (wall thickness not published in the sources reviewed).
 - Fastening: on hot work, 2 serrated tacks. On cold work, PVC tape with a 2" overlap facing down.
 - Straight-run jacket: 20 or 30 mil, longitudinal lap 1½–2" facing down, circumferential lap about 1".
 

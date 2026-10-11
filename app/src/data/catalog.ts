@@ -6,7 +6,24 @@ import type * as THREE from 'three'
  */
 
 export type InsulationId = 'calsil' | 'fiberglass' | 'mineral-wool' | 'cellular-glass' | 'elastomeric' | 'phenolic'
+/** Sheet systems. 'asj' and 'fsk' are factory facings; the rest are field-applied outer jackets. */
 export type JacketId = 'none' | 'asj' | 'fsk' | 'pvc' | 'alu-smooth' | 'alu-stucco' | 'ss'
+/** Outer jackets offered in the UI ('none' = the facing, or the bare insulation, is the finish). */
+export type OuterJacketId = Exclude<JacketId, 'asj' | 'fsk'>
+export type FacingId = 'none' | 'asj'
+export type ServiceId = 'hot' | 'cold'
+/** The build-up, inside to out. 'blanket' is the removable valve cover. */
+export type LayerId = 'pipe' | 'insulation' | 'facing' | 'vapor' | 'jacket' | 'blanket'
+export const LAYER_ORDER: LayerId[] = ['pipe', 'insulation', 'facing', 'vapor', 'jacket', 'blanket']
+
+/**
+ * How a cold (below-ambient) system gets its vapor retarder, per the sources in
+ * research/materials-verified.json:
+ *  facing   → the factory ASJ, sealed at every lap and butt joint, is the retarder
+ *  integral → closed-cell material is its own retarder (seams glued)
+ *  membrane → a separate retarder (wrap, film or coating) over the insulation
+ */
+export type VaporKind = 'facing' | 'integral' | 'membrane'
 
 type MatParams = THREE.MeshPhysicalMaterialParameters & { normalStrength?: number }
 
@@ -23,9 +40,20 @@ export interface InsulationVisual {
   pieces: 'halves' | 'hinged' | 'tube'
   sectionIn: number
   rigid: boolean
-  hot: boolean
-  jackets: JacketId[]
+  /** Hot / cold service the sources support; the first is the default. */
+  services: ServiceId[]
+  /** Factory facings offered; the first is the default. */
+  facings: FacingId[]
+  /** Outer jackets offered; the first is the default. */
+  jackets: OuterJacketId[]
+  /**
+   * Cold service vapor retarder; `membraneUnder` = jackets that need a separate membrane even with a
+   * facing; `membrane` = the product drawn (research/jackets-verified.json).
+   */
+  vapor: { kind: VaporKind; membraneUnder?: OuterJacketId[]; membrane?: { name: string; mil: number; look: 'white' | 'foil' | 'black' } }
   maxThicknessIn: number
+  /** Thicker than this goes on in two layers (JM: over 3"; Resolco phenolic: over 2-1/2"). */
+  maxSingleLayerIn: number
   /** Cut-edge softness in metres: rigid board is crisp, foams round over. */
   edge: number
 }
@@ -43,9 +71,12 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'halves',
     sectionIn: 36,
     rigid: true,
-    hot: true,
+    services: ['hot'],
+    facings: ['none'],
     jackets: ['alu-smooth', 'alu-stucco', 'ss', 'none'],
+    vapor: { kind: 'membrane' },
     maxThicknessIn: 4,
+    maxSingleLayerIn: 3,
     edge: 0.0006,
   },
   {
@@ -59,9 +90,12 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'hinged',
     sectionIn: 36,
     rigid: false,
-    hot: true,
-    jackets: ['asj', 'pvc', 'alu-smooth', 'alu-stucco', 'ss', 'none'],
+    services: ['hot', 'cold'],
+    facings: ['asj', 'none'],
+    jackets: ['none', 'pvc', 'alu-smooth', 'alu-stucco', 'ss'],
+    vapor: { kind: 'facing' },
     maxThicknessIn: 4,
+    maxSingleLayerIn: 3,
     edge: 0.0012,
   },
   {
@@ -74,9 +108,12 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'hinged',
     sectionIn: 36,
     rigid: true,
-    hot: true,
-    jackets: ['alu-smooth', 'alu-stucco', 'ss', 'asj', 'none'],
+    services: ['hot'],
+    facings: ['none'],
+    jackets: ['alu-smooth', 'alu-stucco', 'ss', 'pvc', 'none'],
+    vapor: { kind: 'membrane' },
     maxThicknessIn: 4,
+    maxSingleLayerIn: 3,
     edge: 0.0012,
   },
   {
@@ -89,9 +126,13 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'halves',
     sectionIn: 24,
     rigid: true,
-    hot: false,
+    services: ['cold', 'hot'],
+    facings: ['none'],
     jackets: ['alu-smooth', 'alu-stucco', 'ss', 'pvc', 'none'],
+    // OC system jacket: PITTWRAP IW50 AL (50 mil, silver), under metal or a UV-resistant jacket
+    vapor: { kind: 'membrane', membrane: { name: 'PITTWRAP IW50 AL', mil: 50, look: 'foil' } },
     maxThicknessIn: 4,
+    maxSingleLayerIn: 3,
     edge: 0.0005,
   },
   {
@@ -104,9 +145,12 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'tube',
     sectionIn: 72,
     rigid: false,
-    hot: false,
+    services: ['cold', 'hot'],
+    facings: ['none'],
     jackets: ['none', 'pvc', 'alu-smooth'],
+    vapor: { kind: 'integral' },
     maxThicknessIn: 2,
+    maxSingleLayerIn: 3,
     edge: 0.002,
   },
   {
@@ -119,12 +163,19 @@ export const INSULATIONS: InsulationVisual[] = [
     pieces: 'hinged',
     sectionIn: 36,
     rigid: true,
-    hot: false,
-    jackets: ['fsk', 'pvc', 'alu-smooth', 'alu-stucco', 'ss', 'none'],
+    services: ['cold', 'hot'],
+    facings: ['asj'],
+    jackets: ['none', 'pvc', 'alu-smooth', 'alu-stucco', 'ss'],
+    // Resolco outdoor spec: Insulrap 30 under the aluminum (30-NG: 30 mil, white)
+    vapor: { kind: 'facing', membraneUnder: ['alu-smooth', 'alu-stucco', 'ss'], membrane: { name: 'Polyguard Insulrap 30-NG', mil: 30, look: 'white' } },
     maxThicknessIn: 4,
+    maxSingleLayerIn: 2.5,
     edge: 0.0008,
   },
 ]
+
+/** Number of insulation layers for a thickness. */
+export const layerCount = (ins: InsulationVisual, thicknessIn: number) => (thicknessIn > ins.maxSingleLayerIn ? 2 : 1)
 
 export const INSULATION = Object.fromEntries(INSULATIONS.map((i) => [i.id, i])) as Record<InsulationId, InsulationVisual>
 

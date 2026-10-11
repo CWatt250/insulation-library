@@ -1,10 +1,11 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Environment, Lightformer, OrbitControls } from '@react-three/drei'
-import { EffectComposer, N8AO, SMAA, ToneMapping, Vignette } from '@react-three/postprocessing'
+import { EffectComposer, N8AO, Outline, SMAA, Select, Selection, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
-import { buildAssembly, buildCradle, splitByMaterial, type AssemblyParams } from '../geo/assembly'
+import { buildAssembly, buildCradle, splitByMaterial, type Assembly, type AssemblyParams } from '../geo/assembly'
+import type { LayerId } from '../data/catalog'
 import { PhotoMode, type PhotoProgress } from './PhotoMode'
 import { Callouts } from './Callouts'
 import { MechRoom, ROOM } from './MechRoom'
@@ -19,31 +20,98 @@ export interface ViewerProps extends AssemblyParams {
   onPhotoProgress?: (p: PhotoProgress) => void
   cam?: [number, number, number]
   target?: [number, number, number]
+  /** Layers switched off in the layer list. */
+  hidden?: LayerId[]
+  /** Layer picked in the list or by clicking the model. */
+  selected?: LayerId | null
+  onSelect?: (layer: LayerId | null) => void
+  /** Pixels covered by side panels, so framing and labels stay in the open area. */
+  insetLeft?: number
+  insetRight?: number
 }
 
 const FLOOR_Y = -0.42
 
-function Run(props: ViewerProps) {
+type Built = Assembly & { groups: { key: string; layer: LayerId; lift: number; meshes: { mat: number; geometry: THREE.BufferGeometry }[] }[] }
+
+function useAssembly(props: ViewerProps): Built {
   const asm = useMemo(
     () => {
+      const t0 = performance.now()
       const a = buildAssembly({ ...props, span: props.stage === 'room' ? ROOM.half * 2 - 0.02 : undefined })
-      const split = splitByMaterial(a.parts.map((p) => (p.geometry.index ? p.geometry.toNonIndexed() : p.geometry)))
+      // one group per layer (and per lifted half in the exploded view), one mesh per material
+      const byKey = new Map<string, { layer: LayerId; lift: number; geos: THREE.BufferGeometry[] }>()
+      for (const p of a.parts) {
+        const lift = p.lift ?? 0
+        const key = `${p.layer}|${lift.toFixed(4)}`
+        let g = byKey.get(key)
+        if (!g) byKey.set(key, (g = { layer: p.layer, lift, geos: [] }))
+        g.geos.push(p.geometry.index ? p.geometry.toNonIndexed() : p.geometry)
+      }
+      const groups = [...byKey.entries()].map(([key, g]) => ({ key, layer: g.layer, lift: g.lift, meshes: splitByMaterial(g.geos) }))
       a.parts.forEach((p) => p.geometry.dispose())
-      return { ...a, meshes: split }
+      if (import.meta.env.DEV) (window as unknown as { __buildMs: number }).__buildMs = performance.now() - t0
+      return { ...a, groups }
     },
-    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.view, props.stage === 'room'], // eslint-disable-line react-hooks/exhaustive-deps
+    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.facing, props.service, props.view, props.stage === 'room'], // eslint-disable-line react-hooks/exhaustive-deps
   )
+  useEffect(() => () => asm.groups.forEach((g) => g.meshes.forEach((m) => m.geometry.dispose())), [asm])
+  return asm
+}
+
+const noRaycast = () => null
+
+/** One layer of the build-up: shown or hidden, outlined when selected, lifted in the exploded view. */
+function LayerGroup({ lift, animate, visible, selected, children }: { lift: number; animate: boolean; visible: boolean; selected: boolean; children: React.ReactNode }) {
+  const ref = useRef<THREE.Group>(null)
+  useFrame((_, dt) => {
+    const g = ref.current
+    if (!g) return
+    const k = animate ? 1 - Math.exp(-dt * 7) : 1
+    g.position.y += (lift - g.position.y) * k
+    if (Math.abs(lift - g.position.y) < 1e-5) g.position.y = lift
+  })
+  return (
+    <Select enabled={selected && visible}>
+      <group ref={ref} visible={visible}>{children}</group>
+    </Select>
+  )
+}
+
+function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
   const slots = useMemo(() => buildSlots(props.insulation, props.jacket), [props.insulation, props.jacket])
-  useEffect(() => () => asm.meshes.forEach((m) => m.geometry.dispose()), [asm])
   useEffect(() => () => slots.forEach((m) => m.dispose()), [slots])
   const groupRef = useRef<THREE.Group>(null)
+  const hidden = props.hidden ?? []
+  const onSelect = props.onSelect
+  const click = (layer: LayerId) => (e: ThreeEvent<MouseEvent>) => {
+    if (e.delta > 6) return // an orbit drag, not a pick
+    e.stopPropagation()
+    onSelect?.(props.selected === layer ? null : layer)
+  }
+  const callouts = useMemo(() => asm.callouts.filter((c) => !c.layer || !hidden.includes(c.layer)), [asm, hidden.join()]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <>
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]} position={[-(asm.zMin + asm.zMax) / 2, 0, 0]}>
       <group name="assembly">
-        {asm.meshes.map((m) => (
-          <mesh key={m.mat} geometry={m.geometry} material={slots[m.mat]} castShadow receiveShadow />
-        ))}
+        {asm.groups.map((g) => {
+          const visible = !hidden.includes(g.layer)
+          return (
+            <LayerGroup key={g.key} lift={g.lift} animate={!props.photo} visible={visible} selected={props.selected === g.layer}>
+              {g.meshes.map((m) => (
+                <mesh
+                  key={m.mat}
+                  geometry={m.geometry}
+                  material={slots[m.mat]}
+                  castShadow
+                  receiveShadow
+                  onClick={click(g.layer)}
+                  raycast={visible ? undefined : noRaycast}
+                />
+              ))}
+            </LayerGroup>
+          )
+        })}
       </group>
       {props.stage !== 'room' && <Cradles radius={asm.outerRadius} stations={asm.cradles} />}
     </group>
@@ -54,7 +122,7 @@ function Run(props: ViewerProps) {
         pipeRadius={asm.outerRadius}
       />
     )}
-    <Callouts items={asm.callouts} parent={groupRef} />
+    <Callouts items={callouts} parent={groupRef} insetRight={props.insetRight ?? 0} extent={asm.extent} />
     </>
   )
 }
@@ -113,21 +181,93 @@ function applyFov(camera: THREE.PerspectiveCamera) {
   camera.updateProjectionMatrix()
 }
 
-/** Frames the assembly when the component changes (URL cam/tgt override for screenshots). */
-function CameraRig({ component, view, stage, cam, target }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target'>) {
+type Preset = { cam: [number, number, number]; target: [number, number, number] }
+
+/**
+ * Exploded and section views are framed from the model's size: the lifted
+ * stack grows with pipe size, and the section face should fill the frame
+ * with room on the right for its ring labels.
+ */
+function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.PerspectiveCamera, screen: { w: number; h: number; left: number; right: number }): Preset | null {
+  const R = asm.outerRadius
+  const half = (asm.zMax - asm.zMin) / 2 + 0.1 // + pipe stub
+  let dir: THREE.Vector3
+  // fraction of the open width kept for the label column on the right
+  let labelRoom: number
+  let fill: number
+  if (view === 'exploded') {
+    dir = new THREE.Vector3(1.25, 0.62, 1.7).normalize()
+    labelRoom = 0.26
+    fill = 0.9
+  } else if (view === 'section') {
+    dir = new THREE.Vector3(0.95, 0.3, 0.62).normalize()
+    labelRoom = 0.4
+    fill = 0.92
+  } else return null
+  // world-space box of the model (run along world x, centred)
+  const box = view === 'section'
+    // the section is about the cut face: frame the face and the first stretch of run behind it
+    ? new THREE.Box3(new THREE.Vector3(half - 0.1 - Math.max(0.12, 1.2 * R), -R, -R), new THREE.Vector3(half - 0.1, R, R))
+    : new THREE.Box3(new THREE.Vector3(-half, -R, -R), new THREE.Vector3(half, asm.yMax, R))
+  const center = box.getCenter(new THREE.Vector3())
+  const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(
+    i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z,
+  ))
+  // open area in NDC, model to the left of the label column
+  const openL = (screen.left / screen.w) * 2 - 1
+  const openR = 1 - (screen.right / screen.w) * 2
+  const modelR = openR - (openR - openL) * labelRoom
+  const want = { l: openL, r: modelR, b: -0.82, t: 0.8 }
+  const cam = camera.clone()
+  const right = new THREE.Vector3().crossVectors(dir.clone().negate(), new THREE.Vector3(0, 1, 0)).normalize()
+  const place = (dist: number, shift: number) => {
+    const t = center.clone().addScaledVector(right, shift)
+    cam.position.copy(t).addScaledVector(dir, dist)
+    cam.lookAt(t)
+    cam.updateMatrixWorld()
+    const p = corners.map((c) => c.clone().project(cam))
+    return { t, l: Math.min(...p.map((v) => v.x)), r: Math.max(...p.map((v) => v.x)), b: Math.min(...p.map((v) => v.y)), tp: Math.max(...p.map((v) => v.y)) }
+  }
+  // find the distance where the box just fits, then slide it into the open area
+  let lo = 0.2, hi = 8, shift = 0
+  for (let i = 0; i < 28; i++) {
+    const d = (lo + hi) / 2
+    // centre the box horizontally in the wanted span at this distance
+    for (let k = 0; k < 3; k++) {
+      const f = place(d, shift)
+      const mid = (f.l + f.r) / 2
+      const perNdc = (d * Math.tan((cam.fov * Math.PI) / 360) * cam.aspect)
+      shift -= (((want.l + want.r) / 2) - mid) * perNdc
+    }
+    const f = place(d, shift)
+    const fits = f.r - f.l <= (want.r - want.l) * fill && f.tp - f.b <= (want.t - want.b) * fill
+    if (fits) hi = d
+    else lo = d
+  }
+  const dist = Math.min(hi, 4.4)
+  const f = place(dist, shift)
+  return { cam: [cam.position.x, cam.position.y, cam.position.z], target: [f.t.x, f.t.y, f.t.z] }
+}
+
+/** Frames the assembly when the component or view changes (URL cam/tgt override for screenshots). */
+function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0 }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight'> & { asm: Assembly }) {
   const camera = useThree((s) => s.camera)
+  const size = useThree((s) => s.size)
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
+  const fit = view === 'exploded' || view === 'section'
   useEffect(() => {
-    const v = (stage === 'room' && view !== 'layers' ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
+    const room = stage === 'room' && view !== 'layers' && !fit
     const pc = camera as THREE.PerspectiveCamera
-    pc.userData.baseFov = stage === 'room' && view !== 'layers' ? 52 : 30
+    pc.userData.baseFov = room ? 52 : 30
     applyFov(pc)
+    const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight })
+      ?? (room ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
     camera.position.set(...(cam ?? v.cam))
     if (controls) {
       controls.target.set(...(target ?? v.target))
       controls.update()
     }
-  }, [component, view === 'layers', stage === 'room', camera, controls]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '']) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
 
@@ -214,6 +354,8 @@ function StudioLights() {
 }
 
 export function Viewer(props: ViewerProps) {
+  const asm = useAssembly(props)
+  const down = useRef<[number, number] | null>(null)
   // A physical camera so photo mode can render real depth of field (f/5.6,
   // focused on the orbit target, like a product shot on a 50 mm-ish lens).
   const camera = useMemo(() => {
@@ -225,13 +367,20 @@ export function Viewer(props: ViewerProps) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Canvas
+      onPointerDown={(e) => { down.current = [e.clientX, e.clientY] }}
+      onPointerMissed={(e) => {
+        // a click on empty space clears the selection; an orbit drag does not
+        const d = down.current
+        if (d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 6) props.onSelect?.(null)
+      }}
       shadows="variance"
       dpr={props.mobile ? [1, 1.5] : [1, 2]}
       camera={camera}
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
+      <Selection>
       <RendererSetup mobile={props.mobile} />
-      <CameraRig component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} />
+      <CameraRig component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} asm={asm} insetLeft={props.insetLeft} insetRight={props.insetRight} />
       <color attach="background" args={['#3a3b3e']} />
       <Suspense fallback={null}>
         {props.stage === 'studio' ? (
@@ -244,7 +393,7 @@ export function Viewer(props: ViewerProps) {
             environmentIntensity={1}
           />
         )}
-        <Run {...props} />
+        <Run {...props} asm={asm} />
         {props.stage === 'studio' ? <Cyc /> : props.stage === 'plant' ? <ConcreteFloor /> : null}
         {props.photo ? (props.stage === 'studio' && (
           // Photo mode: a real 2.4 m softbox. Area lights give the path tracer
@@ -290,17 +439,19 @@ export function Viewer(props: ViewerProps) {
       />
       <PhotoMode
         active={!!props.photo}
-        sceneKey={`${props.component}-${props.npsIndex}-${props.thicknessIn}-${props.insulation}-${props.jacket}-${props.view}-${props.stage}`}
+        sceneKey={`${props.component}-${props.npsIndex}-${props.thicknessIn}-${props.insulation}-${props.jacket}-${props.facing}-${props.service}-${props.view}-${props.stage}-${(props.hidden ?? []).join()}`}
         onProgress={props.onPhotoProgress}
       />
       {!props.photo && (
-      <EffectComposer multisampling={0}>
+      <EffectComposer multisampling={0} autoClear={false}>
         <N8AO aoRadius={0.06} distanceFalloff={0.5} intensity={2.2} quality={props.mobile ? 'medium' : 'high'} halfRes={!!props.mobile} />
+        <Outline blur edgeStrength={4} visibleEdgeColor={0xffd27a} hiddenEdgeColor={0x7a6232} xRay />
         <SMAA />
         <ToneMapping mode={ToneMappingMode.NEUTRAL} />
         <Vignette offset={0.35} darkness={0.35} />
       </EffectComposer>
       )}
+      </Selection>
     </Canvas>
   )
 }
