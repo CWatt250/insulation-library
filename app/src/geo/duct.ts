@@ -238,8 +238,10 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   const outH = hh + t
   const len = Math.max(1.6, 2.4 * Math.max(outW, outH))
   const cut = d.view === 'cutaway'
-  // insulation ends just short of the duct end
-  const stub = 0.07
+  // Installed: the insulation stops short of the end, leaving a stub of bare duct, with the
+  // facing peeled back a little so the blanket edge shows. Cutaway: insulation to near the
+  // end, stripped in steps along the run instead (below).
+  const stub = cut ? 0.07 : Math.max(0.16, 0.5 * Math.min(outW, outH) + 0.08)
   const zIns = len - stub
   // cutaway: along the far part of the run the top and near side are stripped in steps —
   // facing first, then the blanket — so facing, blanket and sheet metal each show
@@ -308,7 +310,7 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
 
     if (d.insulation === 'wrap') {
       // ---- FSK facing: a thin skin over the blanket (cutaway: peeled off the top and near side first)
-      const fz1 = zIns
+      const fz1 = cut ? zIns : zIns - 0.035
       const tapeEnd = cut ? zFacing : fz1
       const fIn = round ? circle(outW + 0.0002) : roundedRect(outW + 0.0002, outH + 0.0002, rCorner + 0.0002, nArc)
       const fOut = round ? circle(outW + 0.0007) : roundedRect(outW + 0.0007, outH + 0.0007, rCorner + 0.0007, nArc)
