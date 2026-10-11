@@ -19,6 +19,8 @@ export function accuracyRows(): AccuracyRow[] {
     { what: 'JM 3E Plus personnel-protection tables (3 products, wind, ε 0.30)', result: `${jmExact}/${jmN} exact, ${jmWithin}/${jmN} within ½"`, src: ['V4'] },
     { what: 'ASHRAE Refrigeration thickness tables (condensation or 8 Btu/h·ft²)', result: `${S.ashraeRefrigeration.exact}/${S.ashraeRefrigeration.n} exact, ${S.ashraeRefrigeration.within}/${S.ashraeRefrigeration.n} within ½"`, src: ['V11'] },
     { what: 'DOE valve-cover savings (pad k and emittance not published)', result: `${S.doeValve.n} cells: median +${S.doeValve.medianPct}%, worst ${S.doeValve.worstPct}%`, src: ['F1'] },
+    { what: 'Duct faces: DNV C680 flat-surface tables (vertical, top, bottom; 0–2 mph)', result: `${S.dnvFlat.n}/${S.dnvFlat.n} rows within ${S.dnvFlat.maxPct}% (bare surface ε 0.8, back-solved; DNV does not print it)`, src: ['U1'] },
+    { what: '3E Plus Example 5 (cold vertical surface, 10 mph)', result: `bare ${S.e3plusEx5.bare} vs ${S.e3plusEx5.published} Btu/h·ft²; insulated rows within ${S.e3plusEx5.insulatedWorstBtuHrFt2}`, src: ['U15'] },
     { what: 'JM Micro-Lok HP tables (older 3E Plus, k-curve not stated) — informational', result: `insulated loss median ${S.jmHeatTables.insulatedMedianPct}% off, surface ${S.jmHeatTables.surfaceMedianF}°F`, src: ['V3'] },
   ]
 }

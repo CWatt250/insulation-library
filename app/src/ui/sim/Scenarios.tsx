@@ -3,7 +3,7 @@ import { downloadJson, loadScenarios, normalize, shareHash, storeScenarios, type
 import type { SimMode, SimState } from '../../sim/types'
 import { Icon } from '../controls'
 
-const TITLE: Record<SimMode, string> = { hot: 'Hot', cold: 'Cold', condensate: 'Condensate' }
+const TITLE: Record<SimMode, string> = { hot: 'Hot', cold: 'Cold', condensate: 'Condensate', duct: 'Ductwork' }
 
 /** Save, reopen, share and export scenarios. */
 export function Scenarios({ mode, s, onLoad }: { mode: SimMode; s: SimState; onLoad: (mode: SimMode, state: SimState) => void }) {
@@ -40,7 +40,7 @@ export function Scenarios({ mode, s, onLoad }: { mode: SimMode; s: SimState; onL
     try {
       const data = JSON.parse(await f.text())
       const items: Scenario[] = (Array.isArray(data) ? data : [data])
-        .filter((x) => x && ['hot', 'cold', 'condensate'].includes(x.mode))
+        .filter((x) => x && ['hot', 'cold', 'condensate', 'duct'].includes(x.mode))
         .map((x) => ({ id: crypto.randomUUID?.() ?? String(Math.random()), name: String(x.name ?? 'Imported'), mode: x.mode, state: normalize(x.mode, x.state ?? {}), savedAt: String(x.savedAt ?? new Date().toISOString()) }))
       if (!items.length) throw new Error('none')
       persist([...items, ...list])

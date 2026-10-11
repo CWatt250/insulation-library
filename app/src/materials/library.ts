@@ -102,14 +102,19 @@ export const Slot = {
   /** Vapor-retarder membrane over the insulation (cold service). */
   Vapor: 27,
   VaporEdge: 28,
+  /** FSK facing on duct wrap. */
+  DuctFacing: 29,
 } as const
-export const SLOT_COUNT = 29
+export const SLOT_COUNT = 30
 
 const steelOuter = () => pbr('steel-millscale', { metalness: 0.75 })
 const copperOuter = () => pbr('copper-tube', { metalness: 0.9 })
 const copperEnd = () => pbr('copper-tube', { metalness: 0.95, roughness: 0.6, color: '#f2c9a8' })
 const pvcOuter = () => pbr('pvc-pipe', { clearcoat: 0.25, clearcoatRoughness: 0.4 })
 const pvcBore = () => plain({ color: '#c9c9c4', roughness: 0.6 })
+const galvOuter = () => pbr('galvanized', { metalness: 0.9 })
+const galvInner = () => pbr('galvanized', { metalness: 0.8, color: '#8a8f94', roughness: 1.2 })
+const galvEdge = () => plain({ color: '#b9bec2', roughness: 0.5, metalness: 0.9 })
 const steelBore = () => plain({ color: '#2a2622', roughness: 0.85, metalness: 0.3 })
 const steelEnd = () => pbr('steel-millscale', { metalness: 0.6, color: '#c3c6c9', roughness: 0.5 })
 const pvc = () => pbr('pvc-white', { clearcoat: 0.3, clearcoatRoughness: 0.25 })
@@ -167,13 +172,14 @@ function jacket(id: JacketId) {
 const bandMat = () =>
   pbr('ss-2b', { metalness: 1, roughness: 0.85, color: new THREE.Color(1.15, 1.15, 1.15) })
 
-export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial = 'steel'): THREE.Material[] {
+export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial | 'galvanized' = 'steel'): THREE.Material[] {
   const i = insulation(ins)
   const j = jacket(jac)
   const slots: THREE.Material[] = new Array(SLOT_COUNT)
-  slots[Slot.PipeOuter] = pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()
-  slots[Slot.PipeEnd] = pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()
-  slots[Slot.PipeBore] = pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()
+  slots[Slot.PipeOuter] = pipe === 'galvanized' ? galvOuter() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()
+  slots[Slot.PipeEnd] = pipe === 'galvanized' ? galvEdge() : pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()
+  slots[Slot.PipeBore] = pipe === 'galvanized' ? galvInner() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()
+  slots[Slot.DuctFacing] = pbr('foil-scrim', { metalness: 0.65, normalStrength: 1.2, roughness: 1.15, color: '#e6e8ea' })
   slots[Slot.InsSkin] = i.skin
   slots[Slot.InsCut] = i.cut
   slots[Slot.InsBore] = i.bore ?? i.skin

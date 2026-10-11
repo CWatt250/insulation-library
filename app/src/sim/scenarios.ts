@@ -15,7 +15,7 @@ export interface Scenario {
 }
 
 const KEY = 'insulation-library.scenarios.v1'
-const MODES: SimMode[] = ['hot', 'cold', 'condensate']
+const MODES: SimMode[] = ['hot', 'cold', 'condensate', 'duct']
 
 export function loadScenarios(): Scenario[] {
   try {
@@ -47,6 +47,17 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
     else if (k === 'emittanceOverride' && (v === null || typeof v === 'number')) out.emittanceOverride = v as number | null
   }
   if (!['steel', 'copper', 'pvc'].includes(out.pipe)) out.pipe = 'steel'
+  // enums from a saved or shared file: anything unknown falls back to the default
+  const oneOf = <K extends keyof SimState>(k: K, ok: readonly SimState[K][]) => { if (!ok.includes(out[k])) (out as SimState)[k] = base[k] }
+  oneOf('system', ['pipe', 'duct'])
+  oneOf('ductShape', ['rect', 'round'])
+  oneOf('ductIns', ['wrap75', 'wrap100', 'wrap150', 'elastomeric'])
+  oneOf('ductFinish', ['new', 'dull'])
+  oneOf('ductLocation', ['conditioned', 'indirect', 'unconditioned', 'attic', 'crawl', 'garage', 'exterior', 'buried'])
+  oneOf('ductService', ['both', 'heating', 'cooling'])
+  oneOf('ductType', ['supply', 'return', 'outdoor', 'exhaust'])
+  // the Ductwork tab is always ductwork; the pipe tabs always pipe
+  out.system = mode === 'duct' ? 'duct' : 'pipe'
   return out
 }
 

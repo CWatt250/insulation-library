@@ -1,7 +1,8 @@
 import { INSULATION } from '../data/catalog'
+import { DUCT_WRAP, ELASTOMERIC_SHEET } from '../data/ductData'
 import { fToC } from './units'
 import { pSat } from './psychro'
-import { productFor, systemFor, type Side } from './model'
+import { physicsMode, productFor, systemFor, type Side } from './model'
 import type { SimMode, SimState } from './types'
 
 /**
@@ -42,6 +43,10 @@ const PA_PER_INHG = 3386.389
 const OZ_PER_LB = 453.59237 / 29.5735 // water, ~1 g/mL
 
 function retarderFor(s: SimState, mode: SimMode): RetarderInfo {
+  if (s.system === 'duct') {
+    if (s.ductIns === 'elastomeric') return { label: `${ELASTOMERIC_SHEET.product}, ${s.thicknessIn}"`, perm: ELASTOMERIC_SHEET.permIn / s.thicknessIn, src: ['U44'], note: `${ELASTOMERIC_SHEET.permIn} perm·in ÷ thickness` }
+    return { label: 'FSK facing on the duct wrap', perm: DUCT_WRAP.facingPerm, upper: true, src: ['U28'], note: '"0.02 perms or less" (ASTM E96 Procedure A)' }
+  }
   const sys = systemFor(s, mode)
   const id = s.insulation
   const product = productFor(s).name
@@ -73,15 +78,20 @@ function retarderFor(s: SimState, mode: SimMode): RetarderInfo {
 }
 
 export function vaporCheck(s: SimState, mode: SimMode, side: Side): VaporCheck | null {
+  mode = physicsMode(s, mode)
   if (mode === 'hot' || side.thicknessIn === null || s.processF >= s.ambientF) return null
   const cold = s.processF < 0
   const required = cold ? 0.01 : 0.02
   const retarder = retarderFor(s, mode)
   const notes: string[] = []
+  if (s.system === 'duct') {
+    notes.push('IMC 604.11: externally insulated cooling ducts need a vapor retarder of 0.05 perm or less (or 2-mil foil); insulation of 0.05 perm or less needs no cover. Seal every joint and seam.')
+    if (s.ductIns !== 'elastomeric') notes.push('Seal staples, pins, tears and punctures in the facing with foil tape (OC, JM, Knauf, CertainTeed install instructions).')
+  }
   const sys = systemFor(s, mode)
-  if (sys.jacketId === 'pvc') notes.push('The PVC jacket protects the system but should not be relied on alone as the vapor retarder (ASHRAE).')
-  if (sys.jacketId.startsWith('alu') || sys.jacketId === 'ss') notes.push('A metal jacket and its liner are not a vapor retarder (ASHRAE, JM).')
-  if (s.insulation === 'elastomeric') notes.push('ASHRAE Refrigeration: elastomerics need an outer retarder in refrigeration piping unless the foam is ≤0.02 perm·in. ASHRAE Fundamentals: sealed closed-cell flexible foam can be used without one, typically in chilled-water service.')
+  if (s.system !== 'duct' && sys.jacketId === 'pvc') notes.push('The PVC jacket protects the system but should not be relied on alone as the vapor retarder (ASHRAE).')
+  if (s.system !== 'duct' && (sys.jacketId.startsWith('alu') || sys.jacketId === 'ss')) notes.push('A metal jacket and its liner are not a vapor retarder (ASHRAE, JM).')
+  if (s.system !== 'duct' && s.insulation === 'elastomeric') notes.push('ASHRAE Refrigeration: elastomerics need an outer retarder in refrigeration piping unless the foam is ≤0.02 perm·in. ASHRAE Fundamentals: sealed closed-cell flexible foam can be used without one, typically in chilled-water service.')
   let oz: number | null = null
   if (retarder.perm !== null) {
     const pv = (s.rh / 100) * pSat(fToC(s.ambientF))
@@ -93,7 +103,7 @@ export function vaporCheck(s: SimState, mode: SimMode, side: Side): VaporCheck |
   return {
     required,
     requiredNote: cold ? '≤0.01 perm strongly considered below 0°F' : '≤0.02 perm for below-ambient insulation',
-    requiredSrc: ['R1', 'R2'],
+    requiredSrc: s.system === 'duct' ? ['R1', 'R2', 'C6'] : ['R1', 'R2'],
     retarder,
     meets: retarder.perm === null ? null : retarder.perm <= required + 1e-9,
     ozPerYearPer100ft: oz,

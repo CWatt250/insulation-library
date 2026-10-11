@@ -74,7 +74,17 @@ export const fmt = {
 export function inchLabel(v: number) {
   const whole = Math.floor(v + 1e-9)
   const frac = v - whole
-  const f = frac < 0.01 ? '' : Math.abs(frac - 0.5) < 0.01 ? '1/2' : Math.abs(frac - 0.25) < 0.01 ? '1/4' : Math.abs(frac - 0.75) < 0.01 ? '3/4' : frac.toFixed(2)
+  // nearest sixteenth when it is one (duct wrap comes in 2-3/16" and 4-5/16"), reduced
+  const n16 = Math.round(frac * 16)
+  let f = ''
+  if (frac >= 0.01) {
+    if (Math.abs(frac - n16 / 16) < 0.004) {
+      let num = n16
+      let den = 16
+      while (num % 2 === 0 && den > 1) { num /= 2; den /= 2 }
+      f = `${num}/${den}`
+    } else f = frac.toFixed(2)
+  }
   if (!whole) return `${f || '0'}"`
   return f ? `${whole}-${f}"` : `${whole}"`
 }

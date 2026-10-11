@@ -3,23 +3,25 @@ import { PIPE_LABEL, THICKNESSES, type PipeMaterial } from '../../data/pipe'
 import { equivalentIndex, pipeSizes } from '../../data/pipes'
 import { PIPE_LIMITS } from '../../data/pipeWalls'
 import { presetsFor, type Preset } from '../../sim/presets'
-import { availability, kProducts, productForTemp, systemFor } from '../../sim/model'
+import { availability, kProducts, physicsMode, productForTemp, systemFor } from '../../sim/model'
 import { outerSurface } from '../../sim/emittance'
 import type { MetalFinish, SimMode, SimState, VrQuality } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Disclosure, Icon, Segmented, Slider } from '../controls'
+import { DuctCodeInputs, DuctInsulationSection, DuctSize } from './DuctSetup'
 
 const PIPE_HINT: Record<PipeMaterial, string> = { steel: 'Steel pipe, Sch 40', copper: 'Copper tube, Type L', pvc: 'PVC pipe, Sch 40' }
 
-export const ACCENT: Record<SimMode, string> = { hot: '#ff8a3d', cold: '#8fd0ff', condensate: '#14b8a6' }
+export const ACCENT: Record<SimMode, string> = { hot: '#ff8a3d', cold: '#8fd0ff', condensate: '#14b8a6', duct: '#b9a2ff' }
 
 const RANGES: Record<SimMode, { process: [number, number]; ambient: [number, number] }> = {
   hot: { process: [90, 1000], ambient: [30, 120] },
   cold: { process: [-40, 75], ambient: [40, 110] },
   condensate: { process: [33, 75], ambient: [50, 110] },
+  duct: { process: [-20, 200], ambient: [-20, 140] },
 }
 
-const PRESET_ICON: Record<SimMode, 'flame' | 'snow' | 'drop'> = { hot: 'flame', cold: 'snow', condensate: 'drop' }
+const PRESET_ICON: Record<SimMode, 'flame' | 'snow' | 'drop' | 'wind'> = { hot: 'flame', cold: 'snow', condensate: 'drop', duct: 'wind' }
 
 export function PresetGrid({ mode, active, onPick }: { mode: SimMode; active: string | null; onPick: (p: Preset) => void }) {
   return (
@@ -29,7 +31,7 @@ export function PresetGrid({ mode, active, onPick }: { mode: SimMode; active: st
           <span className="preset-icon"><Icon name={PRESET_ICON[mode]} size={16} /></span>
           <span className="preset-text">
             <strong>{p.label}</strong>
-            <small>{p.set.processF}°F pipe{mode !== 'hot' ? ` · ${p.set.rh ?? 50}% RH` : ''}</small>
+            <small>{mode === 'duct' ? `${p.set.processF}°F air in ${p.set.ambientF}°F` : `${p.set.processF}°F pipe${mode !== 'hot' ? ` · ${p.set.rh ?? 50}% RH` : ''}`}</small>
           </span>
         </button>
       ))}
@@ -43,7 +45,7 @@ function finishLabel(j: OuterJacketId, facing: 'asj' | 'none', ins: string) {
   return ins === 'elastomeric' ? 'Foam skin (no jacket)' : 'No jacket'
 }
 
-export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState; set: (p: Partial<SimState>) => void; units: UnitSystem }) {
+export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s: SimState; set: (p: Partial<SimState>) => void; units: UnitSystem; onGuide?: () => void }) {
   const acc = ACCENT[mode]
   const ins = INSULATION[s.insulation]
   const sys = systemFor(s, mode)
@@ -58,6 +60,8 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
   const limit = PIPE_LIMITS[s.pipe]
   const pvcHot = limit && s.processF > limit.maxF ? `${limit.label} is rated to ${fmt.temp(limit.maxF, units)} [${limit.src.join(', ')}] — this temperature is above its rating.` : null
 
+  const duct = mode === 'duct'
+  const beh = physicsMode(s, mode)
   const pickMaterial = (id: typeof s.insulation) => {
     const next = INSULATION[id]
     set({
@@ -73,18 +77,20 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
     <div className="setup">
       <section>
         <h2>Conditions</h2>
+        {duct && <DuctCodeInputs s={s} set={set} acc={acc} onGuide={onGuide} />}
         <Slider
-          label={mode === 'hot' ? 'Process temperature' : 'Pipe / fluid temperature'}
+          label={duct ? 'Air in the duct' : mode === 'hot' ? 'Process temperature' : 'Pipe / fluid temperature'}
           value={s.processF}
           min={r.process[0]}
           max={r.process[1]}
           step={mode === 'hot' ? 5 : 1}
+          hint={duct ? 'Supply air off the coil or furnace, room air for returns and exhaust, outdoor air for intakes — your design values.' : undefined}
           onChange={(v) => set({ processF: v })}
           format={(v) => fmt.temp(v, units)}
           accent={acc}
         />
         <Slider
-          label="Ambient air temperature"
+          label={duct ? 'Air around the duct' : 'Ambient air temperature'}
           value={s.ambientF}
           min={r.ambient[0]}
           max={r.ambient[1]}
@@ -92,9 +98,10 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
           format={(v) => fmt.temp(v, units)}
           accent={acc}
         />
-        {mode !== 'hot' && (
-          <Slider label="Relative humidity" value={s.rh} min={10} max={98} onChange={(v) => set({ rh: v })} format={(v) => `${v}%`} accent={acc} />
+        {(mode !== 'hot') && (
+          <Slider label={duct ? 'Humidity around the duct' : 'Relative humidity'} value={s.rh} min={10} max={98} onChange={(v) => set({ rh: v })} format={(v) => `${v}%`} accent={acc} />
         )}
+        {duct ? <DuctSize s={s} set={set} units={units} acc={acc} /> : (<>
         <div className="field">
           <span className="field-label">Pipe material</span>
           <Segmented<PipeMaterial>
@@ -115,9 +122,10 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
           accent={acc}
         />
         {pvcHot && <p className="field-warn">{pvcHot}</p>}
+        </>)}
       </section>
 
-      <section>
+      {!duct && <section>
         <h2>Component</h2>
         <Segmented<SimState['component']>
           size="sm"
@@ -143,9 +151,9 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             />
           </div>
         )}
-      </section>
+      </section>}
 
-      <section>
+      {duct ? <DuctInsulationSection s={s} set={set} mode={mode} units={units} acc={acc} /> : <section>
         <h2>Insulation</h2>
         <div className="materials sim-materials">
           {INSULATIONS.map((m) => {
@@ -201,9 +209,9 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             Surface emittance {(s.emittanceOverride ?? surface.value).toFixed(2)} · {s.emittanceOverride !== null ? 'custom' : surface.label}
           </p>
         </div>
-      </section>
+      </section>}
 
-      {mode !== 'hot' && (
+      {beh !== 'hot' && (
         <section>
           <h2>Vapor retarder quality</h2>
           <Segmented<VrQuality>
@@ -218,7 +226,7 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             ]}
           />
           <p className="field-note">
-            {sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
+            {duct ? (s.ductIns === 'elastomeric' ? 'Closed-cell sheet is its own retarder — glue every seam with full adhesive coverage.' : 'The FSK facing is the retarder — tape every seam, staple and pin.') : sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
               : sys.vaporBy === 'facing' ? 'The ASJ facing is the retarder — seal every lap and butt strip.'
               : sys.vaporBy === 'membrane' ? 'A separate sealed membrane is the retarder.'
               : 'No vapor retarder in this build-up.'}
@@ -233,7 +241,27 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
           hint="NIA: if unknown, 0 mph is the worst case; for energy, about 1 mph indoors and 8 mph outdoors."
           accent={acc}
         />
-        {metal && (
+        {duct && (
+          <>
+            <div className="field">
+              <span className="field-label">Bare duct surface</span>
+              <Segmented<SimState['ductFinish']>
+                size="sm"
+                value={s.ductFinish}
+                onChange={(v) => set({ ductFinish: v })}
+                options={[{ id: 'new', label: 'New galvanized (ε 0.1)' }, { id: 'dull', label: 'Dull (ε 0.28)' }]}
+              />
+            </div>
+            <label className="check-row">
+              <input type="checkbox" checked={s.insideFilm} onChange={(e) => set({ insideFilm: e.target.checked })} />
+              <span>Include the inside air film <small className="muted">off = duct wall at the air temperature, as 3E Plus does</small></span>
+            </label>
+            {s.insideFilm && (
+              <Slider label="Air velocity in the duct" value={s.airFpm} min={400} max={3000} step={50} onChange={(v) => set({ airFpm: v })} format={(v) => (units === 'ip' ? `${v} fpm` : `${(v * 0.00508).toFixed(1)} m/s`)} hint="ASHRAE simplified equation for air in ducts (Fundamentals Ch. 4, T8.17a)." accent={acc} />
+            )}
+          </>
+        )}
+        {!duct && metal && (
           <div className="field">
             <span className="field-label">Metal jacket surface</span>
             <Segmented<MetalFinish>
@@ -256,7 +284,7 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             <Slider label="Surface emittance" value={s.emittanceOverride} min={0.03} max={0.95} step={0.01} onChange={(v) => set({ emittanceOverride: v })} format={(v) => v.toFixed(2)} accent={acc} />
           )}
         </div>
-        {products.length > 1 && (
+        {!duct && products.length > 1 && (
           <div className="field">
             <span className="field-label">k-value curve from</span>
             <div className="chips">
@@ -268,12 +296,12 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             </div>
           </div>
         )}
-        {mode === 'hot' ? (
+        {beh === 'hot' ? (
           <Slider label="Safe-touch limit (personnel protection)" value={s.ppF} min={100} max={180} onChange={(v) => set({ ppF: v })} format={(v) => fmt.temp(v, units)} accent={acc} />
         ) : (
           <Slider label="Required margin above dew point" value={s.dewMarginF} min={0} max={10} step={0.25} hint="3E Plus and NIA use 0.75°F." onChange={(v) => set({ dewMarginF: v })} format={(v) => fmt.margin(v, units)} accent={acc} />
         )}
-        {mode !== 'condensate' && (
+        {mode !== 'condensate' && !duct && (
           <Slider
             label={mode === 'hot' ? 'Target max surface temperature' : 'Target min surface temperature'}
             value={s.targetSurfaceF}
@@ -284,13 +312,13 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             accent={acc}
           />
         )}
-        {mode !== 'condensate' && (
+        {mode !== 'condensate' && !duct && (
           <Slider label={mode === 'hot' ? 'Heat-loss target' : 'Heat-gain target'} value={s.targetQ} min={1} max={mode === 'hot' ? 300 : 60} onChange={(v) => set({ targetQ: v })} format={(v) => `${fmt.flow(v, units)} ${fmt.flowUnit(units)}`} accent={acc} />
         )}
         {mode !== 'condensate' && (
           <div className="field econ">
             <span className="field-label">Energy cost <small className="muted">your rates — defaults are examples</small></span>
-            {mode === 'hot' ? (
+            {beh === 'hot' ? (
               <>
                 <Segmented<SimState['fuel']>
                   size="sm"
@@ -314,7 +342,7 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             <Slider label="Installed cost (for payback)" value={s.installedPerFt} min={0} max={150} step={1} onChange={(v) => set({ installedPerFt: v })} format={(v) => (v === 0 ? 'Off' : `$${v}/ft`)} accent={acc} />
           </div>
         )}
-        <Slider label="Pipe run length" value={s.lengthFt} min={0} max={2000} step={10} onChange={(v) => set({ lengthFt: v })} format={(v) => (v === 0 ? 'Off' : fmt.length(v, units))} accent={acc} />
+        <Slider label={duct ? 'Duct run length' : 'Pipe run length'} value={s.lengthFt} min={0} max={2000} step={10} onChange={(v) => set({ lengthFt: v })} format={(v) => (v === 0 ? 'Off' : fmt.length(v, units))} accent={acc} />
         <Slider label="Operating hours per year" value={s.hours} min={0} max={8760} step={20} onChange={(v) => set({ hours: v })} format={(v) => (v === 0 ? 'Off' : `${v.toLocaleString('en-US')} h`)} hint={s.hours === 8760 ? 'Year-round' : undefined} accent={acc} />
       </Disclosure>
     </div>

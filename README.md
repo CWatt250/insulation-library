@@ -83,6 +83,26 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Metal walls:** neglected, as in C680, so the pipe surface sits at the fluid temperature.
 - **Data:** `tools/build_pipes.py` generates `app/src/data/pipeWalls.ts` from `research/pipe-materials-verified.json` (G-ids). A test reproduces Charlotte's published PVC wall R-values.
 
+**Ductwork (Phase 5): its own tab, driven by the energy codes.**
+- **Inputs:** pick the duct type (supply, return, outside air, exhaust), where it runs and the climate zone.
+- **Locations:**
+  - The options are conditioned space, return plenum, unconditioned space, attic, crawl space, parking garage, outdoors and buried.
+  - Each maps to its ASHRAE 90.1-2019 Table 6.8.2 column through the table's notes. Note b puts attics above insulated ceilings, crawl spaces and parking garages in the Exterior column; note c puts return plenums under Indirectly Conditioned; exception 2 exempts heated, semiheated or cooled spaces.
+- **Location guide:** "Where does my duct run?" (also `?mode=duct&guide=1`) is a redrawn building section with DOE's 14 duct locations (BECP commercial duct-insulation guide, Figure 1). Pick one to see its classification, the minimum at your climate zone and any exception (short runouts, outlet backs, equipment casings, plenum walls), then send it to the simulator.
+- **Not yet verified:** outside-air and exhaust ducts, and unvented attics, show "not verified" until the code text is on file.
+- **Design:** the code minimum is always part of the duct design; condensation is still checked.
+- **Code minimum:** the result leads with the installed R the code requires (ASHRAE 90.1-2019 Table 6.8.2) and whether the insulation meets it.
+- **Condensation:** checked whenever the duct air is colder than its surroundings.
+- **Model:** rectangular ducts are solved face by face with the C680 flat-surface correlations. Sides are treated as vertical faces; the top and underside as horizontal faces, with the stable and unstable correlations swapped between warm and cold ducts. Round ducts are solved as cylinders.
+- **Checks in `npm test`:** the correlations reproduce DNV's 12 C680 flat-surface rows and 3E Plus Example 5.
+- **Insulation:**
+  - Duct wrap uses Knauf Performance+ data at 25% compression (IMC 604.7) with an FSK facing, ε 0.1 per ASHRAE.
+  - Elastomeric sheet uses AP ArmaFlex data.
+  - The rated installed R reproduces the printed tables.
+- **Inside air film:** optional (ASHRAE simplified equation for air in ducts); off by default, as in 3E Plus.
+- **3D model:** galvanized rectangular or spiral duct, compressed wrap, FSK with foil-taped seams, pins under ducts 24" and wider, flat-topped stands. The effects run on the flat faces too.
+- **Data:** `tools/build_ducts.py` generates `app/src/data/ductData.ts` from `research/duct-verified.json` (U-ids) and `research/code-requirements-verified.json` (C-ids).
+
 **Engine** (`app/src/sim/`): steady-state ASTM C680 approach.
 - Conduction uses temperature-dependent k, integrated through the layer, from the manufacturer's published k-vs-mean points.
 - The outer surface coefficient is the C680 form:
@@ -104,7 +124,7 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - JM Micro-Lok HP tables are reported but not matched: they come from an unstated 3E Plus version and imply a k-curve above Micro-Lok's published values.
 
 **Sources:**
-- Every emittance, limit, preset range and method reference traces to `research/calc-method-verified.json` (M-ids), `research/emittance-verified.json` (E-ids), `research/validation-cases.json` (V-ids), `research/jackets-verified.json` (J-ids), `research/vapor-code-verified.json` (R-ids) or `research/pipe-materials-verified.json` (G-ids). `tools/build_sources.py` regenerates the reference registry from those files.
+- Every emittance, limit, preset range and method reference traces to `research/calc-method-verified.json` (M-ids), `research/emittance-verified.json` (E-ids), `research/validation-cases.json` (V-ids), `research/jackets-verified.json` (J-ids), `research/vapor-code-verified.json` (R-ids) `research/pipe-materials-verified.json` (G-ids), `research/duct-verified.json` (U-ids) or `research/code-requirements-verified.json` (C-ids). `tools/build_sources.py` regenerates the reference registry from those files.
 - `app/src/sim/data.test.ts` fails if one doesn't.
 - It is an educational / preliminary design tool, labelled as such in the app.
 

@@ -55,5 +55,14 @@
     "n": 1440,
     "exact": 922,
     "within": 1372
+  },
+  "dnvFlat": {
+    "n": 12,
+    "maxPct": 0
+  },
+  "e3plusEx5": {
+    "bare": 234.81,
+    "published": 234.8,
+    "insulatedWorstBtuHrFt2": 0.05
   }
 }

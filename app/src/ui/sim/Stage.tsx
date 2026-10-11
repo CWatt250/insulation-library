@@ -7,6 +7,7 @@ import { rayIntensity, systemFor } from '../../sim/model'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { StatusChip } from './Status'
 import { pipeSpec } from '../../data/pipes'
+import { installedIn } from '../../sim/duct'
 
 export interface PanelSpec {
   key: string
@@ -81,18 +82,26 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   const thickness = useDeferredValue(panel.modelThickness)
   const nps = useDeferredValue(s.npsIndex)
   const fittingBare = (s.component === 'valve' || s.component === 'flange') && s.fittingCover === 'none'
-  const thermal = opts.thermal && s.component !== 'elbow' && s.component !== 'tee'
+  const duct = s.system === 'duct'
+  const thermal = opts.thermal && !duct && s.component !== 'elbow' && s.component !== 'tee'
+  const ductProps = duct
+    ? {
+      shape: s.ductShape, w: s.ductW * 0.0254, h: s.ductH * 0.0254, d: s.ductD * 0.0254,
+      t: installedIn(s.ductIns, thickness) * 0.0254, insulation: s.ductIns === 'elastomeric' ? 'elastomeric' as const : 'wrap' as const,
+    }
+    : undefined
   const sim = useMemo(() => visualFor(panel.side, bare, mode, thermal, fittingBare), [panel.side, bare, mode, thermal, fittingBare])
   return (
     <Viewer
-      insulation={s.insulation}
+      duct={ductProps}
+      insulation={duct ? (s.ductIns === 'elastomeric' ? 'elastomeric' : 'fiberglass') : s.insulation}
       npsIndex={nps}
       thicknessIn={thickness}
-      jacket={sys.jacketId}
+      jacket={duct ? (s.ductIns === 'elastomeric' ? 'none' : 'fsk') : sys.jacketId}
       facing={sys.facing}
       service={sys.service}
       view={opts.view}
-      component={s.component}
+      component={duct ? 'straight' : s.component}
       pipe={s.pipe}
       stage={opts.stage}
       mobile={opts.mobile}
@@ -127,6 +136,7 @@ export function Stage({ s, mode, panels, bare, opts, inset, sync }: {
   // frame every panel for the largest model in the row so the views line up
   const frameRadius = Math.max(...panels.map((p) => {
     const st = p.state ?? s
+    if (st.system === 'duct') return ((st.ductShape === 'round' ? st.ductD : Math.max(st.ductW, st.ductH)) / 2 + installedIn(st.ductIns, p.modelThickness) + 0.1) * 0.0254
     return (pipeSpec(st.pipe, st.npsIndex).od / 2 + p.modelThickness + 0.1) * 0.0254
   }))
   return (

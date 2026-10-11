@@ -11,14 +11,16 @@ ROOT = Path(__file__).resolve().parent.parent
 WANT = {
     "calc-method-verified.json": ["M1", "M3", "M4", "M6", "M7", "M8", "M11", "M13", "M16", "M19", "M20", "M24"],
     "emittance-verified.json": ["E1", "E2", "E3", "E5", "E8", "E9", "E10", "E13", "E14", "E15", "E16", "E19"],
-    "jackets-verified.json": ["J1", "J2", "J6", "J17", "J24", "J27", "J31", "J35"],
+    "jackets-verified.json": ["J1", "J2", "J6", "J17", "J24", "J25", "J27", "J31", "J35"],
     "validation-cases.json": ["V1", "V3", "V4", "V9", "V10", "V11", "V13", "V14", "V15", "V16", "V18", "V19", "V21", "V22", "V23"],
     "pipe-dimensions.json": ["D3", "D6"],
     "vapor-code-verified.json": ["R1", "R2", "R5", "R9", "R14", "R16", "R18", "R21", "R22", "R23", "R30", "R32"],
     "fittings-verified.json": ["F1", "F6", "F12", "F13"],
     "pipe-materials-verified.json": ["G1", "G3", "G5", "G6", "G8"],
+    "duct-verified.json": ["U1", "U9", "U10", "U14", "U15", "U28", "U44", "U46", "U53"],
+    "code-requirements-verified.json": ["C1", "C6", "C19"],
 }
-KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard"}
+KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard", "C1": "standard", "C6": "standard", "C19": "standard", "U15": "tool"}
 NOTES = {
     "M1": "Method this engine follows (store page; full text paywalled)",
     "M3": "Public copy of the C680 surface equations used here",
@@ -39,8 +41,19 @@ NOTES = {
     "G5": "PVC dimensions; prints conductivity 1.02",
     "G6": "PVC dimensions; conductivity 1.2 (ASTM C177)",
     "G8": "NIA calculator code: pipe-wall shell resistance (D/2)·ln(OD/ID)/k",
+    "U1": "C680 flat-surface correlations (DNV review of a C680 tool, App. B tables)",
+    "U9": "Horizontal-plate and vertical-plate correlations; inside duct air film (T8.17a)",
+    "U10": "Duct insulation for condensation control; ε = 0.1 chart for foil-faced products",
+    "U14": "Stable/unstable horizontal-plate convection (Lloyd–Moran, A/P length)",
+    "U15": "3E Plus v4.1 Example 5: cold vertical flat surface",
+    "U28": "Duct wrap k vs temperature, installed R at 25% compression, FSK 0.02 perm",
+    "U44": "Elastomeric sheet k, R-values, 0.05 perm·in",
+    "U53": "Duct-wrap condensation chart basis: 55°F duct air, still air",
+    "C1": "IECC 2021 C403.12.1 duct insulation",
+    "C6": "IMC 2021: 604.2 (120°F surface), 604.7 (installed thickness), 604.11 (vapor retarder)",
+    "C19": "ASHRAE 90.1-2019 Table 6.8.2 minimum duct insulation R-value",
 }
-DATASHEET = re.compile(r"^(J|D|G[1-6]$|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
+DATASHEET = re.compile(r"^(J|D|G[1-6]$|U28$|U44$|U46$|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
 
 def clean(s):
     return str(s or "").replace("'", "’").replace("\n", " ")

@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react'
 import { CamSync } from '../../scene/Viewer'
-import { INSULATION, INSULATIONS, thicknessesFor, type InsulationId } from '../../data/catalog'
-import { THICKNESSES } from '../../data/pipe'
-import { evaluate, evaluateSide, recommend, type Goal } from '../../sim/model'
-import { design, stateForMaterial } from '../../sim/design'
+import { currentMaterial, materialLabel, materials, maxThickness, noun, stateForAny, type MaterialId } from '../../sim/system'
+import { evaluate, evaluateSide, physicsMode, recommend, thicknessOptions, type Goal } from '../../sim/model'
+import { design } from '../../sim/design'
 import { applyPreset, initialState, PRESETS, type Preset } from '../../sim/presets'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -15,21 +14,24 @@ import { Stage, thicknessTitle, type PanelSpec } from './Stage'
 import { Scenarios } from './Scenarios'
 import { ReportButton } from './ReportButton'
 import { Presentation, type PresentStep } from './Presentation'
-import { SafetyChip, StatusChip } from './Status'
+import { CodeChip, SafetyChip, StatusChip } from './Status'
+import { DuctGuide } from './DuctGuide'
 
-type Slot = 'bare' | 'current' | 'recommended' | number | `mat:${InsulationId}`
+type Slot = 'bare' | 'current' | 'recommended' | number | `mat:${MaterialId}`
 
 const DEFAULT_SLOTS: Record<SimMode, Slot[]> = {
   hot: ['bare', 'current'],
   cold: ['bare', 'current'],
   condensate: ['bare', 'current', 'recommended'],
+  duct: ['bare', 'current'],
 }
 
-const TITLE: Record<SimMode, string> = { hot: 'Hot Pipe', cold: 'Cold Pipe', condensate: 'Condensate' }
+const TITLE: Record<SimMode, string> = { hot: 'Hot Pipe', cold: 'Cold Pipe', condensate: 'Condensate', duct: 'Ductwork' }
 const SUB: Record<SimMode, string> = {
   hot: 'Heat loss, surface temperature and personnel protection',
   cold: 'Heat gain, dew point and condensation control',
   condensate: 'Sweating and dripping prevention',
+  duct: 'Energy-code insulation by duct type and location, plus condensation',
 }
 
 function PresetNote({ id }: { id: string }) {
@@ -55,7 +57,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   onMode: (m: SimMode) => void
 }) {
   const [states, setStates] = useState<Record<SimMode, SimState>>(() => {
-    const st = { hot: initialState('hot'), cold: initialState('cold'), condensate: initialState('condensate') }
+    const st = { hot: initialState('hot'), cold: initialState('cold'), condensate: initialState('condensate'), duct: initialState('duct') }
     if (share) st[share.mode] = share.state
     return st
   })
@@ -63,7 +65,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     setStates((prev) => ({ ...prev, [m]: state }))
     if (m !== mode) onMode(m)
   }
-  const [stages, setStages] = useState<Record<SimMode, 'studio' | 'plant'>>({ hot: 'studio', cold: 'studio', condensate: 'studio' })
+  const [stages, setStages] = useState<Record<SimMode, 'studio' | 'plant'>>({ hot: 'studio', cold: 'studio', condensate: 'studio', duct: 'studio' })
   const [view, setView] = useState<'installed' | 'cutaway'>('cutaway')
   const [thermal, setThermal] = useState(false)
   const [bare, setBare] = useState(false)
@@ -73,39 +75,43 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const [present, setPresent] = useState(false)
   const [step, setStep] = useState<PresentStep>(0)
   const [tab, setTab] = useState<'setup' | 'results' | 'learn'>('results')
+  const [guide, setGuide] = useState(() => mode === 'duct' && new URLSearchParams(location.search).get('guide') === '1')
   const sync = useMemo(() => new CamSync(), [])
 
   const s = states[mode]
   const set = (patch: Partial<SimState>) => setStates((prev) => ({ ...prev, [mode]: { ...prev[mode], ...patch } }))
+  const guideEl = guide && mode === 'duct' ? <DuctGuide s={s} set={set} onClose={() => setGuide(false)} /> : null
   const pickPreset = (p: Preset) => {
     setStates((prev) => ({ ...prev, [mode]: applyPreset(prev[mode], p) }))
     setStages((prev) => ({ ...prev, [mode]: p.stage ?? 'studio' }))
   }
 
-  const ev = useMemo(() => evaluate(s, mode), [s, mode])
+  // Ductwork has no hot/cold of its own: the physics runs by which way heat flows
+  const beh = physicsMode(s, mode)
+  const ev = useMemo(() => evaluate(s, beh), [s, beh])
   const recs: Recs = useMemo(() => {
-    const primary = design(s, mode)
+    const primary = design(s, beh)
     const flow = (btuHrFt: number): Goal => ({ kind: 'qMax', btuHrFt })
-    const others = mode === 'hot'
+    const others = mode === 'duct' ? [] : beh === 'hot'
       ? [
-        { label: `Surface ≤ ${fmt.temp(s.targetSurfaceF, units)}`, rec: recommend(s, mode, { kind: 'surfaceMax', F: s.targetSurfaceF }) },
-        { label: `Heat loss ≤ ${fmt.flow(s.targetQ, units)} ${fmt.flowUnit(units)}`, rec: recommend(s, mode, flow(s.targetQ)) },
+        { label: `Surface ≤ ${fmt.temp(s.targetSurfaceF, units)}`, rec: recommend(s, beh, { kind: 'surfaceMax', F: s.targetSurfaceF }) },
+        { label: `Heat loss ≤ ${fmt.flow(s.targetQ, units)} ${fmt.flowUnit(units)}`, rec: recommend(s, beh, flow(s.targetQ)) },
       ]
-      : mode === 'cold'
+      : beh === 'cold'
         ? [
-          { label: `Surface ≥ ${fmt.temp(s.targetSurfaceF, units)}`, rec: recommend(s, mode, { kind: 'surfaceMin', F: s.targetSurfaceF }) },
-          { label: `Heat gain ≤ ${fmt.flow(s.targetQ, units)} ${fmt.flowUnit(units)}`, rec: recommend(s, mode, flow(s.targetQ)) },
+          { label: `Surface ≥ ${fmt.temp(s.targetSurfaceF, units)}`, rec: recommend(s, beh, { kind: 'surfaceMin', F: s.targetSurfaceF }) },
+          { label: `Heat gain ≤ ${fmt.flow(s.targetQ, units)} ${fmt.flowUnit(units)}`, rec: recommend(s, beh, flow(s.targetQ)) },
         ]
         : []
     return { primary, others }
-  }, [s, mode, units])
+  }, [s, mode, beh, units])
 
   // ---------------------------------------------------------------- panels
-  const maxIn = INSULATION[s.insulation].maxThicknessIn
+  const maxIn = maxThickness(s)
   const panels: PanelSpec[] = useMemo(() => {
     const list: Slot[] = present ? (step === 0 ? ['bare'] : step === 1 ? ['current'] : ['bare', 'current']) : compare ? slots[mode] : [bare ? 'bare' : 'current']
     return list.map((slot, i) => {
-      if (slot === 'bare') return { key: `p${i}-bare`, title: 'Bare pipe', side: ev.bare, modelThickness: s.thicknessIn, bare: true }
+      if (slot === 'bare') return { key: `p${i}-bare`, title: `Bare ${noun(s)}`, side: ev.bare, modelThickness: s.thicknessIn, bare: true }
       if (slot === 'current') return { key: `p${i}-cur`, title: `Current · ${inchLabel(s.thicknessIn)}`, side: ev.ins, modelThickness: s.thicknessIn, bare: false }
       if (slot === 'recommended') {
         const t = recs.primary.thicknessIn ?? maxIn
@@ -121,13 +127,13 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
         }
       }
       if (typeof slot === 'string' && slot.startsWith('mat:')) {
-        const id = slot.slice(4) as InsulationId
-        const r = stateForMaterial(s, mode, id)
-        if ('reason' in r) return { key: `p${i}-${id}`, title: INSULATION[id].label, side: ev.bare, modelThickness: s.thicknessIn, bare: true, note: r.reason }
+        const id = slot.slice(4) as MaterialId
+        const r = stateForAny(s, mode, id)
+        if ('reason' in r) return { key: `p${i}-${id}`, title: materialLabel(s, id), side: ev.bare, modelThickness: s.thicknessIn, bare: true, note: r.reason }
         const d = design(r.state, mode)
-        const t = d.thicknessIn ?? INSULATION[id].maxThicknessIn
+        const t = d.thicknessIn ?? maxThickness(r.state)
         const st = { ...r.state, thicknessIn: t }
-        return { key: `p${i}-${id}-${t}`, title: `${INSULATION[id].label} · ${inchLabel(t)}`, side: evaluateSide(st, mode, t), modelThickness: t, bare: false, state: st, note: d.thicknessIn === null ? 'Cannot meet the requirements within its range' : 'Design thickness' }
+        return { key: `p${i}-${id}-${t}`, title: `${materialLabel(s, id)} · ${inchLabel(t)}`, side: evaluateSide(st, mode, t), modelThickness: t, bare: false, state: st, note: d.thicknessIn === null ? 'Cannot meet the requirements within its range' : 'Design thickness' }
       }
       const t = Math.min(slot as number, maxIn)
       return { key: `p${i}-${t}`, title: thicknessTitle(t), side: evaluateSide(s, mode, t), modelThickness: t, bare: false }
@@ -139,11 +145,11 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const acc = ACCENT[mode]
 
   const slotOptions: { id: string; label: string }[] = [
-    { id: 'bare', label: 'Bare pipe' },
+    { id: 'bare', label: `Bare ${noun(s)}` },
     { id: 'current', label: 'Current' },
     { id: 'recommended', label: 'Recommended' },
-    ...thicknessesFor(INSULATION[s.insulation], THICKNESSES).map((t) => ({ id: String(t), label: `${inchLabel(t)} insulation` })),
-    ...INSULATIONS.filter((m) => m.id !== s.insulation).map((m) => ({ id: `mat:${m.id}`, label: `${m.label} (design)` })),
+    ...thicknessOptions(s).map((t) => ({ id: String(t), label: `${inchLabel(t)} insulation` })),
+    ...materials(s).filter((m) => m.id !== currentMaterial(s)).map((m) => ({ id: `mat:${m.id}`, label: `${m.label} (design)` })),
   ]
 
   const toolbar = (
@@ -165,8 +171,8 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       </button>
       <button
         className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} aria-label="Thermal" onClick={() => setThermal(!thermal)}
-        disabled={s.component === 'elbow' || s.component === 'tee'}
-        title={s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined}
+        disabled={s.system === 'duct' || s.component === 'elbow' || s.component === 'tee'}
+        title={s.system === 'duct' ? 'Thermal view covers pipe; the duct faces are listed in Results' : s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined}
       >
         <Icon name="thermo" size={16} /> <span>Thermal</span>
       </button>
@@ -210,22 +216,23 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const m = ev.ins.moisture
   const statusPill = (
     <div className="status-pill" style={{ '--acc': acc } as React.CSSProperties}>
-      {mode === 'hot' ? <SafetyChip safe={r.surfaceF <= s.ppF} small /> : <StatusChip status={ev.ins.status} mode={mode} small />}
+      {mode === 'duct' ? <CodeChip s={s} ev={ev} /> : null}
+      {beh === 'hot' ? (mode === 'duct' ? null : <SafetyChip safe={r.surfaceF <= s.ppF} small />) : <StatusChip status={ev.ins.status} mode={mode} small />}
       <span>
         Surface <b>{fmt.temp(r.surfaceF, units)}</b>
-        {mode !== 'hot' && <> · Dew point <b>{fmt.temp(m.dewF, units)}</b></>}
-        {mode === 'hot' && <> · Loss <b>{fmt.flow(r.qBtuHrFt, units)}</b> {fmt.flowUnit(units)}</>}
+        {beh !== 'hot' && <> · Dew point <b>{fmt.temp(m.dewF, units)}</b></>}
+        {beh === 'hot' && <> · Loss <b>{fmt.flow(r.qBtuHrFt, units)}</b> {fmt.flowUnit(units)}</>}
       </span>
     </div>
   )
 
-  const legend = thermal && s.component !== 'elbow' && s.component !== 'tee' && (
-    <div className={`thermal-legend ${mode === 'hot' ? 'hot' : 'cold'} ${compare ? 'over-compare' : ''}`} aria-label="Thermal colour scale">
+  const legend = thermal && s.system !== 'duct' && s.component !== 'elbow' && s.component !== 'tee' && (
+    <div className={`thermal-legend ${beh === 'hot' ? 'hot' : 'cold'} ${compare ? 'over-compare' : ''}`} aria-label="Thermal colour scale">
       <div className="tl-bar" />
       <div className="tl-ticks">
-        <span>{fmt.temp(mode === 'hot' ? s.ambientF : s.processF, units)}</span>
-        {mode !== 'hot' && <span className="tl-dew">dew-point line {fmt.temp(m.dewF, units)}</span>}
-        <span>{fmt.temp(mode === 'hot' ? s.processF : s.ambientF, units)}</span>
+        <span>{fmt.temp(beh === 'hot' ? s.ambientF : s.processF, units)}</span>
+        {beh !== 'hot' && <span className="tl-dew">dew-point line {fmt.temp(m.dewF, units)}</span>}
+        <span>{fmt.temp(beh === 'hot' ? s.processF : s.ambientF, units)}</span>
       </div>
     </div>
   )
@@ -237,7 +244,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const stage = (
     <Stage
       s={s}
-      mode={mode}
+      mode={beh}
       panels={panels}
       opts={{ view, thermal: thermal && !present, stage: stages[mode], mobile, units, autoRotate: present }}
       bare={ev.bare}
@@ -248,14 +255,14 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
 
   const results = (
     <ResultsPanel
-      mode={mode} s={s} ev={ev} recs={recs} units={units} compact={mobile}
+      mode={beh} accent={acc} s={s} ev={ev} recs={recs} units={units} compact={mobile}
       onApply={(t) => set({ thicknessIn: t })}
       onSet={set}
       onCompareMaterial={(id) => {
         setSlots((prev) => ({ ...prev, [mode]: ['current', `mat:${id}`] }))
         setCompare(true)
       }}
-      onUseMaterial={(next) => set({ insulation: next.insulation, kProduct: next.kProduct, jacket: next.jacket, facing: next.facing, thicknessIn: next.thicknessIn })}
+      onUseMaterial={(next) => set(next.system === 'duct' ? { ductIns: next.ductIns, thicknessIn: next.thicknessIn } : { insulation: next.insulation, kProduct: next.kProduct, jacket: next.jacket, facing: next.facing, thicknessIn: next.thicknessIn })}
     />
   )
 
@@ -265,7 +272,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     return (
       <div className="sim presenting-root" style={{ '--acc': acc } as React.CSSProperties}>
         {stage}
-        <Presentation mode={mode} s={s} ev={ev} units={units} step={step} setStep={setStep} onExit={() => setPresent(false)} preparedFor={preparedFor} />
+        <Presentation mode={beh} s={s} ev={ev} units={units} step={step} setStep={setStep} onExit={() => setPresent(false)} preparedFor={preparedFor} />
       </div>
     )
   }
@@ -295,9 +302,10 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <div className="sheet-presets"><PresetGrid mode={mode} active={s.presetId} onPick={pickPreset} /></div>
           <div className="sheet-body">
             {compareBar}
-            {tab === 'results' ? results : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} /> : <Learn mode={mode} />}
+            {tab === 'results' ? results : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} /> : <Learn mode={mode} system={s.system} />}
           </div>
         </section>
+        {guideEl}
       </div>
     )
   }
@@ -315,7 +323,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
         <header className="sim-head">
           <span className="brand"><Icon name="layers" size={15} /> Insulation Library</span>
           <div className="title-row">
-            <span className="mode-icon"><Icon name={mode === 'hot' ? 'flame' : mode === 'cold' ? 'snow' : 'drop'} size={26} /></span>
+            <span className="mode-icon"><Icon name={mode === 'hot' ? 'flame' : mode === 'cold' ? 'snow' : mode === 'duct' ? 'wind' : 'drop'} size={26} /></span>
             <div>
               <h1>{TITLE[mode]}</h1>
               <p className="sub">{SUB[mode]}</p>
@@ -327,7 +335,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <PresetGrid mode={mode} active={s.presetId} onPick={pickPreset} />
           {s.presetId && <PresetNote id={s.presetId} />}
         </section>
-        <SetupPanel mode={mode} s={s} set={set} units={units} />
+        <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} />
       </aside>
       <aside className="panel sim-results">
         <header>
@@ -340,6 +348,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
         </header>
         <div className="scroll">{results}</div>
       </aside>
+      {guideEl}
     </div>
   )
 }

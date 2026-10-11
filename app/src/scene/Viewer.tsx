@@ -80,7 +80,7 @@ function useAssembly(props: ViewerProps): Built {
       if (import.meta.env.DEV) (window as unknown as { __buildMs: number }).__buildMs = performance.now() - t0
       return { ...a, groups }
     },
-    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.facing, props.service, props.view, props.stage === 'room', props.pipe], // eslint-disable-line react-hooks/exhaustive-deps
+    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.facing, props.service, props.view, props.stage === 'room', props.pipe, JSON.stringify(props.duct ?? null)], // eslint-disable-line react-hooks/exhaustive-deps
   )
   useEffect(() => () => asm.groups.forEach((g) => g.meshes.forEach((m) => m.geometry.dispose())), [asm])
   return asm
@@ -106,7 +106,7 @@ function LayerGroup({ lift, animate, visible, selected, children }: { lift: numb
 }
 
 function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
-  const slots = useMemo(() => buildSlots(props.insulation, props.jacket, props.pipe), [props.insulation, props.jacket, props.pipe])
+  const slots = useMemo(() => buildSlots(props.insulation, props.jacket, props.duct ? 'galvanized' : props.pipe), [props.insulation, props.jacket, props.pipe, !!props.duct])
   useEffect(() => () => slots.forEach((m) => m.dispose()), [slots])
   const thermal = useMemo(() => thermalMaterial(), [])
   useEffect(() => () => thermal.dispose(), [thermal])
@@ -146,7 +146,8 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           )
         })}
       </group>
-      {props.stage !== 'room' && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
+      {props.stage !== 'room' && !asm.stands && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
+      {props.stage !== 'room' && asm.stands && <DuctStands {...asm.stands} floorY={asm.floorY ?? FLOOR_Y} />}
       {sim && !props.photo && (asm.zones ?? []).filter((z) => !(sim.bare && (z.kind === 'stub' || z.bareZ === null))).map((z) => {
         const state = z.kind === 'stub' ? sim.stub ?? sim : z.kind === 'fitting' ? sim.fitting ?? sim : sim
         const bareFit = z.kind === 'fitting' && (sim.bare || sim.fittingBare)
@@ -156,7 +157,7 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           radius: sim.bare || bareFit ? z.rBare : z.radius,
           z0: span[0], z1: span[1],
           wedge: sim.bare ? null : z.wedge ?? null, zWedge: z.zWedge ?? Infinity,
-          floorY: FLOOR_Y, vertical: z.vertical,
+          floorY: asm.floorY ?? FLOOR_Y, vertical: z.vertical,
           box: sim.bare ? z.boxBare : z.box,
         }
         const fx = <ZoneEffects key={z.key} extent={extent} mode={sim.mode} zone={state} />
@@ -171,6 +172,29 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
       />
     )}
     <Callouts items={callouts} parent={groupRef} insetRight={props.insetRight ?? 0} extent={asm.extent} />
+    </>
+  )
+}
+
+/** Flat-topped display stands under a duct (the pipe cradles' finish). */
+function DuctStands({ halfW, bottomY, stations, floorY }: { halfW: number; bottomY: number; stations: number[]; floorY: number }) {
+  const mat = useMemo(() => cradleMat(), [])
+  const pad = useMemo(() => padMat(), [])
+  useEffect(() => () => { mat.dispose(); pad.dispose() }, [mat, pad])
+  const plateW = 2 * halfW + 0.1
+  const postH = bottomY - 0.016 - (floorY + 0.012)
+  return (
+    <>
+      {stations.map((z) => (
+        <group key={z} position={[0, 0, z]}>
+          <mesh material={pad} position={[0, bottomY - 0.002, 0]} castShadow receiveShadow><boxGeometry args={[plateW - 0.02, 0.004, 0.07]} /></mesh>
+          <mesh material={mat} position={[0, bottomY - 0.01, 0]} castShadow receiveShadow><boxGeometry args={[plateW, 0.012, 0.08]} /></mesh>
+          {[-1, 1].map((sx) => (
+            <mesh key={sx} material={mat} position={[sx * (halfW + 0.02), bottomY - 0.016 - postH / 2, 0]} castShadow receiveShadow><boxGeometry args={[0.04, postH, 0.04]} /></mesh>
+          ))}
+          <mesh material={mat} position={[0, floorY + 0.006, 0]} castShadow receiveShadow><boxGeometry args={[plateW + 0.06, 0.012, 0.16]} /></mesh>
+        </group>
+      ))}
     </>
   )
 }
@@ -365,8 +389,31 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
       controls.update()
     }
   }, [compare, component, view, camera, controls, size.width, size.height, frameRadius, asm.zMin, asm.zMax, asm.yMax]) // eslint-disable-line react-hooks/exhaustive-deps
+  // ducts span a wide range of sizes: frame the whole run into the open area
+  const duct = !!asm.stands && !compare && !cam
   useEffect(() => {
-    if (compare) return
+    if (!duct) return
+    const pc = camera as THREE.PerspectiveCamera
+    pc.userData.fit = false
+    pc.userData.baseFov = 30
+    pc.aspect = size.width / size.height
+    applyFov(pc)
+    const v = VIEWS.straight
+    const dir = new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target)).normalize()
+    const half = (asm.zMax - asm.zMin) / 2
+    const R = asm.outerRadius
+    const box = new THREE.Box3(new THREE.Vector3(-half, asm.stands!.bottomY, -R), new THREE.Vector3(half, asm.yMax + Math.max(0.05, 0.5 * R), R))
+    const openL = (insetLeft / size.width) * 2 - 1
+    const openR = 1 - (insetRight / size.width) * 2
+    const p = fitBox(pc, box, dir, { l: openL, r: openR, b: -0.72, t: 0.7 }, 0.9)
+    camera.position.set(...p.cam)
+    if (controls) {
+      controls.target.set(...p.target)
+      controls.update()
+    }
+  }, [duct, camera, controls, size.width, size.height, insetLeft, insetRight, asm.zMax, asm.yMax, asm.outerRadius, view]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (compare || duct) return
     const room = stage === 'room' && view !== 'layers' && !fit
     const pc = camera as THREE.PerspectiveCamera
     pc.userData.fit = false
@@ -444,7 +491,7 @@ function RendererSetup({ mobile, coverage }: { mobile?: boolean; coverage?: numb
  * round, so every orbit angle sees backdrop. It stays below the softboxes;
  * a tall wall would physically block their light in photo mode.
  */
-function Cyc() {
+function Cyc({ floorY = FLOOR_Y }: { floorY?: number }) {
   const geo = useMemo(() => {
     const R0 = 4 // flat floor radius
     const Rc = 1.4 // cove radius
@@ -461,14 +508,14 @@ function Cyc() {
     return g
   }, [])
   return (
-    <mesh geometry={geo} position={[0, FLOOR_Y, 0]} receiveShadow>
+    <mesh geometry={geo} position={[0, floorY, 0]} receiveShadow>
       <meshStandardMaterial color="#3a3b3d" roughness={0.92} side={THREE.DoubleSide} />
     </mesh>
   )
 }
 
 /** Plant stage: worn concrete slab, real scale (CC0 texture, 3 m tile). */
-function ConcreteFloor() {
+function ConcreteFloor({ floorY = FLOOR_Y }: { floorY?: number }) {
   const geo = useMemo(() => {
     const size = 60
     const g = new THREE.PlaneGeometry(size, size, 1, 1)
@@ -479,7 +526,7 @@ function ConcreteFloor() {
     return g
   }, [])
   const mat = useMemo(() => pbr('concrete-floor', { roughness: 1 }), [])
-  return <mesh geometry={geo} material={mat} position={[0, FLOOR_Y, 0]} receiveShadow />
+  return <mesh geometry={geo} material={mat} position={[0, floorY, 0]} receiveShadow />
 }
 
 /**
@@ -551,7 +598,7 @@ export function Viewer(props: ViewerProps) {
           />
         )}
         <Run {...props} asm={asm} />
-        {props.stage === 'studio' ? <Cyc /> : props.stage === 'plant' ? <ConcreteFloor /> : null}
+        {props.stage === 'studio' ? <Cyc floorY={asm.floorY ?? FLOOR_Y} /> : props.stage === 'plant' ? <ConcreteFloor floorY={asm.floorY ?? FLOOR_Y} /> : null}
         {props.photo ? (props.stage === 'studio' && (
           // Photo mode: a real 2.4 m softbox. Area lights give the path tracer
           // physically soft shadows whose penumbra grows with distance.

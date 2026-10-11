@@ -47,24 +47,25 @@ function readParams() {
     photo: q.get('photo') === '1',
     cam: vec(q.get('cam')),
     target: vec(q.get('tgt')),
-    mode: (readShareHash(location.hash)?.mode ?? (['explore', 'hot', 'cold', 'condensate'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore')) as AppMode,
+    mode: (readShareHash(location.hash)?.mode ?? (['explore', 'hot', 'cold', 'condensate', 'duct'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore')) as AppMode,
     share: readShareHash(location.hash),
     units: (q.get('units') === 'si' ? 'si' : 'ip') as UnitSystem,
   }
 }
 
-const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' }[] = [
+const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' | 'wind' }[] = [
   { id: 'explore', label: 'Explore', short: 'Explore', icon: 'cube' },
   { id: 'hot', label: 'Hot Pipe', short: 'Hot', icon: 'flame' },
   { id: 'cold', label: 'Cold Pipe', short: 'Cold', icon: 'snow' },
   { id: 'condensate', label: 'Condensate', short: 'Condensate', icon: 'drop' },
+  { id: 'duct', label: 'Ductwork', short: 'Duct', icon: 'wind' },
 ]
 
 function ModeBar({ mode, onChange, mobile }: { mode: AppMode; onChange: (m: AppMode) => void; mobile: boolean }) {
   return (
     <nav className={`modebar ${mobile ? 'mobile' : ''}`} aria-label="Mode">
       {MODES.map((m) => (
-        <button key={m.id} className={`mode-${m.id} ${m.id === mode ? 'on' : ''}`} aria-current={m.id === mode ? 'page' : undefined} onClick={() => onChange(m.id)}>
+        <button key={m.id} className={`mode-${m.id} ${m.id === mode ? 'on' : ''}`} aria-label={m.label} aria-current={m.id === mode ? 'page' : undefined} onClick={() => onChange(m.id)}>
           <Icon name={m.icon} size={16} />
           <span>{mobile ? m.short : m.label}</span>
         </button>

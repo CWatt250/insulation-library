@@ -25,7 +25,7 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
           Educational / preliminary design tool. Results follow ASTM C680 and are checked against published tables, but are not a substitute for 3E Plus or an engineer's review — confirm before specifying.
         </p>
         <h4>Model</h4>
-        <ul>
+        {s.system === 'duct' ? <DuctModel ev={ev} s={s} units={units} /> : <ul>
           <li>
             Steady state, long horizontal run of {s.pipe === 'copper' ? 'Type L copper tube' : s.pipe === 'pvc' ? 'Schedule 40 PVC pipe' : 'Schedule 40 steel pipe'} ({fmt.inches(pipeSpec(s.pipe, s.npsIndex).od, units)} OD).{' '}
             {s.pipe === 'pvc'
@@ -46,10 +46,11 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
           {ev.mode !== 'hot' && <li>Condensation rate from the heat/mass-transfer analogy; latent heat of condensation is not added to heat gain.</li>}
           {ev.mode !== 'hot' && <li>Status bands are this tool's convention: Borderline = dry but within your {fmt.margin(s.dewMarginF, units)} margin; Dripping risk = condensing faster than {DRIP_RATE} g/m²·h.</li>}
           {ev.mode === 'hot' && <li>Safe-touch (personnel protection) limit {fmt.temp(s.ppF, units)}, adjustable in Advanced.</li>}
-        </ul>
+        </ul>}
         <h4>Material data</h4>
         <ul className="sources">
-          {productSources.map((x) => (
+          {s.system === 'duct' && refsFor(product.sources).map((x) => <li key={x.id}><a href={x.url} target="_blank" rel="noreferrer">{x.title}</a> <small>({x.publisher})</small></li>)}
+          {s.system !== 'duct' && productSources.map((x) => (
             <li key={x.id}><a href={x.url} target="_blank" rel="noreferrer">{x.label}</a></li>
           ))}
         </ul>
@@ -82,5 +83,26 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
         </ul>
       </Disclosure>
     </section>
+  )
+}
+
+const Ref = ({ ids }: { ids: string[] }) => <>{refsFor(ids).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</>
+
+function DuctModel({ ev, s, units }: { ev: Evaluation; s: SimState; units: UnitSystem }) {
+  const wrap = s.ductIns !== 'elastomeric'
+  const surf = ev.ins.surface
+  return (
+    <ul>
+      <li>Steady state, long horizontal {s.ductShape === 'round' ? `${s.ductD}" round` : `${s.ductW}" × ${s.ductH}"`} galvanized duct; the duct wall is at the air temperature{s.insideFilm ? `, plus an inside air film at ${s.airFpm} fpm (ASHRAE simplified equation for air)` : ' (no inside film, as 3E Plus)'}.<Ref ids={s.insideFilm ? ['U9'] : ['U15']} /></li>
+      {s.ductShape === 'rect'
+        ? <li>Each face solved on its own as a flat slab: sides as vertical surfaces (L = face height), top and underside as horizontal surfaces (L = area ÷ perimeter), with the stable and unstable correlations swapped between warm and cold ducts; corners not modelled. No published source splits a duct by face — this is the simulator's construction from the C680 flat-surface geometries.<Ref ids={['U1', 'U9', 'U14']} /></li>
+        : <li>Round duct solved as a horizontal cylinder (the pipe engine's C680 correlations).</li>}
+      <li>{wrap ? <>Duct wrap at its installed thickness, 75% of nominal (25% compression), as the IMC and the makers rate it; k vs temperature is the published out-of-package curve scaled by the installed ÷ out-of-package ratio printed at 75°F (this app's assumption — it reproduces the printed installed R).</> : <>Elastomeric sheet at its nominal thickness; k as published at 75 and 100°F.</>}<Ref ids={wrap ? ['U28', 'C6'] : ['U44']} /></li>
+      <li>Emittance {(s.emittanceOverride ?? surf.value).toFixed(2)} for {s.emittanceOverride !== null ? 'a custom surface' : surf.label.toLowerCase()}{surf.note ? ` (${surf.note})` : ''}; bare duct {ev.bare.surface.value.toFixed(2)} ({ev.bare.surface.label.toLowerCase()}).<Ref ids={[...surf.src, ...ev.bare.surface.src]} /></li>
+      <li>Flat-surface correlations checked: they reproduce all 12 bare flat-surface rows of DNV's C680 tables and 3E Plus Example 5 (see the accuracy table).</li>
+      <li>Energy code check uses the rated installed R at 75°F mean (ASHRAE 90.1-2019 Table 6.8.2, footnote a), not the calculated in-service value.<Ref ids={['C19']} /></li>
+      {ev.mode !== 'hot' && <li>Condensation control means every face at least {fmt.margin(s.dewMarginF, units)} above the dew point; condensation rate from the heat/mass-transfer analogy, per face.</li>}
+      {ev.mode === 'hot' && <li>Safe-touch limit {fmt.temp(s.ppF, units)}; IMC 604.2 also limits ducts above 120°F to a 120°F surface.<Ref ids={['C6']} /></li>}
+    </ul>
   )
 }

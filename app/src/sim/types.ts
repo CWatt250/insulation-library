@@ -1,8 +1,11 @@
 import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
 import type { Component } from '../geo/assembly'
 import type { PipeMaterial } from '../data/pipe'
+import type { DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
+import type { DuctService } from '../data/ductData'
 
-export type SimMode = 'hot' | 'cold' | 'condensate'
+/** Pipe modes, plus Ductwork, which is driven by duct type and location rather than hot/cold. */
+export type SimMode = 'hot' | 'cold' | 'condensate' | 'duct'
 export type AppMode = 'explore' | SimMode
 
 /** Field quality of the vapor-retarder system (cold and condensate work). */
@@ -14,6 +17,25 @@ export type MetalFinish = 'oxidized' | 'bright' | 'painted'
 /** Everything a simulation needs. Temperatures °F, lengths as labelled. */
 export interface SimState {
   presetId: string | null
+  /** Pipe or ductwork. For ducts, processF is the air in the duct and thicknessIn the insulation's nominal thickness. */
+  system: 'pipe' | 'duct'
+  /** What the duct carries (energy codes treat these differently). */
+  ductType: DuctType
+  ductShape: DuctShape
+  /** Rectangular duct width × height, round duct diameter, inches (sheet-metal size). */
+  ductW: number
+  ductH: number
+  ductD: number
+  ductIns: DuctInsulation
+  /** Bare galvanized surface condition. */
+  ductFinish: DuctFinish
+  /** For the ASHRAE 90.1 duct table. */
+  ductLocation: DuctPlace
+  ductService: DuctService
+  climateZone: number
+  /** Include the inside air film (otherwise the duct wall is at the air temperature, as in 3E Plus). */
+  insideFilm: boolean
+  airFpm: number
   /** Pipe material; npsIndex indexes that material's size list (data/pipes.ts). */
   pipe: PipeMaterial
   /** What is modelled in 3D: a straight run or a fitting in a run. */

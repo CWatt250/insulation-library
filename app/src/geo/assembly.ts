@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { ductAssembly, type DuctParams } from './duct'
 import { sweep, annulusProfile, bandProfile, type Profile, type ProfileEdge } from './sweep'
 import { IN, aluminumGauge, stainlessGauge, type PipeMaterial } from '../data/pipe'
 import { pipeSpec } from '../data/pipes'
@@ -44,6 +45,8 @@ export interface AssemblyParams {
   span?: number
   /** Pipe material; sizes index into that material's list (data/pipes.ts). Default steel. */
   pipe?: PipeMaterial
+  /** Ductwork instead of pipe (geo/duct.ts); the view comes from `view`. */
+  duct?: Omit<DuctParams, 'view'>
   /** Metal elbow cover style; 'auto' = pressed through 12" NPS, gored above (JM guide). */
   elbowCover?: 'auto' | 'pressed' | 'gored'
 }
@@ -109,6 +112,9 @@ export interface Assembly {
   callouts: Callout[]
   /** Model points the right-hand label column must clear (local frame). */
   extent?: [number, number, number][]
+  /** Ducts: flat-topped stands instead of pipe cradles, and a floor lowered under tall ducts. */
+  stands?: { halfW: number; bottomY: number; stations: number[] }
+  floorY?: number
 }
 
 const TAU = Math.PI * 2
@@ -1115,6 +1121,7 @@ function riserMatrix(R: number) {
 // ------------------------------------------------------------------ assembly
 
 export function buildAssembly(p: AssemblyParams): Assembly {
+  if (p.duct) return ductAssembly({ ...p.duct, view: p.view === 'installed' ? 'installed' : 'cutaway' })
   const d = dims(p)
   const callouts: Callout[] = []
   const steps = p.view === 'layers'

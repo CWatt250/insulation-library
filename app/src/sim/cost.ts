@@ -1,3 +1,4 @@
+import { physicsMode } from './model'
 import type { Evaluation } from './model'
 import type { SimMode, SimState } from './types'
 
@@ -29,6 +30,7 @@ export function dollarsPerBtu(s: SimState, mode: SimMode): number {
 }
 
 export function annualCost(s: SimState, mode: SimMode, ev: Evaluation): CostResult | null {
+  mode = physicsMode(s, mode)
   if (!ev.annual || mode === 'condensate') return null
   const k = dollarsPerBtu(s, mode)
   const bare = ev.annual.bare * k

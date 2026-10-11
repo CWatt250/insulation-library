@@ -467,6 +467,7 @@ const tintFrag = /* glsl */ `
   uniform vec3 uRim;
   uniform float uAmount;
   uniform float uTime;
+  uniform float uRimK;
   uniform mat4 uLocal;
   varying vec3 vN;
   varying vec3 vV;
@@ -475,7 +476,8 @@ const tintFrag = /* glsl */ `
   void main() {
     vec3 p = (uLocal * vec4(vP, 1.0)).xyz;
     if (cutAway(p)) discard;
-    float f = 1.0 - abs(dot(normalize(vN), normalize(vV)));
+    // a flat face seen edge-on would go all rim: damp it on ducts
+    float f = (1.0 - abs(dot(normalize(vN), normalize(vV)))) * uRimK;
     float flicker = 0.92 + 0.08 * sin(uTime * 3.0 + p.z * 40.0);
     vec3 c = mix(uColor, uRim, f) * flicker;
     float a = uAmount * (0.55 + 0.45 * f) * smoothstep(0.0, 0.03, vU) * smoothstep(1.0, 0.97, vU);
@@ -496,7 +498,7 @@ export function SurfaceTint({ extent, mode, intensity }: { extent: RunExtent; mo
   useEffect(() => () => geo.dispose(), [geo])
   const mat = useMemo(() => glowMaterial(shellVert, tintFrag, {
     uColor: { value: new THREE.Color() }, uRim: { value: new THREE.Color() }, uAmount: { value: 0 }, uTime: { value: 0 },
-    uLocal: { value: new THREE.Matrix4() },
+    uLocal: { value: new THREE.Matrix4() }, uRimK: { value: 1 },
     uWedge: { value: new THREE.Vector2() }, uZWedge: { value: 1e9 },
   }), [])
   useEffect(() => () => mat.dispose(), [mat])
@@ -513,7 +515,8 @@ export function SurfaceTint({ extent, mode, intensity }: { extent: RunExtent; mo
   const pal = COOL[mode === 'condensate' ? 'condensate' : 'cold']
   ;(u.uColor.value as THREE.Color).set(hot ? '#ff5a12' : pal.tint).multiplyScalar(hot ? 1.6 : mode === 'cold' ? 0.75 : 0.6)
   ;(u.uRim.value as THREE.Color).set(hot ? '#ffc070' : pal.rim).multiplyScalar(hot ? 2.2 : 0.9)
-  u.uAmount.value = hot ? i ** 1.6 * 0.85 : i ** 1.4 * 0.45
+  u.uAmount.value = (hot ? i ** 1.6 * 0.85 : i ** 1.4 * 0.45) * (boxed ? 0.6 : 1)
+  u.uRimK.value = boxed ? 0.3 : 1
   useFrame((_, dt) => { u.uTime.value += dt })
   if (i < 0.12) return null
   return <mesh geometry={geo} material={mat} position={[0, 0, zc]} scale={[Rx, Ry, len]} renderOrder={4} raycast={noRaycast} />

@@ -1,6 +1,7 @@
 import { INSULATION, thicknessesFor, type InsulationId } from '../data/catalog'
 import { THICKNESSES, type PipeMaterial } from '../data/pipe'
 import { pipeSpec } from '../data/pipes'
+import { ductBehavior, ductProduct, ductSurface, ductThicknesses, ratedR, solveDuct } from './duct'
 import { PIPE_PROPS } from '../data/pipeWalls'
 import { SPECS, type ProductSpec } from '../data/specs'
 import { resolveSystem } from '../geo/assembly'
@@ -119,7 +120,11 @@ export function condensationStatus(m: Moisture, marginF: number): CondensationSt
   return m.marginF < marginF ? 'borderline' : 'dry'
 }
 
+/** The Ductwork tab has no hot/cold of its own: heat flows by which side is warmer. */
+export const physicsMode = (s: { processF: number; ambientF: number }, mode: SimMode): SimMode => (mode === 'duct' ? ductBehavior(s) : mode)
+
 export interface Side {
+  /** Nominal thickness (ducts: out-of-package), null = bare. */
   thicknessIn: number | null
   input: CaseInput
   result: CaseResult
@@ -127,9 +132,22 @@ export interface Side {
   status: CondensationStatus
   geo: Geometry | null
   surface: SurfaceRef
+  /** Ducts: the insulation's rated installed R (what the energy codes check). */
+  ratedR?: number
 }
 
 export function evaluateSide(s: SimState, mode: SimMode, thicknessIn: number | null, nominal = false): Side {
+  mode = physicsMode(s, mode)
+  if (s.system === 'duct') {
+    const t = thicknessIn !== null && thicknessIn > 0 ? thicknessIn : null
+    const d = solveDuct(s, mode, t)
+    const surf = ductSurface(s, t !== null)
+    return {
+      thicknessIn, input: d.input, result: d.result, moisture: d.moisture, status: condensationStatus(d.moisture, s.dewMarginF), geo: null,
+      surface: s.emittanceOverride === null || t === null ? surf : { ...surf, value: s.emittanceOverride, label: 'Custom emittance', src: [] },
+      ratedR: t === null ? 0 : ratedR(s.ductIns, t),
+    }
+  }
   const { input, geo, surface } = caseFor(s, mode, thicknessIn, nominal)
   const result = solveCase(input)
   const m = moisture(input, result, s.rh)
@@ -150,9 +168,10 @@ export interface Evaluation {
 }
 
 export function evaluate(s: SimState, mode: SimMode): Evaluation {
+  mode = physicsMode(s, mode)
   const bare = evaluateSide(s, mode, null)
   const ins = evaluateSide(s, mode, s.thicknessIn)
-  const product = productFor(s)
+  const product = s.system === 'duct' ? ductProduct(s.ductIns) : productFor(s)
   const reductionPct = bare.result.qWm !== 0 ? (1 - ins.result.qWm / bare.result.qWm) * 100 : 0
   const annual = s.lengthFt > 0 && s.hours > 0
     ? (() => {
@@ -165,6 +184,7 @@ export function evaluate(s: SimState, mode: SimMode): Evaluation {
 }
 
 function warnings(s: SimState, mode: SimMode, ins: Side, product: ProductSpec): Warning[] {
+  if (s.system === 'duct') return ductWarnings(s, mode, ins, product)
   const out: Warning[] = []
   const { min, max } = product.tempF
   if (max !== null && s.processF > max) out.push({ level: 'warn', text: `${s.processF}°F is above ${product.name}'s published maximum of ${max}°F.` })
@@ -188,6 +208,8 @@ export type Goal =
   | { kind: 'qMax'; btuHrFt: number }
   /** A thickness floor, e.g. an energy-code minimum. */
   | { kind: 'minThickness'; in: number }
+  /** Ducts: a minimum rated installed R (energy codes). */
+  | { kind: 'minR'; R: number }
 
 export interface Recommendation {
   goal: Goal
@@ -206,14 +228,22 @@ export function meets(goal: Goal, side: Side): boolean {
     case 'noCondensation': return side.moisture.marginF >= goal.marginF
     case 'qMax': return Math.abs(r.qBtuHrFt) <= goal.btuHrFt
     case 'minThickness': return side.thicknessIn !== null && side.thicknessIn + 1e-9 >= goal.in
+    case 'minR': return (side.ratedR ?? 0) + 1e-9 >= goal.R
   }
 }
 
 /** Smallest standard thickness (0.5" steps, up to the material's max) meeting the goal. */
+/** Thicknesses on offer for the current system (ducts: the product's nominal sizes). */
+export function thicknessOptions(s: SimState): number[] {
+  return s.system === 'duct' ? ductThicknesses(s.ductIns) : thicknessesFor(INSULATION[s.insulation], THICKNESSES)
+}
+
 export function recommend(s: SimState, mode: SimMode, goal: Goal): Recommendation {
-  const maxIn = INSULATION[s.insulation].maxThicknessIn
+  mode = physicsMode(s, mode)
+  const opts = thicknessOptions(s)
+  const maxIn = s.system === 'duct' ? opts[opts.length - 1] : INSULATION[s.insulation].maxThicknessIn
   const bare = evaluateSide(s, mode, null)
-  for (const t of thicknessesFor(INSULATION[s.insulation], THICKNESSES)) {
+  for (const t of opts) {
     const side = evaluateSide(s, mode, t)
     if (meets(goal, side)) return { goal, thicknessIn: t, side, maxIn, alreadyMet: meets(goal, bare) }
   }
@@ -231,4 +261,19 @@ export function rayIntensity(side: Side, mode: SimMode): number {
   const flux = Math.abs(side.result.qWm) / area // W/m²
   const ref = mode === 'hot' ? 2500 : 250
   return Math.min(1, Math.sqrt(flux / ref))
+}
+
+// ------------------------------------------------------------------ ducts
+
+function ductWarnings(s: SimState, mode: SimMode, ins: Side, product: ProductSpec): Warning[] {
+  const out: Warning[] = []
+  const max = product.tempF.max
+  if (max !== null && s.processF > max) out.push({ level: 'warn', text: `${s.processF}°F is above ${product.name}'s ${product.tempF.note ?? `published maximum of ${max}°F`}.` })
+  if (mode === 'hot' && s.processF <= s.ambientF) out.push({ level: 'info', text: 'The air in the duct is at or below the room — this is a cooling duct. Try Cold mode.' })
+  if (mode !== 'hot' && s.processF >= s.ambientF) out.push({ level: 'info', text: 'The air in the duct is at or above the room, so the duct cannot sweat. Try Hot mode.' })
+  const lim = ins.surface.maxSurfaceF
+  if (lim !== undefined && ins.result.surfaceF > lim) out.push({ level: 'warn', text: `Surface ${Math.round(ins.result.surfaceF)}°F exceeds the ${ins.surface.label.toLowerCase()} limit of ${lim}°F.` })
+  if (s.ductShape === 'rect' && s.ductW >= 24) out.push({ level: 'info', text: 'Ducts 24" and wider need mechanical fasteners (pins) on the underside at no more than 18" on center to keep the wrap from sagging (OC, JM, Knauf, CertainTeed).' })
+  if (mode !== 'hot') out.push({ level: 'info', text: 'Cooling ducts: seal every seam, tear, staple and pin penetration with foil tape so the vapor retarder is continuous (IMC 604.11).' })
+  return out
 }

@@ -41,6 +41,8 @@ export interface CaseInput {
   emittance: number
   /** Plastic pipe: wall conduction, constant k (W/m·K) from the bore radius (m) to pipeOd/2. */
   wall?: { kWmK: number; rIn: number }
+  /** Inside film coefficient at the pipe/duct wall, W/(m²·K) (ducts only, optional). */
+  insideH?: number
 }
 
 export interface CaseResult {
@@ -61,6 +63,8 @@ export interface CaseResult {
   extrapolated: boolean
   /** Radial temperature profile for visualisation: r (m) → °F. */
   profile: { r: number; tF: number }[]
+  /** Ducts: each face solved on its own (sim/duct.ts). */
+  faces?: import('./duct').DuctFaceResult[]
 }
 
 export const curveFrom = (points: KPoint[]) => kCurve(points)
@@ -83,9 +87,11 @@ export function solveCase(c: CaseInput): CaseResult {
   }
 
   // temperature drop across a plastic pipe wall carrying q
-  const wallDrop = (q: number) => (c.wall ? (q * Math.log(c.pipeOd / 2 / c.wall.rIn)) / (2 * Math.PI * c.wall.kWmK) : 0)
+  const wallDrop = (q: number) =>
+    (c.wall ? (q * Math.log(c.pipeOd / 2 / c.wall.rIn)) / (2 * Math.PI * c.wall.kWmK) : 0)
+    + (c.insideH ? q / (Math.PI * c.pipeOd * c.insideH) : 0)
   let Ts = Ti
-  if (c.layers.length || c.wall) {
+  if (c.layers.length || c.wall || c.insideH) {
     // residual: fluid temperature implied by a guessed surface temperature, minus the real one
     const residual = (ts: number) => {
       const { q } = surfaceQ(ts)
@@ -116,7 +122,7 @@ export function solveCase(c: CaseInput): CaseResult {
     bounds.unshift(T)
   }
   // pin the pipe surface to the process temperature (bisection residual ~1e-6 K)
-  if (c.layers.length && !c.wall) bounds[0] = Ti
+  if (c.layers.length && !c.wall && !c.insideH) bounds[0] = Ti
 
   const layerMeanF: number[] = []
   const layerKIp: number[] = []

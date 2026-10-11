@@ -83,6 +83,47 @@ export const PRESETS: Preset[] = [
     range: { text: 'Antifreeze or brine for temperatures below 36°F', src: ['V14'] },
     set: { processF: 20, ambientF: 85, rh: 70, npsIndex: NPS_3, insulation: 'cellular-glass', thicknessIn: 2, jacket: 'alu-smooth', facing: 'none', windMph: 0 },
   },
+  // ------------------------------------------------------------ ductwork
+  // Ductwork presets are a duct type in a location. Air and room temperatures
+  // are examples except 55°F supply air, the basis of the NAIMA, Owens Corning
+  // and CertainTeed duct-wrap condensation charts (U53).
+  {
+    id: 'duct-cool', mode: 'duct', label: 'Supply duct, attic', blurb: 'Cooling supply air through a vented attic above an insulated ceiling',
+    range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'attic', ductService: 'both', ductShape: 'rect', ductW: 24, ductH: 12, ductIns: 'wrap75', thicknessIn: 3, processF: 55, ambientF: 95, rh: 60, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-cond', mode: 'duct', label: 'Supply duct, conditioned', blurb: 'Cooling supply air through an occupied, air-conditioned space',
+    range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'conditioned', ductService: 'both', ductShape: 'round', ductD: 14, ductIns: 'wrap75', thicknessIn: 1.5, processF: 55, ambientF: 75, rh: 55, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-plenum', mode: 'duct', label: 'Supply in a return plenum', blurb: 'Cooling supply duct above a dropped ceiling used as the return air plenum',
+    range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'indirect', ductService: 'both', ductShape: 'round', ductD: 12, ductIns: 'wrap75', thicknessIn: 1.5, processF: 55, ambientF: 78, rh: 50, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-heat', mode: 'duct', label: 'Heating supply, crawl space', blurb: 'Warm-air supply through an unconditioned crawl space in winter',
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'crawl', ductService: 'both', ductShape: 'rect', ductW: 20, ductH: 10, ductIns: 'wrap75', thicknessIn: 3, processF: 120, ambientF: 40, rh: 50, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-return', mode: 'duct', label: 'Return duct, attic', blurb: 'Room air returning through a hot attic',
+    set: { system: 'duct', ductType: 'return', ductLocation: 'attic', ductService: 'both', ductShape: 'rect', ductW: 24, ductH: 14, ductIns: 'wrap75', thicknessIn: 2, processF: 75, ambientF: 110, rh: 30, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-oa', mode: 'duct', label: 'Outside-air intake, winter', blurb: 'Cold outdoor air ducted through a heated building',
+    set: { system: 'duct', ductType: 'outdoor', ductLocation: 'conditioned', ductService: 'both', ductShape: 'rect', ductW: 18, ductH: 12, ductIns: 'wrap75', thicknessIn: 1.5, processF: 20, ambientF: 70, rh: 35, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-exhaust', mode: 'duct', label: 'Exhaust duct, cold attic', blurb: 'Warm exhaust air through an unconditioned attic in winter',
+    set: { system: 'duct', ductType: 'exhaust', ductLocation: 'attic', ductService: 'both', ductShape: 'round', ductD: 10, ductIns: 'wrap75', thicknessIn: 1.5, processF: 72, ambientF: 25, rh: 50, npsIndex: NPS_4, windMph: 0 },
+  },
+  {
+    id: 'duct-roof', mode: 'duct', label: 'Rooftop supply duct', blurb: 'Cooling supply duct run outdoors on a roof',
+    range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'exterior', ductService: 'both', ductShape: 'rect', ductW: 30, ductH: 16, ductIns: 'elastomeric', thicknessIn: 2, processF: 55, ambientF: 95, rh: 55, npsIndex: NPS_4, windMph: 0 },
+    stage: 'plant',
+  },
   // ----------------------------------------------------------- condensate
   {
     id: 'cd-drain', mode: 'condensate', label: 'HVAC condensate drain', blurb: 'Coil drain line in a ceiling space',
@@ -111,6 +152,19 @@ export const presetsFor = (mode: SimMode) => PRESETS.filter((p) => p.mode === mo
 
 const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   presetId: null,
+  system: 'pipe',
+  ductType: 'supply',
+  ductShape: 'rect',
+  ductW: 24,
+  ductH: 12,
+  ductD: 14,
+  ductIns: 'wrap75',
+  ductFinish: 'new',
+  ductLocation: 'unconditioned',
+  ductService: 'both',
+  climateZone: 4,
+  insideFilm: false,
+  airFpm: 1000,
   pipe: 'steel',
   component: 'straight',
   fittingCover: 'blanket',
@@ -141,12 +195,12 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
 
 export function applyPreset(base: SimState | null, p: Preset): SimState {
   const keep = base
-    ? { lengthFt: base.lengthFt, hours: base.hours, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
+    ? { lengthFt: base.lengthFt, hours: base.hours, climateZone: base.climateZone, insideFilm: base.insideFilm, airFpm: base.airFpm, ductFinish: base.ductFinish, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
     : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5 }
   return { ...BASE, ...keep, ...p.set, presetId: p.id, kProduct: 0, emittanceOverride: null }
 }
 
-export const DEFAULT_PRESET: Record<SimMode, string> = { hot: 'steam', cold: 'chws', condensate: 'cd-mechroom' }
+export const DEFAULT_PRESET: Record<SimMode, string> = { hot: 'steam', cold: 'chws', condensate: 'cd-mechroom', duct: 'duct-cool' }
 
 export function initialState(mode: SimMode): SimState {
   return applyPreset(null, PRESETS.find((p) => p.id === DEFAULT_PRESET[mode])!)

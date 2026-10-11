@@ -1,0 +1,2243 @@
+{
+ "dataset": "Sourced code requirements for an insulation recommendation tool (pipes and ducts; hot, cold, condensate): duct insulation R-value tables and installed-R/compression rules, other pipe-insulation rules (IECC commercial and residential, IMC 1204, service hot water), condensate-drain insulation status, refrigerant-piping insulation, plenum fire ratings, and outdoor/UV protection",
+ "generated": "2026-10-11",
+ "conventions": {
+  "unverified": "The literal string 'unverified' (or an entry in the top-level 'unverified' list) means no fetched source stated the item. Nothing was guessed, interpolated or filled from memory.",
+  "src": "Every item carries 'src', a list of ids in this file's top-level 'sources' array (C1...C35). C34 and C35 are recorded only to document sources that could not be read.",
+  "ids": "Requirement ids: DUCT-n, PIPE-n, COND-n, REF-n, FIRE-n, OUT-n.",
+  "quotes": "'quote', '*_quote' and '*_quotes' strings are verbatim from the page text or pdftotext output, with line breaks joined and runs of spaces collapsed. Every quote and every 'check' string was machine-verified as a substring of the downloaded source text when this file was built. Where a source shows an equation as an image, the image was read visually and the field name says so ('*_image_read').",
+  "check_fields": "'check' / 'check_*' / 'checks' fields are verification strings (table rows as they appear in the text, cells separated by ' | ' for UpCodes pages) that were matched against the source; they back up hand-transcribed numbers.",
+  "upcodes_formatting": "UpCodes text loses superscripts: '11/2' means 1 1/2, 'ft2' means ft², a trailing 'a, c' after a table title is a footnote marker. Ranges such as '0.32—0.34' keep the em dash as served.",
+  "icc_via_state_adoptions": "ICC model codes (IECC, IMC, IRC, IPC) were read from UpCodes pages of state adoptions whose header says \"Adopts Without Amendments\" (IPC: \"Adopts With Amendments\"); the edition shown is the model code edition named on that page.",
+  "summaries": "Fields named 'note', 'finding', 'summary', 'parsed' or 'observation' are the agent's paraphrase or structured reading of the quotes; the quotes govern.",
+  "units": {
+   "R": "h·ft²·°F/Btu",
+   "k": "Btu·in/(h·ft²·°F)",
+   "temperature": "°F",
+   "thickness": "inches",
+   "permeance": "perm"
+  },
+  "related_files": "vapor-code-verified.json holds ASHRAE 90.1 pipe tables (2010/2019/2022), the K/k correction formula and vapor-retarder guidance; it is referenced, not duplicated."
+ },
+ "sources": [
+  {
+   "id": "C1",
+   "title": "IECC 2021 Chapter 4 [CE] Commercial Energy Efficiency",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2021/chapter/CE_4/ce-commercial-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Division of Fire Prevention and Control (DFPC) Energy Conservation Code 2021 - page header: 'Adopts Without Amendments' / 'International Energy Conservation Code 2021 (IECC 2021)'",
+   "model_code": "IECC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page).",
+   "note": "Footnote b equation (T = ...) is an image that is not present in the served HTML for this edition; the 2024 edition (C3) serves it as text."
+  },
+  {
+   "id": "C2",
+   "title": "IECC 2021 Chapter 4 [RE] Residential Energy Efficiency",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2021/chapter/RE_4/re-residential-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "DFPC Energy Conservation Code 2021 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2021 (IECC 2021)'",
+   "model_code": "IECC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C3",
+   "title": "IECC 2024 Chapter 4 [CE] Commercial Energy Efficiency",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2024/chapter/CE_4/ce-commercial-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Office of the State Architect (OSA) Energy Conservation Code 2024 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2024 (IECC 2024)'",
+   "model_code": "IECC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page).",
+   "note": "Footnote b equation is HTML text with K/k inside <sup> (superscript). The Table C403.13.3(2) R-value equation and the C404.4 Equation 4-8 are images (publication-images/2c6603b5-....jpg 133x18 px; e1ac7631-....jpg 270x24 px) read visually after 4-5x Lanczos upscaling."
+  },
+  {
+   "id": "C4",
+   "title": "IECC 2024 Chapter 4 [RE] Residential Energy Efficiency",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2024/chapter/RE_4/re-residential-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "OSA Energy Conservation Code 2024 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2024 (IECC 2024)'",
+   "model_code": "IECC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C5",
+   "title": "IECC 2018 Chapter 4 [RE] Residential Energy Efficiency",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/iecc-2018/chapter/RE_4/re-residential-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "OSA Energy Conservation Code 2018 - 'Adopts Without Amendments' / 'International Energy Conservation Code 2018 (IECC 2018)'",
+   "model_code": "IECC 2018",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C6",
+   "title": "IMC 2021 Chapter 6 Duct Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/6/duct-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "model_code": "IMC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C7",
+   "title": "IMC 2021 Chapter 3 General Regulations",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/3/general-regulations",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "model_code": "IMC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C8",
+   "title": "IMC 2021 Chapter 11 Refrigeration",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/11/refrigeration",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "model_code": "IMC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C9",
+   "title": "IMC 2021 Chapter 12 Hydronic Piping",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2021/chapter/12/hydronic-piping",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2021 - 'Adopts Without Amendments' / 'International Mechanical Code 2021 (IMC 2021)'",
+   "model_code": "IMC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C10",
+   "title": "IMC 2024 Chapter 6 Duct Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/6/duct-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "model_code": "IMC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C11",
+   "title": "IMC 2024 Chapter 3 General Regulations",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/3/general-regulations",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "model_code": "IMC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C12",
+   "title": "IMC 2024 Chapter 11 Refrigeration",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/11/refrigeration",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "model_code": "IMC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C13",
+   "title": "IMC 2024 Chapter 12 Hydronic Piping",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/illinois/imc-2024/chapter/12/hydronic-piping",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Illinois Mechanical Code 2024 - 'Adopts Without Amendments' / 'International Mechanical Code 2024 (IMC 2024)'",
+   "model_code": "IMC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C14",
+   "title": "IRC 2021 Chapter 14 Heating and Cooling Equipment and Appliances",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/irc-2021/chapter/14/heating-and-cooling-equipment-and-appliances",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Division of Fire Prevention and Control (DFPC) Residential Code 2021 - 'Adopts Without Amendments' / 'International Residential Code 2021 (IRC 2021)'",
+   "model_code": "IRC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C15",
+   "title": "IRC 2021 Chapter 16 Duct Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/irc-2021/chapter/16/duct-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "DFPC Residential Code 2021 - 'Adopts Without Amendments' / 'International Residential Code 2021 (IRC 2021)'",
+   "model_code": "IRC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C16",
+   "title": "IRC 2024 Chapter 14 Heating and Cooling Equipment and Appliances",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/texas/irc-2024/chapter/14/heating-and-cooling-equipment-and-appliances",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Texas Windstorm Insurance Association Residential Code 2024 - 'Adopts Without Amendments' / 'International Residential Code 2024 (IRC 2024)'",
+   "model_code": "IRC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C17",
+   "title": "IRC 2024 Chapter 16 Duct Systems",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/texas/irc-2024/chapter/16/duct-systems",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Texas Windstorm Insurance Association Residential Code 2024 - 'Adopts Without Amendments' / 'International Residential Code 2024 (IRC 2024)'",
+   "model_code": "IRC 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page)."
+  },
+  {
+   "id": "C18",
+   "title": "IPC 2021 Chapter 3 General Regulations",
+   "publisher": "UpCodes (hosting a state adoption of an ICC model code)",
+   "url": "https://up.codes/viewer/colorado/ipc-2021/chapter/3/general-regulations",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "Division of Professions and Occupations (DPO) Plumbing Code 2021 - 'Adopts With Amendments' / 'International Plumbing Code 2021 (IPC 2021)'",
+   "model_code": "IPC 2021",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML converted to text; table cells kept as ' | '-separated lines). Page header states the adoption status quoted in pub_no_or_date. No login; the chapter text was served in full (no sign-up wall on this page).",
+   "note": "Colorado ADOPTS WITH AMENDMENTS; the [M]-tagged Section 314 text read here was not checked against the unamended model text."
+  },
+  {
+   "id": "C19",
+   "title": "ANSI/ASHRAE/IES Addenda be, bm, bn, bo, bp, br, bs, bu, bv, cf, cl, cm, cq, ct, cu, cv, cw, cy to ANSI/ASHRAE/IES Standard 90.1-2016 (consolidated reprint package)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90.1-2016/90_1_2016_be_bm_bn_bo_bp_br_bs_bu_bv_cf_cl_cm_cq_ct_cu_cv_cw_cy_20210324.pdf",
+   "doc_type": "official standard addenda package PDF (196 pp.; reprints Sections 3, 5, 6, 7 etc. as clean text, not strikethrough/underline)",
+   "pub_no_or_date": "(c) 2021 ASHRAE; PDF created 2021-03-24. Its Informative Appendix H states: 'ANSI/ASHRAE/IES Standard 90.1-2019 incorporates all addenda to ANSI/ASHRAE/IES Standard 90.1-2016.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; PDF page 98 (Sections 6.8.2 and 6.8.3) rendered at 110 dpi and read visually to confirm table cells and the footnote superscripts.",
+   "edition_note": "Treated as the 90.1-2019 text: the reprint carries climate zone 0 (added for 90.1-2019) and Appendix H of 90.1-2019. It is not the published 90.1-2019 book itself."
+  },
+  {
+   "id": "C20",
+   "title": "ANSI/ASHRAE/IES Addendum r to ANSI/ASHRAE/IES Standard 90.1-2022 (\"floor\" -> \"envelope floor\" terminology)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/90_1_2022_r_20240531.pdf",
+   "doc_type": "official standard addendum PDF (strikethrough/underline)",
+   "pub_no_or_date": "file dated 2024-05-31 (index lists May 31, 2024)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; page 14 rendered at 130 dpi: in Table 6.8.2 footnote a, 'envelope' is underlined (added) before 'floor'; table body elided as '[...]'."
+  },
+  {
+   "id": "C21",
+   "title": "ASHRAE Standards Addenda index page (Standard 90.1 and Standard 15 addenda lists) and a full-text search of every linked 90.1-2016/2019/2022 addendum PDF",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/technical-resources/standards-and-guidelines/standards-addenda",
+   "doc_type": "index web page + bulk PDF text search",
+   "pub_no_or_date": "as served 2026-10-11",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; 195 linked 90.1 PDFs downloaded (7 combined 90.1-2016 packages, 85 addenda to 90.1-2019, 103 to 90.1-2022), pdftotext, then case-insensitive grep for '6.8.2', 'duct insulation', 'plenum insulation', '6.4.4.1'. Hits: C19 (2016 package, table reprint), C20 (2022 addendum r), 90_1_2016_k_o_x... (6.3.2 cross-reference only), 90_1_2022_cc (normative reference list 'Table 6.8.2, A9.3.1'), 90_1_2019_at and 90_1_2022_da (6.1 renumbering cross-references only). No addendum to 90.1-2019 modifies Table 6.8.2."
+  },
+  {
+   "id": "C22",
+   "title": "NYC Energy Code 2025 - 6.8.2 Duct Insulation Tables (code snippet)",
+   "publisher": "UpCodes (publishing the 2025 NYC Energy Conservation Code, ASHRAE 90.1-2022 based)",
+   "url": "https://up.codes/s/duct-insulation-tables",
+   "doc_type": "code-hosting web page",
+   "pub_no_or_date": "breadcrumb 'NYC Energy Code 2025 > 6 Heating, Ventilating, and Air Conditioning > 6.8 ... > 6.8.2 Duct Insulation Tables'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text)",
+   "note": "NYC prints climate zones 4-6 only (New York State climate zones); same publisher/edition family as vapor-code-verified.json R32."
+  },
+  {
+   "id": "C23",
+   "title": "NYC Energy Code 2025 - Chapter 6 Heating, Ventilating, and Air Conditioning (ASHRAE 90.1-2022 as amended by NYC)",
+   "publisher": "UpCodes",
+   "url": "https://up.codes/viewer/new_york_city/nyc-energy-conservation-code-2025/chapter/6/heating-ventilating-and-air-conditioning",
+   "doc_type": "code-hosting web page (full chapter)",
+   "pub_no_or_date": "page header 'NYC Energy Code 2025 / Adopts With Amendments'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text)"
+  },
+  {
+   "id": "C24",
+   "title": "ANSI/ASHRAE/IES Standard 90.1-2019: HVAC (training slides, PNNL-SA-153210)",
+   "publisher": "PNNL for U.S. DOE Building Energy Codes Program (hosted by Oregon BCD)",
+   "url": "https://www.oregon.gov/bcd/codes-stand/Documents/90.1-2019-HVAC-training.pdf",
+   "doc_type": "government training slide deck PDF",
+   "pub_no_or_date": "PNNL-SA-153210 (same deck as vapor-code-verified.json R39); PDF created 2021-07-21",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext; slide 70 rendered at 70 dpi (bullet text + exception diagram; no table on the slide)"
+  },
+  {
+   "id": "C25",
+   "title": "ANSI/ASHRAE Addendum e to ANSI/ASHRAE Standard 15-2019 (refrigerant piping design, installation, location, testing)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/15_2019_e_20220127.pdf",
+   "doc_type": "official standard addendum PDF (strikethrough/underline)",
+   "pub_no_or_date": "file dated 2022-01-27",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext; printed page 9 (PDF p. 11) rendered at 100 dpi: Sections 9.12.1.2 and 9.12.1.6 are underlined (new text added by this addendum)."
+  },
+  {
+   "id": "C26",
+   "title": "ANSI/ASHRAE Addendum g to ANSI/ASHRAE Standard 15-2024 (authorized personnel)",
+   "publisher": "ASHRAE",
+   "url": "https://www.ashrae.org/file%20library/technical%20resources/standards%20and%20guidelines/standards%20addenda/15_2024_g_20250530.pdf",
+   "doc_type": "official standard addendum PDF (strikethrough/underline)",
+   "pub_no_or_date": "file dated 2025-05-30",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw). Shows 15-2024 Section 9.12.1.6 as base text with a wording change; struck/underlined words not resolved by pdftotext (text shows both old and new phrases).",
+   "search_note": "All 64 Standard 15 addenda PDFs linked from C21 (15-2013 through 15-2024) were downloaded and grepped for insulat/condensation/dew point/vapor retard: insulation appears only in 9.12.1.6 (surface temperature) and 9.12.1.8 (pipe identification on insulation) and a 15-2019 addendum s occupancy definition; no condensation or vapor-retarder text."
+  },
+  {
+   "id": "C27",
+   "title": "Broward County Board of Rules and Appeals - Formal Interpretation #4: Insulation Requirements for Condensate Drains (FBC 6th Edition (2017))",
+   "publisher": "Broward County (FL) Board of Rules and Appeals",
+   "url": "http://web.archive.org/web/20240701033631/https://www.broward.org/CodeAppeals/AboutUs/Documents/FI-4%20Insulation%20Requirements%20for%20Primary%20Considerate%20Drains.pdf",
+   "doc_type": "local code-interpretation PDF (1 page) retrieved from the Internet Archive",
+   "pub_no_or_date": "dated October 12, 2015; re-issued October 12, 2017; effective January 1, 2018",
+   "accessed": "2026-10-11",
+   "retrieval": "broward.org original URL now returns HTTP 404 (site migrated); Wayback snapshot 2024-07-01 (id_ raw) downloaded (first attempt was rate-limited by archive.org, second succeeded), pdftotext. The 8th-edition re-issue 'FI-3 (8th Edition, 2023)' could not be retrieved (broward.org 404, no Wayback snapshot)."
+  },
+  {
+   "id": "C28",
+   "title": "Lennox Mini-Split Installation manual M22D***S6-1P (R-32 mini 4-way cassette), DB68-12936A-01",
+   "publisher": "Lennox",
+   "url": "https://www.lennox.com/dA/27de1b6196/DB68-12936A-01.pdf",
+   "doc_type": "manufacturer installation manual PDF (42 pp.)",
+   "pub_no_or_date": "DB68-12936A-01; PDF created 2024-11-18",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout); page 16 rendered at 110 dpi to read the insulation table (merged cells: gas pipe 3/8 to 5/8 in. share one row). The unit 't' is printed without a definition on the page."
+  },
+  {
+   "id": "C29",
+   "title": "SOFTR Duct Wrap FRK - Product Data Sheet",
+   "publisher": "Owens Corning (distributor-hosted copy, Baker Distributing)",
+   "url": "https://cdn.bakerdist.com/softr-duct-wrap-frk-ss.pdf",
+   "doc_type": "manufacturer data sheet PDF (2 pp.)",
+   "pub_no_or_date": "Pub. No. 59241-P, December 2018",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout)"
+  },
+  {
+   "id": "C30",
+   "title": "SOFTR Unfaced Fiberglas Duct Wrap - Product Data Sheet",
+   "publisher": "Owens Corning",
+   "url": "https://www.owenscorning.com/dms/10004429",
+   "doc_type": "manufacturer data sheet PDF",
+   "pub_no_or_date": "Pub. No. 10004429-C, August 2026",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout"
+  },
+  {
+   "id": "C31",
+   "title": "2022 Building Energy Efficiency Standards for Residential and Nonresidential Buildings (California Code of Regulations Title 24, Part 6)",
+   "publisher": "California Energy Commission",
+   "url": "https://www.energy.ca.gov/sites/default/files/2022-12/CEC-400-2022-010_CMF.pdf",
+   "doc_type": "state energy code PDF (533 pp.)",
+   "pub_no_or_date": "CEC-400-2022-010-CMF; PDF created 2022-12-02",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext -layout; PDF pp. 186-187 rendered at 110-120 dpi to read the Section 120.3 equation and Table 120.3-A (merged Nonres/Res cells)."
+  },
+  {
+   "id": "C32",
+   "title": "Products Used in Air Handling Spaces (UL code-authority newsletter article)",
+   "publisher": "UL (Underwriters Laboratories)",
+   "url": "https://code-authorities.ul.com/wp-content/uploads/2014/04/ul_PlenumsProductsUsedIn.pdf",
+   "doc_type": "certification-body newsletter PDF (2 pp.)",
+   "pub_no_or_date": "PDF created 2010-02-26; NFPA 90A edition referred to is not stated",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext",
+   "note": "Secondary source: paraphrases NFPA 90A; it is not NFPA text."
+  },
+  {
+   "id": "C33",
+   "title": "Nevada Plumbing Code 2012 - 814.0 Condensate Wastes and Control (code snippet; UPC-based)",
+   "publisher": "UpCodes",
+   "url": "https://up.codes/s/condensate-wastes-and-control",
+   "doc_type": "code-hosting web page",
+   "pub_no_or_date": "breadcrumb 'Nevada Plumbing Code 2012 > Chapter 8 Indirect Wastes > 814.0'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (server-rendered HTML to text)",
+   "note": "Old (2012) UPC edition; the only UPC/UMC-family condensate text that was readable."
+  },
+  {
+   "id": "C34",
+   "title": "IAPMO ePubs - 2021 and 2024 Uniform Mechanical Code",
+   "publisher": "IAPMO",
+   "url": "https://epubs.iapmo.org/2024/UMC/",
+   "doc_type": "model code reader",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "NOT READABLE: curl returned HTTP 403 Forbidden for /2024/UMC/ and /2021/UMC/. Not bypassed. No values taken from this source."
+  },
+  {
+   "id": "C35",
+   "title": "NFPA 90A (Standard for the Installation of Air-Conditioning and Ventilating Systems), 2024 edition - NFPA free-access reader",
+   "publisher": "NFPA",
+   "url": "https://link.nfpa.org/free-access/publications/90A/2024",
+   "doc_type": "standard (online free-access reader)",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "NOT READABLE: curl receives only a ~2 kB JavaScript application shell (content is loaded by script). Not rendered in a browser and not bypassed. No values taken from this source."
+  }
+ ],
+ "duct_insulation_tables": {
+  "ashrae_90_1_2019_table_6_8_2": {
+   "id": "DUCT-1",
+   "edition": "ANSI/ASHRAE/IES 90.1-2019 (text as reprinted in C19)",
+   "src": [
+    "C19"
+   ],
+   "heading_verbatim": "Table 6.8.2 Minimum Duct Insulation R-Valuea",
+   "heading_note": "trailing 'a' is the footnote-a superscript",
+   "columns_verbatim": [
+    "Exteriorb",
+    "Unconditioned Space and Buried Ducts",
+    "Indirectly Conditioned Space c,d"
+   ],
+   "columns_note": "As printed (visual check of rendered page): footnote b is attached to 'Exterior'; footnotes c,d to 'Indirectly Conditioned Space'. The 2019 table has only these three duct-location columns. Separate columns for 'ventilated attic', 'unvented attic' and 'buried' do NOT exist in this table: buried ducts share the 'Unconditioned Space and Buried Ducts' column, and attics above insulated ceilings appear only through footnote b.",
+   "units": "R-value, h·ft²·°F/Btu (installed; see footnote a)",
+   "rows": [
+    {
+     "duct_type": "Supply and Return Ducts for Heating and Cooling",
+     "climate_zones": "0 to 4",
+     "exterior": "R-8",
+     "unconditioned_space_and_buried": "R-6",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "Supply and Return Ducts for Heating and Cooling 0 to 4 R-8 R-6 R-1.9"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Heating and Cooling",
+     "climate_zones": "5 to 8",
+     "exterior": "R-12",
+     "unconditioned_space_and_buried": "R-6",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "5 to 8 R-12 R-6 R-1.9 Supply and Return Ducts for Heating Only"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Heating Only",
+     "climate_zones": "0 to 1",
+     "exterior": "None",
+     "unconditioned_space_and_buried": "None",
+     "indirectly_conditioned_space": "None",
+     "check": "Supply and Return Ducts for Heating Only 0 to 1 None None None"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Heating Only",
+     "climate_zones": "2 to 4",
+     "exterior": "R-6",
+     "unconditioned_space_and_buried": "R-6",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "2 to 4 R-6 R-6 R-1.9"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Heating Only",
+     "climate_zones": "5 to 8",
+     "exterior": "R-12",
+     "unconditioned_space_and_buried": "R-6",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "2 to 4 R-6 R-6 R-1.9 5 to 8 R-12 R-6 R-1.9 Supply and Return Ducts for Cooling Only"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Cooling Only",
+     "climate_zones": "0 to 6",
+     "exterior": "R-8",
+     "unconditioned_space_and_buried": "R-6",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "Supply and Return Ducts for Cooling Only 0 to 6 R-8 R-6 R-1.9"
+    },
+    {
+     "duct_type": "Supply and Return Ducts for Cooling Only",
+     "climate_zones": "7 to 8",
+     "exterior": "R-1.9",
+     "unconditioned_space_and_buried": "R-1.9",
+     "indirectly_conditioned_space": "R-1.9",
+     "check": "7 to 8 R-1.9 R-1.9 R-1.9"
+    }
+   ],
+   "footnotes": [
+    {
+     "mark": "a",
+     "quote": "Insulation R-values, measured in h·ft2·°F/Btu, are for the insulation as installed and do not include film resistance. The required minimum thicknesses do not consider water vapor transmission and possible surface condensation. Where portions of the building envelope are used as a plenum enclosure, building envelope insulation shall be as required by the most restrictive condition of Section 6.4.4.1 or Section 5, depending on whether the plenum is located in the roof, wall, or floor. Insulation resistance measured on a horizontal plane in accordance with ASTM C518 at a mean temperature of 75°F at the installed thickness."
+    },
+    {
+     "mark": "b",
+     "quote": "Includes attics above insulated ceilings, parking garages and crawl spaces."
+    },
+    {
+     "mark": "c",
+     "quote": "Includes return air plenums with or without exposed roofs above."
+    },
+    {
+     "mark": "d",
+     "quote": "Return ducts in this duct location do not require insulation."
+    }
+   ],
+   "mandatory_text": {
+    "section": "6.4.4.1.2 Duct and Plenum Insulation",
+    "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2.",
+    "exceptions_quotes": [
+     "Factory-installed plenums, casings, or ductwork furnished as a part of HVAC equipment tested and rated in accordance with Section 6.4.1.",
+     "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces.",
+     "For runouts less than 10 ft in length to air terminals or air outlets, the rated R-value of insulation need not exceed R-3.5.",
+     "Backs of air outlets and outlet plenums exposed to unconditioned space or indirectly conditioned space with face areas exceeding 5 ft2 need not exceed R-2; those 5 ft2 or",
+     "smaller need not be insulated."
+    ],
+    "exceptions_note": "Exception 4 is split across a page break in C19 (last two strings); the NYC 2025 text (C23) prints it whole.",
+    "exception_4_nyc_check": "Backs of air outlets and outlet plenums exposed to unconditioned space or indirectly conditioned space with face areas exceeding 5 ft2 need not exceed R-2; those 5 ft2 or smaller need not be insulated.",
+    "corroboration": {
+     "src": [
+      "C24"
+     ],
+     "quotes": [
+      "Duct insulation requirement table was simplified with some increases.",
+      "Duct Insulation - Reference Table 6.8.2 on page 150 in 90.1-2019"
+     ],
+     "note": "PNNL/DOE 90.1-2019 training slides 36 and 70 (slide 70 repeats the four exceptions; no table values on the slides)."
+    }
+   },
+   "status": "verified (from ASHRAE-published reprint; see C19 edition_note)"
+  },
+  "ashrae_90_1_2022_table_6_8_2": {
+   "id": "DUCT-2",
+   "edition": "ANSI/ASHRAE/IES 90.1-2022",
+   "status": "partially verified",
+   "rows_read_from_nyc_2025_adoption": {
+    "src": [
+     "C22"
+    ],
+    "heading_verbatim": "Table 6.8.2 Minimum Duct Insulation R-Valuea",
+    "rows": [
+     {
+      "duct_type": "Supply and Return Ducts for Heating and Cooling",
+      "climate_zones": "4",
+      "exterior": "R-8",
+      "unconditioned_space_and_buried": "R-6",
+      "indirectly_conditioned_space": "R-1.9",
+      "check": "Supply and Return Ducts for Heating and Cooling | 4 | R-8 | R-6 | R-1.9"
+     },
+     {
+      "duct_type": "Supply and Return Ducts for Heating and Cooling",
+      "climate_zones": "5 to 6",
+      "exterior": "R-12",
+      "unconditioned_space_and_buried": "R-6",
+      "indirectly_conditioned_space": "R-1.9",
+      "check": "5 to 6 | R-12 | R-6 | R-1.9 | Supply and Return Ducts for Heating Only"
+     },
+     {
+      "duct_type": "Supply and Return Ducts for Heating Only",
+      "climate_zones": "4",
+      "exterior": "R-6",
+      "unconditioned_space_and_buried": "R-6",
+      "indirectly_conditioned_space": "R-1.9",
+      "check": "Supply and Return Ducts for Heating Only | 4 | R-6 | R-6 | R-1.9"
+     },
+     {
+      "duct_type": "Supply and Return Ducts for Heating Only",
+      "climate_zones": "5 to 6",
+      "exterior": "R-12",
+      "unconditioned_space_and_buried": "R-6",
+      "indirectly_conditioned_space": "R-1.9",
+      "check": "5 to 6 | R-12 | R-6 | R-1.9 | Supply and Return Ducts for Cooling Only"
+     },
+     {
+      "duct_type": "Supply and Return Ducts for Cooling Only",
+      "climate_zones": "4 to 6",
+      "exterior": "R-8",
+      "unconditioned_space_and_buried": "R-6",
+      "indirectly_conditioned_space": "R-1.9",
+      "check": "Supply and Return Ducts for Cooling Only | 4 to 6 | R-8 | R-6 | R-1.9"
+     }
+    ],
+    "footnotes_quotes": [
+     "Insulation R-values, measured in h•ft2•°F/Btu, are for the insulation as installed and do not include film resistance.",
+     "Includes attics above insulated ceilings, parking garages and crawl spaces.",
+     "Includes return air plenums with or without exposed roofs above.",
+     "Return ducts in this duct location do not require insulation."
+    ],
+    "note": "NYC prints only climate zones 4-6. Every NYC cell equals the 90.1-2019 (DUCT-1) cell for the same zone and duct type."
+   },
+   "footnote_a_2022_text": {
+    "src": [
+     "C20"
+    ],
+    "quote": "Insulation R-values, measured in h·ft2·°F/Btu, are for the insulation as installed and do not include film resistance. The required minimum thicknesses do not consider water vapor transmission and possible surface condensation. Where portions of the building envelope are used as a plenum enclosure, building envelope insulation shall be as required by the most restrictive condition of Section 6.4.4.1 or Section 5, depending on whether the plenum is located in the roof, wall, or envelope floor. Insulation resistance measured on a horizontal plane in accordance with ASTM C518 at a mean temperature of 75°F at the installed thickness.",
+    "note": "Addendum r to 90.1-2022 shows footnotes a-d of 90.1-2022 Table 6.8.2; the only change is 'envelope' added (underlined) before 'floor'. Its table title is printed 'Table 6.8.2 Minimum to Duct Insulation R-Value' (the stray 'to' is not marked as a change)."
+   },
+   "no_change_evidence": {
+    "src": [
+     "C21"
+    ],
+    "note": "None of the 85 addenda to 90.1-2019 posted by ASHRAE mentions Table 6.8.2 or duct insulation, so no published addendum changed the table between 2019 and 2022. This supports, but does not prove, that the full 2022 table equals DUCT-1."
+   },
+   "unverified": "National 90.1-2022 cells for climate zones 0-3 and 7-8 (not printed by NYC). UpCodes pages for state adoptions of national 90.1 chapter 6 (Colorado 2019; Illinois, Oregon, New Jersey 2022) show a \"Keep reading ... Create free account\" sign-up wall instead of the text and were not used.",
+   "mandatory_text_nyc_2025": {
+    "src": [
+     "C23"
+    ],
+    "quote": "All supply and return ducts and plenums installed as part of an HVAC air distribution system shall be thermally insulated in accordance with Table 6.8.2.",
+    "note": "NYC 2025 6.4.4.1.2 exceptions read identical to the 2019 text in DUCT-1."
+   }
+  },
+  "iecc_commercial": [
+   {
+    "id": "DUCT-3",
+    "code": "IECC 2021",
+    "section": "C403.12.1 Duct and Plenum Insulation and Sealing",
+    "src": [
+     "C1"
+    ],
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces and where located outside the building with not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8. Ducts located underground beneath buildings shall be insulated as required in this section or have an equivalent thermal distribution efficiency. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency. Where located within a building envelope assembly, the duct or plenum shall be separated from the building exterior or unconditioned or exempt spaces by not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8.",
+    "exceptions_quotes": [
+     "Where located within equipment.",
+     "Where the design temperature difference between the interior and exterior of the duct or plenum is not greater than 15°F (8°C)."
+    ],
+    "sealing_quote": "Ducts, air handlers and filter boxes shall be sealed. Joints and seams shall comply with Section 603.9 of the International Mechanical Code.",
+    "parsed": [
+     {
+      "location": "unconditioned space",
+      "climate_zones": "all",
+      "min_R": 6,
+      "applies_to": "supply and return ducts and plenums"
+     },
+     {
+      "location": "outside the building",
+      "climate_zones": "0-4",
+      "min_R": 8
+     },
+     {
+      "location": "outside the building",
+      "climate_zones": "5-8",
+      "min_R": 12
+     },
+     {
+      "location": "within a building envelope assembly (separation from exterior/unconditioned/exempt space)",
+      "climate_zones": "0-4",
+      "min_R": 8
+     },
+     {
+      "location": "within a building envelope assembly (separation from exterior/unconditioned/exempt space)",
+      "climate_zones": "5-8",
+      "min_R": 12
+     },
+     {
+      "location": "underground beneath buildings",
+      "climate_zones": "all",
+      "min_R": "as above or equivalent thermal distribution efficiency (listed and labeled)"
+     }
+    ],
+    "note": "IECC 2021 C403.12.1 does not distinguish heating-only, cooling-only or combined ducts, and does not use the word \"installed\"; IMC 604.1 ties duct insulation to the IECC and IMC 604.7 sets the installed-thickness basis (DUCT-9)."
+   },
+   {
+    "id": "DUCT-4",
+    "code": "IECC 2024",
+    "section": "C403.13.1 Duct and Plenum Insulation and Sealing",
+    "src": [
+     "C3"
+    ],
+    "quote": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces and where located outside the building with not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8.",
+    "exceptions_quotes": [
+     "Where located within equipment.",
+     "Where the design temperature difference between the interior and exterior of the duct or plenum is not greater than 15°F (8°C)."
+    ],
+    "note": "Same requirements as IECC 2021 C403.12.1 (renumbered); 'building envelope assembly' became 'building thermal envelope assembly'. Text as served also prints 'Climate Zones0 through 4' (missing space).",
+    "check": "Where located within a building thermal envelope assembly, the duct or plenum shall be separated from the building exterior or unconditioned or exempt spaces by not less than R-8 insulation"
+   }
+  ],
+  "iecc_residential": [
+   {
+    "id": "DUCT-5",
+    "code": "IECC 2021",
+    "section": "R403.3.1 Ducts Located Outside Conditioned Space",
+    "src": [
+     "C2"
+    ],
+    "quote": "Supply and return ducts located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter. Ducts buried beneath a building shall be insulated as required per this section or have an equivalent thermal distribution efficiency. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency.",
+    "parsed": [
+     {
+      "diameter_in": ">=3",
+      "min_R": 8
+     },
+     {
+      "diameter_in": "<3",
+      "min_R": 6
+     }
+    ]
+   },
+   {
+    "id": "DUCT-6",
+    "code": "IECC 2021",
+    "section": "R403.3.3 Ducts Buried Within Ceiling Insulation / R403.3.3.1",
+    "src": [
+     "C2"
+    ],
+    "quotes": [
+     "The supply and return ducts shall have an insulation R-value not less than R-8.",
+     "At all points along each duct, the sum of the ceiling insulation R-value against and above the top of the duct, and against and below the bottom of the duct, shall be not less than R-19, excluding the R-value of the duct insulation.",
+     "In Climate Zones 0A, 1A, 2A and 3A, the supply ducts shall be completely buried within ceiling insulation, insulated to an R-value of not less than R-13 and in compliance with the vapor retarder requirements of Section 604.11 of the International Mechanical Code or Section M1601.4.6 of the International Residential Code, as applicable.",
+     "Sections of the supply duct that are less than 3 feet (914 mm) from the supply outlet shall not be required to comply with these requirements.",
+     "shall be considered as having an effective duct insulation R-value of R-25."
+    ]
+   },
+   {
+    "id": "DUCT-7",
+    "code": "IECC 2024",
+    "section": "R403.3.3 Ductwork Located Outside Conditioned Space; R403.3.5 Ductwork Buried Within Ceiling Insulation",
+    "src": [
+     "C4"
+    ],
+    "quote": "Supply and return ductwork located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter.",
+    "buried_quotes": [
+     "The supply and return ductwork shall be insulated with not less than R-8 insulation.",
+     "In Climate Zones 0A, 1A, 2A and 3A where installed in an unvented attic with vapor diffusion ports, the supply ductwork shall be completely buried within the insulation in the ceiling assembly at the floor of the attic, insulated to an R-value of not less than R-8 and in compliance with the vapor retarder requirements of Section 604.11 of the International Mechanical Code or Section M1601.4.6 of the International Residential Code, as applicable."
+    ],
+    "note": "The 2024 numbering moved: R403.3.1 is now \"Duct System Design\" (ACCA Manual D); the R-8/R-6 rule is R403.3.3."
+   },
+   {
+    "id": "DUCT-8",
+    "code": "IECC 2018",
+    "section": "R403.3.1 Insulation (Prescriptive)",
+    "src": [
+     "C5"
+    ],
+    "quote": "Supply and return ducts in attics shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter. Supply and return ducts in other portions of the building shall be insulated to not less than R-6 for ducts 3 inches (76 mm) in diameter and not less than R-4.2 for ducts smaller than 3 inches (76 mm) in diameter.",
+    "exception_quote": "Ducts or portions thereof located completely inside the building thermal envelope.",
+    "note": "Older edition kept for comparison: attic ducts R-8/R-6, other locations R-6/R-4.2 (2021 replaced this with one outside-conditioned-space rule)."
+   }
+  ],
+  "installed_r_value_and_compression": {
+   "summary": "Duct-insulation R-values in 90.1 are installed R-values at the installed thickness (footnote a). The IMC, IRC and California Title 24 define installed thickness: duct wrap is assumed compressed 25 % (installed thickness = 75 % of nominal); duct board/liner/rigid duct use nominal thickness; flexible duct uses (actual OD - nominal ID)/2. Product R-values exclude air films and vapor retarders and are based on C-values tested at 75 °F mean.",
+   "items": [
+    {
+     "id": "DUCT-9",
+     "code": "IMC 2021",
+     "section": "604.7 Identification",
+     "src": [
+      "C6"
+     ],
+     "quote": "Duct insulation product R-values shall be based on insulation only, excluding air films, vapor retarders or other duct components, and shall be based on tested C-values at 75°F (24°C) mean temperature at the installed thickness, in accordance with recognized industry procedures. The installed thickness of duct insulation used to determine its R-value shall be determined as follows:",
+     "list_quotes": [
+      "For duct board, duct liner and factory-made rigid ducts not normally subjected to compression, the nominal insulation thickness shall be used.",
+      "For duct wrap, the installed thickness shall be assumed to be 75 percent (25 percent compression) of nominal thickness.",
+      "For factory-made flexible air ducts, the installed thickness shall be determined by dividing the difference between the actual outside diameter and nominal inside diameter by two.",
+      "For spray polyurethane foam, the aged R-value per inch (mm), measured in accordance with recognized industry standards, shall be provided to the customer in writing at the time of foam application."
+     ],
+     "labeling_quote": "External duct insulation, except spray polyurethane foam, and factory-insulated flexible duct shall be legibly printed or identified at intervals not greater than 36 inches (914 mm) with the name of the manufacturer, the thermal resistance R-value at the specified installed thickness and the flame spread and smoke-developed indices of the composite materials.",
+     "tie_to_energy_code_quote": "Duct insulation shall conform to the requirements of Sections 604.2 through 604.13 and the International Energy Conservation Code.",
+     "parsed": {
+      "duct_wrap_installed_thickness_fraction": 0.75,
+      "duct_board_liner_rigid": "nominal thickness",
+      "flex_duct": "(actual OD - nominal ID)/2",
+      "C_value_mean_temp_F": 75
+     }
+    },
+    {
+     "id": "DUCT-10",
+     "code": "IMC 2024",
+     "section": "604.7 Identification",
+     "src": [
+      "C10"
+     ],
+     "quote": "For duct wrap, the installed thickness shall be assumed to be 75 percent (25 percent compression) of nominal thickness.",
+     "note": "Same 604.7 text as IMC 2021 (checked sentence by sentence).",
+     "check": "Duct insulation product R-values shall be based on insulation only, excluding air films, vapor retarders or other duct components, and shall be based on tested C-values at 75°F (24°C) mean temperature at the installed thickness"
+    },
+    {
+     "id": "DUCT-11",
+     "code": "IRC 2021 / IRC 2024",
+     "section": "M1601.3 Duct Insulation Materials, item 4",
+     "src": [
+      "C15",
+      "C17"
+     ],
+     "quote": "For ductwrap, the installed thickness shall be assumed to be 75 percent (25-percent compression) of nominal thickness.",
+     "check_2024": "For ductwrap, the installed thickness shall be assumed to be 75 percent (25-percent compression) of nominal thickness.",
+     "related_quote": "Nonreflective duct insulation product R-values shall be based on insulation only, excluding air films, vapor retarders or other duct components, and shall be based on tested C-values at 75°F (24°C) mean temperature at the installed thickness, in accordance with recognized industry procedures.",
+     "reflective_quote": "The installed thickness of the external duct insulation shall include the enclosed airspace(s). The product R-value for external reflective duct insulation shall be determined in accordance with ASTM C1668."
+    },
+    {
+     "id": "DUCT-12",
+     "code": "California Title 24 Part 6 (2022)",
+     "section": "120.4(c)-(d) nonresidential; 150.0(m)5 single-family",
+     "src": [
+      "C31"
+     ],
+     "quote": "For duct wrap, installed thickness shall be assumed to be 75 percent (25 percent compression) of nominal thickness.",
+     "basis_quote": "All duct insulation product R-values shall be based on insulation only (excluding air films, vapor retarders or other duct components) and tested C-values at 75°F mean temperature at the installed thickness, in accordance with ASTM C518 or ASTM C177, incorporated herein by reference, and certified pursuant to Section 110.8."
+    },
+    {
+     "id": "DUCT-13",
+     "code": "manufacturer data (not code)",
+     "section": "Owens Corning SOFTR Duct Wrap FRK",
+     "src": [
+      "C29"
+     ],
+     "quote": "Assumes 25% compression of insulation.",
+     "installed_values": [
+      {
+       "type": "Type 75 (0.75 pcf)",
+       "nominal_in": "1 1/2",
+       "out_of_package_R": 5.1,
+       "installed_in": "1 1/8",
+       "installed_R": 4.2
+      },
+      {
+       "type": "Type 75 (0.75 pcf)",
+       "nominal_in": "2.0",
+       "out_of_package_R": 6.8,
+       "installed_in": "1 1/2",
+       "installed_R": 5.6
+      },
+      {
+       "type": "Type 75 (0.75 pcf)",
+       "nominal_in": "2.2",
+       "out_of_package_R": 7.4,
+       "installed_in": "1 5/8",
+       "installed_R": 6.0
+      },
+      {
+       "type": "Type 75 (0.75 pcf)",
+       "nominal_in": "3",
+       "out_of_package_R": 10.0,
+       "installed_in": "2 1/4",
+       "installed_R": 8.3
+      },
+      {
+       "type": "Type 100 (1.00 pcf)",
+       "nominal_in": "1 1/2",
+       "out_of_package_R": 5.6,
+       "installed_in": "1 1/8",
+       "installed_R": 4.5
+      },
+      {
+       "type": "Type 100 (1.00 pcf)",
+       "nominal_in": "2",
+       "out_of_package_R": 7.4,
+       "installed_in": "1 1/2",
+       "installed_R": 6.0
+      },
+      {
+       "type": "Type 150 (1.50 pcf)",
+       "nominal_in": "1 1/2",
+       "out_of_package_R": 6.0,
+       "installed_in": "1 1/8",
+       "installed_R": 4.8
+      },
+      {
+       "type": "Type 150 (1.50 pcf)",
+       "nominal_in": "2",
+       "out_of_package_R": 8.0,
+       "installed_in": "1 1/2",
+       "installed_R": 6.4
+      }
+     ],
+     "installed_values_note": "Read from the -layout text (R at 75°F mean, footnotes 2,3); installed k: Type 75 0.27, Type 100 0.25, Type 150 0.23 vs out-of-package 0.30/0.27/0.25 Btu·in/h·ft²·°F. Values are typical manufacturer data.",
+     "checks": [
+      "Type 75 – 0.75 pcf (12 kg/m3)",
+      "ASTM C 1290, Flexible Fibrous Glass Blanket Insulation",
+      "11/2 (38) 5.1 (0.90) 11⁄8 (29) 4.2 (0.74)",
+      "2.0 (50) 6.8 (1.17) 11/2 (38) 5.6 (0.98)",
+      "2.2 (56) 7.4 (1.30) 15⁄8 (42) 6.0 (1.06)",
+      "3 (76) 10.0 (1.76) 21/4 (57) 8.3 (1.46)",
+      "11/2 (38) 5.6 (0.99) 11⁄8 (29) 4.5 (0.79)",
+      "2 (51) 7.4 (1.30) 11/2 (38) 6.0 (1.06)",
+      "11⁄8 (29) 4.8 (0.85)",
+      "2 (51) 8.0 (1.41) 11/2 (38) 6.4 (1.13)"
+     ]
+    }
+   ],
+   "discrepancy": {
+    "src": [
+     "C30"
+    ],
+    "note": "Owens Corning SOFTR Unfaced Duct Wrap (Pub. 10004429-C, Aug 2026) is internally inconsistent: its stretch-out table lists installed thickness 1.125 in. for 1.5 in. nominal (75 %), and its condensation chart says 'based on installed thickness 75% of nominal', but its R-value table lists 2 in. nominal -> 1.90 in. installed, R-6.7 out-of-pocket -> R-5.5 installed. Not resolved; do not use the 1.90 in. figure as a compression rule.",
+    "quotes": [
+     "based on installed thickness 75% of nominal (out-of-package) thickness"
+    ]
+   }
+  },
+  "residential_irc_vapor_and_outdoor": {
+   "id": "DUCT-14",
+   "code": "IRC 2021 and IRC 2024",
+   "section": "M1601.4.6 Duct Insulation",
+   "src": [
+    "C15",
+    "C17"
+   ],
+   "quotes": [
+    "A vapor retarder having a permeance of not greater than 0.05 perm [2.87 ng/(s × m2 × Pa)] in accordance with ASTM E96, or aluminum foil with a thickness of not less than 2 mils (0.05 mm), shall be installed on the exterior of insulation on cooling supply ducts that pass through unconditioned spaces conducive to condensation except where the insulation is spray polyurethane foam with a water vapor permeance of not greater than 3 perms per inch [1722 ng/(s × m2 × Pa)] at the installed thickness.",
+    "Outdoor duct systems shall be protected against the elements.",
+    "Duct coverings shall not penetrate a fireblocked wall or floor."
+   ],
+   "check_2024": "shall be installed on the exterior of insulation on cooling supply ducts that pass through unconditioned spaces conducive to condensation"
+  },
+  "imc_duct_vapor_retarder": {
+   "id": "DUCT-15",
+   "code": "IMC 2021 and IMC 2024",
+   "section": "604.11 Vapor Retarders; 603.12 Condensation; 604.2 Surface Temperature",
+   "src": [
+    "C6",
+    "C10"
+   ],
+   "quotes": [
+    "Where ducts used for cooling are externally insulated, the insulation shall be covered with a vapor retarder having a maximum permeance of 0.05 perm [2.87 ng/(Pa • s • m2)] or aluminum foil having a minimum thickness of 2 mils (0.051 mm). Insulations having a permeance of 0.05 perm [2.87 ng/(Pa • s • m2)] or less shall not be required to be covered. Joints and seams shall be sealed to maintain the continuity of the vapor retarder.",
+    "A vapor retarder is not required for spray polyurethane foam insulation having a water vapor permeance of not greater than 3 perms per inch [1722 ng/(s • m2• Pa)] at the installed thickness.",
+    "Provisions shall be made to prevent the formation of condensation on the exterior of any duct.",
+    "Ducts that operate at temperatures exceeding 120°F (49°C) shall have sufficient thermal insulation to limit the exposed surface temperature to 120°F (49°C)."
+   ],
+   "check_2024": "Where ducts used for cooling are externally insulated, the insulation shall be covered with a vapor retarder having a maximum permeance of 0.05 perm",
+   "internal_insulation_quote": "Exposed internal insulation that is not impermeable to water shall not be used to line ducts or plenums from the exit of a cooling coil to the downstream end of the drain pan."
+  },
+  "california_title24_2022": {
+   "id": "DUCT-16",
+   "code": "California Title 24 Part 6 (2022)",
+   "section": "120.4(a) nonresidential; 150.0(m)1B single-family",
+   "src": [
+    "C31"
+   ],
+   "quotes": [
+    "Portions of supply-air and return-air ducts conveying heated or cooled air located in one or more of the following spaces shall be insulated to a minimum installed level of R-8:",
+    "Portions of supply-air ducts that are not in one of these spaces, including ducts buried in concrete slab, shall be insulated to a minimum installed level of R-4.2 or be enclosed in directly conditioned space.",
+    "Ducts shall have a minimum installed level of R-6.0, or"
+   ],
+   "nonres_R8_spaces_quotes": [
+    "Outdoors; or",
+    "In a space between the roof and an insulated ceiling; or",
+    "In a space directly under a roof with fixed vents or openings to the outside or unconditioned spaces; or",
+    "In an unconditioned crawlspace; or",
+    "In other unconditioned spaces."
+   ],
+   "note": "State code (California only), included because it states the installed-R-value basis explicitly."
+  }
+ },
+ "pipe_insulation_other": {
+  "cross_reference": "ASHRAE 90.1-2010/2019/2022 Tables 6.8.3-1/6.8.3-2, the K/k thickness-correction formula and the IECC-2018-family Table C403.11.3 are already transcribed with quotes in vapor-code-verified.json code_minimum_thickness (sources R2-R40). They are not repeated here.",
+  "iecc_2021_C403_12_3": {
+   "id": "PIPE-1",
+   "code": "IECC 2021",
+   "section": "C403.12.3 Piping Insulation + Table C403.12.3",
+   "src": [
+    "C1"
+   ],
+   "quote": "Piping serving as part of a heating or cooling system shall be thermally insulated in accordance with Table C403.12.3.",
+   "exceptions_quotes": [
+    "Factory-installed piping within HVAC equipment tested and rated in accordance with a test procedure referenced by this code.",
+    "Factory-installed piping within room fan-coils and unit ventilators tested and rated according to AHRI 440 (except that the sampling and variation provisions of Section 6.5 shall not apply) and AHRI 840, respectively.",
+    "Piping that conveys fluids that have a design operating temperature range between 60°F (15°C) and 105°F (41°C).",
+    "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electric power.",
+    "Strainers, control valves, and balancing valves associated with piping 1 inch (25 mm) or less in diameter.",
+    "Direct buried piping that conveys fluids at or below 60°F (15°C).",
+    "In radiant heating systems, sections of piping intended by design to radiate heat."
+   ],
+   "table_heading_verbatim": "MINIMUM PIPE INSULATION THICKNESS (in inches)a, c",
+   "size_columns_as_served": [
+    "< 1",
+    "1 to < 1 1/2",
+    "1 1/2 to < 4",
+    "4 to < 8",
+    "> 8"
+   ],
+   "size_columns_note": "UpCodes serves the last column as '> 8' (HTML '&gt; 8'); 90.1 and IECC 2024 Table C403.13.3(2) print '≥ 8'. '11/2' in the served text is 1 1/2 with lost superscript formatting.",
+   "rows": [
+    {
+     "range_F": "> 350",
+     "k_range": "0.32—0.34",
+     "mean_F": 250,
+     "thickness_in": [
+      4.5,
+      5.0,
+      5.0,
+      5.0,
+      5.0
+     ],
+     "check": "> 350 | 0.32—0.34 | 250 | 4.5 | 5.0 | 5.0 | 5.0 | 5.0"
+    },
+    {
+     "range_F": "251—350",
+     "k_range": "0.29—0.32",
+     "mean_F": 200,
+     "thickness_in": [
+      3.0,
+      4.0,
+      4.5,
+      4.5,
+      4.5
+     ],
+     "check": "251—350 | 0.29—0.32 | 200 | 3.0 | 4.0 | 4.5 | 4.5 | 4.5"
+    },
+    {
+     "range_F": "201—250",
+     "k_range": "0.27—0.30",
+     "mean_F": 150,
+     "thickness_in": [
+      2.5,
+      2.5,
+      2.5,
+      3.0,
+      3.0
+     ],
+     "check": "201—250 | 0.27—0.30 | 150 | 2.5 | 2.5 | 2.5 | 3.0 | 3.0"
+    },
+    {
+     "range_F": "141—200",
+     "k_range": "0.25—0.29",
+     "mean_F": 125,
+     "thickness_in": [
+      1.5,
+      1.5,
+      2.0,
+      2.0,
+      2.0
+     ],
+     "check": "141—200 | 0.25—0.29 | 125 | 1.5 | 1.5 | 2.0 | 2.0 | 2.0"
+    },
+    {
+     "range_F": "105—140",
+     "k_range": "0.21—0.28",
+     "mean_F": 100,
+     "thickness_in": [
+      1.0,
+      1.0,
+      1.5,
+      1.5,
+      1.5
+     ],
+     "check": "105—140 | 0.21—0.28 | 100 | 1.0 | 1.0 | 1.5 | 1.5 | 1.5"
+    },
+    {
+     "range_F": "40—60",
+     "k_range": "0.21—0.27",
+     "mean_F": 75,
+     "thickness_in": [
+      0.5,
+      0.5,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "check": "40—60 | 0.21—0.27 | 75 | 0.5 | 0.5 | 1.0 | 1.0 | 1.0"
+    },
+    {
+     "range_F": "< 40",
+     "k_range": "0.20—0.26",
+     "mean_F": 50,
+     "thickness_in": [
+      0.5,
+      1.0,
+      1.0,
+      1.0,
+      1.5
+     ],
+     "check": "< 40 | 0.20—0.26 | 50 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5"
+    }
+   ],
+   "footnotes_quotes": [
+    "For piping smaller than 11/2 inches and located in partitions within conditioned spaces, reduction of these thicknesses by 1 inch shall be permitted (before thickness adjustment required in Note b) but not to a thickness less than 1 inch.",
+    "For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows:",
+    "k = The upper value of the conductivity range listed in the table for the applicable fluid temperature.",
+    "For direct-buried heating and hot water system piping, reduction of these thicknesses by 11/2 inches (38 mm) shall be permitted (before thickness adjustment required in Note b but not to thicknesses less than 1 inch."
+   ],
+   "comparison": "Identical cell values to the IECC-2018-family Table C403.11.3 (vapor-code-verified.json R36), including the 105-140°F conductivity range 0.21-0.28 (90.1-2019 prints 0.22 to 0.28). The 2021 text adds exception 7 (radiant heating piping). The footnote-b equation image is missing from the served HTML; the 2024 text (PIPE-2) prints the exponent form.",
+   "status": "verified (resolves vapor-code-verified.json unverified item \"IECC 2021 ... Table C403.12.3 values\")"
+  },
+  "iecc_2024_C403_13_3": {
+   "id": "PIPE-2",
+   "code": "IECC 2024",
+   "section": "C403.13.3 Piping Insulation + Tables C403.13.3(1) and C403.13.3(2)",
+   "src": [
+    "C3"
+   ],
+   "quote": "Piping serving as part of a heating or cooling system shall be thermally insulated in accordance with Table C403.13.3(1) or C403.13.3(2).",
+   "exceptions_note": "Same seven exceptions as IECC 2021 C403.12.3 (checked).",
+   "exceptions_check": [
+    "Direct buried piping that conveys fluids at or below 60°F (15°C).",
+    "In radiant heating systems, sections of piping intended by design to radiate heat."
+   ],
+   "table1_heading_verbatim": "MINIMUM PIPE INSULATION THICKNESS (in inches or R-value)a, c",
+   "table1_rows": [
+    {
+     "range_F": "> 350",
+     "k_range": "0.32—0.34",
+     "mean_F": 250,
+     "thickness_in": [
+      4.5,
+      5.0,
+      5.0,
+      5.0,
+      5.0
+     ],
+     "R": [
+      "R-32",
+      "R-36",
+      "R-34",
+      "R-26",
+      "R-21"
+     ],
+     "check": "> 350 | 0.32—0.34 | 250 | Inches | 4.5 | 5.0 | 5.0 | 5.0 | 5.0 | R-value | R-32 | R-36 | R-34 | R-26 | R-21"
+    },
+    {
+     "range_F": "251—350",
+     "k_range": "0.29—0.32",
+     "mean_F": 200,
+     "thickness_in": [
+      3.0,
+      4.0,
+      4.5,
+      4.5,
+      4.5
+     ],
+     "R": [
+      "R-20",
+      "R-29",
+      "R-32",
+      "R-24",
+      "R-20"
+     ],
+     "check": "251—350 | 0.29—0.32 | 200 | Inches | 3.0 | 4.0 | 4.5 | 4.5 | 4.5 | R-value | R-20 | R-29 | R-32 | R-24 | R-20"
+    },
+    {
+     "range_F": "201—250",
+     "k_range": "0.27—0.30",
+     "mean_F": 150,
+     "thickness_in": [
+      2.5,
+      2.5,
+      2.5,
+      3.0,
+      3.0
+     ],
+     "R": [
+      "R-17",
+      "R-17",
+      "R-17",
+      "R-15",
+      "R-13"
+     ],
+     "check": "201—250 | 0.27—0.30 | 150 | Inches | 2.5 | 2.5 | 2.5 | 3.0 | 3.0 | R-value | R-17 | R-17 | R-17 | R-15 | R-13"
+    },
+    {
+     "range_F": "141—200",
+     "k_range": "0.25—0.29",
+     "mean_F": 125,
+     "thickness_in": [
+      1.5,
+      1.5,
+      2.0,
+      2.0,
+      2.0
+     ],
+     "R": [
+      "R-9",
+      "R-9",
+      "R-11",
+      "R-10",
+      "R-9"
+     ],
+     "check": "141—200 | 0.25—0.29 | 125 | Inches | 1.5 | 1.5 | 2.0 | 2.0 | 2.0 | R-value | R-9 | R-9 | R-11 | R-10 | R-9"
+    },
+    {
+     "range_F": "105—140",
+     "k_range": "0.21—0.28",
+     "mean_F": 100,
+     "thickness_in": [
+      1.0,
+      1.0,
+      1.5,
+      1.5,
+      1.5
+     ],
+     "R": [
+      "R-5",
+      "R-9",
+      "R-8",
+      "R-8",
+      "R-7"
+     ],
+     "check": "105—140 | 0.21—0.28 | 100 | Inches | 1.0 | 1.0 | 1.5 | 1.5 | 1.5 | R-value | R-5 | R-9 | R-8 | R-8 | R-7"
+    },
+    {
+     "range_F": "40—60",
+     "k_range": "0.21—0.27",
+     "mean_F": 75,
+     "thickness_in": [
+      0.5,
+      0.5,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "R": [
+      "R-2",
+      "R-2",
+      "R-5",
+      "R-5",
+      "R-4"
+     ],
+     "check": "40—60 | 0.21—0.27 | 75 | Inches | 0.5 | 0.5 | 1.0 | 1.0 | 1.0 | R-value | R-2 | R-2 | R-5 | R-5 | R-4"
+    },
+    {
+     "range_F": "< 40",
+     "k_range": "0.20—0.26",
+     "mean_F": 50,
+     "thickness_in": [
+      0.5,
+      1.0,
+      1.0,
+      1.0,
+      1.5
+     ],
+     "R": [
+      "R-6",
+      "R-9",
+      "R-9",
+      "R-8",
+      "R-7"
+     ],
+     "check": "< 40 | 0.20—0.26 | 50 | Inches | 0.5 | 1.0 | 1.0 | 1.0 | 1.5 | R-value | R-6 | R-9 | R-9 | R-8 | R-7"
+    }
+   ],
+   "table2_heading_verbatim": "MINIMUM PIPE INSULATION R-VALUEa",
+   "table2_note": "Table C403.13.3(2) repeats the R-value rows of Table (1) (all seven rows checked) but labels the last size column '≥ 8' and the coldest row '≤ 40' (Table (1): '> 8' and '< 40').",
+   "table2_checks": [
+    "≤ 40 | R-6 | R-9 | R-9 | R-8 | R-7",
+    "40—60 | R-2 | R-2 | R-5 | R-5 | R-4 | ≤ 40",
+    "> 350 | R-32 | R-36 | R-34 | R-26 | R-21 | 251—350 | R-20 | R-29 | R-32 | R-24 | R-20"
+   ],
+   "footnote_b_equation_as_served": "T = r[(1 + t/r)K/k — 1]",
+   "footnote_b_equation_note": "HTML marks K/k as <sup>: T = r[(1 + t/r)^(K/k) — 1], with 'k = The upper value of the conductivity range listed in the table'.",
+   "r_value_formula": {
+    "quote": "The R-value of cylindrical piping insulation shall be determined as follows:",
+    "equation_image_read": "R = {ro[ln(ro/ri)]}/k",
+    "variables_quotes": [
+     "The interior R-value of the cylindrical piping insulation in Btu × ft2 × °F/h.",
+     "The outer radius of the piping insulation in inches.",
+     "The inner radius of the piping insulation in inches.",
+     "the thermal conductivity of the insulation material in Btu × in/h × ft2 × °F."
+    ]
+   },
+   "observation": "As printed, the < 40°F row carries higher R-values (R-6, R-9, R-9, R-8, R-7) than the 40—60°F row (R-2, R-2, R-5, R-5, R-4) at the same or equal thickness and a similar conductivity range, e.g. 1.0 in. in the 1 1/2-to-<4 column is R-9 vs R-5. The R-values are transcribed as printed and not corrected; the pipe diameters ICC used to derive them were not found."
+  },
+  "iecc_service_water_C404_4": [
+   {
+    "id": "PIPE-3",
+    "code": "IECC 2021",
+    "section": "C404.4 Insulation of Piping",
+    "src": [
+     "C1"
+    ],
+    "quote": "Piping from a water heater to the termination of the heated water fixture supply pipe shall be insulated in accordance with Table C403.12.3. On both the inlet and outlet piping of a storage water heater or heated water storage tank, the piping to a heat trap or the first 8 feet (2438 mm) of piping, whichever is less, shall be insulated.",
+    "freeze_and_personnel_quote": "The minimum insulation thickness requirements of this section shall not supersede any greater insulation thickness requirements necessary for the protection of piping from freezing temperatures or the protection of personnel against external surface temperatures on the insulation.",
+    "exception_quote": "Piping surrounded by building insulation with a thermal resistance (R-value) of not less than R-3."
+   },
+   {
+    "id": "PIPE-4",
+    "code": "IECC 2024",
+    "section": "C404.4 Service Water Heating System Piping Insulation + Table C404.4.1",
+    "src": [
+     "C3"
+    ],
+    "quote": "Service water heating system piping shall be surrounded by uncompressed insulation. The wall thickness of the insulation shall be not less than the thickness shown in Table C404.4.1.",
+    "rows": [
+     {
+      "range": "105°F to 140°F",
+      "k_range": "0.22 to 0.28",
+      "mean_F": 100,
+      "thickness_in": [
+       1.0,
+       1.0,
+       1.5,
+       1.5,
+       1.5
+      ],
+      "check": "105°F to 140°F | 0.22 to 0.28 | 100 | 1.0 | 1.0 | 1.5 | 1.5 | 1.5"
+     },
+     {
+      "range": "> 140°F to 200°F",
+      "k_range": "0.25 to 0.29",
+      "mean_F": 125,
+      "thickness_in": [
+       1.0,
+       1.0,
+       2.0,
+       2.0,
+       2.0
+      ],
+      "check": "> 140°F to 200°F | 0.25 to 0.29 | 125 | 1.0 | 1.0 | 2.0 | 2.0 | 2.0"
+     },
+     {
+      "range": "> 200°F",
+      "k_range": "0.27 to 0.30",
+      "mean_F": 150,
+      "thickness_in": [
+       1.5,
+       1.5,
+       2.5,
+       3.0,
+       3.0
+      ],
+      "check": "> 200°F | 0.27 to 0.30 | 150 | 1.5 | 1.5 | 2.5 | 3.0 | 3.0"
+     }
+    ],
+    "size_columns": [
+     "< 1",
+     "1 to < 1 1/2",
+     "1 1/2 to < 4",
+     "4 to < 8",
+     "≥ 8"
+    ],
+    "equation_4_8_image_read": "t_alt = r × [(1 + t_table/r) k_alt/k_upper − 1]  (printed on one line, k_alt/k_upper NOT superscripted)",
+    "equation_note": "Same '×'/inline form as the ASHRAE 90.1-2019 Addendum aq body text discussed in vapor-code-verified.json correction_formula.moved_into_body_text; the C403.13.3 footnote b in the same chapter prints the exponent form. Treat as the same typesetting discrepancy.",
+    "kupper_quote": "The upper value of the thermal conductivity range listed in this table for the applicable fluid temperature",
+    "buried_quote": "For direct-buried service water heating system piping, reduction of these thicknesses by 11/2 inches (38.1 mm) shall be permitted (before thickness adjustment required in Section C404.4) but not to thicknesses less than 1 inch (25.4 mm)."
+   }
+  ],
+  "iecc_residential_R403_4": {
+   "id": "PIPE-5",
+   "code": "IECC 2018, 2021, 2024 (residential); IRC N1103.4",
+   "section": "R403.4 Mechanical System Piping Insulation",
+   "src": [
+    "C2",
+    "C4",
+    "C5"
+   ],
+   "quote": "Mechanical system piping capable of carrying fluids greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3.",
+   "checks": [
+    "Mechanical system piping capable of carrying fluids greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3.",
+    "Mechanical system piping capable of carrying fluids greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3."
+   ],
+   "parsed": {
+    "hot_threshold_F": ">105",
+    "cold_threshold_F": "<55",
+    "min_R": 3
+   },
+   "note": "Identical sentence in 2018 (titled \"(Mandatory)\"), 2021 and 2024."
+  },
+  "iecc_residential_hot_water": [
+   {
+    "id": "PIPE-6",
+    "code": "IECC 2018",
+    "section": "R403.5.3 Hot Water Pipe Insulation (Prescriptive)",
+    "src": [
+     "C5"
+    ],
+    "quote": "Insulation for hot water piping with a thermal resistance, R-value, of not less than R-3 shall be applied to the following:",
+    "applies_to_quotes": [
+     "Piping 3/4 inch (19.1 mm) and larger in nominal diameter.",
+     "Piping serving more than one dwelling unit.",
+     "Piping located outside the conditioned space.",
+     "Piping from the water heater to a distribution manifold.",
+     "Piping located under a floor slab.",
+     "Buried piping.",
+     "Supply and return piping in recirculation systems other than demand recirculation systems."
+    ]
+   },
+   {
+    "id": "PIPE-7",
+    "code": "IECC 2021",
+    "section": "R403.5.2 Hot Water Pipe Insulation (renumbered from 2018 R403.5.3)",
+    "src": [
+     "C2"
+    ],
+    "quote": "Insulation for service hot water piping with a thermal resistance, R-value, of not less than R-3 shall be applied to the following:",
+    "applies_to_quotes": [
+     "Piping 3/4 inch (19.1 mm) and larger in nominal diameter located inside the conditioned space.",
+     "Piping serving more than one dwelling unit.",
+     "Piping located outside the conditioned space.",
+     "Piping from the water heater to a distribution manifold.",
+     "Piping located under a floor slab.",
+     "Buried piping.",
+     "Supply and return piping in circulation and recirculation systems other than cold water pipe return demand recirculation systems."
+    ],
+    "note": "In IECC 2021, R403.5.3 is \"Drain Water Heat Recovery Units\"; the hot-water-pipe R-3 rule is R403.5.2."
+   },
+   {
+    "id": "PIPE-8",
+    "code": "IECC 2024",
+    "section": "R403.5.2 Hot Water Pipe Insulation + Table R403.5.2",
+    "src": [
+     "C4"
+    ],
+    "quote": "Insulation for service hot water piping shall comply with Table R403.5.2 and be applied to the following:",
+    "rows": [
+     {
+      "range_F": "141-200",
+      "k_range": "0.25-0.29",
+      "mean_F": 125,
+      "min_thickness_in": 1.0,
+      "check": "141-200 | 0.25-0.29 | 125 | 1.0"
+     },
+     {
+      "range_F": "105-140",
+      "k_range": "0.21-0.28",
+      "mean_F": 100,
+      "min_thickness_in": 1.0,
+      "check": "105-140 | 0.21-0.28 | 100 | 1.0"
+     }
+    ],
+    "exception_quote": "Exception: Cold water returns in demand recirculation water systems.",
+    "note": "2024 replaces the R-3 wording with a 1.0 in. thickness table and the same K/k footnote (t = 1 inch)."
+   }
+  ],
+  "imc_1204": {
+   "id": "PIPE-9",
+   "code": "IMC 2021 / IMC 2024",
+   "section": "1204.1 Insulation Characteristics; 1204.2 Required Thickness",
+   "src": [
+    "C9",
+    "C13"
+   ],
+   "quote_2021": "Pipe insulation installed in buildings shall conform to the requirements of the International Energy Conservation Code; shall be tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231; and shall have a maximum flame spread index of 25 and a smoke-developed index not exceeding 450. Insulation installed in an air plenum shall comply with Section 602.2.1.",
+   "quote_2024": "Pipe insulation installed in buildings shall conform to the requirements of the International Energy Conservation Code, shall be tested in accordance with ASTM E84 or UL 723 using the specimen preparation and mounting procedures of ASTM E2231, and shall have a maximum flame spread index of 25 and a smoke-developed index not exceeding 450. Insulation installed in an air plenum shall comply with Section 602.3.",
+   "exception_quote": "Exception: The maximum flame spread index and smoke-developed index shall not apply to one- and two-family dwellings.",
+   "thickness_quote": "Hydronic piping shall be insulated to the thickness required by the International Energy Conservation Code.",
+   "condensation_quote": "Provisions shall be made to prevent the formation of condensation on the exterior of piping.",
+   "condensation_section": "1206.11 Condensation (same text in IMC 2024, C13)",
+   "condensation_check_2024": "Provisions shall be made to prevent the formation of condensation on the exterior of piping.",
+   "parsed": {
+    "pipe_insulation_general": {
+     "flame_spread_max": 25,
+     "smoke_developed_max": 450
+    },
+    "in_plenum": "see FIRE-2 (25/50)"
+   }
+  },
+  "ashrae_90_1_2019_pipe_text": {
+   "id": "PIPE-10",
+   "code": "ASHRAE 90.1-2019",
+   "section": "6.4.4.1.3 Piping Insulation; 7.4.3 Service Hot-Water Piping Insulation",
+   "src": [
+    "C19"
+   ],
+   "quote": "Piping shall be thermally insulated in accordance with Tables 6.8.3-1 and 6.8.3-2.",
+   "exceptions_quotes": [
+    "Factory-installed piping within HVAC equipment tested and rated in accordance with Section 6.4.1.",
+    "Piping that conveys fluids having a design operating temperature range between 60°F and 105°F, inclusive.",
+    "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electricity (such as roof and condensate drains, domestic cold-water supply, and natural-gas piping).",
+    "Where heat gain or heat loss will not increase energy use (such as liquid refrigerant piping).",
+    "In piping 1 in. or less, insulation is not required for strainers, control valves, and balancing valves."
+   ],
+   "swh_quote": "The following piping shall be insulated to levels shown in Section 6, Table 6.8.3-1:",
+   "swh_items_quotes": [
+    "Recirculating system piping, including the supply and return piping of a circulating tank type water heater.",
+    "The first 8 ft of outlet piping for a constant-temperature nonrecirculating storage system.",
+    "The first 8 ft of branch piping connecting to recirculated, heat-traced, or impedance heated piping.",
+    "The inlet piping between the storage tank and a heat trap in a nonrecirculating storage system.",
+    "Piping that is externally heated (such as heat trace or impedance heating)."
+   ],
+   "swh_note": "The reprint prints an empty item 'f.' after item e.",
+   "nyc_2025_change": {
+    "src": [
+     "C23"
+    ],
+    "note": "NYC 2025 (90.1-2022 based) prints exception 3 as 'Deleted.' and keeps exceptions 1, 2, 4, 5.",
+    "check": "Piping that conveys fluids having a design operating temperature range between 60°F and 105°F, inclusive. Deleted. Where heat gain or heat loss will not increase energy use (such as liquid refrigerant piping)."
+   }
+  },
+  "california_title24_2022_120_3": {
+   "id": "PIPE-11",
+   "code": "California Title 24 Part 6 (2022)",
+   "section": "120.3 Requirements for Pipe Insulation (nonresidential/hotel-motel; 150.0(j)1B points single-family space-conditioning piping to 120.3(a))",
+   "src": [
+    "C31"
+   ],
+   "scope_quotes": [
+    "Space cooling systems. All refrigerant suction, chilled water, and brine fluid distribution systems.",
+    "Space heating systems. All refrigerant, steam, steam condensate and hot water fluid distribution systems."
+   ],
+   "equation_image_read": "T = PR[(1 + t/PR)^(K/k) − 1]",
+   "k_definition_quote": "The lower value of the conductivity range listed in Table 120.3-A for the applicable fluid temperature range, Btu-inch per hour per square foot per °F.",
+   "k_discrepancy": "Title 24 defines k as the LOWER value of the table conductivity range; ASHRAE 90.1 and the IECC use the UPPER value. Using 'lower' gives thicker insulation for a given K.",
+   "table_120_3_A": {
+    "read": "visual, PDF page 187 at 120 dpi; size columns <1, 1 to <1.5, 1.5 to <4, 4 to <8, 8 and larger",
+    "heating_and_SWH_rows": [
+     {
+      "range_F": "Above 350",
+      "k_range": "0.32-0.34",
+      "mean_F": 250,
+      "inches": [
+       4.5,
+       5.0,
+       5.0,
+       5.0,
+       5.0
+      ],
+      "R": [
+       37,
+       41,
+       37,
+       27,
+       23
+      ]
+     },
+     {
+      "range_F": "251-350",
+      "k_range": "0.29-0.32",
+      "mean_F": 200,
+      "inches": [
+       3.0,
+       4.0,
+       4.5,
+       4.5,
+       4.5
+      ],
+      "R": [
+       24,
+       34,
+       35,
+       26,
+       22
+      ]
+     },
+     {
+      "range_F": "201-250",
+      "k_range": "0.27-0.30",
+      "mean_F": 150,
+      "inches": [
+       2.5,
+       2.5,
+       2.5,
+       3.0,
+       3.0
+      ],
+      "R": [
+       21,
+       20,
+       17.5,
+       17,
+       14.5
+      ]
+     },
+     {
+      "range_F": "141-200",
+      "k_range": "0.25-0.29",
+      "mean_F": 125,
+      "inches": [
+       1.5,
+       1.5,
+       2.0,
+       2.0,
+       2.0
+      ],
+      "R": [
+       11.5,
+       11,
+       14,
+       11,
+       10
+      ]
+     },
+     {
+      "range_F": "105-140",
+      "k_range": "0.22-0.28",
+      "mean_F": 100,
+      "inches": [
+       1.0,
+       1.5,
+       1.5,
+       1.5,
+       1.5
+      ],
+      "R": [
+       7.7,
+       12.5,
+       11,
+       9,
+       8
+      ]
+     }
+    ],
+    "cooling_rows": [
+     {
+      "range_F": "40-60",
+      "k_range": "0.21-0.27",
+      "mean_F": 75,
+      "inches": {
+       "<1": {
+        "nonres": 0.5,
+        "res": 0.75
+       },
+       "1 to <1.5": {
+        "nonres": 0.5,
+        "res": 0.75
+       },
+       "1.5 to <4": 1.0,
+       "4 to <8": 1.0,
+       "8 and larger": 1.0
+      },
+      "R": {
+       "<1": {
+        "nonres": 3,
+        "res": 6
+       },
+       "1 to <1.5": {
+        "nonres": 3,
+        "res": 5
+       },
+       "1.5 to <4": 7,
+       "4 to <8": 6,
+       "8 and larger": 5
+      }
+     },
+     {
+      "range_F": "Below 40",
+      "k_range": "0.20-0.26",
+      "mean_F": 50,
+      "inches": [
+       1.0,
+       1.5,
+       1.5,
+       1.5,
+       1.5
+      ],
+      "R": [
+       8.5,
+       14,
+       12,
+       10,
+       9
+      ]
+     }
+    ],
+    "checks": [
+     "Above 350 0.32-0.34 250 Inches 4.5 5.0 5.0 5.0 5.0 R-value R 37 R 41 R 37 R 27 R 23",
+     "251-350 0.29-0.32 200 Inches 3.0 4.0 4.5 4.5 4.5 R-value R 24 R 34 R 35 R 26 R 22",
+     "201-250 0.27-0.30 150 Inches 2.5 2.5 2.5 3.0 3.0 R-value R 21 R 20 R 17.5 R 17 R 14.5",
+     "141-200 0.25-0.29 125 Inches 1.5 1.5 2.0 2.0 2.0 R-value R 11.5 R 11 R 14 R 11 R 10",
+     "105-140 0.22-0.28 100 Inches 1.0 1.5 1.5 1.5 1.5 R-value R 7.7 R 12.5 R 11 R9 R8",
+     "40-60 0.21-0.27 75 Inches Nonres Res Nonres Res 1.0 1.0 1.0 0.5 0.75 0.5 0.75 R-value Nonres Res Nonres Res R7 R6 R5 R3 R6 R3 R5",
+     "Below 40 0.20-0.26 50 Inches 1.0 1.5 1.5 1.5 1.5 R-value R 8.5 R 14 R 12 R 10 R9"
+    ],
+    "checks_note": "The 40-60 row text is scrambled by merged Nonres/Res cells in the text extraction; the cell assignment in cooling_rows comes from the rendered page.",
+    "footnote_quote": "These thickness are based on energy efficiency considerations only. Issues such as water vapor permeability or surface condensation sometimes require vapor retarders or additional insulation.",
+    "note": "Differs from IECC/90.1 in the 105-140 row (1 to <1.5 in. pipe: 1.5 in. vs 1.0 in.) and the <40 row (1.0/1.5 in. vs 0.5/1.0 in.), and in adding R-value alternatives."
+   },
+   "exceptions_quotes": [
+    "Piping that conveys fluids with a design operating temperature range between 60°F and 105°F.",
+    "Where the heat gain or heat loss to or from piping without insulation will not increase building source energy use."
+   ]
+  }
+ },
+ "condensate_drain": {
+  "finding": "No model code read (IMC 2021/2024, IRC 2021/2024, IPC 2021, ASHRAE 90.1-2019, IECC 2021/2024, UPC 2012 as adopted by Nevada) contains a requirement to insulate HVAC condensate drain lines. ASHRAE 90.1-2019 expressly names condensate drains among piping exempt from its insulation tables. A requirement exists (a) where the equipment manufacturer's installation instructions call for drain insulation, which the IMC/IRC make enforceable through the general \"install per manufacturer's instructions\" rule, and (b) in at least one local interpretation (Broward County, FL). The general condensation-prevention clauses (IMC 603.12 ducts, 1206.11 hydronic piping, 2021 1109.7 refrigerant piping) do not name condensate drains.",
+  "checked_negative": [
+   {
+    "id": "COND-1",
+    "code": "IMC 2021",
+    "section": "307 Condensate Disposal (307.1-307.3)",
+    "src": [
+     "C7"
+    ],
+    "result": "no insulation requirement for drain lines; the only 'insulation' text is 307.2.3.2",
+    "quote": "Where appliances, equipment or insulation are subject to water damage when auxiliary drain pans fill, that portion of the appliance, equipment and insulation shall be installed above the rim of the pan.",
+    "materials_quote": "Components of the condensate disposal system shall be ABS, cast iron, copper and copper alloy, CPVC, cross-linked polyethylene, galvanized steel, PE-RT, polyethylene, polypropylene, PVC or PVDF pipe or tubing."
+   },
+   {
+    "id": "COND-2",
+    "code": "IMC 2024",
+    "section": "307 Condensate Disposal",
+    "src": [
+     "C11"
+    ],
+    "result": "same structure as 2021; only 307.2.3.2 mentions insulation (pans)",
+    "check": "Where appliances, equipment or insulation are subject to water damage when auxiliary drain pans fill, that portion of the appliance, equipment and insulation shall be installed above the rim of the pan."
+   },
+   {
+    "id": "COND-3",
+    "code": "IRC 2021 / IRC 2024",
+    "section": "M1411.3 (2021) / M1411.9 (2024) Condensate Disposal",
+    "src": [
+     "C14",
+     "C16"
+    ],
+    "result": "slope, disposal, auxiliary pans, materials; no insulation of drain lines",
+    "quote": "Condensate from cooling coils and evaporators shall be conveyed from the drain pan outlet to an approved place of disposal. Such piping shall maintain a minimum horizontal slope in the direction of discharge of not less than 1/8 unit vertical in 12 units horizontal (1-percent slope).",
+    "check_2024": "Condensate from cooling coils and evaporators shall be conveyed from the drain pan outlet to an approved place of disposal."
+   },
+   {
+    "id": "COND-4",
+    "code": "IPC 2021 (Colorado DPO adoption, with amendments)",
+    "section": "[M] 314 Condensate Disposal",
+    "src": [
+     "C18"
+    ],
+    "result": "mirrors IMC 307; no drain-line insulation",
+    "check": "Condensate drain systems shall be provided for equipment and appliances containing evaporators or cooling coils."
+   },
+   {
+    "id": "COND-5",
+    "code": "UPC 2012 (Nevada Plumbing Code 2012)",
+    "section": "814.0 Condensate Wastes and Control",
+    "src": [
+     "C33"
+    ],
+    "result": "no insulation text in 814.1-814.3 as served",
+    "check": "Condensate from air washers, air-cooling coils, fuel-burning condensing appliances, the overflow from evaporative coolers, and similar water-supplied equipment or similar air-conditioning equipment shall be collected and discharged to an approved plumbing fixture or disposal area."
+   }
+  ],
+  "energy_code_status": [
+   {
+    "id": "COND-6",
+    "code": "ASHRAE 90.1-2019",
+    "section": "6.4.4.1.3 exception 3",
+    "src": [
+     "C19"
+    ],
+    "quote": "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electricity (such as roof and condensate drains, domestic cold-water supply, and natural-gas piping).",
+    "nyc_2025": "NYC 2025 deletes this exception (see PIPE-10)."
+   },
+   {
+    "id": "COND-7",
+    "code": "IECC 2021 / 2024",
+    "section": "C403.12.3 / C403.13.3 exception 4",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quote": "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electric power.",
+    "note": "The IECC exception does not name condensate drains; whether it covers them is an interpretation, not code text. The residential R403.4 rule (PIPE-5) is keyed to fluids >105°F or <55°F and does not mention condensate."
+   }
+  ],
+  "general_condensation_clauses": [
+   {
+    "id": "COND-8",
+    "code": "IMC 2021 / 2024",
+    "section": "1206.11 Condensation (Chapter 12 hydronic piping)",
+    "src": [
+     "C9",
+     "C13"
+    ],
+    "quote": "Provisions shall be made to prevent the formation of condensation on the exterior of piping.",
+    "scope_quote": "Such piping systems shall include steam, hot water, chilled water, steam condensate and ground source heat pump loop systems.",
+    "note": "Scope is hydronic piping (steam condensate is listed; HVAC coil condensate drains are covered by 307, not Chapter 12)."
+   },
+   {
+    "id": "COND-9",
+    "code": "IMC 2021",
+    "section": "1109.7 Condensate Control (refrigerant piping)",
+    "src": [
+     "C8"
+    ],
+    "quote": "Refrigerating piping and fittings that, during normal operation, will reach a surface temperature below the dew point of the surrounding air, and are located in spaces or areas where condensation has the potential to cause a safety hazard to the building occupants, structure, electrical equipment or any other equipment or appliances, shall be insulated or protected in an approved manner to prevent damage from condensation.",
+    "note": "Applies to refrigerant piping, not drain lines. Not present in IMC 2024 Chapter 11 as served (C12): the 2024 sequence runs 1109.4 Refrigerant Pipe Penetrations, 1109.5 Stress and Strain, 1109.6 Stop Valves, with no condensate-control section and no 'dew point' text."
+   }
+  ],
+  "local_interpretation": {
+   "id": "COND-10",
+   "jurisdiction": "Broward County, Florida (Board of Rules and Appeals)",
+   "code": "Florida Building Code 6th Edition (2017)",
+   "src": [
+    "C27"
+   ],
+   "quotes": [
+    "Sections of the 6 Edition (2017), Florida Building Code, Mechanical 307.2.1; Residential M1411.3, and 1206.11; Energy Conservation C403.2.10, and R403.4.",
+    "The code does not address the insulation of condensate drains lines that are installed vertical or at an angle (pitched). It appears the intent of the code was to apply to condensate piping which is installed in a relatively horizontal manner.",
+    "All primarily horizontal condensate drains pipes within unconditioned areas shall be insulated to prevent condensation from forming on the exterior of the drain pipe. Only primary condensate drain lines within unconditioned areas installed in a relatively horizontal manner are required to be insulated."
+   ],
+   "parsed": {
+    "insulate": "primary condensate drain lines, primarily horizontal, within unconditioned areas",
+    "not_required": "vertical or pitched runs; secondary/auxiliary drains not mentioned",
+    "thickness_or_R": "not stated"
+   },
+   "note": "Local formal interpretation, binding only in Broward County. The 8th-edition (2023) re-issue was not readable (see C27 retrieval)."
+  },
+  "manufacturer_instructions": {
+   "id": "COND-11",
+   "src": [
+    "C28",
+    "C7",
+    "C14"
+   ],
+   "quotes": [
+    "Insulate the complete drain piping inside the building (field supply).",
+    "Wrap the supplied large sealing pad over the metal clamp and drain hose to insulate and fix it with clamps."
+   ],
+   "enforcement_hook_quotes": [
+    "Equipment and appliances shall be installed as required by the terms of their approval, in accordance with the conditions of the listing, the manufacturer's installation instructions and this code.",
+    "Heating and cooling equipment and appliances shall be installed in accordance with the manufacturer's instructions and the requirements of this code."
+   ],
+   "note": "Lennox mini-split cassette manual (C28) Step 10; IMC 304.1 (C7) and IRC M1401.1 (C14) require installation per the manufacturer's instructions. Other manufacturers' manuals were not checked."
+  }
+ },
+ "refrigerant_piping": {
+  "items": [
+   {
+    "id": "REF-1",
+    "code": "IRC 2021",
+    "section": "M1411.6 Insulation of Refrigerant Piping; M1411.6.1",
+    "src": [
+     "C14"
+    ],
+    "quote": "Piping and fittings for refrigerant vapor (suction) lines shall be insulated with insulation having a thermal resistivity of not less than R-3 and having external surface permeance not exceeding 0.05 perm [2.87 ng/(s × m2 × Pa)] when tested in accordance with ASTM E96.",
+    "protection_quote": "Refrigerant piping insulation shall be protected in accordance with Section N1103.4.1.",
+    "parsed": {
+     "line": "suction (vapor)",
+     "min_R": 3,
+     "max_external_surface_permeance_perm": 0.05,
+     "test": "ASTM E96",
+     "liquid_line": "not addressed"
+    }
+   },
+   {
+    "id": "REF-2",
+    "code": "IRC 2024",
+    "section": "M1411.12 Insulation of Refrigerant Piping; M1411.12.1",
+    "src": [
+     "C16"
+    ],
+    "quote": "Piping and fittings for refrigerant vapor (suction) lines shall be insulated with insulation having a thermal resistivity of not less than R-3 and having external surface permeance not exceeding 0.05 perm [2.87 ng/(s × m2 × Pa)] when tested in accordance with ASTM E96.",
+    "note": "Same text as 2021, renumbered M1411.12."
+   },
+   {
+    "id": "REF-3",
+    "code": "IECC 2018/2021/2024 residential",
+    "section": "R403.4",
+    "src": [
+     "C2"
+    ],
+    "note": "Refrigerant lines are \"mechanical system piping\"; the R-3 rule for fluids <55°F or >105°F (PIPE-5) applies. The IECC text does not name refrigerant."
+   },
+   {
+    "id": "REF-4",
+    "code": "ASHRAE 90.1-2019",
+    "section": "6.4.4.1.1(b), 6.4.4.1.3 exception 4, Table 6.8.3-2",
+    "src": [
+     "C19"
+    ],
+    "quotes": [
+     "Insulation covering chilled-water piping, refrigerant suction piping, or cooling ducts located outside the conditioned space shall include a vapor retardant located outside the insulation (unless the insulation is inherently vapor retardant), all penetrations and joints of which shall be sealed.",
+     "Where heat gain or heat loss will not increase energy use (such as liquid refrigerant piping).",
+     "Minimum Piping Insulation Thickness Cooling Systems (Chilled Water, Brine, and Refrigerant)",
+     "For direct-buried cooling system piping, insulation is not required.",
+     "These thicknesses are based on energy efficiency considerations only. Issues such as water vapor permeability or surface condensation sometimes require vapor retarders or additional insulation."
+    ],
+    "note": "Table 6.8.3-2 rows (40-60°F and <40°F) are in vapor-code-verified.json. NYC 2025 (C23) prints the same 6.4.4.1.1(b) sentence.",
+    "check_nyc": "Insulation covering chilled-water piping, refrigerant suction piping, or cooling ducts located outside the conditioned space shall include a vapor retardant located outside the insulation"
+   },
+   {
+    "id": "REF-5",
+    "code": "IECC 2021 / 2024 commercial",
+    "section": "C403.12.3 / C403.13.3 tables (cooling rows); refrigeration liquid lines C403.11.3.2 item 2.1 / C403.12.3.2",
+    "src": [
+     "C1",
+     "C3"
+    ],
+    "quotes": [
+     "Insulation for liquid lines with a fluid operating temperature less than 60°F (15.6°C) shall comply with Table C403.11.3.",
+     "Insulation for liquid lines with a fluid operating temperature less than 60°F (15.6°C) shall comply with Table C403.13.3(1) or C403.13.3(2)."
+    ],
+    "context_quote": "Liquid subcooling shall be provided for all low-temperature compressor systems with a design cooling capacity equal to or greater than 100,000 Btu (29.3 kW) with a design-saturated suction temperature of -10°F (-23°C) or lower.",
+    "scope_quote": "Refrigerated display cases, walk-in coolers or walk-in freezers that are served by remote compressors and remote condensers not located in a condensing unit, shall comply with Sections C403.11.3.1 and C403.11.3.2.",
+    "note": "IECC 2021 cross-references 'Table C403.11.3', which does not exist in the 2021 chapter as served (the pipe table is C403.12.3; C403.11.3 was the 2018 number); IECC 2024 corrects it. The IECC pipe tables have no row labelled 'refrigerant' - refrigerant piping falls under the 40-60°F and <40°F rows by fluid temperature."
+   },
+   {
+    "id": "REF-6",
+    "code": "IMC 2021",
+    "section": "1109.2.6 Exposed Piping Surface Temperature; 1109.7 Condensate Control; 1101.1.1",
+    "src": [
+     "C8"
+    ],
+    "quotes": [
+     "Exposed piping with ready access having surface temperatures greater than 120°F (49°C) or less than 5°F (-15°C) shall be protected from contact or shall have thermal insulation that limits the exposed insulation surface temperature to a range of 5°F (-15°C) to 120°F (49°C).",
+     "shall be insulated or protected in an approved manner to prevent damage from condensation.",
+     "Refrigerant piping design and installation for systems containing a refrigerant other than ammonia, including pressure vessels and pressure relief devices, shall comply with this chapter and ASHRAE 15."
+    ],
+    "note": "IMC 1107 (piping materials) contains no insulation text."
+   },
+   {
+    "id": "REF-7",
+    "code": "IMC 2024",
+    "section": "1109.2.6 Exposed Piping Surface Temperature",
+    "src": [
+     "C12"
+    ],
+    "quote": "Exposed piping having surface temperatures greater than 120°F (49°C) or less than 5°F (-15°C) with ready access to nonauthorized personnel shall be protected from contact or shall have thermal insulation that limits the exposed insulation surface temperature to a range of 5°F (-15°C) to 120°F (49°C).",
+    "note": "The 2021 condensate-control clause (1109.7) is not in the 2024 chapter as served."
+   },
+   {
+    "id": "REF-8",
+    "code": "ASHRAE 15-2019 Addendum e (carried into 15-2024)",
+    "section": "9.12.1.6 Exposed Piping Surface Temperature",
+    "src": [
+     "C25",
+     "C26"
+    ],
+    "quote": "Exposed Piping Surface Temperature. Exposed piping with ready access to nonauthorized personnel having temperatures greater than 120°F (49°C) or less than +5°F (–15°C) shall be protected from contact or have thermal insulation that limits the exposed insulation surface temperature to a range of +5°F (–15°C) to 120°F (49°C).",
+    "check_2024": "shall be protected from contact or have thermal insulation that limits the exposed insulation surface temperature to a range of +5°F (−15°C) to 120°F (49°C).",
+    "note": "Personnel-protection rule only. No ASHRAE 15 addendum read requires suction-line insulation for energy or condensation; the full Standard 15 text was not read (see unverified)."
+   },
+   {
+    "id": "REF-9",
+    "code": "California Title 24 Part 6 (2022)",
+    "section": "120.3(a) exception; 120.3(b)2",
+    "src": [
+     "C31"
+    ],
+    "quotes": [
+     "Heat pump refrigerant vapor line shall be installed with a minimum of 0.5 inch thick or R-3.0 insulation for nonresidential buildings and 0.75 inch thick or R-6.0 insulation for residential buildings. No insulation is required on the refrigerant liquid line.",
+     "Pipe insulation covering chilled water piping and refrigerant suction piping located outside the conditioned space shall include, or be protected by, a Class I or Class II vapor retarder. All penetrations and joints shall be sealed."
+    ]
+   },
+   {
+    "id": "REF-10",
+    "code": "manufacturer installation instructions (not code)",
+    "section": "Lennox mini-split cassette manual Step 7, Step 9",
+    "src": [
+     "C28",
+     "C7",
+     "C14"
+    ],
+    "quotes": [
+     "Insulate the gas side and liquid side pipe, noting the insulation thickness that must differ according to the pipe size.",
+     "The heat-resistance temperature of the insulator must be more than 248°F (120°C).",
+     "It would be necessary to double the insulation thickness [0.39 inch (10 mm) or more] to prevent condensation even on the insulator when the installed area is warm and humid.",
+     "Wind insulating tape around the pipes and drain hose to avoid compressing the insulation too much."
+    ],
+    "table_visual": {
+     "insulation_type": "EPDM, NBR",
+     "unit_as_printed": "t (not defined on the page)",
+     "standard_condition": "less than 86°F (30°C), 85% RH",
+     "high_humidity_condition": "over 86°F (30°C), 85% RH",
+     "rows": [
+      {
+       "pipe": "liquid",
+       "size_in": "1/4 to 3/8",
+       "standard": "9 t",
+       "high_humidity": "9 t"
+      },
+      {
+       "pipe": "liquid",
+       "size_in": "1/2 to 3/4",
+       "standard": "13 t",
+       "high_humidity": "13 t"
+      },
+      {
+       "pipe": "gas",
+       "size_in": "1/4",
+       "standard": "13 t",
+       "high_humidity": "19 t"
+      },
+      {
+       "pipe": "gas",
+       "size_in": "3/8, 1/2, 5/8",
+       "standard": "19 t",
+       "high_humidity": "25 t"
+      }
+     ],
+     "remark": "The internal temperature is higher than 248°F (120°C)."
+    },
+    "enforcement_hook": "IMC 304.1 / IRC M1401.1 (quoted in COND-11).",
+    "note": "One manufacturer only; it requires insulating BOTH liquid and gas lines, which is stricter than IRC M1411.6 (suction only) and Title 24 (no liquid-line insulation)."
+   }
+  ]
+ },
+ "plenum_and_fire": {
+  "items": [
+   {
+    "id": "FIRE-1",
+    "code": "IMC 2021",
+    "section": "602.2.1 Materials Within Plenums",
+    "src": [
+     "C6"
+    ],
+    "quote": "Except as required by Sections 602.2.1.1 through 602.2.1.8, materials within plenums shall be noncombustible or shall be listed and labeled as having a flame spread index of not more than 25 and a smoke-developed index of not more than 50 when tested in accordance with ASTM E84 or UL 723.",
+    "exceptions_quotes": [
+     "Rigid and flexible ducts and connectors shall conform to Section 603.",
+     "Duct coverings, linings, tape and connectors shall conform to Sections 603 and 604.",
+     "This section shall not apply to materials exposed within plenums in one- and two-family dwellings."
+    ],
+    "parsed": {
+     "flame_spread_max": 25,
+     "smoke_developed_max": 50,
+     "test": "ASTM E84 or UL 723"
+    }
+   },
+   {
+    "id": "FIRE-2",
+    "code": "IMC 2021",
+    "section": "602.2.1.8 Pipe and Duct Insulation Within Plenums",
+    "src": [
+     "C6"
+    ],
+    "quote": "Pipe and duct insulation contained within plenums, including insulation adhesives, shall have a flame spread index of not more than 25 and a smoke-developed index of not more than 50 when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231. Pipe and duct insulation shall not flame, glow, smolder or smoke when tested in accordance with ASTM C411 at the temperature to which they are exposed in service. The test temperature shall not fall below 250°F (121°C). Pipe and duct insulation shall be listed and labeled.",
+    "composite_quote": "Pipe and duct insulation shall not be used to reduce the maximum flame spread and smoke-developed indices except where the pipe or duct and its related insulation, coatings, and adhesives are tested as a composite assembly in accordance with Section 602.2.1.7.",
+    "parsed": {
+     "flame_spread_max": 25,
+     "smoke_developed_max": 50,
+     "mounting": "ASTM E2231",
+     "hot_surface_test": "ASTM C411 at service temperature, not below 250°F",
+     "listed_and_labeled": true
+    }
+   },
+   {
+    "id": "FIRE-3",
+    "code": "IMC 2024",
+    "section": "602.3 Materials Within Plenums; 602.3.9 Pipe and Duct Insulation Within Plenums; 602.3.10",
+    "src": [
+     "C10"
+    ],
+    "quote": "Materials within plenums shall be noncombustible or shall be in compliance with the applicable requirements in Sections 602.3.1 through 602.3.10.",
+    "insulation_quote": "Pipe and duct insulation contained within plenums, including insulation adhesives, shall have a flame spread index of not more than 25 and a smoke-developed index of not more than 50 when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231.",
+    "other_quote": "Other combustible materials not covered by Section 602.3 shall be listed and labeled as having a flame spread index of not more than 25 and a smoke-developed index of not more than 50 when tested in accordance with ASTM E84 or UL 723.",
+    "note": "IMC 2024 renumbers 602.2.1 -> 602.3 and 602.2.1.8 -> 602.3.9; requirements unchanged for insulation."
+   },
+   {
+    "id": "FIRE-4",
+    "code": "IMC 2021",
+    "section": "604.3 Coverings and Linings",
+    "src": [
+     "C6"
+    ],
+    "quote": "Duct coverings and linings, including adhesives where used, shall have a flame spread index not more than 25 and a smoke-developed index not more than 50, when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231. Duct coverings and linings shall not flame, glow, smolder or smoke when tested in accordance with ASTM C411 at the temperature to which they are exposed in service. The test temperature shall not fall below 250°F (121°C). Coverings and linings shall be listed and labeled.",
+    "spf_exception_quote": "The foam plastic insulation shall have a flame spread index not greater than 25 and a smoke-developed index not greater than 450, when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231.",
+    "parsed": {
+     "flame_spread_max": 25,
+     "smoke_developed_max": 50,
+     "spray_foam_on_duct_exterior_in_attic_or_crawl": {
+      "flame_spread_max": 25,
+      "smoke_developed_max": 450
+     }
+    }
+   },
+   {
+    "id": "FIRE-5",
+    "code": "IMC 2024",
+    "section": "604.3 Coverings and Linings, exception 2",
+    "src": [
+     "C10"
+    ],
+    "quote": "Duct coverings added to the outside of ducts and not contained in plenums, including adhesives where used, shall have a flame spread index not more than 25 and a smoke-developed index not more than 450, when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231.",
+    "parsed": {
+     "external_duct_covering_not_in_plenum": {
+      "flame_spread_max": 25,
+      "smoke_developed_max": 450
+     }
+    },
+    "note": "New in IMC 2024 (not in the 2021 604.3 text read): coverings outside ducts and outside plenums may be 25/450; in plenums 25/50 still applies."
+   },
+   {
+    "id": "FIRE-6",
+    "code": "IMC 2021 / 2024",
+    "section": "1204.1 Insulation Characteristics (pipe insulation outside plenums)",
+    "src": [
+     "C9",
+     "C13"
+    ],
+    "note": "Pipe insulation in buildings: flame spread <= 25, smoke-developed <= 450 (ASTM E84/UL 723 with ASTM E2231); in an air plenum it must meet 602.2.1 (2021) / 602.3 (2024); one- and two-family dwellings exempt. Quotes in PIPE-9."
+   },
+   {
+    "id": "FIRE-7",
+    "code": "IRC 2021 / 2024",
+    "section": "M1601.3 Duct Insulation Materials, item 1-3",
+    "src": [
+     "C15",
+     "C17"
+    ],
+    "quote": "Duct coverings and linings, including adhesives where used, shall have a flame spread index not higher than 25, and a smoke-developed index not over 50 when tested in accordance with ASTM E84 or UL 723, using the specimen preparation and mounting procedures of ASTM E2231.",
+    "c411_quote": "Duct coverings and linings shall not flame, glow, smolder or smoke when tested in accordance with ASTM C411 at the temperature to which they are exposed in service. The test temperature shall not fall below 250°F (121°C). Coverings and linings shall be listed and labeled.",
+    "check_2024": "The flame spread index is not greater than 25 and the smoke-developed index is not greater than 450 at the specified installed thickness."
+   },
+   {
+    "id": "FIRE-8",
+    "code": "IMC 2021",
+    "section": "604.6 Penetration of Assemblies; 602.2 plenum construction",
+    "src": [
+     "C6"
+    ],
+    "quotes": [
+     "Duct coverings shall not penetrate a wall or floor required to have a fire-resistance rating or required to be fireblocked.",
+     "Plenum enclosure construction materials that are exposed to the airflow shall comply with the requirements of Section 703.3 of the International Building Code or such materials shall have a flame spread index of not more than 25 and a smoke-developed index of not more than 50 when tested in accordance with ASTM E84 or UL 723."
+    ]
+   },
+   {
+    "id": "FIRE-9",
+    "code": "NFPA 90A (secondary paraphrase only)",
+    "section": "4.3.10.2 (edition not stated by the source)",
+    "src": [
+     "C32"
+    ],
+    "quote": "For example, NFPA 90A Section 4.3.10.2 requires materials exposed to the airflow in ceiling cavity plenums used for supply, return or exhaust air from the occupied area to be noncombustible, limited combustible, or have a flame spread index not exceeding 25 and a smoke-developed index not exceeding 50.",
+    "status": "verified_secondary (UL paraphrase, 2010-era PDF); NFPA 90A text itself unverified (C35)"
+   },
+   {
+    "id": "FIRE-10",
+    "code": "manufacturer data (not code)",
+    "section": "Owens Corning SOFTR Duct Wrap FRK surface burning",
+    "src": [
+     "C29"
+    ],
+    "quotes": [
+     "This product is designed to meet existing performance standards such as NFPA 90A and 90B and other mechanical and energy codes.",
+     "The surface burning characteristics of these products have been determined in accordance with ASTM E 84. Values are reported to the nearest 5 rating."
+    ],
+    "values": {
+     "flame_spread": 25,
+     "smoke_developed": 50,
+     "method": "ASTM E84"
+    },
+    "check": "Flame Spread 25"
+   }
+  ]
+ },
+ "outdoor_and_uv": {
+  "items": [
+   {
+    "id": "OUT-1",
+    "code": "IECC 2021",
+    "section": "C403.12.3.1 Protection of Piping Insulation",
+    "src": [
+     "C1"
+    ],
+    "quote": "Piping insulation exposed to the weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind, and shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall not be permitted."
+   },
+   {
+    "id": "OUT-2",
+    "code": "IECC 2024",
+    "section": "C403.13.3.1 Protection of Piping Insulation",
+    "src": [
+     "C3"
+    ],
+    "quote": "Piping insulation exposed to the weather shall be protected from physical damage, including that caused by sunlight, moisture, equipment maintenance and wind. The protection shall provide shielding from solar radiation that can cause degradation of the material. The protection shall be removable and reusable for not less than 6 inches (152 mm) from the connection to the equipment piping for maintenance. Adhesive tape shall not be permitted as a means of insulation protection."
+   },
+   {
+    "id": "OUT-3",
+    "code": "IECC 2018 / 2021 residential",
+    "section": "R403.4.1 Protection of Piping Insulation",
+    "src": [
+     "C2",
+     "C5"
+    ],
+    "quote": "Piping insulation exposed to weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind. The protection shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall be prohibited.",
+    "check_2018": "Piping insulation exposed to weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind. The protection shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall be prohibited."
+   },
+   {
+    "id": "OUT-4",
+    "code": "IECC 2024 residential (and IRC 2024 N1103.4.1)",
+    "section": "R403.4.1 Protection of Piping Insulation",
+    "src": [
+     "C4"
+    ],
+    "quote": "Piping insulation exposed to weather shall be protected from damage, including that caused by sunlight, moisture, physical contact and wind. The protection shall provide shielding from solar radiation that can cause degradation of the material and shall be removable not less than 6 feet (1828 mm) from the equipment for maintenance. Adhesive tape shall be prohibited.",
+    "discrepancy": "IECC 2024 residential says removable 'not less than 6 feet (1828 mm) from the equipment'; IECC 2024 commercial (OUT-2) says 'not less than 6 inches (152 mm) from the connection to the equipment piping'. Both transcribed as printed."
+   },
+   {
+    "id": "OUT-5",
+    "code": "ASHRAE 90.1-2019 (same text in NYC 2025 / 90.1-2022)",
+    "section": "6.4.4.1.1 General (a)",
+    "src": [
+     "C19",
+     "C23"
+    ],
+    "quote": "Insulation shall be protected from damage, including that due to sunlight, moisture, equipment maintenance and wind, but not limited to the following: a. Insulation exposed to weather shall be suitable for outdoor service, e.g., protected by aluminum, sheet metal, painted canvas, or plastic cover. Cellular foam insulation shall be protected as above or painted with a coating that is water retardant and provides shielding from solar radiation that can cause degradation of the material.",
+    "check_nyc": "Insulation exposed to weather shall be suitable for outdoor service, e.g., protected by aluminum, sheet metal, painted canvas, or plastic cover. Cellular foam insulation shall be protected as above or painted with a coating that is water retardant and provides shielding from solar radiation that can cause degradation of the material.",
+    "simplified_approach_quote": "Insulation exposed to weather shall be suitable for outdoor service, e.g., protected by aluminum, sheet metal, painted canvas, or plastic cover. Cellular foam insulation shall be protected as above or painted with a coating that is water retardant and provides shielding from solar radiation.",
+    "note": "6.4.4.1.1 covers duct and pipe insulation; the second quote is the 6.3.2(l) Simplified Approach wording."
+   },
+   {
+    "id": "OUT-6",
+    "code": "IMC 2021 / 2024",
+    "section": "604.12 Weatherproof Barriers; 603.16 Weather Protection",
+    "src": [
+     "C6",
+     "C10"
+    ],
+    "quotes": [
+     "Insulated exterior ducts shall be protected with an approved weatherproof barrier.",
+     "Ducts including linings, coverings and vibration isolation connectors installed on the exterior of the building shall be protected against the elements."
+    ],
+    "check_2024": "Insulated exterior ducts shall be protected with an approved weatherproof barrier."
+   },
+   {
+    "id": "OUT-7",
+    "code": "IRC 2021 / 2024",
+    "section": "M1601.4.6 item 2; M1411.6.1 / M1411.12.1",
+    "src": [
+     "C15",
+     "C14",
+     "C16"
+    ],
+    "quotes": [
+     "Outdoor duct systems shall be protected against the elements.",
+     "Refrigerant piping insulation shall be protected in accordance with Section N1103.4.1."
+    ],
+    "check_2024": "Refrigerant piping insulation shall be protected in accordance with Section N1103.4.1.",
+    "note": "N1103.4.1 is the IRC copy of IECC R403.4.1 (OUT-3/OUT-4)."
+   },
+   {
+    "id": "OUT-8",
+    "code": "California Title 24 Part 6 (2022)",
+    "section": "120.3(b) pipe; 120.4(f) duct",
+    "src": [
+     "C31"
+    ],
+    "quotes": [
+     "Pipe insulation shall be protected from damage due to sunlight, moisture, equipment maintenance and wind. Protection shall, at minimum, include the following:",
+     "Pipe insulation exposed to weather shall be protected by a cover suitable for outdoor service. The cover shall be water retardant and provides shielding from solar radiation that can cause degradation of the material. Adhesive tape shall not be used to provide this protection.",
+     "Pipe insulation buried below grade must be installed in a water proof and noncrushable casing or sleeve.",
+     "Insulation exposed to weather shall be suitable for outdoor service, e.g., protected by aluminum, sheet metal, painted canvas or plastic cover. Cellular foam insulation shall be protected as above or painted with a coating that is water retardant and provides shielding from solar radiation that can cause degradation of the material."
+    ]
+   },
+   {
+    "id": "OUT-9",
+    "code": "ASHRAE 15-2019 Addendum e",
+    "section": "9.12.1.2(f) Pipe Protection (refrigerant piping, not insulation)",
+    "src": [
+     "C25"
+    ],
+    "quotes": [
+     "Outside the building, 1. protected from damage from the weather, including, but not limited to, hail, ice, and snow loads, 2. protected from damage within the expected foot or traffic path, and 3. if underground, installed not less than 8 in. (200 mm) below finished grade and protected against corrosion."
+    ]
+   },
+   {
+    "id": "OUT-10",
+    "code": "IPC 2021 (Colorado DPO adoption, with amendments)",
+    "section": "305.4 Freezing",
+    "src": [
+     "C18"
+    ],
+    "quote": "Water, soil and waste pipes shall not be installed outside of a building, in attics or crawl spaces, concealed in outside walls, or in any other place subjected to freezing temperatures unless adequate provision is made to protect such pipes from freezing by insulation or heat or both.",
+    "note": "Freeze protection, not UV; IECC C404.4 also says its thicknesses do not supersede greater thicknesses needed for freeze protection (PIPE-3)."
+   },
+   {
+    "id": "OUT-11",
+    "code": "manufacturer installation instructions (not code)",
+    "section": "Lennox mini-split manual Step 8/9 cautions",
+    "src": [
+     "C28"
+    ],
+    "quote": "Wind the refrigerant pipe with insulation tape if it is exposed to outside sunlight.",
+    "note": "Conflicts in spirit with the IECC ban on adhesive tape as the weather/UV protection (OUT-1..4); the IECC text governs where adopted."
+   }
+  ]
+ },
+ "unverified": [
+  "ASHRAE 90.1-2022 (national) Table 6.8.2 cells for climate zones 0-3 and 7-8: only the NYC 2025 adoption (zones 4-6) and the 2022 footnotes (Addendum r) were read. No 90.1-2019 addendum changes the table (C21), so 2022 = 2019 is likely but not confirmed.",
+  "Older-format ASHRAE duct tables with separate \"ventilated attic / unvented attic above insulated ceiling / unvented attic with roof insulation\" columns (90.1-2010 Tables 6.8.2A/B era): not read. The 2019 table has only Exterior / Unconditioned Space and Buried Ducts / Indirectly Conditioned Space columns.",
+  "The ASHRAE 90.1-2019 book itself: Table 6.8.2 and Section 6.4.4.1 were read from ASHRAE's 2021 consolidated addenda reprint (C19), not the bound 2019 standard.",
+  "NFPA 90A text (any edition): the NFPA free-access reader serves only a JavaScript shell to curl (C35) and was not rendered or bypassed. Only UL's paraphrase of NFPA 90A 4.3.10.2 (C32) and a manufacturer claim (C29) were read; the NFPA 90A provisions for duct coverings and pipe insulation are unverified.",
+  "Uniform Mechanical Code (UMC) and Uniform Plumbing Code current editions: IAPMO ePubs returned HTTP 403 (C34). UMC condensate (Section 310) and UMC duct insulation (Section 605) requirements are unverified; only the 2012 UPC as adopted by Nevada (C33) was read.",
+  "ASHRAE Standard 15 full text: paywalled; only addenda were read (C25, C26 and a grep of all 64 Standard 15 addenda). Whether Standard 15 itself requires suction-line insulation for condensation is unverified (none of the addenda say so).",
+  "Florida Building Code (8th ed., 2023) Mechanical/Residential text and the Broward County BORA FI-3 (8th Edition, 2023) re-issue: not readable (broward.org 404, no archive snapshot). Only the 2017 FI #4 (C27) was read.",
+  "IECC 2021 Table C403.12.3 footnote-b equation image (not present in the served HTML for 2021); the exponent form is confirmed for IECC 2024 (C3) and for the 2018 family in vapor-code-verified.json.",
+  "The diameters ICC used to derive the IECC 2024 Table C403.13.3(1)/(2) R-values, and therefore whether the <40°F row R-values (R-6, R-9, R-9, R-8, R-7) are correct (see PIPE-2 observation).",
+  "Manufacturer requirements for condensate-drain and line-set insulation other than the single Lennox manual read (C28); the unit of the Lennox table values (\"t\") is not defined on the page read.",
+  "Whether the IMC 2024 deleted the 2021 Section 1109.7 \"Condensate Control\" or relocated it outside Chapters 3, 6, 11 and 12 (those chapters were searched; not found).",
+  "California Title 24 2025 edition (only the 2022 edition was read).",
+  "IECC/IMC model text directly from ICC (codes.iccsafe.org is not readable without script/reCAPTCHA; see vapor-code-verified.json R40). All ICC text here comes from UpCodes pages of state adoptions marked \"Adopts Without Amendments\" (except IPC 2021, Colorado, \"Adopts With Amendments\")."
+ ]
+}
