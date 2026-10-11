@@ -1,0 +1,1904 @@
+{
+  "dataset": "Surface emittance (emissivity) of bare pipe, jacketing, coverings and insulation surfaces: sourced values for an ASTM C680 / NAIMA 3E Plus style heat-loss and condensation calculator",
+  "generated": "2026-10-11",
+  "units": {
+    "emittance": "dimensionless, 0 to 1"
+  },
+  "conventions": {
+    "unverified": "The literal string 'unverified' (and each item in an 'unverified' list) means no fetched source stated the value. Nothing was guessed, averaged, interpolated or filled from memory.",
+    "src": "Every value carries 'src', a list of ids in the top-level 'sources' array, and a verbatim 'quote'.",
+    "quotes": "Quotes are verbatim from pdftotext output or page text. Line breaks were joined; nothing else changed. For tables, the label cell and value cell are joined with ' | '. Two tables are images with no text layer: the 3E Plus v4.1 Jacket Material and Base Metals screenshots (E1) and the Armacell Figure 5 table (E15). Their rows were transcribed by eye from images extracted with pdfimages, and each such quote says so in 'quote_note'.",
+    "value_fields": "'value' is the number as printed. A printed range uses 'value_min'/'value_max' instead. 'value_as_printed' keeps the source's exact text, e.g. '.8' or '0.1–0.2'.",
+    "kind": "'listed_value' = a value from a reference list or table. 'calculation_assumption' = a value a publisher says it put into its own thickness or heat-loss tables (an input, not a measurement). 'measured_test_method' = a product value reported against a named test method.",
+    "three_e_plus_value": "Each surface records what the 3E Plus v4.1 built-in list uses (E1), for parity with 3E Plus. This only points to a sourced value; no default was chosen or invented.",
+    "test_methods": "ASTM C1371 (portable emissometer) gives total hemispherical emittance, 'with a precision of better than ±0.02 units' (E20). ASTM E408, used by Lamtec, covers 'two comparative methods for determination of total normal emittance' (E20 scope). The two are not the same quantity. Solar reflectance (ASTM C1549) is a different property and is not used as emittance anywhere in this file.",
+    "temperature_and_condition": "Emittance changes with surface condition and temperature. The ASHRAE table (E2) is labelled 'Emittance (~80 °F)'. ROCKWOOL (E14) warns: 'the emissivity of a material varies with temperature and surface finishes'. ASTM C680 lists 'jacket emittance' among the inputs that must be chosen for each case and does not publish values (E21).",
+    "emissivity_vs_emittance": "Sources say 'emittance' (US) or 'emissivity' (EU). Values are recorded as printed, under whichever word the source uses."
+  },
+  "method": "PDFs were downloaded with curl into /tmp/claude-1000/research-emit/ and read with pdftotext (raw and -layout). Image-only tables were extracted with pdfimages and read visually. insulation.org pages were read through the WordPress REST API. WBDG's calculator pages (wbdg.org/files/calculators/*.html) now serve an empty single-page-app shell, and the Wayback Machine blocked automated requests, so the NIA-hosted copies of the same calculators were used. armacell.com HTML pages sit behind a Cloudflare challenge (HTTP 403), but direct /sites/default/files/ PDF links downloaded fine. No Chrome browser was connected, so no page was read through a browser.",
+  "related_files": {
+    "jackets": "jackets-verified.json (already holds JM aluminum 0.1 / 0.8 / 0.5 / .04, Lamtec WMP-ASJ 0.8, Lamtec FSK 0.05; E8–E13 here are those same documents, fetched again on 2026-10-11 and found to agree)",
+    "materials": "materials-verified.json (OC SSL II ASJ Max condensation table noted with emittance 0.9; E5 is the July 2026 edition of that sheet)"
+  },
+  "sources": [
+    {
+      "id": "E1",
+      "title": "3E Plus Version 4.1 User's Guide (Insulation Thickness Computer Program)",
+      "publisher": "NAIMA (North American Insulation Manufacturers Association), hosted by the Insulation Institute",
+      "url": "https://insulationinstitute.org/wp-content/uploads/2016/03/3E-Plus-V4-Users-Manual.pdf",
+      "doc_type": "software user guide PDF",
+      "pub_no_or_date": "Version 4.1 User's Guide, August 2012 (PDF created 2012-08-30)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext; the Jacket Material and Base Metals lists are screenshots with no text layer (guide pages 2-6 and 2-7, PDF pages 24-25). They were extracted with pdfimages and read visually.",
+      "context_quotes": [
+        "Next, click on the JACKET MATERIAL button and you’ll get a list of 15 materials, used for jacketing, on your screen",
+        "The forth column has the value of emittance associated with that jacketing material.",
+        "Selecting the BASE METALS button displays the list of the materials commonly used for pipes and equipment. The emittance values of associated with these base materials is used to calculate the radiant component of heat transfer for bare surfaces."
+      ],
+      "note": "Old desktop release. NAIMA now runs 3E Plus as a web tool, which needs a login and was not checked. Its built-in list may have changed since v4.1."
+    },
+    {
+      "id": "E2",
+      "title": "Mechanical Insulation Design Guide – Design Data (Table 1. Emittance Data of Commonly Used Materials)",
+      "publisher": "National Insulation Association (NIA); table credited to ASHRAE",
+      "url": "https://insulation.org/training-tools/designguide/design-data/",
+      "doc_type": "industry design guide web page",
+      "pub_no_or_date": "page last modified 2021-07-13 (WordPress page id 9335); ASHRAE Handbook edition and chapter not stated on the page",
+      "accessed": "2026-10-11",
+      "retrieval": "curl of the WordPress REST API (https://insulation.org/wp-json/wp/v2/pages/9335), HTML to text",
+      "context_quotes": [
+        "Emittance is a function of the material, its surface condition, and its temperature. The approximate emittance of commonly used materials is given in Table 1.",
+        "Table 1. Emittance Data of Commonly Used Materials",
+        "Emittance (~80 °F)",
+        "©American Society of Heating, Refrigerating and Air-Conditioning Engineers, Inc."
+      ],
+      "note": "This is the public copy of the ASHRAE Handbook—Fundamentals emittance table that the brief asked for. Quotes are the two table cells joined with ' | '. The table on the page stops at 'Stainless steel, new, cleaned'."
+    },
+    {
+      "id": "E3",
+      "title": "Condensation Control Calculator For Horizontal Pipe (Mechanical Insulation Design Guide – Simple Calculators)",
+      "publisher": "National Insulation Association (NIA)",
+      "url": "https://insulation.org/training-tools/designguide/simple-calculators/condensation-control-calculator-for-horizontal-pipe/",
+      "doc_type": "industry web calculator",
+      "pub_no_or_date": "page last modified 2021-07-27 (WordPress page id 9265)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl of the WordPress REST API (wp-json/wp/v2/pages/9265); the options of <select id=\"emittance\"> were read from the HTML",
+      "context_quotes": [
+        "Line 7. Select the effective emittance of the exterior surface"
+      ],
+      "note": "This is the same calculator family that WBDG hosted at wbdg.org/files/calculators/ccchp.html. That URL now returns only an empty app shell, and the Wayback Machine refused automated requests, so the WBDG copy was not read."
+    },
+    {
+      "id": "E4",
+      "title": "Personnel Protection Calculator For Horizontal Piping (Mechanical Insulation Design Guide – Simple Calculators)",
+      "publisher": "National Insulation Association (NIA)",
+      "url": "https://insulation.org/training-tools/designguide/simple-calculators/personnel-protection-calculator-for-horizontal-piping/",
+      "doc_type": "industry web calculator",
+      "pub_no_or_date": "page last modified 2021-07-27 (WordPress page id 9390)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl of the WordPress REST API (wp-json/wp/v2/pages/9390); <select id=\"emittance\"> options read from the HTML",
+      "note": "Its emittance dropdown matches E3 option for option (11 options). It is cited only as confirmation."
+    },
+    {
+      "id": "E5",
+      "title": "Product Data Sheet – SSL II with ASJ Max Fiberglas Pipe Insulation",
+      "publisher": "Owens Corning",
+      "url": "https://www.owenscorning.com/dms/20547",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "Pub. No. 20547-FF, July 2026",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "E6",
+      "title": "Micro-Lok HP Guidebook – A Complete Guide to Micro-Lok HP Pipe Insulations (eBook)",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/documents/ebooks/JM_MicroLok_HP_Guidebook_eBook.pdf",
+      "doc_type": "manufacturer guidebook PDF",
+      "pub_no_or_date": "© 2023 Johns Manville (PDF dated 2023-03-10)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "E7",
+      "title": "Insulation Thickness Comparison Tables – Technical Information",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/industrial-insulation/Industrial%20Documents/IND-505-Insulation-Thickness-Comparison-Tables.pdf",
+      "doc_type": "manufacturer technical information PDF",
+      "pub_no_or_date": "IND-505 10-16 NEW",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "E8",
+      "title": "JM Aluminum Roll and Sheet – Aluminum Metal Jacketing/Cladding – Data Sheet",
+      "publisher": "Johns Manville (formerly Pabco/Childers Metals)",
+      "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/jm-ind-aluminumroll-ds.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "09/26/25 (Replaces ACCS-05/17/23)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext",
+      "same_as": "jackets-verified.json J15 (fetched again to cross-check)"
+    },
+    {
+      "id": "E9",
+      "title": "JM Painted Aluminum Roll – Aluminum Metal Jacketing – Data Sheet",
+      "publisher": "Johns Manville (formerly Pabco/Childers Metal)",
+      "url": "https://www.jm.com/content/dam/jm/global/en/industrial-insulation/metal-jacketing/painted-aluminum-roll-jacketing/JM_IND_PaintedAluminumRoll_DS.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "01/03/23 (Replaces ACCS- 05/11/20)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext",
+      "same_as": "jackets-verified.json J16 (fetched again to cross-check)"
+    },
+    {
+      "id": "E10",
+      "title": "Jacketing Recommendations – Roof-Top Piping for Ammonia Cooling Systems, Chilled Water, and Hot Piping Systems (technical bulletin)",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/technical-bulletin/ind-jacketing-recommendation-tb.pdf",
+      "doc_type": "manufacturer technical bulletin PDF",
+      "pub_no_or_date": "04/03/2020 (Replaces PC-0915)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext",
+      "same_as": "jackets-verified.json J21 (fetched again to cross-check)"
+    },
+    {
+      "id": "E11",
+      "title": "Stainless Steel Roll & Sheet – Stainless Steel Metal Jacketing – Data Sheet",
+      "publisher": "Johns Manville (formerly Pabco/Childers Metals)",
+      "url": "https://www.jm.com/content/dam/jm/global/en/insulation-systems/products/assets/data-sheet/industrial-stainless-steel-rolls-and-sheet-data-sheet.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "printed '09/26/15 (Replaces SSRJE-05/17/23)'; PDF modified 2025-09-26",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext",
+      "same_as": "jackets-verified.json J22 (fetched again to cross-check)"
+    },
+    {
+      "id": "E12",
+      "title": "WMP-ASJ Polypropylene / Core / Scrim / Foil – data sheet",
+      "publisher": "Lamtec Corporation",
+      "url": "https://www.lamtec.com/specs/WMP-ASJ.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "10/24",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext -layout",
+      "same_as": "jackets-verified.json J26 (fetched again to cross-check)"
+    },
+    {
+      "id": "E13",
+      "title": "R-3035 Foil / Scrim / Kraft – data sheet",
+      "publisher": "Lamtec Corporation",
+      "url": "https://www.lamtec.com/specs/R-3035.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "6/24",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext -layout",
+      "same_as": "jackets-verified.json J25 (fetched again to cross-check)"
+    },
+    {
+      "id": "E14",
+      "title": "The Thickness of ROCKWOOL Insulation – In accordance with BS5422:2009 (incl. 'Surface emissivity (ε) table')",
+      "publisher": "ROCKWOOL Ltd (UK)",
+      "url": "https://www.rockwool.com/syssiteassets/rw-uk/downloads/brochures/thickness-of-rockwool-insulation.pdf",
+      "doc_type": "manufacturer brochure PDF",
+      "pub_no_or_date": "undated; PDF created 2018-04-25; cites BS 5422:2009",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext (raw and -layout; label/value pairing checked in raw output)",
+      "context_quotes": [
+        "NOTE 1 The above values provide a useful guide to surface emissivity. However, it should be noted that the emissivity of a material varies with temperature and surface finishes. Therefore, the precise emissivity should be ascertained where a high degree of accuracy is required."
+      ],
+      "note": "The table has no temperature basis and does not say where its values come from. Quotes are 'label | value' as printed."
+    },
+    {
+      "id": "E15",
+      "title": "KNOW-HOW – PART II: Protection against energy losses (Cold applications)",
+      "publisher": "Armacell",
+      "url": "https://www.armacell.com/sites/default/files/2025/02/12/2020-01-EMEA-Know-How-Part-2_Cold_applications_EN_02.pdf",
+      "doc_type": "manufacturer technical guide PDF",
+      "pub_no_or_date": "00335 | Part-2 Cold applications | KnowHow | 082020 | EMEA | MASTER | EN; © Armacell, 2020 (PDF dated 2023-08-24)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext; the Figure 5 table ('Emissivity (ε) of various surfaces') is an embedded image. It was extracted with pdfimages and read visually.",
+      "context_quotes": [
+        "Figure 5: Emission and absorption coefficients of the surfaces of various materials",
+        "An insulation material on the basis of synthetic rubber absorbs much more thermal energy than, for example, an aluminium foil."
+      ],
+      "note": "Table column header is 'ε = a'. Quotes are 'label | value' as printed in the image."
+    },
+    {
+      "id": "E16",
+      "title": "K-FLEX USA Product Selector Guide",
+      "publisher": "K-FLEX USA (L'ISOLANTE K-FLEX)",
+      "url": "https://dtamexico.com.mx/wp-content/uploads/2021/03/K-FLEX-PRODUCT-SELECTOR-GUIDE.pdf",
+      "doc_type": "manufacturer selector guide PDF (third-party distributor copy)",
+      "pub_no_or_date": "US_DOC_PRODUCT SELECTOR GUIDE_0920",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext (raw and -layout)",
+      "note": "Copy hosted by a distributor (dtamexico.com.mx), not by kflex.com. The newer K-FLEX USA Product Guide (US_DOC_PRODUCT GUIDE_0223, db.kflex.com) does not list K-FLEX CLAD or any emissivity."
+    },
+    {
+      "id": "E17",
+      "title": "Cold Service – Introduction to FEF Insulation (K-FLEX oil & gas / cryogenic brochure)",
+      "publisher": "K-FLEX USA",
+      "url": "https://kflex.com/sites/default/files/2022-03/oil_gas.pdf",
+      "doc_type": "manufacturer brochure PDF",
+      "pub_no_or_date": "KFAP_CRYOGENIC_0614 (PDF created 2014-06-24)",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext -layout"
+    },
+    {
+      "id": "E18",
+      "title": "Emittance in determination of the jacketing temperature (Advice center – general advice)",
+      "publisher": "FOAMGLAS (Owens Corning)",
+      "url": "https://www.foamglas.com/en/advice-center/general-advice/emittance-and-jacket-temperature",
+      "doc_type": "manufacturer web page",
+      "pub_no_or_date": "undated web page",
+      "accessed": "2026-10-11",
+      "retrieval": "curl, HTML to text"
+    },
+    {
+      "id": "E19",
+      "title": "ALUMAGUARD Flexible Weather-Proofing Jacket – data sheet (incl. Alumaguard Cool Wrap)",
+      "publisher": "Polyguard Products",
+      "url": "https://assets.cdn.polyguard.com/resources/MECH_Alumaguard_Data-Sheet-100924_2024-10-29-174412_ctzg.pdf",
+      "doc_type": "manufacturer data sheet PDF",
+      "pub_no_or_date": "R100924",
+      "accessed": "2026-10-11",
+      "retrieval": "curl+pdftotext -layout",
+      "note": "Linked from https://polyguard.com/product/alumaguard. The Alumaguard All Weather, Alumaguard Lite and Cool Wrap sheets (same R100924 / 100924 revision) print the same emissivity rows."
+    },
+    {
+      "id": "E20",
+      "title": "ASTM C1371-15(2022) Standard Test Method for Determination of Emittance of Materials Near Room Temperature Using Portable Emissometers (store page)",
+      "publisher": "ASTM International",
+      "url": "https://store.astm.org/c1371-15r22.html",
+      "doc_type": "standards store page (significance and scope)",
+      "pub_no_or_date": "C1371-15(2022); page last updated Jun 28, 2022",
+      "accessed": "2026-10-11",
+      "retrieval": "curl, HTML to text"
+    },
+    {
+      "id": "E21",
+      "title": "ASTM C680-23a Standard Practice for Estimate of the Heat Gain or Loss and the Surface Temperatures of Insulated Flat, Cylindrical, and Spherical Systems by Use of Computer Programs (store page)",
+      "publisher": "ASTM International",
+      "url": "https://store.astm.org/c0680-23a.html",
+      "doc_type": "standards store page (significance and scope)",
+      "pub_no_or_date": "C680-23a; page last updated Dec 13, 2023",
+      "accessed": "2026-10-11",
+      "retrieval": "curl, HTML to text"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "bare_carbon_steel_pipe",
+      "surface": "Bare carbon steel pipe (oxidized / commercial / as-installed)",
+      "three_e_plus_value": {
+        "value": 0.8,
+        "entry": "Base Metals: Steel (also Jacket Material: Iron or Steel)",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "3E Plus base metal 'Steel' (used for bare-surface radiation)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Steel | 0.8",
+          "quote_note": "Row transcribed from the Base Metals screenshot (Material Name | Emittance)."
+        },
+        {
+          "condition": "3E Plus jacket material 'Iron or Steel'",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Iron or Steel | 0.8",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Iron or steel, ~80°F (ASHRAE table)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Iron or steel | 0.8"
+        },
+        {
+          "condition": "Bare pipe: assumption JM used for its 3E Plus heat-transfer tables",
+          "value": 0.8,
+          "value_as_printed": ".8",
+          "kind": "calculation_assumption",
+          "src": [
+            "E6"
+          ],
+          "quote": "Surface emissivity; .8 for bare pipe; .15 for aluminum jacket; .9 for jacket or similar non-reflective surface."
+        },
+        {
+          "condition": "Steel, oxidized",
+          "value": 0.8,
+          "value_as_printed": "0.80",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Steel, oxidized | 0.80"
+        },
+        {
+          "condition": "Steel (surface condition not stated)",
+          "value": 0.35,
+          "value_as_printed": "0.35",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Steel | 0.35"
+        },
+        {
+          "condition": "Cast iron, rusted and oxidized",
+          "value": 0.65,
+          "value_as_printed": "0.65",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Cast iron, rusted and oxidized | 0.65"
+        },
+        {
+          "condition": "Cast iron (and iron)",
+          "value": 0.35,
+          "value_as_printed": "0.35",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Cast iron (and iron) | 0.35"
+        }
+      ],
+      "notes": "3E Plus, the ASHRAE table and JM's 3E Plus tables all use 0.8. ROCKWOOL lists 0.80 for oxidized steel and 0.35 for 'Steel' with no surface condition given. No source gives a separate value for mill-scale pipe as installed.",
+      "unverified": [
+        "Emittance of new mill-scale or primed carbon steel pipe as delivered (no source separates it from 'iron or steel')"
+      ]
+    },
+    {
+      "id": "bare_copper_tube",
+      "surface": "Bare copper tube",
+      "three_e_plus_value": {
+        "value": 0.6,
+        "entry": "Base Metals: Copper (also Jacket Material: Copper)",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "3E Plus base metal 'Copper' (condition not stated)",
+          "value": 0.6,
+          "value_as_printed": "0.6",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Copper | 0.6",
+          "quote_note": "Row transcribed from the Base Metals screenshot; the Jacket Materials list also has 'Copper | 0.6'."
+        },
+        {
+          "condition": "Copper, highly polished, ~80°F (ASHRAE table)",
+          "value": 0.03,
+          "value_as_printed": "0.03",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Copper, highly polished | 0.03"
+        },
+        {
+          "condition": "Copper, oxidized, ~80°F (ASHRAE table)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Copper, oxidized | 0.8"
+        },
+        {
+          "condition": "Copper, polished",
+          "value": 0.02,
+          "value_as_printed": "0.02",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Copper, polished | 0.02"
+        },
+        {
+          "condition": "Copper, commercial scoured to a shine",
+          "value": 0.07,
+          "value_as_printed": "0.07",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Copper, commercial scoured to a shine | 0.07"
+        },
+        {
+          "condition": "Copper, oxidized",
+          "value": 0.7,
+          "value_as_printed": "0.70",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Copper, oxidized | 0.70"
+        }
+      ],
+      "notes": "3E Plus uses one value (0.6) and gives no surface condition. The other sources run from 0.02–0.07 for polished or bright copper up to 0.70–0.8 for oxidized copper.",
+      "unverified": [
+        "Emittance of new drawn copper tube (ASTM B88) as installed, tarnished but not oxidized; no source states it"
+      ]
+    },
+    {
+      "id": "asj_all_service_jacket",
+      "surface": "ASJ / all-service jacket (white kraft or white polymer face)",
+      "three_e_plus_value": {
+        "value": 0.9,
+        "entry": "Jacket Material: All Service Jacket",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "3E Plus jacket material 'All Service Jacket'",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "All Service Jacket | 0.9",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "3E Plus guide worked example (Chapter 5)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "calculation_assumption",
+          "src": [
+            "E1"
+          ],
+          "quote": "The jacketing is 0.9 (emittance) ASJ jacketing."
+        },
+        {
+          "condition": "All service jacket, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "All service jacket | 0.9"
+        },
+        {
+          "condition": "NIA condensation-control calculator option",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.90 - All Service Jacket"
+        },
+        {
+          "condition": "OC SSL II with ASJ Max: assumption behind its condensation-thickness table (3E Plus v4.0)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "calculation_assumption",
+          "src": [
+            "E5"
+          ],
+          "quote": "Calculations estimated using NAIMA 3E Plus version 4.0 software. Fixed design conditions: Steel Horizontal Piping, 16″ NPS, 0 mph wind speed, Outer Surface Jacket Emittance of 0.9."
+        },
+        {
+          "condition": "JM Micro-Lok HP (ASJ) tables: 'jacket or similar non-reflective surface'",
+          "value": 0.9,
+          "value_as_printed": ".9",
+          "kind": "calculation_assumption",
+          "src": [
+            "E6"
+          ],
+          "quote": "Surface emissivity; .8 for bare pipe; .15 for aluminum jacket; .9 for jacket or similar non-reflective surface."
+        },
+        {
+          "condition": "Lamtec WMP-ASJ (paperless polypropylene ASJ), white side, ASTM E408",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "measured_test_method",
+          "src": [
+            "E12"
+          ],
+          "quote": "Emittance (White Side) ASTM E408 0.8 0.8",
+          "quote_note": "Table row from pdftotext -layout; the sheet prints the value in two columns, both 0.8."
+        }
+      ],
+      "notes": "Every listed and assumed value is 0.9. The only product measurement found, Lamtec WMP-ASJ, is 0.8 by ASTM E408, which measures total normal emittance (see conventions).",
+      "unverified": [
+        "Measured emittance of OC ASJ Max facing (OC prints only the 0.9 calculation assumption)",
+        "Measured emittance of JM ASJ / ASJ-SSL facing (no JM document found states one)"
+      ]
+    },
+    {
+      "id": "pvc_jacketing",
+      "surface": "PVC jacketing and fitting covers (JM Zeston, Proto)",
+      "three_e_plus_value": {
+        "value": 0.9,
+        "entry": "Jacket Material: PVC Jacketing (also Base Metals: PVC)",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "3E Plus jacket material 'PVC Jacketing'",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "PVC Jacketing | 0.9",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot; the Base Metals list also has 'PVC | 0.9'."
+        },
+        {
+          "condition": "Plastic pipe or jacket (PVC, PVDC, or PET), ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Plastic pipe or jacket (PVC, PVDC, or PET) | 0.9"
+        },
+        {
+          "condition": "NIA condensation-control calculator option",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.90 - PVC jacketing"
+        },
+        {
+          "condition": "Plastic covering (Armacell table)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Plastic covering | 0.90"
+        }
+      ],
+      "notes": "No PVC jacketing maker states an emittance. The generic plastic value is 0.9 in every source. K-FLEX CLAD IN (CPE/PVC) is listed separately under polymeric_and_laminate_cladding.",
+      "unverified": [
+        "JM Zeston 2000 / 300 / Zeston PVC jacketing emittance (checked: jackets-verified.json J1–J5 PDFs; no emittance printed)",
+        "Proto LoSmoke PVC emittance (checked: J6 submittal sheet, J7/J8 installation guides; no emittance printed)",
+        "Any colour dependence (white vs coloured PVC)"
+      ]
+    },
+    {
+      "id": "aluminum_jacketing",
+      "surface": "Aluminum jacketing (smooth / stucco-embossed / corrugated; bare or painted)",
+      "three_e_plus_value": {
+        "new_bright": 0.04,
+        "oxidized_in_service": 0.1,
+        "entry": "Jacket Material: Aluminum, new, bright / Aluminum, oxidized, in service",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "New, bright (3E Plus)",
+          "value": 0.04,
+          "value_as_printed": "0.04",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Aluminum, new, bright | 0.04",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "New, bright (NIA calculator)",
+          "value": 0.04,
+          "value_as_printed": "0.04",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.04 - Aluminum, new, bright"
+        },
+        {
+          "condition": "Polished, ~80°F (ASHRAE table)",
+          "value": 0.04,
+          "value_as_printed": "0.04",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum, polished | 0.04"
+        },
+        {
+          "condition": "Bright new aluminum (JM technical bulletin)",
+          "value": 0.04,
+          "value_as_printed": ".04",
+          "kind": "listed_value",
+          "src": [
+            "E10"
+          ],
+          "quote": "White painted aluminum has been recommended not only because of its superior emittance value (.80) versus bright new aluminum (.04), but also its improved corrosion resistance compared to the unpainted aluminum."
+        },
+        {
+          "condition": "Aluminium, bright (ROCKWOOL table)",
+          "value": 0.05,
+          "value_as_printed": "0.05",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Aluminium, bright | 0.05"
+        },
+        {
+          "condition": "Commercial sheet, ~80°F (ASHRAE table)",
+          "value": 0.1,
+          "value_as_printed": "0.1",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum, commercial sheet | 0.1"
+        },
+        {
+          "condition": "Oxidized, in service (3E Plus)",
+          "value": 0.1,
+          "value_as_printed": "0.1",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Aluminum, oxidized, in service | 0.1",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot. The guide's tutorial text (page 1-11) refers to the same entry as 'the 0.1 (emissivity) Aluminum, oxidized (weathered)'."
+        },
+        {
+          "condition": "Oxidized, in service (NIA calculator)",
+          "value": 0.1,
+          "value_as_printed": "0.10",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.10 - Aluminum, oxidized, in service"
+        },
+        {
+          "condition": "JM aluminum jacketing, bare, oxidized in service (ASTM C1371, per C1729)",
+          "value": 0.1,
+          "value_as_printed": "0.1",
+          "kind": "measured_test_method",
+          "src": [
+            "E8"
+          ],
+          "quote": "JM Aluminum Jacketing has an outer surface emittance per ASTM C1371 and specified by ASTM C1729 of: • Bare aluminum (oxidized in service ) = 0.1",
+          "also_in": [
+            "E9 ('Bare aluminum = 0.1 (oxidized in service)')"
+          ]
+        },
+        {
+          "condition": "Oxidized, ~80°F (ASHRAE table)",
+          "value_min": 0.1,
+          "value_max": 0.2,
+          "value_as_printed": "0.1–0.2",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum, oxidized | 0.1–0.2"
+        },
+        {
+          "condition": "Aluminium, oxidized (ROCKWOOL table)",
+          "value": 0.13,
+          "value_as_printed": "0.13",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Aluminium, oxidized | 0.13"
+        },
+        {
+          "condition": "Aluminium, oxidized (Armacell table)",
+          "value": 0.13,
+          "value_as_printed": "0.13",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Aluminium, oxidized | 0.13"
+        },
+        {
+          "condition": "Aluminum jacketing in a below-ambient design example (FOAMGLAS)",
+          "value_min": 0.1,
+          "value_max": 0.2,
+          "value_as_printed": "0.1 to 0.2",
+          "kind": "listed_value",
+          "src": [
+            "E18"
+          ],
+          "quote": "On below ambient temperature lines, the thickness needed to prevent condensation will be different depending whether an emissivity of 0.9 for a dark reinforced mastic or an emissivity of 0.1 to 0.2 for an aluminum jacketing is in the calculations."
+        },
+        {
+          "condition": "Aluminum jacket: assumption JM used for its Micro-Lok HP 3E Plus tables",
+          "value": 0.15,
+          "value_as_printed": ".15",
+          "kind": "calculation_assumption",
+          "src": [
+            "E6"
+          ],
+          "quote": "Surface emissivity; .8 for bare pipe; .15 for aluminum jacket; .9 for jacket or similar non-reflective surface."
+        },
+        {
+          "condition": "Weathered aluminum jacket: assumption JM used for its 140°F surface-temperature tables (3E Plus)",
+          "value": 0.3,
+          "value_as_printed": "0.30",
+          "kind": "calculation_assumption",
+          "src": [
+            "E7"
+          ],
+          "quote": "Surface Emittance of Weathered Aluminum Jacket = 0.30"
+        },
+        {
+          "condition": "Embossed, ~80°F (ASHRAE table)",
+          "value": 0.2,
+          "value_as_printed": "0.2",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum, embossed | 0.2"
+        },
+        {
+          "condition": "Anodized, ~80°F (ASHRAE table)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum, anodized | 0.8"
+        },
+        {
+          "condition": "JM painted aluminum jacketing, all colors except clear (ASTM C1371)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "measured_test_method",
+          "src": [
+            "E9"
+          ],
+          "quote": "JM Painted Aluminum Jacketing has a surface emittance as measured by ASTM C1371 of: • All colors except clear = 0.8"
+        },
+        {
+          "condition": "JM painted aluminum jacketing, clear epoxy coated (ASTM C1371)",
+          "value": 0.5,
+          "value_as_printed": "0.5",
+          "kind": "measured_test_method",
+          "src": [
+            "E9"
+          ],
+          "quote": "• Clear epoxy coated = 0.5"
+        },
+        {
+          "condition": "White painted aluminum (JM technical bulletin)",
+          "value": 0.8,
+          "value_as_printed": ".80",
+          "kind": "listed_value",
+          "src": [
+            "E10"
+          ],
+          "quote": "White painted aluminum has been recommended not only because of its superior emittance value (.80) versus bright new aluminum (.04), but also its improved corrosion resistance compared to the unpainted aluminum."
+        }
+      ],
+      "notes": "Bare aluminum in service runs from 0.1 to 0.2 across sources. 3E Plus and JM use 0.1; ROCKWOOL and Armacell use 0.13; ASHRAE gives 0.1–0.2. JM's own design tables assume 0.15 (Micro-Lok HP guidebook) and 0.30 (weathered, IND-505). Embossed aluminum has a separate value only in the ASHRAE table (0.2). JM gives one bare value for all finishes (smooth, stucco-embossed, corrugated). Aluminum paint over metal is listed under painted_metal_generic.",
+      "unverified": [
+        "Stucco-embossed aluminum jacketing as a distinct value (only the ASHRAE 'Aluminum, embossed 0.2' row exists; no jacket maker publishes a stucco-specific emittance)",
+        "Corrugated aluminum jacketing as a distinct value"
+      ]
+    },
+    {
+      "id": "stainless_steel_jacketing",
+      "surface": "Stainless steel jacketing (T-304 / T-316)",
+      "three_e_plus_value": {
+        "new_cleaned": 0.13,
+        "dull_in_service": 0.3,
+        "entry": "Jacket Material: Stainless Steel, new, cleaned / Stainless Steel, dull, in service (Base Metals: Stainless Steel 0.3)",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "New, cleaned (3E Plus)",
+          "value": 0.13,
+          "value_as_printed": "0.13",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Stainless Steel, new, cleaned | 0.13",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "New, cleaned (NIA calculator)",
+          "value": 0.13,
+          "value_as_printed": "0.13",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.13 - Stainless steel, new, cleaned"
+        },
+        {
+          "condition": "New, cleaned, ~80°F (ASHRAE table)",
+          "value": 0.2,
+          "value_as_printed": "0.2",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Stainless steel, new, cleaned | 0.2"
+        },
+        {
+          "condition": "Austenitic steel (ROCKWOOL table)",
+          "value": 0.15,
+          "value_as_printed": "0.15",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Austenitic steel | 0.15"
+        },
+        {
+          "condition": "Stainless austenitic steel (Armacell table)",
+          "value": 0.15,
+          "value_as_printed": "0.15",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Stainless austenitic steel | 0.15"
+        },
+        {
+          "condition": "Dull, in service (3E Plus)",
+          "value": 0.3,
+          "value_as_printed": "0.3",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Stainless Steel, dull, in service | 0.3",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot; Base Metals also lists 'Stainless Steel | 0.3'."
+        },
+        {
+          "condition": "Dull, in service (NIA calculator)",
+          "value": 0.3,
+          "value_as_printed": "0.30",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.30 - Stainless steel, dull, in service"
+        }
+      ],
+      "notes": "For new, cleaned stainless steel the sources disagree: 0.13 (3E Plus, NIA calculator), 0.15 (ROCKWOOL, Armacell austenitic) and 0.2 (ASHRAE table). For dull or in-service stainless, only 3E Plus and the NIA calculator give a value: 0.3. JM's data sheet is qualitative only: 'Stainless Steel has a higher emittance value than Aluminum' (E11).",
+      "qualitative": [
+        {
+          "src": [
+            "E11"
+          ],
+          "quote": "Stainless Steel has a higher emittance value than Aluminum, and has physical properties superior to all other metal used as insulation protective jacketing."
+        }
+      ],
+      "unverified": [
+        "A measured (ASTM C1371) emittance for JM or any other stainless jacketing product; JM states only the qualitative comparison"
+      ]
+    },
+    {
+      "id": "galvanized_steel",
+      "surface": "Galvanized steel (jacketing or bare)",
+      "three_e_plus_value": {
+        "new_bright": 0.1,
+        "dipped_or_dull": 0.28,
+        "entry": "Jacket Material: Galvanized steel, new, bright / Galvanized steel, dipped or dull",
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "New, bright (3E Plus)",
+          "value": 0.1,
+          "value_as_printed": "0.1",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Galvanized steel, new, bright | 0.1",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "New, bright, ~80°F (ASHRAE table)",
+          "value": 0.1,
+          "value_as_printed": "0.1",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Galvanized steel, new, bright | 0.1"
+        },
+        {
+          "condition": "Galvanised steel, blank (ROCKWOOL table)",
+          "value": 0.26,
+          "value_as_printed": "0.26",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Galvanised steel, blank | 0.26"
+        },
+        {
+          "condition": "Steel, galvanized, shiny (Armacell table)",
+          "value": 0.26,
+          "value_as_printed": "0.26",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Steel, galvanized, shiny | 0.26"
+        },
+        {
+          "condition": "Dipped or dull (3E Plus)",
+          "value": 0.28,
+          "value_as_printed": "0.28",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Galvanized steel, dipped or dull | 0.28",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Dipped or dull (NIA calculator)",
+          "value": 0.28,
+          "value_as_printed": "0.28",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.28 - Galvanized steel, dipped or dull"
+        },
+        {
+          "condition": "Dipped or dull, ~80°F (ASHRAE table)",
+          "value": 0.3,
+          "value_as_printed": "0.3",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Galvanized steel, dipped or dull | 0.3"
+        },
+        {
+          "condition": "Galvanised steel, dusty (ROCKWOOL table)",
+          "value": 0.44,
+          "value_as_printed": "0.44",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Galvanised steel, dusty | 0.44"
+        },
+        {
+          "condition": "Steel, galvanized, dusty (Armacell table)",
+          "value": 0.44,
+          "value_as_printed": "0.44",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Steel, galvanized, dusty | 0.44"
+        }
+      ],
+      "notes": "Bright galvanized: 3E Plus and ASHRAE give 0.1, but the European tables (ROCKWOOL 'blank', Armacell 'shiny') give 0.26. Dull galvanized: 0.28 (3E Plus) and 0.3 (ASHRAE). Dusty galvanized: 0.44 (ROCKWOOL, Armacell)."
+    },
+    {
+      "id": "aluminum_zinc_coated_steel",
+      "surface": "Aluminum-zinc (Alu-zinc / Galvalume-type) coated steel",
+      "three_e_plus_value": "not listed in 3E Plus v4.1",
+      "values": [
+        {
+          "condition": "Aluminum-zinc coated steel, ~80°F (ASHRAE table)",
+          "value": 0.06,
+          "value_as_printed": "0.06",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum-zinc coated steel | 0.06"
+        },
+        {
+          "condition": "Alu-zinc, smoothly polished (Armacell table)",
+          "value": 0.16,
+          "value_as_printed": "0.16",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Alu-zinc, smoothly polished | 0.16"
+        },
+        {
+          "condition": "Alu-zinc (ROCKWOOL table)",
+          "value": 0.18,
+          "value_as_printed": "0.18",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Alu-zinc | 0.18"
+        }
+      ],
+      "notes": "Optional surface. ASHRAE (0.06) and the European tables (0.16–0.18) differ by a factor of about 3."
+    },
+    {
+      "id": "elastomeric_foam",
+      "surface": "Flexible elastomeric foam, unjacketed (Armacell AP ArmaFlex, K-FLEX), black",
+      "three_e_plus_value": "not listed in 3E Plus v4.1 (no elastomeric or rubber entry in the Jacket Materials list)",
+      "values": [
+        {
+          "condition": "Flexible elastomeric foam (Armacell table)",
+          "value": 0.93,
+          "value_as_printed": "0.93",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Flexible elastomeric foam | 0.93"
+        },
+        {
+          "condition": "Elastomeric or polyisobutylene, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Elastomeric or polyisobutylene | 0.9"
+        },
+        {
+          "condition": "Rubber, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Rubber | 0.9"
+        },
+        {
+          "condition": "Black rubber/mastics (NIA calculator)",
+          "value": 0.95,
+          "value_as_printed": "0.95",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.95 - Black rubber/mastics"
+        },
+        {
+          "condition": "Rubber black (ROCKWOOL table)",
+          "value": 0.95,
+          "value_as_printed": "0.95",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Rubber black | 0.95"
+        },
+        {
+          "condition": "Rubber, grey (ROCKWOOL table)",
+          "value": 0.85,
+          "value_as_printed": "0.85",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Rubber, grey | 0.85"
+        }
+      ],
+      "notes": "The Armacell value (0.93) is the only manufacturer-published elastomeric-foam value found. It is generic ('Flexible elastomeric foam') and does not name a product. Generic tables give 0.9 (ASHRAE) to 0.95 (NIA calculator, ROCKWOOL, black rubber).",
+      "unverified": [
+        "AP ArmaFlex product-specific emittance (checked: AP ArmaFlex tube TDS 2021, AP ArmaFlex sheet/roll TDS 082018, ArmaFlex NA Application Manual 2025, Armacell EMEA ArmaFlex Application Manual 2025, Armacell chilled-water white paper 2020, Armacell UK catalogue Jan 2016; none prints a number)",
+        "Armacell 'Surface Emissivity' white paper (https://www.armacell.com/en-US/document/armacell-surface-emissivity-white-paper): a search snippet says it gives 0.93 for ArmaFlex, but armacell.com returned HTTP 403 (Cloudflare) to curl and WebFetch, so it was NOT read and is not cited",
+        "K-FLEX (Insul-Tube, Insul-Sheet, ST, Titan, HT, ECO) foam-surface emittance (checked: K-FLEX data sheets and the 0223 product guide; K-FLEX publishes emissivity only for its CLAD jackets)",
+        "The emissivity assumption behind Armacell or K-FLEX condensation-thickness tables (their US tables state ambient conditions only)",
+        "Grey or white elastomeric surfaces (only ROCKWOOL's generic 'Rubber, grey 0.85' exists)"
+      ]
+    },
+    {
+      "id": "bare_insulation_nonmetallic",
+      "surface": "Bare (unjacketed) fibrous or rigid insulation (fiberglass, mineral wool, calcium silicate, cellular glass), with generic non-metallic and fabric values",
+      "three_e_plus_value": "not listed as 'no jacket' in 3E Plus v4.1; the closest entry is Canvas 0.9",
+      "values": [
+        {
+          "condition": "No jacket (NIA calculator option)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.90 - No jacket"
+        },
+        {
+          "condition": "Non-metallic outer surface (BS 5422:2009 table basis, as reproduced by ROCKWOOL)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "calculation_assumption",
+          "src": [
+            "E14"
+          ],
+          "quote": "Minimum insulation thickness to control the surface temperature of a non-metallic surface with a surface emissivity of 0.90 and design cold face temperature of 59°C"
+        },
+        {
+          "condition": "High-emissivity outer surface (BS 5422 condensation table basis, as reproduced by ROCKWOOL)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "calculation_assumption",
+          "src": [
+            "E14"
+          ],
+          "quote": "Minimum insulation thickness for chilled and cold water steel pipes to control condensation on a high emissivity outer surface (0.9) with an ambient temperature of +25°C and a relative humidity of 80%"
+        },
+        {
+          "condition": "'jacket or similar non-reflective surface' (JM Micro-Lok HP 3E Plus tables)",
+          "value": 0.9,
+          "value_as_printed": ".9",
+          "kind": "calculation_assumption",
+          "src": [
+            "E6"
+          ],
+          "quote": "Surface emissivity; .8 for bare pipe; .15 for aluminum jacket; .9 for jacket or similar non-reflective surface."
+        },
+        {
+          "condition": "Canvas (3E Plus)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Canvas | 0.9",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Canvas, ~80°F (ASHRAE table)",
+          "value_min": 0.7,
+          "value_max": 0.9,
+          "value_as_printed": "0.7–0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Canvas | 0.7–0.9"
+        },
+        {
+          "condition": "Silicon impregnated fiberglass fabric, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Silicon impregnated fiberglass fabric | 0.9"
+        },
+        {
+          "condition": "Cloth (ROCKWOOL table)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Cloth | 0.90"
+        },
+        {
+          "condition": "Fire brick (ROCKWOOL table)",
+          "value": 0.75,
+          "value_as_printed": "0.75",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Fire brick | 0.75"
+        }
+      ],
+      "notes": "The only source that labels a value for bare insulation is the NIA calculator option '0.90 - No jacket'. BS 5422 (via ROCKWOOL) uses 0.90 for any non-metallic surface. No insulation maker publishes a measured emittance for its bare product surface.",
+      "unverified": [
+        "Fiberglass pipe insulation, bare surface (checked: OC SSL II and JM Micro-Lok HP data sheets; only jacket assumptions printed)",
+        "Mineral wool, bare surface (checked: ROCKWOOL ProRox Process Manual, which gives external surface-coefficient constants A/B for 'Non-metallic surface' (A 8.5, B 8.7) but no ε; JM MinWool not re-fetched)",
+        "Calcium silicate, bare surface (checked: JM Thermo-1200 data sheet; nothing printed)",
+        "Cellular glass, bare surface (checked: FOAMGLAS product guide, FAQ, CUI brochure, emittance advice page; nothing printed for bare FOAMGLAS)"
+      ]
+    },
+    {
+      "id": "vapor_retarder_membranes_white",
+      "surface": "White vapor-retarder membranes / weather-barrier jackets",
+      "three_e_plus_value": "not listed in 3E Plus v4.1",
+      "values": [
+        {
+          "condition": "Polyguard Alumaguard Cool Wrap (matte white), initial, ASTM C1371",
+          "value": 0.82,
+          "value_as_printed": "0.82",
+          "kind": "measured_test_method",
+          "src": [
+            "E19"
+          ],
+          "quote": "Alumaguard® Cool Wrap Properties and Test Results Initial Three Year ... Thermal Emittance (ASTM C1371) 0.82 0.86",
+          "quote_note": "Table header and row joined from pdftotext -layout; '...' marks the Solar Reflectance row in between."
+        },
+        {
+          "condition": "Polyguard Alumaguard Cool Wrap (matte white), three-year, ASTM C1371",
+          "value": 0.86,
+          "value_as_printed": "0.86",
+          "kind": "measured_test_method",
+          "src": [
+            "E19"
+          ],
+          "quote": "Alumaguard® Cool Wrap Properties and Test Results Initial Three Year ... Thermal Emittance (ASTM C1371) 0.82 0.86"
+        },
+        {
+          "condition": "K-FLEX CLAD WT (white polyester film over aluminum foil on PVC backing)",
+          "value": 0.8,
+          "value_as_printed": "0.80",
+          "kind": "listed_value",
+          "src": [
+            "E16"
+          ],
+          "quote": "Emissivity: 0.80 (AL and WT) 0.90 (IN)",
+          "quote_note": "The AL/WT/IN labels are K-FLEX CLAD variants. The column assignment is taken from those labels."
+        },
+        {
+          "condition": "Lamtec WMP-ASJ white polypropylene face, ASTM E408 (see asj_all_service_jacket)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "measured_test_method",
+          "src": [
+            "E12"
+          ],
+          "quote": "Emittance (White Side) ASTM E408 0.8 0.8"
+        }
+      ],
+      "notes": "Solar reflectance (ASTM C1549) is not thermal emittance. Alumaguard prints both, and only the 'Thermal Emittance' row is used here.",
+      "unverified": [
+        "Polyguard Insulrap 30-NG (checked: jackets-verified.json J33 data sheet and J34 product information sheet; no emittance printed)",
+        "Owens Corning PITTWRAP IW50 AL and B100 (checked: J35, J36; no emittance printed)",
+        "JM Saranex CX films (not checked for emittance in this pass)"
+      ]
+    },
+    {
+      "id": "mastics_coatings",
+      "surface": "Mastics and vapor-retarder / weather-barrier coatings (white, coloured, black)",
+      "three_e_plus_value": {
+        "colored_mastics": 0.9,
+        "roofing_felt_and_black_mastics": 0.9,
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "Colored mastics (3E Plus)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Colored mastics | 0.9",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Roofing felt and black mastics (3E Plus)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Roofing felt and black mastics | 0.9",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Colored mastic, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Colored mastic | 0.9"
+        },
+        {
+          "condition": "Roofing felt and black mastic, ~80°F (ASHRAE table)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Roofing felt and black mastic | 0.9"
+        },
+        {
+          "condition": "Black rubber/mastics (NIA calculator)",
+          "value": 0.95,
+          "value_as_printed": "0.95",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.95 - Black rubber/mastics"
+        },
+        {
+          "condition": "Dark reinforced mastic (FOAMGLAS)",
+          "value": 0.9,
+          "value_as_printed": "0.9",
+          "kind": "listed_value",
+          "src": [
+            "E18"
+          ],
+          "quote": "On below ambient temperature lines, the thickness needed to prevent condensation will be different depending whether an emissivity of 0.9 for a dark reinforced mastic or an emissivity of 0.1 to 0.2 for an aluminum jacketing is in the calculations."
+        },
+        {
+          "condition": "Roofing felt (ROCKWOOL table)",
+          "value": 0.94,
+          "value_as_printed": "0.94",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Roofing felt | 0.94"
+        }
+      ],
+      "notes": "Every generic mastic value is 0.9–0.95. No source gives a separate value for white mastic.",
+      "unverified": [
+        "White vapor-retarder mastic as a distinct value",
+        "Foster 30-65 Vapor-Fas WB (checked: R1119 data sheet, jackets-verified.json J38; no emittance printed)",
+        "Owens Corning PITTCOTE 300E (checked: J37; no emittance printed)",
+        "Childers / Vimasco mastics (not fetched; a web search turned up no published emittance)"
+      ]
+    },
+    {
+      "id": "painted_metal_generic",
+      "surface": "Painted metal (any colour), incl. aluminum paint",
+      "three_e_plus_value": {
+        "painted_metal": 0.8,
+        "aluminum_paint": 0.5,
+        "src": [
+          "E1"
+        ]
+      },
+      "values": [
+        {
+          "condition": "Painted Metal (3E Plus)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Painted Metal | 0.8",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Painted metal (NIA calculator)",
+          "value": 0.8,
+          "value_as_printed": "0.80",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.80 - Painted metal"
+        },
+        {
+          "condition": "Painted metal, ~80°F (ASHRAE table)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Painted metal | 0.8"
+        },
+        {
+          "condition": "JM painted aluminum jacketing, all colors except clear (ASTM C1371)",
+          "value": 0.8,
+          "value_as_printed": "0.8",
+          "kind": "measured_test_method",
+          "src": [
+            "E9"
+          ],
+          "quote": "JM Painted Aluminum Jacketing has a surface emittance as measured by ASTM C1371 of: • All colors except clear = 0.8"
+        },
+        {
+          "condition": "Paint-coated sheet metal (Armacell table)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Paint-coated sheet metal | 0.90"
+        },
+        {
+          "condition": "Paint, other colours (ROCKWOOL table)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Paint, other colours | 0.90"
+        },
+        {
+          "condition": "Paint, white (ROCKWOOL table)",
+          "value": 0.85,
+          "value_as_printed": "0.85",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Paint, white | 0.85"
+        },
+        {
+          "condition": "Paint, black (ROCKWOOL table)",
+          "value": 0.95,
+          "value_as_printed": "0.95",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Paint, black | 0.95"
+        },
+        {
+          "condition": "Steel, black painted (ROCKWOOL table)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Steel, black painted | 0.90"
+        },
+        {
+          "condition": "White lacquer (ROCKWOOL table)",
+          "value": 0.95,
+          "value_as_printed": "0.95",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "White lacquer | 0.95"
+        },
+        {
+          "condition": "Aluminum Paint (3E Plus)",
+          "value": 0.5,
+          "value_as_printed": "0.5",
+          "kind": "listed_value",
+          "src": [
+            "E1"
+          ],
+          "quote": "Aluminum Paint | 0.5",
+          "quote_note": "Row transcribed from the Jacket Materials screenshot."
+        },
+        {
+          "condition": "Aluminized paint (NIA calculator)",
+          "value": 0.5,
+          "value_as_printed": "0.50",
+          "kind": "listed_value",
+          "src": [
+            "E3",
+            "E4"
+          ],
+          "quote": "0.50 - Aluminized paint"
+        },
+        {
+          "condition": "Aluminum paint, ~80°F (ASHRAE table)",
+          "value": 0.5,
+          "value_as_printed": "0.5",
+          "kind": "listed_value",
+          "src": [
+            "E2"
+          ],
+          "quote": "Aluminum paint | 0.5"
+        },
+        {
+          "condition": "Paint, aluminium new (ROCKWOOL table)",
+          "value": 0.3,
+          "value_as_printed": "0.30",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Paint, aluminium new | 0.30"
+        },
+        {
+          "condition": "Paint, aluminium weathered (ROCKWOOL table)",
+          "value": 0.55,
+          "value_as_printed": "0.55",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Paint, aluminium weathered | 0.55"
+        }
+      ],
+      "notes": "Generic painted metal is 0.8 in the US sources (3E Plus, ASHRAE, NIA calculator, JM measured) and 0.90 in the European ones (Armacell; ROCKWOOL 'other colours'). ROCKWOOL splits paint by colour: white 0.85, black 0.95. Aluminum paint is 0.5 in the US sources and 0.30 new / 0.55 weathered in ROCKWOOL."
+    },
+    {
+      "id": "polymeric_and_laminate_cladding",
+      "surface": "Foil-faced and polymeric laminate jackets (FSK, aluminum-foil membranes, elastomeric-insulation cladding)",
+      "three_e_plus_value": "not listed in 3E Plus v4.1",
+      "values": [
+        {
+          "condition": "Lamtec R-3035 FSK, foil side, ASTM E408",
+          "value": 0.05,
+          "value_as_printed": "0.05",
+          "kind": "measured_test_method",
+          "src": [
+            "E13"
+          ],
+          "quote": "Emittance ASTM E408 0.05 0.05",
+          "quote_note": "Table row from pdftotext -layout; already recorded in jackets-verified.json (J25)."
+        },
+        {
+          "condition": "Polyguard Alumaguard (embossed aluminum foil/polymer laminate), ASTM C1371",
+          "value": 0.03,
+          "value_as_printed": ".030",
+          "kind": "measured_test_method",
+          "src": [
+            "E19"
+          ],
+          "quote": "Emissivity ASTM C1371 .030"
+        },
+        {
+          "condition": "Aluminium foil, bright reinforced (ROCKWOOL table)",
+          "value": 0.05,
+          "value_as_printed": "0.05",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Aluminium foil, bright reinforced | 0.05"
+        },
+        {
+          "condition": "Aluminium foil, shiny (Armacell table)",
+          "value": 0.05,
+          "value_as_printed": "0.05",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Aluminium foil, shiny | 0.05"
+        },
+        {
+          "condition": "Aluminium foil, polyester faced reinforced (ROCKWOOL table)",
+          "value": 0.4,
+          "value_as_printed": "0.40",
+          "kind": "listed_value",
+          "src": [
+            "E14"
+          ],
+          "quote": "Aluminium foil, polyester faced reinforced | 0.40"
+        },
+        {
+          "condition": "Arma-Chek Silver (Armacell non-metallic silver covering)",
+          "value": 0.83,
+          "value_as_printed": "0.83",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Arma-Chek Silver | 0.83"
+        },
+        {
+          "condition": "Arma-Chek R (Armacell table)",
+          "value": 0.93,
+          "value_as_printed": "0.93",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Arma-Chek R | 0.93"
+        },
+        {
+          "condition": "Arma-Chek D (Armacell table)",
+          "value": 0.94,
+          "value_as_printed": "0.94",
+          "kind": "listed_value",
+          "src": [
+            "E15"
+          ],
+          "quote": "Arma-Chek D | 0.94"
+        },
+        {
+          "condition": "K-FLEX CLAD AL (aluminum foil on PVC backing)",
+          "value": 0.8,
+          "value_as_printed": "0.80",
+          "kind": "listed_value",
+          "src": [
+            "E16"
+          ],
+          "quote": "Emissivity: 0.80 (AL and WT) 0.90 (IN)",
+          "quote_note": "Column assignment taken from the AL/WT/IN variant labels. 0.80 for a foil-faced product is far above the other foil values here (0.03–0.05), so treat it with caution."
+        },
+        {
+          "condition": "K-FLEX CLAD IN (CPE/PVC polymeric jacket)",
+          "value": 0.9,
+          "value_as_printed": "0.90",
+          "kind": "listed_value",
+          "src": [
+            "E16",
+            "E17"
+          ],
+          "quote": "Emissivity 0.90",
+          "quote_note": "E17 table row under 'K-FLEX CLAD IN JACKETING'. E16 prints 'Emissivity: 0.80 (AL and WT) 0.90 (IN)'."
+        }
+      ],
+      "notes": "Bare foil faces measure 0.03–0.05. Polyester-faced foil (ROCKWOOL 0.40) and 'non-metallic silver' coverings (Arma-Chek Silver 0.83) are much higher, so a silver look does not mean low emittance. K-FLEX CLAD AL at 0.80 is an outlier against the other foil values.",
+      "unverified": [
+        "Venture Tape / 3M VentureClad emittance (not fetched)"
+      ]
+    }
+  ],
+  "discrepancies_between_sources": [
+    {
+      "surface": "stainless_steel_jacketing (new, cleaned)",
+      "values": "0.13 (3E Plus, NIA calculator) vs 0.15 (ROCKWOOL, Armacell 'austenitic') vs 0.2 (ASHRAE table via NIA)",
+      "src": [
+        "E1",
+        "E3",
+        "E14",
+        "E15",
+        "E2"
+      ]
+    },
+    {
+      "surface": "aluminum_jacketing (oxidized / in service / weathered)",
+      "values": "0.1 (3E Plus, NIA calculator, JM C1371) vs 0.13 (ROCKWOOL, Armacell) vs 0.1–0.2 (ASHRAE) vs 0.15 (JM Micro-Lok tables) vs 0.30 (JM IND-505 'weathered')",
+      "src": [
+        "E1",
+        "E3",
+        "E8",
+        "E14",
+        "E15",
+        "E2",
+        "E6",
+        "E7"
+      ]
+    },
+    {
+      "surface": "galvanized_steel (new / bright)",
+      "values": "0.1 (3E Plus, ASHRAE) vs 0.26 (ROCKWOOL 'blank', Armacell 'shiny')",
+      "src": [
+        "E1",
+        "E2",
+        "E14",
+        "E15"
+      ]
+    },
+    {
+      "surface": "galvanized_steel (dull)",
+      "values": "0.28 (3E Plus, NIA calculator) vs 0.3 (ASHRAE); 'dusty' 0.44 (ROCKWOOL, Armacell)",
+      "src": [
+        "E1",
+        "E3",
+        "E2",
+        "E14",
+        "E15"
+      ]
+    },
+    {
+      "surface": "bare_copper_tube",
+      "values": "3E Plus uses a single 0.6 with no condition stated; oxidized copper is 0.8 (ASHRAE) / 0.70 (ROCKWOOL); polished copper 0.02–0.07",
+      "src": [
+        "E1",
+        "E2",
+        "E14"
+      ]
+    },
+    {
+      "surface": "bare_carbon_steel_pipe",
+      "values": "0.8 (3E Plus, ASHRAE, JM tables, ROCKWOOL 'oxidized') vs ROCKWOOL 'Steel' 0.35 (condition not stated)",
+      "src": [
+        "E1",
+        "E2",
+        "E6",
+        "E14"
+      ]
+    },
+    {
+      "surface": "painted_metal_generic",
+      "values": "0.8 (3E Plus, ASHRAE, NIA calculator, JM C1371) vs 0.90 (Armacell, ROCKWOOL 'other colours'); white 0.85, black 0.95 (ROCKWOOL)",
+      "src": [
+        "E1",
+        "E2",
+        "E3",
+        "E9",
+        "E15",
+        "E14"
+      ]
+    },
+    {
+      "surface": "aluminum paint",
+      "values": "0.5 (3E Plus, ASHRAE, NIA calculator) vs 0.30 new / 0.55 weathered (ROCKWOOL)",
+      "src": [
+        "E1",
+        "E2",
+        "E3",
+        "E14"
+      ]
+    },
+    {
+      "surface": "aluminum_zinc_coated_steel",
+      "values": "0.06 (ASHRAE) vs 0.16 (Armacell) vs 0.18 (ROCKWOOL)",
+      "src": [
+        "E2",
+        "E15",
+        "E14"
+      ]
+    },
+    {
+      "surface": "elastomeric_foam",
+      "values": "0.9 (ASHRAE) vs 0.93 (Armacell) vs 0.95 (NIA calculator / ROCKWOOL black rubber)",
+      "src": [
+        "E2",
+        "E15",
+        "E3",
+        "E14"
+      ]
+    },
+    {
+      "surface": "asj_all_service_jacket",
+      "values": "0.9 (every list and calculation assumption) vs 0.8 (Lamtec WMP-ASJ, measured by ASTM E408)",
+      "src": [
+        "E1",
+        "E2",
+        "E3",
+        "E5",
+        "E12"
+      ]
+    },
+    {
+      "surface": "foil laminates",
+      "values": "0.03–0.05 for bare foil (Polyguard, Lamtec, ROCKWOOL, Armacell) vs 0.80 for K-FLEX CLAD AL (third-party copy of a 2020 K-FLEX guide)",
+      "src": [
+        "E19",
+        "E13",
+        "E14",
+        "E15",
+        "E16"
+      ]
+    }
+  ],
+  "checked_without_emittance_value": [
+    {
+      "doc": "JM Zeston 2000 / Zeston 300 / Zeston PVC Jacketing data sheets, PVC install guide, Zeston catalog",
+      "urls": "jackets-verified.json J1–J5"
+    },
+    {
+      "doc": "Proto LoSmoke PVC submittal sheet and hot/cold installation guides",
+      "urls": "jackets-verified.json J6–J8"
+    },
+    {
+      "doc": "Polyguard Insulrap 30-NG data sheet and product information sheet",
+      "urls": "jackets-verified.json J33–J34"
+    },
+    {
+      "doc": "Owens Corning PITTWRAP IW50 AL, PITTWRAP B100, PITTCOTE 300E",
+      "urls": "jackets-verified.json J35–J37"
+    },
+    {
+      "doc": "Foster 30-65 Vapor-Fas WB R1119",
+      "urls": "jackets-verified.json J38"
+    },
+    {
+      "doc": "AP ArmaFlex tube TDS (2021) and AP ArmaFlex sheet/roll TDS (082018)",
+      "urls": "https://d3nq8rpsskbdh6.cloudfront.net/userfiles/documents/ap/_a/rm/ap_armaflex_tube.submittal.en.us.2021.pdf ; https://cdn.bakerdist.com/armacell_aps_en_subs.pdf"
+    },
+    {
+      "doc": "ArmaFlex North America Application Manual (2025) and EMEA ArmaFlex Application Manual (2025-01): both say only that 'altered surface emissivity will have an impact on the surface coefficient of heat transfer'",
+      "urls": "https://www.armacell.com/sites/default/files/2025/10/27/ArmaFlex_NA_ApplicationManual_EN-US.pdf ; https://www.armacell.com/sites/default/files/2025/02/11/2025_01_EMEA_ArmaFlex_Application_Manual_EN_10.pdf"
+    },
+    {
+      "doc": "Armacell chilled-water white paper (US, 2020)",
+      "urls": "https://www.armacell.com/sites/default/files/2024-03/Armacell_ChilledWater.WhitePaper.EN_.US_.2020.pdf"
+    },
+    {
+      "doc": "Armacell UK product catalogue (Jan 2016): qualitative only ('a duller black surface, such as AF/Armaflex Class O, will help control outer temperatures')",
+      "urls": "https://www.acr-news.com/Data/Sites/1/media/pdf/armacelljan16brochure.pdf"
+    },
+    {
+      "doc": "K-FLEX Insul-Sheet, Insul-Tube, ST, Titan, HT, ECO data sheets; K-FLEX USA Product Guide 0223",
+      "urls": "https://kflex.com/sites/default/files/2022-03/k-flex_insul-sheet.pdf ; https://db.kflex.com/file/marketing?f=US_DOC_PRODUCT%20GUIDE_V1_LRES_0223.pdf (others per materials-verified.json elastomeric S7–S12)"
+    },
+    {
+      "doc": "FOAMGLAS product guide, FAQ, CUI brochure",
+      "urls": "https://www.owenscorning.com/dms/10023979 ; https://www.owenscorning.com/dms/10027074 ; https://www.owenscorning.com/dms/10024020"
+    },
+    {
+      "doc": "JM Thermo-1200 data sheet; JM Micro-Lok HP data sheet; JM Mechanical Product Selector Guide",
+      "urls": "materials-verified.json calcium_silicate S1, fiberglass S8, S12"
+    },
+    {
+      "doc": "ROCKWOOL ProRox Process Manual: gives surface-coefficient constants (A, B) per surface type, not ε",
+      "urls": "https://brandportal.rockwool.com/original/gallery/39052/files/original/1b2669ae-5dd9-4d17-b81e-2d61bc15287c.pdf"
+    },
+    {
+      "doc": "ASTM C1729-21 / C1729-26 and C1767-21 / C1767-26 store pages: C1729 classifies aluminum jacketing by 'outer surface treatment and emittance' but the public page gives no values",
+      "urls": "https://store.astm.org/c1729-21.html ; https://store.astm.org/c1767-26.html"
+    }
+  ],
+  "not_retrieved": [
+    {
+      "doc": "Armacell 'Surface Emissivity' white paper",
+      "url": "https://www.armacell.com/en-US/document/armacell-surface-emissivity-white-paper",
+      "reason": "HTTP 403 (Cloudflare) to curl and WebFetch; no Chrome browser connected. A search snippet says it gives ArmaFlex 0.93 and lists ASJ/PVC 0.90. Not read, so not cited."
+    },
+    {
+      "doc": "Armacell 'Minimizing Condensation Through Surface Emissivity' web page",
+      "url": "https://www.armacell.com/en-US/minimizing-condensation-through-surface-emissivity",
+      "reason": "HTTP 403 (Cloudflare challenge)"
+    },
+    {
+      "doc": "WBDG MIDG calculators and Design Data page",
+      "url": "https://wbdg.org/files/calculators/ccchp.html",
+      "reason": "Site now serves a JavaScript app shell; Wayback Machine refused automated requests. The NIA copies (E2–E4) were used instead."
+    },
+    {
+      "doc": "Current web-based 3E Plus",
+      "url": "https://insulationinstitute.org/tools-resources/free-3e-plus",
+      "reason": "Needs an account login; not checked. Its built-in list may differ from v4.1 (E1)."
+    },
+    {
+      "doc": "ASHRAE Handbook—Fundamentals (primary)",
+      "url": "https://www.ashrae.org",
+      "reason": "Paywalled. Only the NIA reproduction credited to ASHRAE (E2) was read; the edition and chapter are not stated there."
+    }
+  ]
+}

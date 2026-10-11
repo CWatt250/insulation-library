@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Environment, Lightformer, OrbitControls } from '@react-three/drei'
-import { EffectComposer, N8AO, Outline, SMAA, Select, Selection, ToneMapping, Vignette } from '@react-three/postprocessing'
+import { Bloom, EffectComposer, N8AO, Outline, SMAA, Select, Selection, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
 import { buildAssembly, buildCradle, splitByMaterial, type Assembly, type AssemblyParams } from '../geo/assembly'
 import type { LayerId } from '../data/catalog'
@@ -11,6 +11,17 @@ import { Callouts } from './Callouts'
 import { MechRoom, ROOM } from './MechRoom'
 import { PhysicalCamera } from 'three-gpu-pathtracer'
 import { buildSlots, cradleMat, padMat, pbr, setMaxAnisotropy } from '../materials/library'
+import { ZoneEffects, type RunExtent, type SimVisual } from './effects'
+import { thermalMaterial, updateThermal } from './thermal'
+import { IN, NPS } from '../data/pipe'
+
+/** Shared camera state for side-by-side compare: whoever is being dragged leads. */
+export class CamSync {
+  pos = new THREE.Vector3()
+  target = new THREE.Vector3()
+  version = 0
+  owner = -1
+}
 
 export interface ViewerProps extends AssemblyParams {
   stage: 'studio' | 'plant' | 'room'
@@ -28,7 +39,15 @@ export interface ViewerProps extends AssemblyParams {
   /** Pixels covered by side panels, so framing and labels stay in the open area. */
   insetLeft?: number
   insetRight?: number
+  /** Simulation overlays (Hot / Cold / Condensate modes). */
+  sim?: SimVisual
+  /** Compare mode: cameras move together. */
+  sync?: { group: CamSync; id: number }
+  /** Fraction of the landscape framing a narrow view must keep (phones 0.68, compare panes less). */
+  coverage?: number
 }
+
+const SHEET_LAYERS: LayerId[] = ['insulation', 'facing', 'vapor', 'jacket', 'blanket']
 
 const FLOOR_Y = -0.42
 
@@ -81,8 +100,39 @@ function LayerGroup({ lift, animate, visible, selected, children }: { lift: numb
 function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
   const slots = useMemo(() => buildSlots(props.insulation, props.jacket), [props.insulation, props.jacket])
   useEffect(() => () => slots.forEach((m) => m.dispose()), [slots])
+  const thermal = useMemo(() => thermalMaterial(), [])
+  useEffect(() => () => thermal.dispose(), [thermal])
   const groupRef = useRef<THREE.Group>(null)
-  const hidden = props.hidden ?? []
+  const sim = props.sim
+  const hidden = sim?.bare ? SHEET_LAYERS : props.hidden ?? []
+  const rPipe = (NPS[props.npsIndex].od / 2) * IN
+  const rIns = rPipe + 0.0004 + props.thicknessIn * IN
+  if (sim?.thermal) updateThermal(thermal, sim, rPipe, rIns)
+  // Exposed surfaces: the insulated run (or the whole bare pipe), plus the bare
+  // pipe stubs that stick out past the insulation at each end.
+  const zones = useMemo<{ key: string; extent: RunExtent; stub: boolean }[]>(() => {
+    if (!sim || props.component !== 'straight') return []
+    const len = asm.zMax - asm.zMin
+    const cut = props.view === 'cutaway'
+    const ext = (cut ? 7 : 5) * IN
+    if (sim.bare) return [{ key: 'bare', stub: false, extent: { radius: rPipe, z0: -5 * IN, z1: len + ext, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } }]
+    return [
+      {
+        key: 'run',
+        stub: false,
+        extent: {
+          radius: asm.outerRadius,
+          z0: 0.012,
+          z1: len - (cut ? 4 * IN : 0) - 0.012,
+          wedge: cut ? [Math.PI / 2 - 0.05, Math.PI + 0.05] : null,
+          zWedge: len - 18 * IN - 0.01,
+          floorY: FLOOR_Y,
+        },
+      },
+      { key: 'stub-a', stub: true, extent: { radius: rPipe, z0: -5 * IN + 0.006, z1: -0.004, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } },
+      { key: 'stub-b', stub: true, extent: { radius: rPipe, z0: len + 0.004, z1: len + ext - 0.006, wedge: null, zWedge: Infinity, floorY: FLOOR_Y } },
+    ]
+  }, [!!sim, sim?.bare, asm, props.component, props.view, rPipe]) // eslint-disable-line react-hooks/exhaustive-deps
   const onSelect = props.onSelect
   const click = (layer: LayerId) => (e: ThreeEvent<MouseEvent>) => {
     if (e.delta > 6) return // an orbit drag, not a pick
@@ -102,7 +152,7 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
                 <mesh
                   key={m.mat}
                   geometry={m.geometry}
-                  material={slots[m.mat]}
+                  material={sim?.thermal ? thermal : slots[m.mat]}
                   castShadow
                   receiveShadow
                   onClick={click(g.layer)}
@@ -113,7 +163,11 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           )
         })}
       </group>
-      {props.stage !== 'room' && <Cradles radius={asm.outerRadius} stations={asm.cradles} />}
+      {props.stage !== 'room' && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
+      {sim && !props.photo && zones.map((z) => {
+        const state = z.stub ? sim.stub : sim
+        return state ? <ZoneEffects key={z.key} extent={z.extent} mode={sim.mode} zone={state} /> : null
+      })}
     </group>
     {props.stage === 'room' && (
       <MechRoom
@@ -250,7 +304,7 @@ function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.Pe
 }
 
 /** Frames the assembly when the component or view changes (URL cam/tgt override for screenshots). */
-function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0 }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight'> & { asm: Assembly }) {
+function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0, zoom = 1 }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight'> & { asm: Assembly; zoom?: number }) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
@@ -263,24 +317,64 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight })
       ?? (room ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
     camera.position.set(...(cam ?? v.cam))
+    let aim = target ?? v.target
+    // simulation: centre on the cut end and bare stub (where the effects tell the story),
+    // and pull in on small pipe so they read (presets are framed for ~NPS 8)
+    if (!cam && zoom !== 1 && component === 'straight' && (view === 'cutaway' || view === 'installed')) {
+      const from = new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target))
+      aim = [0.36, -0.06, 0]
+      camera.position.copy(from.multiplyScalar(zoom).add(new THREE.Vector3(...aim)))
+    }
     if (controls) {
-      controls.target.set(...(target ?? v.target))
+      controls.target.set(...aim)
       controls.update()
     }
-  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '']) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '', zoom]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
 
-function RendererSetup({ mobile }: { mobile?: boolean }) {
+/** Compare mode: the panel being dragged writes its camera; the others follow. */
+function SyncCamera({ group, id }: { group: CamSync; id: number }) {
+  const camera = useThree((s) => s.camera)
+  const controls = useThree((s) => s.controls) as unknown as (THREE.EventDispatcher<{ start: object; change: object }> & { target: THREE.Vector3; update: () => void }) | null
+  const seen = useRef(-1)
+  useEffect(() => {
+    if (!controls) return
+    const start = () => { group.owner = id }
+    const change = () => {
+      if (group.owner !== id) return
+      group.pos.copy(camera.position)
+      group.target.copy(controls.target)
+      group.version++
+      seen.current = group.version
+    }
+    controls.addEventListener('start', start)
+    controls.addEventListener('change', change)
+    return () => {
+      controls.removeEventListener('start', start)
+      controls.removeEventListener('change', change)
+    }
+  }, [controls, camera, group, id])
+  useFrame(() => {
+    if (!controls || group.owner === id || group.version === seen.current || group.owner < 0) return
+    seen.current = group.version
+    camera.position.copy(group.pos)
+    controls.target.copy(group.target)
+    controls.update()
+  })
+  return null
+}
+
+function RendererSetup({ mobile, coverage }: { mobile?: boolean; coverage?: number }) {
   const gl = useThree((s) => s.gl)
   const size = useThree((s) => s.size)
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
   // R3F leaves aspect alone on cameras passed in as instances.
   useEffect(() => {
-    camera.userData.coverage = mobile ? 0.68 : 1
+    camera.userData.coverage = coverage ?? (mobile ? 0.68 : 1)
     camera.aspect = size.width / size.height
     applyFov(camera)
-  }, [camera, size, mobile])
+  }, [camera, size, mobile, coverage])
   useEffect(() => {
     setMaxAnisotropy(gl.capabilities.getMaxAnisotropy())
   }, [gl])
@@ -379,8 +473,13 @@ export function Viewer(props: ViewerProps) {
       gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
     >
       <Selection>
-      <RendererSetup mobile={props.mobile} />
-      <CameraRig component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} asm={asm} insetLeft={props.insetLeft} insetRight={props.insetRight} />
+      <RendererSetup mobile={props.mobile} coverage={props.coverage} />
+      <CameraRig
+        component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} asm={asm}
+        insetLeft={props.insetLeft} insetRight={props.insetRight}
+        zoom={props.sim ? Math.round(Math.min(Math.max((asm.outerRadius + 0.07) / 0.18, 0.62), 1.1) * 100) / 100 + 0.001 : 1}
+      />
+      {props.sync && <SyncCamera group={props.sync.group} id={props.sync.id} />}
       <color attach="background" args={['#3a3b3e']} />
       <Suspense fallback={null}>
         {props.stage === 'studio' ? (
@@ -446,6 +545,7 @@ export function Viewer(props: ViewerProps) {
       <EffectComposer multisampling={0} autoClear={false}>
         <N8AO aoRadius={0.06} distanceFalloff={0.5} intensity={2.2} quality={props.mobile ? 'medium' : 'high'} halfRes={!!props.mobile} />
         <Outline blur edgeStrength={4} visibleEdgeColor={0xffd27a} hiddenEdgeColor={0x7a6232} xRay />
+        {props.sim ? <Bloom mipmapBlur luminanceThreshold={1.05} luminanceSmoothing={0.25} intensity={0.7} radius={0.7} /> : <></>}
         <SMAA />
         <ToneMapping mode={ToneMappingMode.NEUTRAL} />
         <Vignette offset={0.35} darkness={0.35} />

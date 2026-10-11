@@ -9,7 +9,12 @@ import type { Component, ViewMode } from './geo/assembly'
 import { describeLayers } from './data/layers'
 import { SpecContent, SpecPanel } from './ui/SpecPanel'
 import type { PhotoProgress } from './scene/PhotoMode'
+import { Simulator } from './ui/sim/Simulator'
+import { Icon } from './ui/controls'
+import type { AppMode } from './sim/types'
+import type { UnitSystem } from './sim/units'
 import './App.css'
+import './sim.css'
 
 const vec = (s: string | null) => (s ? (s.split(',').map(Number) as [number, number, number]) : undefined)
 
@@ -41,7 +46,29 @@ function readParams() {
     photo: q.get('photo') === '1',
     cam: vec(q.get('cam')),
     target: vec(q.get('tgt')),
+    mode: (['explore', 'hot', 'cold', 'condensate'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore') as AppMode,
+    units: (q.get('units') === 'si' ? 'si' : 'ip') as UnitSystem,
   }
+}
+
+const MODES: { id: AppMode; label: string; short: string; icon: 'cube' | 'flame' | 'snow' | 'drop' }[] = [
+  { id: 'explore', label: 'Explore', short: 'Explore', icon: 'cube' },
+  { id: 'hot', label: 'Hot Pipe', short: 'Hot', icon: 'flame' },
+  { id: 'cold', label: 'Cold Pipe', short: 'Cold', icon: 'snow' },
+  { id: 'condensate', label: 'Condensate', short: 'Condensate', icon: 'drop' },
+]
+
+function ModeBar({ mode, onChange, mobile }: { mode: AppMode; onChange: (m: AppMode) => void; mobile: boolean }) {
+  return (
+    <nav className={`modebar ${mobile ? 'mobile' : ''}`} aria-label="Mode">
+      {MODES.map((m) => (
+        <button key={m.id} className={`mode-${m.id} ${m.id === mode ? 'on' : ''}`} aria-current={m.id === mode ? 'page' : undefined} onClick={() => onChange(m.id)}>
+          <Icon name={m.icon} size={16} />
+          <span>{mobile ? m.short : m.label}</span>
+        </button>
+      ))}
+    </nav>
+  )
 }
 
 const MOBILE_QUERY = '(max-width: 860px)'
@@ -76,6 +103,15 @@ function Eye({ off }: { off: boolean }) {
 
 export default function App() {
   const [init] = useState(readParams)
+  const [mode, setModeState] = useState<AppMode>(init.mode)
+  const [units, setUnits] = useState<UnitSystem>(init.units)
+  const setMode = (m: AppMode) => {
+    setModeState(m)
+    const q = new URLSearchParams(location.search)
+    if (m === 'explore') q.delete('mode')
+    else q.set('mode', m)
+    history.replaceState(null, '', `${location.pathname}${q.size ? `?${q}` : ''}`)
+  }
   const [insulation, setInsulation] = useState<InsulationId>(init.ins as InsulationId)
   const [npsIndex, setNps] = useState(init.nps)
   const [thkWant, setThk] = useState(init.thk)
@@ -303,8 +339,18 @@ export default function App() {
   const summary = `${ins.label} · ${service === 'hot' ? 'Hot' : 'Cold'} · ${jacket === 'none' ? (facing === 'asj' ? 'ASJ' : 'Bare') : JACKETS[jacket].label} · NPS ${NPS[npsIndex].nps}" · ${thicknessIn}"`
   const spec = { id: insulation, jacket, facing, service, thicknessIn, npsIndex }
 
+  if (mode !== 'explore') {
+    return (
+      <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
+        <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
+        <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} />
+      </div>
+    )
+  }
+
   return (
     <div className={`app ${mobile ? 'is-mobile' : ''} ${init.ui ? '' : 'no-ui'}`}>
+      {init.ui && <ModeBar mode={mode} onChange={setMode} mobile={mobile} />}
       <div className="stage">
         <Viewer
           insulation={insulation}

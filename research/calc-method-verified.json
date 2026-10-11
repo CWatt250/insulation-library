@@ -1,0 +1,2379 @@
+{
+ "dataset": "Sourced calculation methodology for an educational pipe-insulation heat loss / heat gain / surface-temperature / condensation calculator modeled on ASTM C680 and NAIMA 3E Plus: outer-surface convection and radiation, air properties, contact-burn (personnel protection) criteria, dew point, condensation-control design margin, saturation vapor pressure, and the heat/mass-transfer analogy.",
+ "generated": "2026-10-11",
+ "units": {
+  "ip": "Most C680-style formulas are in inch-pound units exactly as the sources print them: h in Btu/(h*ft^2*F), k in Btu/(h*ft*F) unless marked Btu*in/(h*ft^2*F), lengths in ft (diameters entered in inches and divided by 12), velocity in ft/h (mph*5280), temperatures F, R (=F+459.67) or K as each formula requires.",
+  "si": "Psychrometric and textbook formulas are in SI where the source is SI (Pa, hPa, K, degC, kg/m^2*s).",
+  "temperature_bases": "Each air-property formula below states which temperature scale it takes; mixing them up was the main error class DNV found in a reviewed C680 tool (M3)."
+ },
+ "conventions": {
+  "unverified": "The literal string 'unverified' means no fetched source stated the value. Nothing was guessed, averaged, converted or filled from memory.",
+  "src": "Every fact carries 'src', a list of ids in the top-level 'sources' array.",
+  "quotes": "'quote' strings are verbatim from the source text (pdftotext, HTML-to-text, or source-code lines). Line breaks and table-cell wraps were joined; nothing else changed. HTML sub/superscripts come out as spaced inline text (e.g. 'h r', 'ft 2') and are left that way. Where pdftotext flattened a superscript (e.g. '109' for 10^9) the quote keeps the extracted text and the 'equation' field gives the intended reading. Quotes flagged 'from_image': true were transcribed from a rendered page image because the PDF is scanned or the equation is an image.",
+  "quote_check": "The build script checked every quote not flagged 'from_image' against the saved source text (whitespace-insensitive); 'quote_check' records the result.",
+  "c680_paywall": "The ASTM C680 text (equations, test cases, C# program) is paywalled. Only the public store pages (M1, M2) were read directly. Unauthorized full-text copies of C680 found by search were deliberately not used. The C680 equations recorded here come from two independent public reproductions: (a) DNV's 2024 C680-23 compliance review tables (M3), which print each formula of a reviewed spreadsheet tool next to DNV's correction notes; DNV states the corrected tool then matched its C680 calculations; and (b) the NIA/NIBS Mechanical Insulation Design Guide calculators' published JavaScript (M8, M10, M12). The two agree. C680 equation numbers are known only where DNV quotes them.",
+  "dnv_table_caveat": "M3 Appendix B prints the PRE-correction formulas of the reviewed tool, with DNV notes saying what had to change to match C680 (e.g. use film temperature, use Kelvin, sign of the -12 exponent). The 'c680_reading' fields apply DNV's notes; they agree with the NIA code (M8).",
+  "agent_checks": "Values under 'agent_consistency_checks' were computed by the research agent from the sourced formulas. They are cross-checks only, not source values."
+ },
+ "method": "Sources were downloaded with curl and read with pdftotext (raw and -layout) or an HTML-to-text pass. Scanned PDFs (M16, M18, M20) and equation images (M15 equations, M22 Fig. 2) were rendered with pdftoppm and read visually. Published calculator JavaScript was downloaded and read as text, never executed. PDFs and downloads were kept under /tmp/claude-1000/research-calc/, outside the repo. Tried without success: wbdg.org MIDG pages (now a JavaScript single-page app; curl returns an empty shell; the same MIDG content is hosted by NIA, M5-M11); eng-tips.com C680 thread (HTTP 403); ASHRAE Handbook-Fundamentals ch. 23 and ch. 1 text (subscription only); the CCrall Consulting 2007 report 'Validation of Heat Transfer Calculations in the NAIMA 3EPlus v.4.0 Computer Program' (cited in M3, no public copy found); 3eplus.org web app (calculations run server-side; its JS bundle holds no correlations).",
+ "sources": [
+  {
+   "id": "M1",
+   "title": "ASTM C680-23 Standard Practice for Estimate of the Heat Gain or Loss and the Surface Temperatures of Insulated Flat, Cylindrical, and Spherical Systems by Use of Computer Programs - store page (Scope, Significance and Use)",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c0680-23.html",
+   "doc_type": "standard store page (public scope/abstract; full text paywalled)",
+   "pub_no_or_date": "C680-23, DOI 10.1520/C0680-23, page 'Last Updated: Dec 13, 2023'; version list shows C0680-23A as Active",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M2",
+   "title": "ASTM C680-23a store page (active edition)",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c0680-23a.html",
+   "doc_type": "standard store page (public scope; full text paywalled)",
+   "pub_no_or_date": "C680-23a, DOI 10.1520/C0680-23A",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M3",
+   "title": "FINAL REPORT Pipe Insulation Savings Calculator Review (incl. Appendix A '3E Plus Deficiency Memo' and Appendix B 'Detailed Calculation Reviews' against ASTM C680-23)",
+   "publisher": "DNV for the Massachusetts Energy Efficiency Advisory Council / Program Administrators",
+   "url": "https://ma-eeac.org/wp-content/uploads/MA20C14-G-PINSUL_Insulation-Savings-Tool-Report_Final_02.14.2024.pdf",
+   "doc_type": "evaluation report PDF",
+   "pub_no_or_date": "MA20C04-G-PINSUL, February 14, 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext (raw and -layout)"
+  },
+  {
+   "id": "M4",
+   "title": "3E Plus Version 4.1 User's Guide (Insulation Thickness Computer Program)",
+   "publisher": "NAIMA (North American Insulation Manufacturers Association), hosted by Insulation Institute",
+   "url": "https://insulationinstitute.org/wp-content/uploads/2016/03/3E-Plus-V4-Users-Manual.pdf",
+   "doc_type": "software user manual PDF",
+   "pub_no_or_date": "Version 4.1, Aug 2012",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext"
+  },
+  {
+   "id": "M5",
+   "title": "Mechanical Insulation Design Guide - Design Data (Estimating Heat Loss / Heat Gain; Controlling Surface Temperatures)",
+   "publisher": "National Insulation Association (MIDG originally on WBDG/NIBS; tables marked (c) ASHRAE)",
+   "url": "https://insulation.org/training-tools/designguide/design-data/",
+   "doc_type": "web page",
+   "pub_no_or_date": "page footer '(c) 2026 Copyright National Insulation Association'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M6",
+   "title": "Mechanical Insulation Design Guide - Design Objectives (Condensation Control; Personnel Protection and Safety)",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/training-tools/designguide/design-objectives/",
+   "doc_type": "web page",
+   "pub_no_or_date": "page footer '(c) 2026 Copyright National Insulation Association'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M7",
+   "title": "MIDG Simple Calculators - Condensation Control Calculator for Horizontal Pipe (instructions/notes page)",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/training-tools/designguide/simple-calculators/condensation-control-calculator-for-horizontal-pipe/",
+   "doc_type": "web calculator page",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M8",
+   "title": "MIDG Condensation Control Calculator for Horizontal Pipe - calculation source code (ccchp/main.js)",
+   "publisher": "National Institute of Building Sciences (file header '(c) 2020 National Institute of Building Sciences'), served by insulation.org",
+   "url": "https://insulation.org/wp-content/themes/nia/midg-assets/ccchp/main.js",
+   "doc_type": "published JavaScript source of the public calculator",
+   "pub_no_or_date": "header (c) 2020; HTTP Last-Modified Mon, 11 Dec 2023",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (read as text; not executed)"
+  },
+  {
+   "id": "M9",
+   "title": "MIDG Simple Calculators - Personnel Protection Calculator for Horizontal Piping (instructions/notes page)",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/training-tools/designguide/simple-calculators/personnel-protection-calculator-for-horizontal-piping/",
+   "doc_type": "web calculator page",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M10",
+   "title": "MIDG Personnel Protection Calculator for Horizontal Piping - calculation source code (pphp/main.js)",
+   "publisher": "National Institute of Building Sciences, served by insulation.org",
+   "url": "https://insulation.org/wp-content/themes/nia/midg-assets/pphp/main.js",
+   "doc_type": "published JavaScript source of the public calculator",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (read as text; not executed)"
+  },
+  {
+   "id": "M11",
+   "title": "MIDG Simple Calculators - Energy Calculator for Horizontal Piping (instructions page)",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/training-tools/designguide/simple-calculators/energy-calculator-for-horizontal-piping/",
+   "doc_type": "web calculator page",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M12",
+   "title": "MIDG shared calculator script (shared/scripts.js; vertical flat surface energy calculation)",
+   "publisher": "National Institute of Building Sciences (header '(c) 2020'), served by insulation.org",
+   "url": "https://insulation.org/wp-content/themes/nia/midg-assets/shared/scripts.js",
+   "doc_type": "published JavaScript source of the public calculator",
+   "pub_no_or_date": "header (c) 2020; HTTP Last-Modified Mon, 11 Dec 2023",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (read as text; not executed)"
+  },
+  {
+   "id": "M13",
+   "title": "ASTM C1055-20 Standard Guide for Heated System Surface Conditions that Produce Contact Burn Injuries - store page",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c1055-20.html",
+   "doc_type": "standard store page (public scope; full text paywalled)",
+   "pub_no_or_date": "C1055-20 (Active), DOI 10.1520/C1055-20, 'Last Updated: Apr 14, 2020'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M14",
+   "title": "ASTM C1057-22 Standard Practice for Determination of Skin Contact Temperature from Heated Surfaces Using a Mathematical Model and Thermesthesiometer - store page",
+   "publisher": "ASTM International",
+   "url": "https://store.astm.org/c1057-22.html",
+   "doc_type": "standard store page (public scope; full text paywalled)",
+   "pub_no_or_date": "C1057-22 (Active), DOI 10.1520/C1057-22",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M15",
+   "title": "The Relationship between Relative Humidity and the Dewpoint Temperature in Moist Air: A Simple Conversion and Applications",
+   "publisher": "American Meteorological Society, Bulletin of the AMS 86(2):225-234 (M. G. Lawrence)",
+   "url": "https://journals.ametsoc.org/view/journals/bams/86/2/bams-86-2-225.xml",
+   "doc_type": "peer-reviewed journal article (free PDF)",
+   "pub_no_or_date": "Feb 2005, DOI 10.1175/BAMS-86-2-225 (amended: coefficient A1 corrected to 17.625)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext; equations read from rendered page image (pdftoppm)"
+  },
+  {
+   "id": "M16",
+   "title": "Improved Magnus Form Approximation of Saturation Vapor Pressure",
+   "publisher": "American Meteorological Society, Journal of Applied Meteorology 35(4):601-609 (O. A. Alduchov and R. E. Eskridge)",
+   "url": "https://journals.ametsoc.org/view/journals/apme/35/4/1520-0450_1996_035_0601_imfaos_2_0_co_2.xml",
+   "doc_type": "peer-reviewed journal article (scanned PDF)",
+   "pub_no_or_date": "April 1996, DOI 10.1175/1520-0450(1996)035<0601:IMFAOS>2.0.CO;2",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; scanned PDF (no text layer) read from rendered page image of p. 608 (pdftoppm 200 dpi)"
+  },
+  {
+   "id": "M17",
+   "title": "PsychroLib 2.5.0 Python source (implements 2017 ASHRAE Handbook - Fundamentals ch. 1) and JOSS paper 'PsychroLib: a library of psychrometric functions to calculate thermodynamic properties of air'",
+   "publisher": "D. Meyer and D. Thevenard; Journal of Open Source Software 4(33), 1137",
+   "url": "https://raw.githubusercontent.com/psychrometrics/psychrolib/master/src/python/psychrolib/__init__.py ; https://doi.org/10.21105/joss.01137",
+   "doc_type": "open-source library source code + peer-reviewed software paper",
+   "pub_no_or_date": "library v2.5.0; paper published 12 January 2019",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (read as text; not executed)"
+  },
+  {
+   "id": "M18",
+   "title": "Revised Supplementary Release on Saturation Properties of Ordinary Water Substance",
+   "publisher": "IAPWS (International Association for the Properties of Water and Steam)",
+   "url": "https://iapws.org/technical-guidance/release/Supp-sat",
+   "doc_type": "international release PDF (scanned)",
+   "pub_no_or_date": "IAPWS SR1-86(1992)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (https://iapws.org/technical-guidance/release/Supp-sat.download); scanned PDF read from rendered page images pp. 2, 3, 6, 7"
+  },
+  {
+   "id": "M19",
+   "title": "A Heat Transfer Textbook, 6th edition",
+   "publisher": "J. H. Lienhard V (MIT) and J. H. Lienhard IV (Univ. of Houston); Phlogiston Press / ahtt.mit.edu (free download)",
+   "url": "https://ahtt.mit.edu/wp-content/uploads/2024/04/AHTTv600.pdf",
+   "doc_type": "open textbook PDF",
+   "pub_no_or_date": "Version 6.00, 19 April 2024",
+   "accessed": "2026-10-11",
+   "retrieval": "curl+pdftotext; display equations transcribed from pdftotext output and checked against rendered page where noted"
+  },
+  {
+   "id": "M20",
+   "title": "U.S. Standard Atmosphere, 1976 (with NASA STI errata sheet appended to the PDF)",
+   "publisher": "NOAA / NASA / USAF (NASA-TM-X-74335), NASA Technical Reports Server 19770009539",
+   "url": "https://ntrs.nasa.gov/api/citations/19770009539/downloads/19770009539.pdf",
+   "doc_type": "government technical report PDF (scanned)",
+   "pub_no_or_date": "October 1976; errata e-mail dated January 8, 2015 appended",
+   "accessed": "2026-10-11",
+   "retrieval": "curl; p. 19 read from rendered page image (pdftoppm 170 dpi); errata via pdftotext"
+  },
+  {
+   "id": "M21",
+   "title": "MEASUR Tools Suite documentation - Wall Heat Loss Calculator, Wall Shape Factors, and citation list",
+   "publisher": "Oak Ridge National Laboratory / U.S. DOE",
+   "url": "https://industrialresources.ornl.gov/measur/suite/docs/group__wall__heat__loss__calculator.html ; https://industrialresources.ornl.gov/measur/suite/docs/group__wall__shape__factors.html ; https://industrialresources.ornl.gov/measur/suite/docs/citelist.html",
+   "doc_type": "software documentation web pages",
+   "pub_no_or_date": "MEASUR-Tools-Suite v1.2.5 (shape-factor page shows v1.0.11)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M22",
+   "title": "Useful Tips for Designing Thermal Insulation Systems (S. Zaheer Akhtar, PE, Bechtel Corp.)",
+   "publisher": "POWER magazine",
+   "url": "https://www.powermag.com/useful-tips-for-designing-thermal-insulation-systems/",
+   "doc_type": "trade magazine article (equations as images)",
+   "pub_no_or_date": "September 1, 2017",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text; equation image fig-2_insulation.jpg viewed"
+  },
+  {
+   "id": "M23",
+   "title": "3E Plus - NIA training tools page",
+   "publisher": "National Insulation Association",
+   "url": "https://insulation.org/training-tools/3e-plus/",
+   "doc_type": "web page",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  },
+  {
+   "id": "M24",
+   "title": "Free 3E Plus (Pipe Insulation | Calculate Thickness | 3E Plus Software)",
+   "publisher": "Insulation Institute (NAIMA)",
+   "url": "https://insulationinstitute.org/tools-resources/free-3e-plus/",
+   "doc_type": "web page",
+   "pub_no_or_date": "n/a",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + HTML-to-text"
+  }
+ ],
+ "surface_heat_transfer": {
+  "c680_and_3eplus_relationship": {
+   "facts": [
+    {
+     "quote": "1.1 This practice provides the algorithms and calculation methodologies for predicting the heat loss or gain and surface temperatures of certain thermal insulation systems that can attain one dimensional, steady- or quasi-steady-state heat transfer conditions in field operations.",
+     "src": [
+      "M1",
+      "M2"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "1.4 The computer program that can be generated from the algorithms and computational methodologies defined in this practice is described in Section 7 of this practice. The computer program is intended for flat slab, pipe and hollow sphere insulation systems.",
+     "src": [
+      "M1",
+      "M2"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "However, additional information on effects of wind velocity, jacket emittance, ambient conditions and other influential parameters may also be required to properly select an insulation system.",
+     "src": [
+      "M1"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "5.6 The calculation of surface temperature and heat loss or gain of an insulated system is mathematically complex, and because of the iterative nature of the method, computers best handle the calculation.",
+     "src": [
+      "M1"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "3E Plus uses the heat flow calculation method described in ASTM C680 titled: Standard Practices for Determination of Heat Gain or Loss and the Surface Temperature of Insulated Piping on Equipment Systems by the Use of a Computer System.",
+     "src": [
+      "M23"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Reliable, repeatable results – Built on ASTM Standard C680 just like previous versions of 3E Plus to deliver clear unbiased results.",
+     "src": [
+      "M24"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "In addition to the comments about the pipe insulation tool listed above, DNV verified that 3EPlus results match ASTM- C680 results for horizontal and vertical pipe insulation applications that do not require characteristic length.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The representative at NAIMA provided a validation report that was developed by a company called CCrall Consulting.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "This report confirmed that the 3EPlus assumes 10 feet for the characteristic length for all flat vertical surfaces, the geometry type chosen for non-pipe applications.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "note": "ASTM C680-23 (M1) and C680-23a (M2) have identical Scope text. The paywalled full text holds the equations and the C# program; DNV (M3) worked from it and quotes some equation numbers."
+  },
+  "calculation_flow": {
+   "facts": [
+    {
+     "quote": "The five main input variables are: • Bare surface temperature • Ambient temperature • Wind speed • Surface diameter (or characteristic length for non-pipe geometries) • Pipe surface emissivity",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "From the input variables, air properties, such as air density, thermal conductivity of air, and kinematic viscosity are calculated. From these air properties, along with the input variables, several dimensionless variables are calculated, such as Prandtl number, Rayleigh number, Reynolds number, and Nusselt number.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The radiation heat transfer coefficient is calculated using the difference between the surface temperature and ambient temperature, and the emissivity of the surface. From the convective and radiative heat transfer coefficients, the total bare heat loss rate is determined.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "With the information on the insulation properties, including its thickness, thermal conductivity, and emissivity, and an initial guess at the outer insulation surface temperature (based on the average of the bare surface temperature and the ambient temperature), an iterative process is followed until the guess for the outer surface temperature matches the calculated value for the outer surface temperature.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The previous calculation methodology for insulated pipes and components did not use an iterative process as outlined in the ASTM C680 standard. DNV recommended that the tool be updated to include 3 iterations.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "nia_code_iteration": {
+    "quote": "if (Math.abs(c) < 0.00001) {",
+    "src": [
+     "M8"
+    ],
+    "note": "The NIA calculator repeats the surface-temperature update (tsurface_guess += increment, increment = calc_error()/2) until the recalculated minus assumed surface temperature is below 0.00001 F.",
+    "quote_check": "matched in saved source text"
+   },
+   "first_guess_nia": {
+    "quote": "return this.operating_temperature - 0.95 * (this.operating_temperature - this.ambient_temperature);",
+    "src": [
+     "M8"
+    ],
+    "note": "NIA calculator's initial surface-temperature guess (tsurface_old).",
+    "quote_check": "matched in saved source text"
+   }
+  },
+  "film_temperature": {
+   "definition": "T_film = (T_surface + T_ambient)/2; all air properties are evaluated at T_film.",
+   "facts": [
+    {
+     "quote": "The National Grid tool needs to use the film temperature, rather than the ambient temperature for calculating the properties of air.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+    },
+    {
+     "quote": "Should use film temperature, not ambient temp (except forced convection over spheres).",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "return (this.t_surface() + this.ambient_temperature) / 2;",
+     "src": [
+      "M8"
+     ],
+     "note": "a_t_film(), degrees F",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Both eqns. (8.13a) and (8.13b) may be used for either uniform wall temperature or uniform heat flux. The properties should be evaluated at an average film temperature, Tf = (T∞ + Tw )/2.",
+     "src": [
+      "M19"
+     ],
+     "note": "Lienhard says the same for the cylinder cross-flow eqns (7.65)-(7.68).",
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M3",
+    "M8",
+    "M19"
+   ]
+  },
+  "air_properties_c680_form": {
+   "summary": "Air property equations used in C680-style calculations, as printed in M3 (with DNV's corrections applied) and in the NIA calculator code M8. T_K = film temperature in kelvin = (T_film_F + 459.67)/1.8; T_F = film temperature in F.",
+   "thermal_conductivity": {
+    "equation": "k_air [Btu/(h*ft*F)] = 6.325e-6 * sqrt(T_K) * 241.77 / (1 + 245.4 * 10^(-12/T_K) / T_K)",
+    "temperature": "film temperature, kelvin",
+    "evidence": [
+     {
+      "quote": "(((6.325*10^-6)*SQRT(Ta_F))/(1+(245.4*10^(12/(Ta_F)))/(Ta_F)))*241.77",
+      "src": [
+       "M3"
+      ],
+      "note": "pre-correction formula in the reviewed tool",
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "Should use film temperature, not ambient temp (except forced convection over spheres). Also, should be using temperature in Kelvin, rather than Fahrenheit. Additionally, there should be a negative sign before the 12 in the formula.",
+      "src": [
+       "M3"
+      ],
+      "note": "DNV correction note for the same row",
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "return 0.000006325 * Math.sqrt(this.a_tfk()) * 241.77;",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return 1 + (245.4 * Math.pow(10, (-12 / this.a_tfk()))) / this.a_tfk();",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "kt = 2.64638 * 10^(-3) * T^(3/2) / (T + 245.4 * 10^(-12/T)) in units of (Joules / (m . s. K)) and,",
+      "src": [
+       "M20"
+      ],
+      "note": "NASA errata text restating U.S. Standard Atmosphere 1976 eq. (53); the page-19 original was also read from the page image",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "kt = 6.325 * 10^(-7) * T^(3/2) / (T + 245.4 * 10^(-12/T)) in units of (kcal / (m . s. K)) with the supplied",
+      "src": [
+       "M20"
+      ],
+      "note": "1962 Standard Atmosphere form, as quoted in the errata",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "This expression differs from that used in the U. S. Standard Atmosphere, 1962 in that the numerical constant has been adjusted to accommodate a conversion of the related energy unit from the temperature-dependent kilogram calorie to the invariant joule.",
+      "src": [
+       "M20"
+      ],
+      "from_image": true,
+      "quote_check": "from_image (not machine-checkable)"
+     }
+    ],
+    "note": "The C680 form is the 1962/1976 Standard Atmosphere conductivity law divided through by T (T^(3/2)/(T + 245.4*10^(-12/T)) = sqrt(T)/(1 + 245.4*10^(-12/T)/T)), multiplied by 241.77 to give Btu/(h*ft*F). No fetched source states the origin of 241.77 or the units of the 6.325e-6 coefficient; that reading is the agent's algebra only.",
+    "src": [
+     "M3",
+     "M8",
+     "M20"
+    ]
+   },
+   "dynamic_viscosity": {
+    "equation": "mu_air [lb/(ft*h)] = 145.8 * T_K * sqrt(T_K) * 2.419e-5 / (T_K + 110.4)   (Sutherland form)",
+    "temperature": "film temperature, kelvin",
+    "evidence": [
+     {
+      "quote": "((145.8*(Ta_F)*SQRT(Ta_F))/((Ta_F)+110.4))*(241.9*10^-7)",
+      "src": [
+       "M3"
+      ],
+      "note": "pre-correction formula; DNV note for this row: should use film temperature and kelvin",
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "// =145.8*D7*SQRT(D7)*0.00002419",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return this.a_tfk() + 110.4;",
+      "src": [
+       "M8"
+      ],
+      "note": "a_mudenom()",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "In this equation β is a constant equal to 1.458 × 10^-6 kg/(s · m · K^1/2) and S is Sutherland's constant, equal to 110.4 K, both defined in table 2B.",
+      "src": [
+       "M20"
+      ],
+      "from_image": true,
+      "note": "U.S. Standard Atmosphere 1976 p. 19, eq. (51): mu = beta*T^(3/2)/(T + S)",
+      "quote_check": "from_image (not machine-checkable)"
+     },
+     {
+      "quote": "2) The value for Sutherland's constant S is too small by 0.4. It should be 110.4 Kelvin.",
+      "src": [
+       "M20"
+      ],
+      "note": "NASA errata: Table 2B prints 110.0; eq. (51) text and errata give 110.4",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "Eq (51) fails for conditions of very high and very low temperatures, and under conditions occurring at great altitudes.",
+      "src": [
+       "M20"
+      ],
+      "from_image": true,
+      "quote_check": "from_image (not machine-checkable)"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8",
+     "M20"
+    ]
+   },
+   "density": {
+    "equation": "rho_air [lb/ft^3] = 22.0493 / T_K",
+    "temperature": "film temperature, kelvin",
+    "units_note": "Units are not printed in M3 or M8. lb/ft^3 is the agent's reading from how M8 uses rho (kinematic viscosity = mu[lb/(ft*h)]/rho).",
+    "evidence": [
+     {
+      "quote": "22.0493/Ta_F",
+      "src": [
+       "M3"
+      ],
+      "note": "pre-correction; DNV note: 'Should use film temperature, not ambient temp (except forced convection over spheres). Also, should be using temperature in Kelvin, rather than Fahrenheit.'",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return 22.0493 / this.a_tfk();",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "pressure_basis": "unverified (no source states the pressure; presumably 1 atm, not confirmed)",
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "kinematic_viscosity": {
+    "equation": "nu = mu / rho  [ft^2/h]",
+    "evidence": [
+     {
+      "quote": "Visc_d / Dens_a",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return this.a_mu() / this.a_rho();",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "volumetric_expansion_coefficient": {
+    "equation": "beta = 1 / (1.8 * T_K)  [1/F]  (ideal gas, = 1/T_R)",
+    "temperature": "film temperature, kelvin",
+    "evidence": [
+     {
+      "quote": "1/(1.8*(Ta_R))",
+      "src": [
+       "M3"
+      ],
+      "note": "pre-correction; DNV note: '...Also, should be using temperature in Kelvin, rather than Rankine.'",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return 1 / (1.8 * this.a_tfk());",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "specific_heat": {
+    "equation": "cp_air = 0.24008 - T_F*(1.2477e-6 - T_F*(4.0489e-8 - 1.6088e-11*T_F))",
+    "temperature": "film temperature, degrees F (DNV: 'should be using temperature in Fahrenheit, rather than Rankine')",
+    "units_note": "Units not printed by M3/M8; Btu/(lb*F) is the agent's reading from its use in the Rayleigh number.",
+    "evidence": [
+     {
+      "quote": "0.24008-(Ta_R)*((1.2477*10^-6)-(Ta_R)*((4.0489*10^-8)-(1.6088*10^-11)*(Ta_R)))",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "Should use film temperature, not ambient temp (except forced convection over spheres). Also, should be using temperature in Fahrenheit, rather than Rankine.",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "// 0.24008-D5*(0.0000012477-D5*(0.000000040489-D5*0.000000000016088));",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "prandtl_number": {
+    "equation": "Pr = 0.7189 - T_F*(1.6349e-4 - T_F*(1.8106e-7 - 5.6617e-11*T_F))",
+    "temperature": "film temperature, degrees F",
+    "evidence": [
+     {
+      "quote": "0.7189-(Ta_F)*((1.6349*10^-4)-(Ta_F)*((1.8106*10^-7)-(5.6617*10^-11)*(Ta_F)))",
+      "src": [
+       "M3"
+      ],
+      "note": "DNV note for this row only asks for film temperature (no unit change)",
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "// 0.7189-D5*(0.00016349-D5*(0.00000018106-0.000000000056617*D5))",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "gravity_and_rayleigh": {
+    "equation": "Ra_D = g * beta * rho * cp * |dT| * D^3 / (nu * k),  g = 32.174*3600^2 ft/h^2 (M8) or 4.18e8 ft/h^2 (M3); D = outer diameter in ft",
+    "evidence": [
+     {
+      "quote": "((4.18*10^8) * Beta_a * Dens_a * Cp_a * Delta_T * ((D_o)/12))^3)/(Visc_k * k_a)",
+      "src": [
+       "M3"
+      ],
+      "note": "as printed (parentheses unbalanced in the source)",
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "// =32.174*3600*3600*D25*D28*D36/(D32*D13)",
+      "src": [
+       "M8"
+      ],
+      "note": "a_air_term = g*beta*rho*cp/(nu*k); h_rad() then multiplies by |dT|*D^3, D in ft",
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "reynolds_number": {
+    "equation": "Re_D = V * D / nu, V in ft/h = wind mph * 5280, D in ft",
+    "evidence": [
+     {
+      "quote": "V_fph * (D_o / 12) / Visc_k",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "V_mph * 5,280",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return Math.abs(this.wind_speed * 5280);",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "return this.h_velocity() * this.outside_diameter() / this.a_nu();",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "src": [
+     "M3",
+     "M8"
+    ]
+   },
+   "rankine_offset": {
+    "quote": "Use more digits to convert from F to R. 459.67 instead of 460",
+    "src": [
+     "M3"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M3",
+    "M8",
+    "M20"
+   ]
+  },
+  "horizontal_cylinder_natural_convection": {
+   "correlation": "Churchill and Chu (1975) correlation for isothermal horizontal cylinders",
+   "equation": "Nu_D,free = { 0.60 + 0.387 * Ra_D^(1/6) / [1 + (0.559/Pr)^(9/16)]^(8/27) }^2",
+   "constants": {
+    "a": 0.6,
+    "b": 0.387,
+    "c": 0.559,
+    "exp_Pr": "9/16",
+    "exp_bracket": "8/27",
+    "exp_Ra": "1/6"
+   },
+   "characteristic_length": "outer diameter of the bare pipe or insulation/jacket, ft",
+   "evidence": [
+    {
+     "quote": "(0.6+((0.387*Ra_a^(1/6))/(1+(0.559/Pr_a)^(9/16))^(8/27)))^2",
+     "src": [
+      "M3"
+     ],
+     "note": "Table B-1 (pipe - horizontal - bare); DNV gave no correction note for this row",
+     "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+    },
+    {
+     "quote": "// =(1+(0.559/'Properties of Air'!D21)^0.5625)^0.296296",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "// =0.6+B20/B21",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Churchill and Chu [8.8] provide yet another comprehensive correlation of existing data for the case of natural convection from horizontal isothermal cylinders.",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The recommended range of applicability of eqn. (8.29) is 10−6 ⩽ RaD",
+     "src": [
+      "M19"
+     ],
+     "note": "eqn (8.29): NuD = {0.60 + 0.387 [RaD / (1 + (0.559/Pr)^(9/16))^(16/9)]^(1/6)}^2, algebraically the same as the M3/M8 form",
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "laminar_alternative_textbook": {
+    "quote": "Churchill and Chu recommend that eqn. (8.28) be used in the range 10−6 ⩽ RaD ⩽ 109 .",
+    "src": [
+     "M19"
+    ],
+    "note": "eqn (8.28): NuD = 0.36 + 0.518 RaD^(1/4) / [1 + (0.559/Pr)^(9/16)]^(4/9). Whether C680 uses 8.28 at low Ra is unverified; M3 and M8 use only the 0.60/0.387 form for horizontal cylinders.",
+    "quote_check": "matched in saved source text"
+   },
+   "h_from_Nu": {
+    "equation": "h_conv = Nu_mixed * k_air / D (D in ft)",
+    "evidence": [
+     {
+      "quote": "Nusselt_mixed*(k_a/(D_o)/12)",
+      "src": [
+       "M3"
+      ],
+      "note": "as printed",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "// =B37*'Properties of Air'!D13/hpipe!B7",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ]
+   },
+   "src": [
+    "M3",
+    "M8",
+    "M19"
+   ]
+  },
+  "horizontal_cylinder_forced_convection": {
+   "correlation": "Churchill and Bernstein (1977) correlation for a cylinder in cross flow",
+   "equation": "Nu_D,forced = 0.3 + 0.62 Re^(1/2) Pr^(1/3) / [1 + (0.4/Pr)^(2/3)]^(1/4) * [1 + (Re/282000)^(5/8)]^(4/5)",
+   "evidence": [
+    {
+     "quote": "0.3+((0.62*(Re^(1/2))*(Pr_a^(1/3)))/((1+(0.4/(Pr_a))^(2/3))^(1/4)))*((1+(Re/282000)^(5/8))^(4/5))",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "// =(1+(B27/282000)^0.625)^0.8",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "// =0.3+B29*B31/B30",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The broad study of Churchill and Bernstein [7.41] probably brings the correlation of heat transfer data from cylinders about as far as it is possible.",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "This expression underpredicts most of the data by about 20% in the range 40, 000 < ReD < 400, 000 but is quite good at other Reynolds numbers above PeD ≡ ReD Pr = 0.2.",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "wind_direction": "Wind is treated as cross flow normal to the pipe axis (agent's reading of the M3/M8 use of the cross-flow correlation; no source states the wind direction explicitly).",
+   "src": [
+    "M3",
+    "M8",
+    "M19"
+   ]
+  },
+  "natural_forced_combination": {
+   "equation": "Nu_mixed = [ (Nu_free - D)^j + (Nu_forced - D)^j ]^(1/j) + D",
+   "constants_by_geometry": {
+    "horizontal_cylinder": {
+     "j": 4.0,
+     "D": 0.3,
+     "evidence": [
+      {
+       "quote": "based on orientation - 4.0 for horizontal cylinders",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      },
+      {
+       "quote": "based on orientation 0.30 for horizontal cylinders",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      },
+      {
+       "quote": "// =((B32-0.3)^4+(B23-0.3)^4)^0.25+0.3",
+       "src": [
+        "M8"
+       ],
+       "quote_check": "matched in saved source text"
+      }
+     ]
+    },
+    "vertical_flat_and_cylindrical": {
+     "j": 3.0,
+     "D": 0,
+     "evidence": [
+      {
+       "quote": "based on orientation - 3.0 for vertical flat and cylindrical surfaces",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      },
+      {
+       "quote": "based on orientation - 0 for vertical flat and cylindrical surfaces",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      }
+     ]
+    },
+    "horizontal_flat": {
+     "j": 3.5,
+     "D": 0,
+     "evidence": [
+      {
+       "quote": "based on orientation - 3.5 for horizontal flat surfaces",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      },
+      {
+       "quote": "based on orientation - 0 for horizontal flat surfaces",
+       "src": [
+        "M3"
+       ],
+       "quote_check": "matched in saved source text"
+      }
+     ]
+    }
+   },
+   "evidence": [
+    {
+     "quote": "((((Nusselt_free-D)^j)+((Nusselt_forced-D)^j))^(1/j))+D",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+    }
+   ],
+   "zero_wind": "With wind = 0, Re = 0, so Nu_forced = 0.3 for the Churchill-Bernstein form; with D = 0.3 the mixed Nu reduces to Nu_free (agent algebra, not a source statement).",
+   "origin_of_combination_rule": "unverified (no fetched source names who proposed the (Nu - D)^j blend or gives C680's equation number for it)",
+   "src": [
+    "M3",
+    "M8"
+   ]
+  },
+  "vertical_surfaces": {
+   "natural_convection": {
+    "equation": "Nu_L = { 0.825 + 0.387 Ra_L^(1/6) / [1 + (0.492/Pr)^(9/16)]^(8/27) }^2, L = characteristic length (height)",
+    "evidence": [
+     {
+      "quote": "(0.825+((0.387*(Ra_a^(1/6)))/((1+(0.492/Pr_a)^(9/16))^(8/27))))^2",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "ASTM-C680 has an if/then statement - it says if the Rayleigh number is less than 10^9, then equation 33 is more accurate, otherwise, equation 32 should be used. DNV recommends that this if/then equation be used based on the value of the Rayleigh number. See ASTM equation to the right.",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "d. ASTM C-C680 reference equation, e.g., Equation 36 on page 8 of ASTM C680",
+      "src": [
+       "M3"
+      ],
+      "note": "DNV cites the 0.825 form as C680 Equation 36 in Section 3.2 but as 'equation 32' in the Table B-3 note; the numbering conflict is in the source",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "Churchill and Chu offered several equations for various circumstances. The one that best characterizes laminar natural convection from a vertical plate for RaL ❲ 109 is:",
+      "src": [
+       "M19"
+      ],
+      "note": "eqn (8.13a): NuL = 0.68 + 0.670 RaL^(1/4) [1 + (0.492/Pr)^(9/16)]^(-4/9), for RaL up to about 10^9; eqn (8.13b) is the 0.825 form 'for all RaL and Pr'",
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "vfb22 = 0.825+vfb20/vfb21;",
+      "src": [
+       "M12"
+      ],
+      "note": "NIA vertical flat-surface calculator uses the 0.825 form with characteristic length vfb7 = 10 (ft)",
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "c680_eq33_exact_form": "unverified (DNV names it but does not print it; Lienhard's eqn 8.13a is the Churchill-Chu laminar vertical-plate form, but C680's text was not read)",
+    "vertical_cylinder_characteristic_length": "unverified for C680 (M3 applies j=3, D=0 to 'vertical flat and cylindrical surfaces'; the L_ch used for vertical pipe in C680 was not printed)"
+   },
+   "forced_convection_vertical_flat": {
+    "evidence": [
+     {
+      "quote": "IF(Re<500000, ((0.6774*(Re^(1/2)) * (Pr_a^(1/3))))/((1 + ((0.0468/Pr_a)^(2/3)))^(1/4)), ((0.037 * Re^(4/5))-871) * Pr_a^(1/3))",
+      "src": [
+       "M3"
+      ],
+      "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+     },
+     {
+      "quote": "vfb35 = (0.037*Math.pow(vfb27,0.8)-871)*Math.pow(vfb28,(1/3));",
+      "src": [
+       "M12"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "note": "Flat-plate forced convection with transition at Re = 500,000 and Re = V*L_ch/nu."
+   },
+   "forced_convection_vertical_cylinder": "unverified (no fetched source prints the C680 wind correlation for vertical pipe)",
+   "3eplus_flat_characteristic_length": {
+    "quote": "“The characteristic dimension will be assumed to be 10 ft to agree with the assumption in 3E Plus.”",
+    "src": [
+     "M3"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M3",
+    "M12",
+    "M19"
+   ]
+  },
+  "radiation": {
+   "equation": "h_rad = epsilon * sigma * (Ts^4 - Ta^4) / (Ts - Ta), temperatures in R, sigma = 0.1714e-8 Btu/(h*ft^2*R^4); q = (h_conv + h_rad) * A * (Ts - Ta)",
+   "sigma_ip": 1.714e-09,
+   "surroundings": "Radiant surroundings are taken equal to the ambient air temperature (NIA MIDG and both C680 reproductions).",
+   "evidence": [
+    {
+     "quote": "Heat transfer from surfaces is a combination of convection and radiation. Usually, it is assumed that these modes are additive, and therefore a combined surface coefficient can be used to estimate the heat flow to/from a surface (equation #4):",
+     "src": [
+      "M5"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Assuming the radiant environment is equal to the temperature of the ambient air, the heat loss/gain at a surface can be calculated (equation #5):",
+     "src": [
+      "M5"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "σ = Stephen-Boltzmann constant (=0.1714 x 10 -8 Btu/(h·ft 2 ·°R 4 )",
+     "src": [
+      "M5"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "(((0.1714*10^-8)*e_b)*((Ts_R^4)-(Ta_R^4)))/((Ts_R-Ta_R))",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched as in-order table-cell fragments (PDF table columns interleave in pdftotext output)"
+    },
+    {
+     "quote": "// =0.1714*B8*(hpipe!B12^4-hpipe!B13^4)/(hpipe!B10-hpipe!B11)",
+     "src": [
+      "M8"
+     ],
+     "note": "code computes 0.1714*eps*((Ts_R/100)^4 - (Ta_R/100)^4)/(Ts_R - Ta_R), the same value",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "H_conv + H_rad",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "separate_mean_radiant_temperature_input_in_C680": "unverified",
+   "src": [
+    "M3",
+    "M5",
+    "M8"
+   ]
+  },
+  "emittance_values": {
+   "note": "MIDG Table 1, marked (c) ASHRAE, 'Emittance (~80 °F)'. The NIA calculator uses 0.8 for the bare steel pipe. 3E Plus v4.1 examples use 0.1 for weathered aluminum and 0.9 for PVC and ASJ.",
+   "table_quote_intro": {
+    "quote": "The approximate emittance of commonly used materials is given in Table 1.",
+    "src": [
+     "M5"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "values": {
+    "All service jacket": 0.9,
+    "Aluminum, anodized": 0.8,
+    "Aluminum, commercial sheet": 0.1,
+    "Aluminum, embossed": 0.2,
+    "Aluminum, oxidized": "0.1–0.2",
+    "Aluminum, polished": 0.04,
+    "Aluminum paint": 0.5,
+    "Aluminum-zinc coated steel": 0.06,
+    "Canvas": "0.7–0.9",
+    "Colored mastic": 0.9,
+    "Copper, highly polished": 0.03,
+    "Copper, oxidized": 0.8,
+    "Elastomeric or polyisobutylene": 0.9,
+    "Galvanized steel, dipped or dull": 0.3,
+    "Galvanized steel, new, bright": 0.1,
+    "Iron or steel": 0.8,
+    "Painted metal": 0.8,
+    "Plastic pipe or jacket (PVC, PVDC, or PET)": 0.9,
+    "Roofing felt and black mastic": 0.9,
+    "Rubber": 0.9,
+    "Silicon impregnated fiberglass fabric": 0.9,
+    "Stainless steel, new, cleaned": 0.2
+   },
+   "bare_pipe_in_nia_code": {
+    "quote": "result = 0.8;",
+    "src": [
+     "M8"
+    ],
+    "note": "h_emittance(): 0.8 when insulation thickness is 0",
+    "quote_check": "matched in saved source text"
+   },
+   "importance": {
+    "quote": "The value of emittance is particularly important when doing any calculations where surface temperature is the design criteria, namely for Personnel Protection or Condensation Control.",
+    "src": [
+     "M4"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M4",
+    "M5",
+    "M8"
+   ]
+  },
+  "insulation_conduction": {
+   "equivalent_thickness": {
+    "quote": "q = k·A 2 ·(T 1 –T 2 )/(r 2 ·ln (r 2 /r 1 ))",
+    "src": [
+     "M5"
+    ],
+    "note": "equation (3): A2 = outer surface area ft^2, r in inches, k in Btu*in/(h*ft^2*F)",
+    "quote_check": "matched in saved source text"
+   },
+   "mean_conductivity": [
+    {
+     "quote": "When performing heat transfer calculations, it is important to utilize the \"effective thermal conductivity,\" which can be obtained by integration of the conductivity versus temperature curve, or (as an approximation) utilizing the conductivity evaluated at the mean temperature across the insulation layer.",
+     "src": [
+      "M5"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "With all of this considered, the use of a single value of thermal conductivity at an arithmetic mean temperature will provide less accurate predictions, especially when bridging temperature regions where strong temperature dependence occurs.",
+     "src": [
+      "M1"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "return t[0] + (t[1] / 2) * (this.t_interface() + this.t_surface()) + (t[2] / 3) * (Math.pow(this.t_interface(), 2) + this.t_interface() * this.t_surface() + Math.pow(this.t_surface(), 2));",
+     "src": [
+      "M8"
+     ],
+     "note": "NIA: for k(T) = a + bT + cT^2, the layer-average k = a + (b/2)(T1+T2) + (c/3)(T1^2 + T1*T2 + T2^2), i.e. the integral mean",
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "steel_pipe_wall_k_in_nia_code": {
+    "quote": "return 458.46 - 0.1926 * this.operating_temperature - 0.00001 * Math.pow(this.operating_temperature, 2) + 0.00000002 * Math.pow(this.operating_temperature, 3);",
+    "src": [
+     "M8"
+    ],
+    "note": "units not stated in code; r_value() = (D/2)*ln(OD/ID)/this, so presumably Btu*in/(h*ft^2*F) (agent reading)",
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M1",
+    "M5",
+    "M8"
+   ]
+  },
+  "wind_input_guidance": {
+   "facts": [
+    {
+     "quote": "Line 5. Enter the wind speed of the ambient air (if unknown, use 0 mph for worst case conditions)",
+     "src": [
+      "M7"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Line 5. Enter average wind speed for the period of operation (if unknown, use 1 mph for indoor, 8 mph for outdoor)",
+     "src": [
+      "M11"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Note: per the 12/8/23 meeting, the project team agreed to remove the option of allowing the user to adjust the windspeed to something other than 0.",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M3",
+    "M7",
+    "M11"
+   ]
+  },
+  "ashrae_simplified_heilman_form_legacy": {
+   "equation": "h_c = C * (1/d)^0.2 * (1/T_avg)^0.181 * dT^0.266 * sqrt(1 + 1.277*Wind)",
+   "status": "Older simplified surface-coefficient equation; per M22 it is in the 2001 ASHRAE Handbook - Fundamentals, and ORNL (M21) sources its shape factors to ASTM C680-89 (R1995). The current C680 (per M3) uses the Nusselt-correlation route above. Recorded for history and comparison only.",
+   "evidence": [
+    {
+     "quote": "However, a more convenient form for calculating the convective heat transfer coefficient is given in the 2001 ASHRAE Handbook: Fundamentals, I-P Edition, as follows:",
+     "src": [
+      "M22"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "h_c = C × (1/d)^0.2 × (1/T_avg)^0.181 × (ΔT^0.266) √(1 + 1.277(Wind))",
+     "src": [
+      "M22"
+     ],
+     "from_image": true,
+     "note": "equation image fig-2_insulation.jpg",
+     "quote_check": "from_image (not machine-checkable)"
+    },
+    {
+     "quote": "C is a constant ranging from 0.89 to 1.79 depending on the shape and orientation of heat flow; d is the diameter of the pipe (in.); Tavg is the average temperature of the air film (R), that is, Tavg = (Tamb + Tsurf) / 2; ΔT is the temperature difference between Tsurf and Tamb (R); and Wind is the air speed (miles/hr). For flat surfaces and large cylinders (d > 24 in.), use d = 24 in.",
+     "src": [
+      "M22"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "\\begin{equation}\\label{eq:wall-windfactor} f_\\text{wind} = \\sqrt{1 + 1.277 \\cdot v_\\text{wind}}\\end{equation}",
+     "src": [
+      "M21"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "\\begin{equation}\\label{eq:wall-dTfactor} f_{\\Delta T} = (\\Delta T)^{0.266}\\end{equation}",
+     "src": [
+      "M21"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "\\begin{equation}\\label{eq:wall-Tbarfactor} f_{\\bar{T}} = \\left(\\frac{1}{\\bar{T}}\\right)^{0.181}\\end{equation}",
+     "src": [
+      "M21"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "ASTM International. ASTM C680-89 (Reapproved 1995), Standard Practice for Determination of Heat Gain or Heat Loss and Surface Temperature of Insulated Pipe and Equipment Systems by the Use of a Computer Program.",
+     "src": [
+      "M21"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "C_values": {
+    "Horizontal cylinders": 1.016,
+    "Longer vertical cylinders": 1.235,
+    "Vertical plates": 1.394,
+    "Horizontal plate facing up, warmer than air": 1.79,
+    "Horizontal plate facing down, warmer than air": 0.89,
+    "Horizontal plate facing up, cooler than air": 0.89,
+    "Horizontal plate facing down, cooler than air": 1.79,
+    "evidence": {
+     "quote": "Horizontal cylinders 1.016 Longer vertical cylinders 1.235 Vertical plates 1.394 Horizontal plate facing up, warmer than air 1.79 Horizontal plate facing down, warmer than air 0.89 Horizontal plate facing up, cooler than air 0.89 Horizontal plate facing down, cooler than air 1.79 Source: [1]",
+     "src": [
+      "M21"
+     ],
+     "note": "ORNL MEASUR 'Wall Shape Factors' table, 'Source: [1]' = ASTM C680-89 (R1995)",
+     "quote_check": "matched in saved source text"
+    }
+   },
+   "conflict": "T_avg units: M22 says Rankine; M21's symbol table lists the mean temperature in degrees F ('Mean temperature \\([\\unit{ \\degreeFahrenheit}]\\)'). M21 also fixes d at 24 in via 'f_duty = (1/24)^0.2'. Which is right per C680-89 is unverified.",
+   "langmuir_wind_term_origin": "unverified (no fetched source attributes the sqrt(1 + 1.277 V) term to Langmuir or Heilman)",
+   "src": [
+    "M21",
+    "M22"
+   ]
+  },
+  "src": [
+   "M1",
+   "M2",
+   "M3",
+   "M4",
+   "M5",
+   "M7",
+   "M8",
+   "M11",
+   "M12",
+   "M19",
+   "M20",
+   "M21",
+   "M22",
+   "M23",
+   "M24"
+  ]
+ },
+ "personnel_protection": {
+  "astm_c1055": {
+   "facts": [
+    {
+     "quote": "1.2 The maximum acceptable temperature for a particular surface is derived from an estimate of the possible or probable contact time, the surface system configuration, and the level of injury deemed acceptable for a particular situation.",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "1.3 For design purposes, the probable contact time for industrial situations has been established at 5 s. For consumer products, a longer (60-s) contact time has been proposed by Wu ( 1 ) 2 and others to reflect the slower reaction times for children, the elderly, or the infirm.",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "1.4 The maximum level of injury recommended here is that causing first degree burns on the average subject. This type of injury is reversible and causes no permanent tissue damage.",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "5.3 It is beyond the scope of this guide to establish appropriate contact times and acceptable levels of injury for particular situations, or determine what surface temperature is “safe.”",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "5.6 This guide is not intended to cover hazards for cold temperature exposure, that is, refrigeration or cryogenic applications.",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "5.7 The procedure found in this guide has been described in the literature as applicable to all heated surfaces. For extremely high-temperature metallic surfaces (>70°C), damage occurs almost instantaneously upon contact.",
+     "src": [
+      "M13"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "numeric_burn_threshold_curves_and_material_classes": "unverified (C1055 Fig. 1 and its surface-material treatment are in the paywalled text)",
+   "src": [
+    "M13"
+   ]
+  },
+  "astm_c1057": {
+   "facts": [
+    {
+     "quote": "1.1 This practice covers a procedure for evaluating the skin contact temperature for heated surfaces. Two complimentary procedures are presented. The first is a purely mathematical approximation that is used during design or for worst case evaluation. The second method describes the thermesthesiometer, an instrument that analogues the human sensory mechanism and is only used on operating systems.",
+     "src": [
+      "M14"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "5.4 Practice C680 is referenced for use with Guide C1055 and Practice C1057 for burn hazard evaluation for heated surfaces.",
+     "src": [
+      "M1"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "contact_temperature_model_equations": "unverified (paywalled)",
+   "src": [
+    "M1",
+    "M14"
+   ]
+  },
+  "industry_default_140F": {
+   "value_f": 140,
+   "value_c_as_printed": "unverified (sources print 140°F only)",
+   "facts": [
+    {
+     "quote": "The potential for burns to human skin is a complex function of surface temperature, surface material, and time of contact.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Standard industry practice is to specify a maximum temperature of 140°F for surfaces that may be contacted by personnel. This temperature would cause no more than first-degree burns for all surfaces for contact times up to about 5 seconds. Note that for non-industrial settings (e.g., retail stores), it may be prudent to design for longer contact times (i.e., using lower surface temperatures).",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "For outdoor installations, base calculations on summer design ambient temperatures with no wind (i.e., the worst case). Surface temperatures increase because of solar loading but are usually neglected because of variability in orientation, solar intensity, and many other complicating factors.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Note that the choice of jacketing strongly affects a surface's relative safety. Higher-emittance jacketing materials (e.g., plastic, painted metals) can be selected to minimize the surface temperature. Jacketing material also affects the relative safety at a given surface temperature. For example, at 175°F, a stainless-steel jacket blisters skin more severely than a nonmetallic jacket at equal contact time.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "In the case of hot insulation, the surface temperature must be limited to below 140F (or more preferably 125F) to protect personnel from potentially irreversible injury.",
+     "src": [
+      "M22"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M6",
+    "M22"
+   ]
+  },
+  "3eplus": {
+   "default_max_surface_temperature": "unverified (v4.1 manual shows a user-input box and examples of 140°F, 120°F and 50°C; it never calls any of them a default; the 3eplus.org web app bundle exposes no default value)",
+   "facts": [
+    {
+     "quote": "For this first example, say we want to determine the minimum insulation thickness required for personnel protection, defined as a maximum external surface temperature of 140° F, for a horizontal 12-inch NPS, 800° F steel pipe insulated with ASTM C547",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "When the Personnel Protection is selected, a box is provided for the user to input the maximum allowable surface temperature.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Note the minimum insulation thickness required to keep the jacket temperature below the desired temperature of 120°F is highlighted in grey.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Max Surface Temp - input 50°C (approx. 120°F)",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M4"
+   ]
+  },
+  "nia_contact_time_calculator": {
+   "method": "The NIA horizontal-pipe personnel-protection calculator reports the maximum contact time (s) for the computed jacket surface temperature T (degrees F): '>60' if T < 125.8; '<1' if T > 148; otherwise t = exp(1722.2 - 674.42*ln(T) + 65.996*(ln T)^2). It is a curve fit to ASTM C1055 Fig. 1, Threshold B (reversible epidermal injury). It does not distinguish jacket material.",
+   "facts": [
+    {
+     "quote": "Note : Maximum contact times calculated via procedure from ASTM C 1055 (Fig 1, Threshold B- Reversible Epidermal Injury).",
+     "src": [
+      "M9"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "if(d15 < 125.8){",
+     "src": [
+      "M10"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "} else if ( d15 > 148 ) {",
+     "src": [
+      "M10"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "result = Math.exp( 1722.2 - 674.42 * Math.log(d15) + 65.996 * Math.pow(Math.log(d15),2))",
+     "src": [
+      "M10"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "units": "Contact time in seconds and T in degrees F: the agent's reading from the page text ('maximum contact exposure times') and the '>60' / '<1' labels. The code does not print units.",
+   "src": [
+    "M9",
+    "M10"
+   ]
+  },
+  "metallic_vs_nonmetallic_numeric_limits": "unverified (only qualitative statements found: M6 '175°F stainless vs nonmetallic' and M13 5.7 '>70°C metallic')",
+  "src": [
+   "M1",
+   "M4",
+   "M6",
+   "M9",
+   "M10",
+   "M13",
+   "M14",
+   "M22"
+  ]
+ },
+ "dew_point": {
+  "magnus_aerk_alduchov_eskridge_1996": {
+   "saturation_equation": "e_w(t) = 6.1094 * exp(17.625 t / (243.04 + t)), e_w in hPa, t in degrees C",
+   "constants": {
+    "C1_hPa": 6.1094,
+    "C1_Pa_per_Lawrence": 610.94,
+    "A1": 17.625,
+    "B1_degC": 243.04
+   },
+   "valid_range_degC": [
+    -40,
+    50
+   ],
+   "stated_accuracy": "maximum relative error < 0.384% (M16, vs GG46, WE76, SO90); Lawrence (M15) restates '< 0.4%'",
+   "evidence": [
+    {
+     "quote": "To calculate the saturation vapor pressure of pure water vapor over a plane surface of water for the temperature range of -40° to 50°C when working with standard surface and upper-air data, the approximation AERK is recommended: e_w(t) = 6.1094 × e^(17.625t/(243.04+t)). (21) This equation has a maximum relative error of less then 0.384% and a maximum measure of accuracy of less than 0.868 with respect to any of the three basic formulations GG46, WE76, and SO90.",
+     "src": [
+      "M16"
+     ],
+     "from_image": true,
+     "note": "p. 608, Section 6 Conclusions ('less then' is the source's spelling)",
+     "quote_check": "from_image (not machine-checkable)"
+    },
+    {
+     "quote": "Alduchov and Eskridge (1996) have evaluated this expression based on contemporary vapor pressure measurements and recommend the following values for the coefficients: A1 = 17.625, B1 = 243.04°C, and C1 = 610.94 Pa. These provide values for es with a relative error of < 0.4% over the range -40°C £ t £ 50°C.",
+     "src": [
+      "M15"
+     ],
+     "note": "'£' is pdftotext's rendering of '≤'",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Publisher's Note: This article was amended to correct an error in the value for coefficient A1 at the bottom of page 226. The correct value for coefficient A1 is 17.625.",
+     "src": [
+      "M15"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "dew_point_inversion": {
+    "equation": "t_d = B1 * [ln(RH/100) + A1 t/(B1 + t)] / [A1 - ln(RH/100) - A1 t/(B1 + t)]   (Lawrence eq. 8); equivalently t_d = B1 ln(e/C1) / (A1 - ln(e/C1))   (eq. 7)",
+    "evidence": [
+     {
+      "quote": "which is a highly accurate conversion from RH to td , provided that RH is defined using Eq. (3); the error that results if Eq. (4) is used is discussed below.",
+      "src": [
+       "M15"
+      ],
+      "note": "Eq. (3): RH = 100 e/e_s (vapor-pressure basis). Eqs. (6)-(8) are images, transcribed from the rendered p. 226",
+      "quote_check": "matched in saved source text"
+     }
+    ],
+    "from_image_equations": true
+   },
+   "moist_air_enhancement": {
+    "quote": "For moist air above a plane surface of water, the following is recommended: e_wa(t) = 1.00071 e^(0.0000045p) e_w(t). (22)",
+    "src": [
+     "M16"
+    ],
+    "from_image": true,
+    "quote_check": "from_image (not machine-checkable)"
+   },
+   "over_ice": {
+    "quote": "To calculate the saturation vapor pressure of pure water vapor over ice use AERKi e_i(t) = 6.1121 e^(22.587t/(273.86+t)), (23)",
+    "src": [
+     "M16"
+    ],
+    "from_image": true,
+    "note": "recommended for -80° to 0.0°C",
+    "quote_check": "from_image (not machine-checkable)"
+   },
+   "src": [
+    "M15",
+    "M16"
+   ]
+  },
+  "rule_of_thumb": {
+   "quote": "t d decreases by about 1°C for every 5% decrease in RH (starting at t d = t , the dry bulb temperature, when RH = 100%).",
+   "src": [
+    "M15"
+   ],
+   "note": "for moist air, RH > 50%",
+   "quote_check": "matched in saved source text"
+  },
+  "ashrae_ip_regression_in_nia_calculator": {
+   "equation": "alpha = ln(p_w), p_w in psia; T_dp(F) = 100.45 + 33.193*alpha + 2.319*alpha^2 + 0.17074*alpha^3 + 1.2063*p_w^0.1984 (if result >= 32 F); else T_dp = 90.12 + 26.142*alpha + 0.8927*alpha^2",
+   "evidence": [
+    {
+     "quote": "// =E29+E30*B26+E31*B26^2+E32*B26^3+E33*B23^0.1984",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "var r = [100.45,",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "var r = [90.12,",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "ashrae_equation_numbers_and_valid_range": "unverified (the NIA code names no source. PsychroLib (M17) says ASHRAE's dew-point regressions are '(eqn. 37 and 38)' in the 2017 Handbook and 'much less accurate and have a narrower range of validity'. The range itself was not read)",
+   "psychrolib_note": {
+    "quote": "The dew point temperature is solved by inverting the equation giving water vapor pressure at saturation from temperature rather than using the regressions provided by ASHRAE (eqn. 37 and 38) which are much less accurate and have a narrower range of validity.",
+    "src": [
+     "M17"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M8",
+    "M17"
+   ]
+  },
+  "test_point_3eplus": {
+   "quote": "The program calculates the dew point temperature of 84.9°F (we also have the option of supplying dew point or wet bulb temperature).",
+   "src": [
+    "M4"
+   ],
+   "note": "for 90°F ambient, 85% RH (Example Problem No. 4)",
+   "quote_check": "matched in saved source text"
+  },
+  "src": [
+   "M4",
+   "M8",
+   "M15",
+   "M16",
+   "M17"
+  ]
+ },
+ "condensation_design_practice": {
+  "safety_margin_above_dew_point": {
+   "value_f": 0.75,
+   "facts": [
+    {
+     "quote": "The condensation control thickness is the thickness which yields a surface temperature of at least 0.75°F greater than the dew point temperature.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Notes : Condensation control thickness is highlighted. (The thickness that provides average surface temperature > Dew Point + a safety factor of 0.75°F)",
+     "src": [
+      "M7"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "if( this.t_surface_recalc() > this.dew_point() + 0.75  && this.condensation_control == null){",
+     "src": [
+      "M8"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "one_to_two_F_margin": "unverified (no fetched NAIMA, NIA/MIDG, ASHRAE or ASTM source says 'design 1-2°F above dew point'; the only numeric margin found is 0.75°F)",
+   "other": {
+    "quote": "In the case of cold insulation, the surface temperature should be sufficiently higher than the ambient dew point if surface condensation is to be limited or retarded.",
+    "src": [
+     "M22"
+    ],
+    "quote_check": "matched in saved source text"
+   },
+   "src": [
+    "M4",
+    "M7",
+    "M8",
+    "M22"
+   ]
+  },
+  "design_conditions": {
+   "facts": [
+    {
+     "quote": "The design goal is to keep the surface temperature above the dew-point temperature of the surrounding air. Calculating surface temperature is relatively simple, but selecting the appropriate design condition is often confusing. The appropriate design condition is normally the \"worst-case\" condition expected for the application. For condensation control, however, a design that satisfies the worst-case condition is sometimes impossible.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "For outdoor applications (and mechanical rooms vented to outdoor conditions), it is suggested to design for RH of 90%. Appropriate water-resistant, vapor-retarder jacketing or mastics must then be specified to protect the system from the inevitable surface condensation.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Often, the HVAC system will be sized to provide indoor conditions of 75°F/50% RH on a design summer day. However, those indoor conditions would not represent the worst-case indoor conditions with respect to the insulation design.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The insulation system will therefore be designed for an operating temperature of 40°F, an ambient temperature of 81°F, and an ambient RH of 90%.",
+     "src": [
+      "M6"
+     ],
+     "note": "MIDG Tampa design example",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "With a 4 inch NPS, horizontal chilled water pipe, operating at 40°F, in a 90°F ambient with 85% relative humidity and no wind.",
+     "src": [
+      "M4"
+     ],
+     "note": "3E Plus v4.1 Example Problem No. 4",
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "midg_table1_tank_example": {
+    "conditions": {
+     "quote": "Table 1 shows insulation thickness required to prevent condensation on the exterior surface of a hypothetical insulated tank containing a liquid held at 40°F located in a mechanical room with a temperature of 80°F. Note that at high levels of relative humidity (RH), the thickness required to prevent surface condensation increases dramatically, becoming impractical above 90% RH.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    "assumptions": {
+     "quote": "Note: Calculated assuming surface conductance of 1.2 Btu/h·ft²·°F and insulation with thermal conductivity of 0.30 Btu·in/h·ft²·°F.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    "rh_pct_to_thickness_in": {
+     "20": "—",
+     "30": 0.1,
+     "40": 0.2,
+     "50": 0.3,
+     "60": 0.5,
+     "70": 0.7,
+     "80": 1.3,
+     "90": 2.9,
+     "95": 6.0
+    },
+    "src": [
+     "M6"
+    ]
+   },
+   "midg_table2_design_weather": {
+    "title": "Table 2. Design Weather Data for Condensation Control (design dew point F, corresponding dry bulb at 90% RH F, hours per year > 90% RH)",
+    "rows": [
+     {
+      "city": "New Orleans, LA",
+      "dew_point_f": 79,
+      "dry_bulb_at_90rh_f": 82,
+      "hours_gt_90rh": 1253
+     },
+     {
+      "city": "Houston, TX",
+      "dew_point_f": 78,
+      "dry_bulb_at_90rh_f": 81,
+      "hours_gt_90rh": 2105
+     },
+     {
+      "city": "Miami, FL",
+      "dew_point_f": 78,
+      "dry_bulb_at_90rh_f": 81,
+      "hours_gt_90rh": 633
+     },
+     {
+      "city": "Tampa, FL",
+      "dew_point_f": 78,
+      "dry_bulb_at_90rh_f": 81,
+      "hours_gt_90rh": 992
+     },
+     {
+      "city": "Savannah, GA",
+      "dew_point_f": 77,
+      "dry_bulb_at_90rh_f": 80,
+      "hours_gt_90rh": 1560
+     },
+     {
+      "city": "Norfolk, VA",
+      "dew_point_f": 76,
+      "dry_bulb_at_90rh_f": 79,
+      "hours_gt_90rh": 1279
+     },
+     {
+      "city": "San Antonio, TX",
+      "dew_point_f": 76,
+      "dry_bulb_at_90rh_f": 79,
+      "hours_gt_90rh": 932
+     },
+     {
+      "city": "Charlotte, NC",
+      "dew_point_f": 74,
+      "dry_bulb_at_90rh_f": 77,
+      "hours_gt_90rh": 1233
+     },
+     {
+      "city": "Honolulu, HI",
+      "dew_point_f": 74,
+      "dry_bulb_at_90rh_f": 77,
+      "hours_gt_90rh": 166
+     },
+     {
+      "city": "Columbus, OH",
+      "dew_point_f": 73,
+      "dry_bulb_at_90rh_f": 76,
+      "hours_gt_90rh": 531
+     },
+     {
+      "city": "Minneapolis, MN",
+      "dew_point_f": 73,
+      "dry_bulb_at_90rh_f": 76,
+      "hours_gt_90rh": 619
+     },
+     {
+      "city": "Seattle, WA",
+      "dew_point_f": 60,
+      "dry_bulb_at_90rh_f": 63,
+      "hours_gt_90rh": 1212
+     }
+    ],
+    "intro": {
+     "quote": "Table 2 summarizes design weather data for a select number of cities. The design dew-point temperature and the corresponding dry-bulb temperatures at 90% RH are given, along with the number of hours per year that the RH would exceed 90%.",
+     "src": [
+      "M6"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    "src": [
+     "M6"
+    ]
+   },
+   "ashrae_recommended_margin": "unverified (ASHRAE Handbook-Fundamentals ch. 23 not accessible)",
+   "src": [
+    "M4",
+    "M6"
+   ]
+  },
+  "src": [
+   "M4",
+   "M6",
+   "M7",
+   "M8",
+   "M22"
+  ]
+ },
+ "saturation_vapor_pressure": {
+  "iapws_sr1_86_1992_wagner_pruss": {
+   "equation": "ln(p/p_c) = (T_c/T) * [a1*tau + a2*tau^1.5 + a3*tau^3 + a4*tau^3.5 + a5*tau^4 + a6*tau^7.5], tau = 1 - T/T_c",
+   "constants": {
+    "T_c_K": 647.096,
+    "p_c_MPa": 22.064,
+    "a1": -7.85951783,
+    "a2": 1.84408259,
+    "a3": -11.7866497,
+    "a4": 22.6807411,
+    "a5": -15.9618719,
+    "a6": 1.80122502
+   },
+   "valid_range_K": [
+    273.16,
+    647.096
+   ],
+   "verification_values": {
+    "T_273.16K_p_Pa": 611.657,
+    "T_373.1243K_p_Pa": 101325,
+    "T_647.096K_p_Pa": 22064000
+   },
+   "evidence": [
+    {
+     "quote": "a1 = - 7.85951783  a2 = 1.84408259  a3 = - 11.7866497  a4 = 22.6807411  a5 = - 15.9618719  a6 = 1.80122502",
+     "src": [
+      "M18"
+     ],
+     "from_image": true,
+     "note": "Section 3 'Vapor pressure', eq. (1); T_c = 647.096 K, p_c = 22.064 MPa in Section 2",
+     "quote_check": "from_image (not machine-checkable)"
+    },
+    {
+     "quote": "IAPWS endorses the validity of the equations presented in this revised supplementary release for vapor-liquid equilibrium from the triple point to the critical point. This corresponds to 273.16 K ≤ T ≤ 647.096 K (10)",
+     "src": [
+      "M18"
+     ],
+     "from_image": true,
+     "quote_check": "from_image (not machine-checkable)"
+    },
+    {
+     "quote": "Table 1. Thermodynamic property values calculated at three selected temperatures ... p/Pa 611.657 | 0.101325 x 10^6 | 22.064 x 10^6",
+     "src": [
+      "M18"
+     ],
+     "from_image": true,
+     "quote_check": "from_image (not machine-checkable)"
+    }
+   ],
+   "textbook_reproduction_typo": {
+    "quote": {
+     "quote": "b = 1.84408259, c = 11.7866497, d = 22.6807411, e = −15.9618719, f = 1.80122502.",
+     "src": [
+      "M19"
+     ],
+     "note": "Lienhard Table A.5 footnote prints c = +11.7866497; confirmed on the rendered page. IAPWS (M18) gives a3 = -11.7866497. Use the IAPWS sign.",
+     "quote_check": "matched in saved source text"
+    },
+    "src": [
+     "M18",
+     "M19"
+    ]
+   },
+   "src": [
+    "M18",
+    "M19"
+   ]
+  },
+  "ashrae_hyland_wexler_2017_fundamentals_ch1_eq5_6": {
+   "si_over_liquid_water": "ln(p_ws[Pa]) = -5.8002206E+03/T + 1.3914993 - 4.8640239E-02*T + 4.1764768E-05*T^2 - 1.4452093E-08*T^3 + 6.5459673*ln(T), T in K, for t > 0.01 C (triple point) up to 200 C",
+   "si_over_ice": "ln(p_ws[Pa]) = -5.6745359E+03/T + 6.3925247 - 9.677843E-03*T + 6.2215701E-07*T^2 + 2.0747825E-09*T^3 - 9.484024E-13*T^4 + 4.1635019*ln(T), for -100 C <= t <= 0.01 C",
+   "ip_over_liquid_water": "ln(p_ws[psia]) = -1.0440397E+04/T + (-1.1294650E+01) - 2.7022355E-02*T + 1.2890360E-05*T^2 - 2.4780681E-09*T^3 + 6.5459673*ln(T), T in R, t > 32.018 F up to 392 F",
+   "ip_over_ice": "ln(p_ws[psia]) = -1.0214165E+04/T - 4.8932428 - 5.3765794E-03*T + 1.9202377E-07*T^2 + 3.5575832E-10*T^3 - 9.0344688E-14*T^4 + 4.1635019*ln(T), -148 F <= t <= 32.018 F",
+   "evidence": [
+    {
+     "quote": "LnPws = -5.8002206E+03 / T + 1.3914993 - 4.8640239E-02 * T + 4.1764768E-05 * T**2 \\",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "- 1.4452093E-08 * math.pow(T, 3) + 6.5459673 * math.log(T)",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "LnPws = -5.6745359E+03 / T + 6.3925247 - 9.677843E-03 * T + 6.2215701E-07 * T**2 \\",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "+ 2.0747825E-09 * math.pow(T, 3) - 9.484024E-13 * math.pow(T, 4) + 4.1635019 * math.log(T)",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "LnPws = -1.0440397E+04 / T - 1.1294650E+01 - 2.7022355E-02* T + 1.2890360E-05 * T**2 \\",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "- 2.4780681E-09 * math.pow(T, 3) + 6.5459673 * math.log(T)",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "LnPws = (-1.0214165E+04 / T - 4.8932428 - 5.3765794E-03 * T + 1.9202377E-07 * T**2 \\",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "+ 3.5575832E-10 * math.pow(T, 3) - 9.0344688E-14 * math.pow(T, 4) + 4.1635019 * math.log(T))",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "ASHRAE Handbook - Fundamentals (2017) ch. 1  eqn 5 & 6",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Important note: the ASHRAE formulae are defined above and below the freezing point but have a discontinuity at the freezing point. This is a small inaccuracy on ASHRAE's part: the formulae should be defined above and below the triple point of water (not the feezing point) in which case the discontinuity vanishes.",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "raise ValueError(\"Dry bulb temperature must be in range [-100, 200]°C\")",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "raise ValueError(\"Dry bulb temperature must be in range [-148, 392]°F\")",
+     "src": [
+      "M17"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "nia_calculator_ip_copy": {
+    "note": "The NIA condensation calculator (M8) uses the same IP liquid-water coefficients. Its ice coefficients are rounded (3.5576e-10 and -9e-14 for 3.5575832E-10 and -9.0344688E-14), and it switches at 32 F, not the triple point.",
+    "evidence": [
+     {
+      "quote": "var r = [-10440.39700000000000,",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "-0.00000000000009,",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     },
+     {
+      "quote": "// =IF(B2<32,B19,E19)",
+      "src": [
+       "M8"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ]
+   },
+   "stated_accuracy": "unverified (ASHRAE text not read)",
+   "src": [
+    "M8",
+    "M17"
+   ]
+  },
+  "magnus_aerk": "see dew_point.magnus_aerk_alduchov_eskridge_1996 (M16: -40 to 50 C, max relative error < 0.384%)",
+  "src": [
+   "M8",
+   "M15",
+   "M16",
+   "M17",
+   "M18",
+   "M19"
+  ]
+ },
+ "mass_transfer_analogy": {
+  "chilton_colburn_lewis_analogy": {
+   "equation": "h / (g_m * c_p) = Le^(1-b) ≈ Le^(2/3);  so g_m = h / (c_p * Le^(2/3)) [kg/(m^2*s)];  on a per-volume basis h_m = g_m/rho = h / (rho * c_p * Le^(2/3)) [m/s]",
+   "flux": "j_s = g_m * (m_s - m_e), m = mass fraction of water vapor; equivalently j_s = (g_m/rho) * rho * (m_s - m_e)",
+   "lewis_number_definition": "Le = alpha / D_12 = Sc / Pr (Lienhard's definition; some texts define the inverse)",
+   "lewis_number_air_water": 0.847,
+   "evidence": [
+    {
+     "quote": "ji,s ≡ gm,i mi,s − mi,e (11.66) where gm,i (kg/m2 ·s) is the mass transfer coefficient for species i.",
+     "src": [
+      "M19"
+     ],
+     "note": "(m_i,s - m_i,e) brackets lost in pdftotext",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The Lewis number4 Le ≡ α/D12 = Sc/Pr",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Both α/Dm,i and Sc/Pr are equal to the Lewis number, Le. Hence, h = Le1−b ≊ Le2/3 (11.73) g m,i cp",
+     "src": [
+      "M19"
+     ],
+     "note": "eqn (11.73): h/(g_m,i c_p) = Le^(1-b) ≈ Le^(2/3), with b ≈ 1/3 from Nu = C Re^a Pr^b",
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The Lewis number for air–water systems is about 0.847, and, because the concentration of water vapor is usually very low, cp can often be approximated by cpair .",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The relationship between h and gm,i was identified by Warren K. Lewis in 1922 for the case Le = 1 [11.24]. (Lewis approximated Le as one for the air–water system he studied.) The more general form, eqn. (11.73), was proposed by Chilton and Colburn in 1934 [11.25].",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Thus, the solution of a heat convection problem becomes the solution of a low-rate mass convection problem upon replacing the heat transfer variables by the analogous mass transfer variables, using eqns. (11.67).",
+     "src": [
+      "M19"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "mass_fraction_from_vapor_pressure": {
+    "equations": "x_H2O,s = p_sat,H2O(T)/p_atm (11.47); m_H2O,s = 18.02 x / [18.02 x + 28.96 (1 - x)] (11.48)",
+    "evidence": [
+     {
+      "quote": "The mass fraction can be calculated from eqn. (11.9), noting that xair = 1 − xH2 O and substituting MH2 O = 18.02 kg/kmol and Mair = 28.96 kg/kmol",
+      "src": [
+       "M19"
+      ],
+      "quote_check": "matched in saved source text"
+     }
+    ]
+   },
+   "applicability": "Lienhard frames this as 'low-rate' mass transfer (small mass fractions). Use for condensation rate on an insulation jacket below the dew point is the agent's application, not a source statement.",
+   "src": [
+    "M19"
+   ]
+  },
+  "src": [
+   "M19"
+  ]
+ },
+ "validation_cases": {
+  "note": "Published worked results that can be used to sanity-check an implementation. Insulation k(T) curves and some inputs are not printed, so these are trend checks, not exact regression targets.",
+  "3eplus_example_1_personnel_protection": {
+   "inputs": "horizontal 12-inch NPS steel pipe at 800°F; ASTM C547 Type 1 mineral fiber; weathered aluminum jacket emittance 0.1; ambient 90°F; zero wind; max surface 140°F",
+   "results": "7.0 in -> surface 139.9°F, 297.10 Btu/hr/ft; bare pipe 14020.00 Btu/hr/ft",
+   "evidence": [
+    {
+     "quote": "Type 1 mineral fiber insulation and weathered aluminum jacketing. The design ambient air temperature is 90° F with zero wind speed.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "The calculated surface temperature of 139.9° F is less than the maximum specified of 140.0° F. The program also gives you the heat loss as 297.10 Btu/hr/ft (of pipe length) with an efficiency of 97.88%.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Heat Loss for the Bare pipe (14020.00 Btu/hr/ft)",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M4"
+   ]
+  },
+  "3eplus_example_4_condensation": {
+   "inputs": "4 inch NPS horizontal chilled-water pipe at 40°F; 90°F ambient; 85% RH; no wind; 850°F mineral fiber pipe (C547 Type 1); PVC jacket emittance 0.9",
+   "results": "dew point 84.9°F; 1.5 in -> surface 86.2°F (meets the 0.75°F margin); 1.0 in -> 84.1°F (fails)",
+   "evidence": [
+    {
+     "quote": "At this thickness, the Surface Temp is 86.2°F which is above the dew point of 84.9 °F.",
+     "src": [
+      "M4"
+     ],
+     "quote_check": "matched in saved source text"
+    },
+    {
+     "quote": "Notice with only 1 inch of insulation, the calculated Surface Temperature is predicted to be 84.1°F, but that 84.1° < 86.0° (the Dew point) so this does not meet the criteria for condensation control under these conditions.",
+     "src": [
+      "M4"
+     ],
+     "note": "the manual mislabels 86.0 as 'the Dew point'; the stated dew point is 84.9°F",
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M4"
+   ]
+  },
+  "dnv_c680_check_rows_horizontal_pipe": {
+   "note": "M3 Table 4-1 (Btu/hr/ft2 as printed, 4\" NPS, 1 ft long; emittance and insulation k not printed). Rows 6 and 8 print identical inputs with different results (19.1 vs 33.7), so at least one row has a typo in the source.",
+   "rows": [
+    {
+     "type": "Bare",
+     "Ts_F": 125,
+     "Ta_F": 90,
+     "wind_mph": 0,
+     "ins_in": 0,
+     "astm_result": 72.8
+    },
+    {
+     "type": "Bare",
+     "Ts_F": 125,
+     "Ta_F": 90,
+     "wind_mph": 1,
+     "ins_in": 0,
+     "astm_result": 92.0
+    },
+    {
+     "type": "Bare",
+     "Ts_F": 125,
+     "Ta_F": 90,
+     "wind_mph": 2,
+     "ins_in": 0,
+     "astm_result": 112.3
+    },
+    {
+     "type": "Bare",
+     "Ts_F": 150,
+     "Ta_F": 90,
+     "wind_mph": 1,
+     "ins_in": 0,
+     "astm_result": 164.9
+    },
+    {
+     "type": "Insulated",
+     "Ts_F": 125,
+     "Ta_F": 90,
+     "wind_mph": 0,
+     "ins_in": 0.5,
+     "astm_result": 17.9
+    },
+    {
+     "type": "Insulated",
+     "Ts_F": 150,
+     "Ta_F": 90,
+     "wind_mph": 1,
+     "ins_in": 0.5,
+     "astm_result": 19.1
+    },
+    {
+     "type": "Insulated",
+     "Ts_F": 125,
+     "Ta_F": 90,
+     "wind_mph": 2,
+     "ins_in": 0.5,
+     "astm_result": 19.7
+    },
+    {
+     "type": "Insulated",
+     "Ts_F": 150,
+     "Ta_F": 90,
+     "wind_mph": 1,
+     "ins_in": 0.5,
+     "astm_result": 33.7
+    }
+   ],
+   "evidence": [
+    {
+     "quote": "Horizontal Pipe Bare 4\" NPS 1 ft long 125 90 0 0 72.8 72.8 0%",
+     "src": [
+      "M3"
+     ],
+     "quote_check": "matched in saved source text"
+    }
+   ],
+   "src": [
+    "M3"
+   ]
+  },
+  "src": [
+   "M3",
+   "M4"
+  ]
+ },
+ "agent_consistency_checks": {
+  "label": "COMPUTED BY THE RESEARCH AGENT FROM THE SOURCED FORMULAS. Not source values.",
+  "dew_point_90F_85RH": {
+   "magnus_aerk_F": 84.88,
+   "ashrae_ip_regression_via_M8_F": 84.86,
+   "3eplus_published_F": 84.9,
+   "result": "both sourced dew-point methods reproduce the 3E Plus value to within 0.05°F"
+  },
+  "air_properties_at_300K_vs_Lienhard_TableA6": {
+   "c680_form": {
+    "k_W_per_mK": 0.02625,
+    "mu_Pa_s": 1.846e-05,
+    "rho_kg_m3": 1.1773,
+    "Pr": 0.7069
+   },
+   "lienhard_table_A6_300K": {
+    "k_W_per_mK": 0.0264,
+    "mu_Pa_s": 1.854e-05,
+    "rho_kg_m3": 1.177,
+    "Pr": 0.707
+   },
+   "note": "Unit conversions done by the agent (1 Btu/(h*ft*F) = 1.7307 W/(m*K) approx; 1 Pa*s = 2419.09 lb/(ft*h); 1 lb/ft^3 = 16.0185 kg/m^3). Agreement is within about 0.6% for k and 0.5% for mu.",
+   "src": [
+    "M3",
+    "M8",
+    "M19"
+   ]
+  },
+  "iapws_sign_check": {
+   "a3_negative_p_at_373.124K_MPa": 0.1013239,
+   "a3_positive_as_printed_in_Lienhard_MPa": 2.2554,
+   "result": "Lienhard's printed c = +11.7866497 is a sign typo; IAPWS a3 = -11.7866497 reproduces 1 atm at the normal boiling point.",
+   "src": [
+    "M18",
+    "M19"
+   ]
+  },
+  "nia_contact_time_fit_s": {
+   "125.8F": 66.3,
+   "130F": 21.6,
+   "135F": 7.1,
+   "140F": 2.9,
+   "145F": 1.45,
+   "148F": 1.04,
+   "note": "Evaluated from the M10 expression. NIA's MIDG text (M6) says 140°F gives no more than first-degree burns 'for contact times up to about 5 seconds'. M10 uses C1055 Threshold B. The two differ and the agent did not reconcile them.",
+   "src": [
+    "M6",
+    "M10"
+   ]
+  }
+ },
+ "unverified_summary": [
+  "C680 full text: equation numbers, the C# program, test-case tables, and whether a separate mean-radiant temperature input exists (paywalled).",
+  "C680 natural-convection equation for vertical surfaces at Ra < 10^9 ('equation 33' per DNV): exact form not printed in any fetched source.",
+  "C680 forced-convection correlation for vertical cylinders (vertical pipe with wind).",
+  "Origin of the (Nu - D)^j natural/forced blend and its C680 equation number.",
+  "Attribution of the legacy sqrt(1 + 1.277 V) wind term to Langmuir or Heilman, and the T_avg unit (R per M22 vs F per M21's symbol table).",
+  "3E Plus default personnel-protection temperature: the manual shows only user inputs (140°F, 120°F, 50°C examples).",
+  "ASTM C1055 numeric burn-threshold curves and metallic vs nonmetallic surface limits (paywalled). Only qualitative statements were found.",
+  "A '1-2°F above dew point' design margin: not found. The only numeric margin found is 0.75°F (3E Plus; NIA calculator).",
+  "Valid range and stated accuracy of the ASHRAE IP dew-point regression used by NIA (ASHRAE text not accessible).",
+  "Stated accuracy of the ASHRAE Hyland-Wexler saturation-pressure equations (ASHRAE text not accessible).",
+  "Pressure basis of the C680 air-density formula 22.0493/T_K."
+ ]
+}
