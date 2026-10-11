@@ -269,6 +269,33 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
         {mode !== 'condensate' && (
           <Slider label={mode === 'hot' ? 'Heat-loss target' : 'Heat-gain target'} value={s.targetQ} min={1} max={mode === 'hot' ? 300 : 60} onChange={(v) => set({ targetQ: v })} format={(v) => `${fmt.flow(v, units)} ${fmt.flowUnit(units)}`} accent={acc} />
         )}
+        {mode !== 'condensate' && (
+          <div className="field econ">
+            <span className="field-label">Energy cost <small className="muted">your rates — defaults are examples</small></span>
+            {mode === 'hot' ? (
+              <>
+                <Segmented<SimState['fuel']>
+                  size="sm"
+                  value={s.fuel}
+                  onChange={(v) => set({ fuel: v, fuelPrice: v === 'electric' ? 0.12 : s.fuel === 'electric' ? 8 : s.fuelPrice })}
+                  options={[{ id: 'gas', label: 'Natural gas' }, { id: 'steam', label: 'Purchased steam' }, { id: 'electric', label: 'Electric' }]}
+                />
+                {s.fuel === 'electric' ? (
+                  <Slider label="Electricity price" value={s.fuelPrice} min={0.03} max={0.4} step={0.005} onChange={(v) => set({ fuelPrice: v })} format={(v) => `$${v.toFixed(3)}/kWh`} accent={acc} />
+                ) : (
+                  <Slider label={s.fuel === 'gas' ? 'Gas price' : 'Steam price'} value={s.fuelPrice} min={1} max={40} step={0.25} onChange={(v) => set({ fuelPrice: v })} format={(v) => `$${v.toFixed(2)}/MMBtu`} accent={acc} />
+                )}
+                <Slider label="Plant conversion efficiency" value={s.efficiencyPct} min={40} max={100} onChange={(v) => set({ efficiencyPct: v })} format={(v) => `${v}%`} accent={acc} />
+              </>
+            ) : (
+              <>
+                <Slider label="Electricity price" value={s.coolPrice} min={0.03} max={0.4} step={0.005} onChange={(v) => set({ coolPrice: v })} format={(v) => `$${v.toFixed(3)}/kWh`} accent={acc} />
+                <Slider label="Cooling plant efficiency" value={s.kwPerTon} min={0.3} max={2} step={0.05} onChange={(v) => set({ kwPerTon: v })} format={(v) => `${v.toFixed(2)} kW/ton`} accent={acc} />
+              </>
+            )}
+            <Slider label="Installed cost (for payback)" value={s.installedPerFt} min={0} max={150} step={1} onChange={(v) => set({ installedPerFt: v })} format={(v) => (v === 0 ? 'Off' : `$${v}/ft`)} accent={acc} />
+          </div>
+        )}
         <Slider label="Pipe run length" value={s.lengthFt} min={0} max={2000} step={10} onChange={(v) => set({ lengthFt: v })} format={(v) => (v === 0 ? 'Off' : fmt.length(v, units))} accent={acc} />
         <Slider label="Operating hours per year" value={s.hours} min={0} max={8760} step={20} onChange={(v) => set({ hours: v })} format={(v) => (v === 0 ? 'Off' : `${v.toLocaleString('en-US')} h`)} hint={s.hours === 8760 ? 'Year-round' : undefined} accent={acc} />
       </Disclosure>

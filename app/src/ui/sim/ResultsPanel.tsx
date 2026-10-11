@@ -4,11 +4,13 @@ import { dewZone, materialOptions, type Design } from '../../sim/design'
 import { codeMinimum } from '../../sim/code'
 import { vaporCheck } from '../../sim/vapor'
 import { fittingResult } from '../../sim/fittings'
+import { annualCost, money } from '../../sim/cost'
 import { SPECS } from '../../data/specs'
 import { NPS } from '../../data/pipe'
 import { refsFor } from '../../sim/sources'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
+import type { InsulationId } from '../../data/catalog'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { INTRO, LEARN, TOPICS } from '../../sim/learn'
 import { Disclosure, Icon } from '../controls'
@@ -216,7 +218,7 @@ function DesignBlock({ d, s, mode, units, onApply, onSet }: { d: Design; s: SimS
   )
 }
 
-function MaterialCompare({ s, mode, units, onUse }: { s: SimState; mode: SimMode; units: UnitSystem; onUse: (next: SimState) => void }) {
+function MaterialCompare({ s, mode, units, onUse, on3d }: { s: SimState; mode: SimMode; units: UnitSystem; onUse: (next: SimState) => void; on3d: (id: InsulationId) => void }) {
   const opts = useMemo(() => materialOptions(s, mode), [s, mode])
   return (
     <table className="mat-compare">
@@ -233,7 +235,10 @@ function MaterialCompare({ s, mode, units, onUse }: { s: SimState; mode: SimMode
                   <td><b>{inchLabel(d.thicknessIn)}</b></td>
                   <td>{fmt.temp(d.side.result.surfaceF, units)}</td>
                   <td>{fmt.flow(Math.abs(d.side.result.qBtuHrFt), units)}</td>
-                  <td>{cur && d.thicknessIn === s.thicknessIn ? <span className="muted">Current</span> : <button className="apply sm" onClick={() => onUse({ ...o.state, thicknessIn: d.thicknessIn! })}>Use</button>}</td>
+                  <td className="mc-act">
+                    {cur && d.thicknessIn === s.thicknessIn ? <span className="muted">Current</span> : <button className="apply sm" onClick={() => onUse({ ...o.state, thicknessIn: d.thicknessIn! })}>Use</button>}
+                    {!cur && <button className="apply sm ghost" title="Side by side in 3D" onClick={() => on3d(o.id)}>3D</button>}
+                  </td>
                 </>
               ) : (
                 <td colSpan={4} className="muted">{o.reason ?? (d ? `Needs more than ${inchLabel(d.maxIn)}` : '—')}</td>
@@ -246,7 +251,7 @@ function MaterialCompare({ s, mode, units, onUse }: { s: SimState; mode: SimMode
   )
 }
 
-export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, compact }: {
+export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, onCompareMaterial, compact }: {
   mode: SimMode
   s: SimState
   ev: Evaluation
@@ -255,6 +260,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
   onApply: (t: number) => void
   onUseMaterial: (next: SimState) => void
   onSet: (p: Partial<SimState>) => void
+  onCompareMaterial: (id: InsulationId) => void
   compact?: boolean
 }) {
   const ins = ev.ins
@@ -330,6 +336,20 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
             )}
           </>
         )}
+        {(() => {
+          const c = annualCost(s, mode, ev)
+          if (!c) return null
+          return (
+            <Card
+              wide
+              label={`Annual ${mode === 'hot' ? 'fuel' : 'cooling'} cost · ${c.basis}`}
+              value={money(c.saved)}
+              unit=" saved / yr"
+              sub={<>Bare {money(c.bare)} → insulated {money(c.ins)}{c.paybackYr !== null ? ` · payback ${c.paybackYr < 1 ? `${Math.max(1, Math.round(c.paybackYr * 12))} months` : `${c.paybackYr.toFixed(1)} years`}` : ''}</>}
+              tone="good"
+            />
+          )
+        })()}
         {ev.annual && mode !== 'condensate' && (
           <Card
             wide
@@ -375,7 +395,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
         {recs.others.length > 0 && <h4 className="sub-h">Your targets</h4>}
         {recs.others.map((o) => <RecRow key={o.label} label={o.label} rec={o.rec} current={s.thicknessIn} onApply={onApply} units={units} />)}
         <Disclosure title={<>Compare materials <small className="muted">same conditions and finish</small></>}>
-          <MaterialCompare s={s} mode={mode} units={units} onUse={onUseMaterial} />
+          <MaterialCompare s={s} mode={mode} units={units} onUse={onUseMaterial} on3d={onCompareMaterial} />
           <p className="field-note">Each row is the design thickness for that material (first product whose published range covers {T(s.processF)}), keeping your finish where the material offers it.</p>
         </Disclosure>
       </section>

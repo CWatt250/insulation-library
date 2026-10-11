@@ -45,6 +45,17 @@ export interface SimState {
   dewMarginF: number
   /** Include the ASHRAE 90.1 minimum thickness as a design requirement. */
   applyCode: boolean
+  /** Economics (user inputs; defaults are examples, not sourced prices). */
+  fuel: 'gas' | 'electric' | 'steam'
+  /** $/MMBtu for gas and purchased steam; $/kWh for electricity. */
+  fuelPrice: number
+  /** Heating plant conversion efficiency, %. */
+  efficiencyPct: number
+  /** Cooling: electricity price $/kWh and plant efficiency kW/ton. */
+  coolPrice: number
+  kwPerTon: number
+  /** Installed insulation cost, $ per linear foot (0 = no payback shown). */
+  installedPerFt: number
 }
 
 export type CondensationStatus = 'dry' | 'borderline' | 'sweating' | 'dripping'

@@ -1,7 +1,8 @@
 import type { Evaluation } from '../../sim/model'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimState } from '../../sim/types'
-import { CALC_REFS, METHOD_REFS, VALIDATION_REFS, refsFor } from '../../sim/sources'
+import { CALC_REFS, METHOD_REFS, refsFor } from '../../sim/sources'
+import { accuracyRows } from '../../sim/accuracy'
 import { SPECS } from '../../data/specs'
 import { fmt, type UnitSystem } from '../../sim/units'
 import { Disclosure } from '../controls'
@@ -53,11 +54,18 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
             </ul>
           </>
         )}
-        <h4>Checked against</h4>
-        <ul className="sources">
-          <li className="plain">Bare pipe within about 1–2% of ASHRAE Fundamentals Table 17 and of NIA's calculators; Owens Corning's 3E Plus condensation table reproduced within ½" in all 39 cells (src/sim/validation.test.ts).</li>
-          {VALIDATION_REFS.map((id) => CALC_REFS[id]).map((x) => <li key={x.id}><a href={x.url} target="_blank" rel="noreferrer">{x.title}</a></li>)}
-        </ul>
+        <h4>How accurate is this?</h4>
+        <table className="accuracy">
+          <tbody>
+            {accuracyRows().map((r) => (
+              <tr key={r.what}>
+                <th>{r.what}{refsFor(r.src).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</th>
+                <td>{r.result}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="field-note">Re-checked by the test suite on every change (src/sim/validation.test.ts).</p>
         <h4>Method references</h4>
         <ul className="sources">
           {METHOD_REFS.map((id) => CALC_REFS[id]).map((x) => (

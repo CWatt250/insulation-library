@@ -12,7 +12,7 @@ WANT = {
     "calc-method-verified.json": ["M1", "M3", "M4", "M6", "M7", "M8", "M11", "M13", "M16", "M19", "M20", "M24"],
     "emittance-verified.json": ["E1", "E2", "E3", "E5", "E8", "E9", "E10", "E13", "E14", "E15", "E16", "E19"],
     "jackets-verified.json": ["J1", "J2", "J6", "J17", "J24", "J27", "J31", "J35"],
-    "validation-cases.json": ["V1", "V3", "V9", "V10", "V11", "V13", "V14", "V15", "V16", "V18", "V19", "V21", "V22", "V23"],
+    "validation-cases.json": ["V1", "V3", "V4", "V9", "V10", "V11", "V13", "V14", "V15", "V16", "V18", "V19", "V21", "V22", "V23"],
     "pipe-dimensions.json": ["D3", "D6"],
     "vapor-code-verified.json": ["R1", "R2", "R5", "R9", "R14", "R16", "R18", "R21", "R22", "R23", "R30", "R32"],
     "fittings-verified.json": ["F1", "F6", "F12", "F13"],

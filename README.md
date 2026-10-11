@@ -57,7 +57,23 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
   - an estimate of the water vapor that diffuses through it each year with sealed joints;
   - how deep into the insulation it's colder than the dew point.
 
-**Phase 3:** cost savings, reports, saved scenarios, and presentation mode.
+**Phase 3 adds:**
+- **Deeper 3E Plus validation**, locked by `npm test` against `app/src/sim/validationSummary.json` and shown in the app under "How accurate is this?":
+  - JM's 3E Plus personnel-protection tables (wind, weathered aluminum, 300–1200°F, three products): 443/480 thicknesses exact, 480/480 within ½".
+  - ASHRAE Refrigeration thickness tables: 1,372/1,440 within ½".
+  - Run `UPDATE_VALIDATION=1 npm test` to accept a deliberate change.
+- **Annual cost and payback:**
+  - Heating: gas, purchased steam or electric, at your price and plant efficiency.
+  - Cooling: electric at your $/kWh and kW/ton.
+  - Simple payback from an installed cost per foot.
+  - Defaults are examples, not sourced prices.
+- **Scenarios:** save and reopen in the browser, share as a link (`#s=…`), or export and import JSON.
+- **Side-by-side material comparison:** any compare panel can show another material at its design thickness, or open it from **Compare materials → 3D**.
+- **Report:** one click gives a self-contained HTML report you can print to PDF. It includes 3D snapshots, inputs, results, the thickness design, the fitting and vapor checks, the accuracy table and every source.
+- **Presentation mode:**
+  - A customer-facing full-screen walkthrough: bare → insulated → side by side, on an auto-rotating model.
+  - Large headline numbers, plus "Prepared for" from the report dialog.
+  - ← / → to step, Esc to exit.
 
 **Engine** (`app/src/sim/`): steady-state ASTM C680 approach.
 - Conduction uses temperature-dependent k, integrated through the layer, from the manufacturer's published k-vs-mean points.

@@ -92,7 +92,7 @@ export function Disclosure({ title, children, defaultOpen = false, badge }: { ti
 }
 
 /** Small inline icons (stroke, currentColor). */
-export function Icon({ name, size = 18 }: { name: 'flame' | 'snow' | 'drop' | 'cube' | 'compare' | 'thermo' | 'layers' | 'check' | 'alert' | 'x' | 'spark' | 'info' | 'book' | 'target' | 'wind' | 'cut'; size?: number }) {
+export function Icon({ name, size = 18 }: { name: 'flame' | 'snow' | 'drop' | 'cube' | 'compare' | 'thermo' | 'layers' | 'check' | 'alert' | 'x' | 'spark' | 'info' | 'book' | 'target' | 'wind' | 'cut' | 'link'; size?: number }) {
   const p = {
     flame: <path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.6 1 2.5 2 3 0-3.3-.5-5.8 1-8.5z" />,
     snow: <><path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18" /><path d="M9 3.5 12 6l3-2.5M9 20.5 12 18l3 2.5" /></>,
@@ -110,6 +110,7 @@ export function Icon({ name, size = 18 }: { name: 'flame' | 'snow' | 'drop' | 'c
     target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" /></>,
     wind: <path d="M3 8h10a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7" />,
     cut: <><path d="M4 20 20 4" /><circle cx="6" cy="6" r="2.5" /><circle cx="6" cy="18" r="2.5" /></>,
+    link: <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>,
   }[name]
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

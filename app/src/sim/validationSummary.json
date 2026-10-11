@@ -1,0 +1,59 @@
+{
+  "doeValve": {
+    "n": 30,
+    "medianPct": 17,
+    "worstPct": 35
+  },
+  "ashraeBare": {
+    "n": 100,
+    "medianPct": 0.7,
+    "maxPct": 2.1
+  },
+  "niaEnergy": {
+    "engine": 1448,
+    "published": 1443
+  },
+  "niaCondensation": {
+    "engine": 75.3,
+    "published": 75
+  },
+  "jmHeatTables": {
+    "insulatedMedianPct": 10.7,
+    "surfaceMedianF": 5.9
+  },
+  "e3plusSample": {
+    "engine": 5978,
+    "published": 5911
+  },
+  "dewPoint": {
+    "engine": 73.27,
+    "published": 73.3
+  },
+  "ocCondensation": {
+    "n": 39,
+    "exact": 31,
+    "within": 39
+  },
+  "jmPersonnel": {
+    "Thermo-12 Gold": {
+      "n": 160,
+      "exact": 149,
+      "within": 160
+    },
+    "MinWool-1200": {
+      "n": 160,
+      "exact": 149,
+      "within": 160
+    },
+    "Sproule WR-1200": {
+      "n": 160,
+      "exact": 145,
+      "within": 160
+    }
+  },
+  "ashraeRefrigeration": {
+    "n": 1440,
+    "exact": 922,
+    "within": 1372
+  }
+}

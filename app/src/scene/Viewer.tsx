@@ -45,6 +45,8 @@ export interface ViewerProps extends AssemblyParams {
   sync?: { group: CamSync; id: number }
   /** Fraction of the landscape framing a narrow view must keep (phones 0.68, compare panes less). */
   coverage?: number
+  /** Presentation mode: a slow turntable. */
+  autoRotate?: boolean
 }
 
 const SHEET_LAYERS: LayerId[] = ['insulation', 'facing', 'vapor', 'jacket', 'blanket']
@@ -461,7 +463,7 @@ export function Viewer(props: ViewerProps) {
       shadows="variance"
       dpr={props.mobile ? [1, 1.5] : [1, 2]}
       camera={camera}
-      gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance' }}
+      gl={{ antialias: false, toneMapping: THREE.NoToneMapping, powerPreference: 'high-performance', preserveDrawingBuffer: !!props.sim }}
     >
       <Selection>
       <RendererSetup mobile={props.mobile} coverage={props.coverage} />
@@ -523,6 +525,8 @@ export function Viewer(props: ViewerProps) {
         target={props.target ?? VIEWS[props.component].target}
         enableDamping
         dampingFactor={0.08}
+        autoRotate={!!props.autoRotate}
+        autoRotateSpeed={0.55}
         minDistance={0.2}
         maxDistance={4.5}
         maxPolarAngle={props.stage === 'room' ? Math.PI * 0.95 : Math.PI * 0.53}

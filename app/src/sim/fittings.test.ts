@@ -6,6 +6,7 @@ import { DOE_VALVE_SAVINGS } from './fittingsData'
 import { curveFrom, solveCase } from './engine'
 import { NPS } from '../data/pipe'
 import { SPECS } from '../data/specs'
+import { checkSummary } from './testSummary'
 
 const F = JSON.parse(readFileSync(new URL('../../../research/fittings-verified.json', import.meta.url), 'utf8'))
 const idx = (nps: string) => NPS.findIndex((p) => p.nps === nps)
@@ -40,6 +41,7 @@ describe('DOE valve-cover cross-check (informational)', () => {
   it('savings land in the same range', () => {
     const k = curveFrom(SPECS.fiberglass.products[0].k)
     const errs: string[] = []
+    const all: number[] = []
     let worst = 0
     for (const row of DOE_VALVE_SAVINGS) {
       for (const [n, pub] of Object.entries(row.byNps)) {
@@ -50,10 +52,13 @@ describe('DOE valve-cover cross-check (informational)', () => {
         const saved = equivalentLength('valve', i)!.ft * (bare.qBtuHrFt - ins.qBtuHrFt)
         const e = saved / pub - 1
         worst = Math.max(worst, Math.abs(e))
+        all.push(e)
         errs.push(`${n}"@${row.tempF}F ${(e * 100).toFixed(0)}%`)
       }
     }
     console.log('DOE #17 cross-check:', errs.join(' '))
+    const sorted = all.sort((a, b) => a - b)
+    checkSummary('doeValve', { n: sorted.length, medianPct: Math.round(sorted[Math.floor(sorted.length / 2)] * 100), worstPct: Math.round(worst * 100) })
     expect(worst).toBeLessThan(0.4)
   })
 })

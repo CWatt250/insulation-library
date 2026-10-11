@@ -6,6 +6,7 @@ import { PRESETS } from './presets'
 import { kProducts } from './model'
 import { INSULATIONS } from '../data/catalog'
 import { SPECS } from '../data/specs'
+import { accuracyRows } from './accuracy'
 
 describe('sources', () => {
   it('every surface emittance and limit cites a known source', () => {
@@ -17,6 +18,7 @@ describe('sources', () => {
   it('method, validation and preset references resolve', () => {
     for (const id of [...METHOD_REFS, ...VALIDATION_REFS]) expect(CALC_REFS[id], id).toBeDefined()
     for (const p of PRESETS) for (const id of p.range?.src ?? []) expect(CALC_REFS[id], `${p.id} → ${id}`).toBeDefined()
+    for (const a of accuracyRows()) for (const id of a.src) expect(CALC_REFS[id], `accuracy → ${id}`).toBeDefined()
   })
   it('k-curves come only from products with published points and sources', () => {
     for (const m of INSULATIONS) {

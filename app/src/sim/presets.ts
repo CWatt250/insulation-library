@@ -127,11 +127,17 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   targetQ: 20,
   dewMarginF: DEW_MARGIN_DEFAULT_F,
   applyCode: false,
+  fuel: 'gas',
+  fuelPrice: 8,
+  efficiencyPct: 80,
+  coolPrice: 0.12,
+  kwPerTon: 0.75,
+  installedPerFt: 0,
 }
 
 export function applyPreset(base: SimState | null, p: Preset): SimState {
   const keep = base
-    ? { lengthFt: base.lengthFt, hours: base.hours, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, component: base.component, fittingCover: base.fittingCover }
+    ? { lengthFt: base.lengthFt, hours: base.hours, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
     : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5 }
   return { ...BASE, ...keep, ...p.set, presetId: p.id, kProduct: 0, emittanceOverride: null }
 }

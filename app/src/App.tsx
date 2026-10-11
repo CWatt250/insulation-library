@@ -13,6 +13,7 @@ import { Simulator } from './ui/sim/Simulator'
 import { Icon } from './ui/controls'
 import type { AppMode } from './sim/types'
 import type { UnitSystem } from './sim/units'
+import { readShareHash } from './sim/scenarios'
 import './App.css'
 import './sim.css'
 
@@ -46,7 +47,8 @@ function readParams() {
     photo: q.get('photo') === '1',
     cam: vec(q.get('cam')),
     target: vec(q.get('tgt')),
-    mode: (['explore', 'hot', 'cold', 'condensate'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore') as AppMode,
+    mode: (readShareHash(location.hash)?.mode ?? (['explore', 'hot', 'cold', 'condensate'].includes(q.get('mode') ?? '') ? q.get('mode') : 'explore')) as AppMode,
+    share: readShareHash(location.hash),
     units: (q.get('units') === 'si' ? 'si' : 'ip') as UnitSystem,
   }
 }
@@ -343,7 +345,7 @@ export default function App() {
     return (
       <div className={`app sim-app ${mobile ? 'is-mobile' : ''}`}>
         <ModeBar mode={mode} onChange={setMode} mobile={mobile} />
-        <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} />
+        <Simulator mode={mode} mobile={mobile} units={units} setUnits={setUnits} share={init.share} onMode={setMode} />
       </div>
     )
   }

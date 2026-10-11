@@ -94,24 +94,32 @@ export interface MaterialOption {
  * The same design run for every material that suits the service: what each
  * would need, keeping the current finish where the material offers it.
  */
-export function materialOptions(s: SimState, mode: SimMode): MaterialOption[] {
-  const out: MaterialOption[] = INSULATIONS.map((m) => {
-    const a = availability(m.id, mode)
-    const ks = kProducts(m.id)
-    const base = { id: m.id, label: m.label, state: s, design: null }
-    if (!a.ok) return { ...base, reason: a.reason }
-    // pick the first product whose published range covers the process temperature
-    const prod = ks.find(({ product: p }) => (p.tempF.max === null || s.processF <= p.tempF.max) && (p.tempF.min === null || s.processF >= p.tempF.min))
-    if (!prod) return { ...base, reason: `${s.processF}°F is outside the published range` }
-    const state: SimState = {
+/** The current system re-done in another material (finish kept where offered), or why it can't be. */
+export function stateForMaterial(s: SimState, mode: SimMode, id: InsulationId): { state: SimState } | { reason: string } {
+  const m = INSULATION[id]
+  const a = availability(id, mode)
+  if (!a.ok) return { reason: a.reason ?? 'Not available' }
+  // pick the first product whose published range covers the process temperature
+  const prod = kProducts(id).find(({ product: p }) => (p.tempF.max === null || s.processF <= p.tempF.max) && (p.tempF.min === null || s.processF >= p.tempF.min))
+  if (!prod) return { reason: `${s.processF}°F is outside the published range` }
+  return {
+    state: {
       ...s,
-      insulation: m.id,
+      insulation: id,
       kProduct: prod.index,
       jacket: m.jackets.includes(s.jacket) ? s.jacket : m.jackets[0],
       facing: m.facings.includes(s.facing) ? s.facing : m.facings[0],
       thicknessIn: snapThickness(m, s.thicknessIn, THICKNESSES),
-    }
-    return { ...base, state, design: design(state, mode) }
+    },
+  }
+}
+
+export function materialOptions(s: SimState, mode: SimMode): MaterialOption[] {
+  const out: MaterialOption[] = INSULATIONS.map((m) => {
+    const base = { id: m.id, label: m.label, state: s, design: null }
+    const r = stateForMaterial(s, mode, m.id)
+    if ('reason' in r) return { ...base, reason: r.reason }
+    return { ...base, state: r.state, design: design(r.state, mode) }
   })
   const rank = (o: MaterialOption) => (o.design?.thicknessIn ?? (o.design ? 90 : 99))
   return out.sort((a, b) => rank(a) - rank(b))

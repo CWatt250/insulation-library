@@ -15,9 +15,12 @@ export interface PanelSpec {
   modelThickness: number
   bare: boolean
   note?: string
+  /** A different system for this panel (another material); defaults to the current one. */
+  state?: SimState
 }
 
 export interface StageOpts {
+  autoRotate?: boolean
   view: 'installed' | 'cutaway'
   thermal: boolean
   stage: 'studio' | 'plant'
@@ -70,6 +73,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
   inset: { left: number; right: number }
   coverage?: number
 }) {
+  s = panel.state ?? s
   const sys = systemFor(s, mode)
   // geometry rebuilds can lag a fast slider; the numbers never do
   const thickness = useDeferredValue(panel.modelThickness)
@@ -94,6 +98,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage }: {
       insetLeft={inset.left}
       insetRight={inset.right}
       coverage={coverage}
+      autoRotate={opts.autoRotate}
     />
   )
 }

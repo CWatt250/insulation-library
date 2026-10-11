@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { CamSync } from '../../scene/Viewer'
-import { INSULATION, thicknessesFor } from '../../data/catalog'
+import { INSULATION, INSULATIONS, thicknessesFor, type InsulationId } from '../../data/catalog'
 import { THICKNESSES } from '../../data/pipe'
 import { evaluate, evaluateSide, recommend, type Goal } from '../../sim/model'
-import { design } from '../../sim/design'
+import { design, stateForMaterial } from '../../sim/design'
 import { applyPreset, initialState, PRESETS, type Preset } from '../../sim/presets'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -12,9 +12,12 @@ import { Icon, Segmented } from '../controls'
 import { ACCENT, PresetGrid, SetupPanel } from './SetupPanel'
 import { Learn, ResultsPanel, type Recs } from './ResultsPanel'
 import { Stage, thicknessTitle, type PanelSpec } from './Stage'
+import { Scenarios } from './Scenarios'
+import { ReportButton } from './ReportButton'
+import { Presentation, type PresentStep } from './Presentation'
 import { SafetyChip, StatusChip } from './Status'
 
-type Slot = 'bare' | 'current' | 'recommended' | number
+type Slot = 'bare' | 'current' | 'recommended' | number | `mat:${InsulationId}`
 
 const DEFAULT_SLOTS: Record<SimMode, Slot[]> = {
   hot: ['bare', 'current'],
@@ -42,8 +45,24 @@ function PresetNote({ id }: { id: string }) {
   )
 }
 
-export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mobile: boolean; units: UnitSystem; setUnits: (u: UnitSystem) => void }) {
-  const [states, setStates] = useState<Record<SimMode, SimState>>(() => ({ hot: initialState('hot'), cold: initialState('cold'), condensate: initialState('condensate') }))
+export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
+  mode: SimMode
+  mobile: boolean
+  units: UnitSystem
+  setUnits: (u: UnitSystem) => void
+  /** A scenario opened from a share link. */
+  share?: { mode: SimMode; state: SimState } | null
+  onMode: (m: SimMode) => void
+}) {
+  const [states, setStates] = useState<Record<SimMode, SimState>>(() => {
+    const st = { hot: initialState('hot'), cold: initialState('cold'), condensate: initialState('condensate') }
+    if (share) st[share.mode] = share.state
+    return st
+  })
+  const loadScenario = (m: SimMode, state: SimState) => {
+    setStates((prev) => ({ ...prev, [m]: state }))
+    if (m !== mode) onMode(m)
+  }
   const [stages, setStages] = useState<Record<SimMode, 'studio' | 'plant'>>({ hot: 'studio', cold: 'studio', condensate: 'studio' })
   const [view, setView] = useState<'installed' | 'cutaway'>('cutaway')
   const [thermal, setThermal] = useState(false)
@@ -51,6 +70,8 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
   const [compare, setCompare] = useState(false)
   const [slots, setSlots] = useState(DEFAULT_SLOTS)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [present, setPresent] = useState(false)
+  const [step, setStep] = useState<PresentStep>(0)
   const [tab, setTab] = useState<'setup' | 'results' | 'learn'>('results')
   const sync = useMemo(() => new CamSync(), [])
 
@@ -82,7 +103,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
   // ---------------------------------------------------------------- panels
   const maxIn = INSULATION[s.insulation].maxThicknessIn
   const panels: PanelSpec[] = useMemo(() => {
-    const list: Slot[] = compare ? slots[mode] : [bare ? 'bare' : 'current']
+    const list: Slot[] = present ? (step === 0 ? ['bare'] : step === 1 ? ['current'] : ['bare', 'current']) : compare ? slots[mode] : [bare ? 'bare' : 'current']
     return list.map((slot, i) => {
       if (slot === 'bare') return { key: `p${i}-bare`, title: 'Bare pipe', side: ev.bare, modelThickness: s.thicknessIn, bare: true }
       if (slot === 'current') return { key: `p${i}-cur`, title: `Current · ${inchLabel(s.thicknessIn)}`, side: ev.ins, modelThickness: s.thicknessIn, bare: false }
@@ -99,13 +120,22 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
           note: recs.primary.thicknessIn === null ? `Even ${inchLabel(maxIn)} falls short` : undefined,
         }
       }
-      const t = Math.min(slot, maxIn)
+      if (typeof slot === 'string' && slot.startsWith('mat:')) {
+        const id = slot.slice(4) as InsulationId
+        const r = stateForMaterial(s, mode, id)
+        if ('reason' in r) return { key: `p${i}-${id}`, title: INSULATION[id].label, side: ev.bare, modelThickness: s.thicknessIn, bare: true, note: r.reason }
+        const d = design(r.state, mode)
+        const t = d.thicknessIn ?? INSULATION[id].maxThicknessIn
+        const st = { ...r.state, thicknessIn: t }
+        return { key: `p${i}-${id}-${t}`, title: `${INSULATION[id].label} · ${inchLabel(t)}`, side: evaluateSide(st, mode, t), modelThickness: t, bare: false, state: st, note: d.thicknessIn === null ? 'Cannot meet the requirements within its range' : 'Design thickness' }
+      }
+      const t = Math.min(slot as number, maxIn)
       return { key: `p${i}-${t}`, title: thicknessTitle(t), side: evaluateSide(s, mode, t), modelThickness: t, bare: false }
     })
-  }, [compare, slots, mode, bare, ev, s, recs, maxIn])
+  }, [compare, slots, mode, bare, ev, s, recs, maxIn, present, step])
 
-  const insetLeft = mobile ? 0 : 332
-  const insetRight = mobile ? 0 : 392
+  const insetLeft = mobile || present ? 0 : 332
+  const insetRight = mobile || present ? 0 : 392
   const acc = ACCENT[mode]
 
   const slotOptions: { id: string; label: string }[] = [
@@ -113,6 +143,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
     { id: 'current', label: 'Current' },
     { id: 'recommended', label: 'Recommended' },
     ...thicknessesFor(INSULATION[s.insulation], THICKNESSES).map((t) => ({ id: String(t), label: `${inchLabel(t)} insulation` })),
+    ...INSULATIONS.filter((m) => m.id !== s.insulation).map((m) => ({ id: `mat:${m.id}`, label: `${m.label} (design)` })),
   ]
 
   const toolbar = (
@@ -126,6 +157,9 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
           options={[{ id: 'ins', label: 'Insulated' }, { id: 'bare', label: 'Bare' }]}
         />
       )}
+      <button className="tool present-btn" aria-label="Present" onClick={() => { setStep(0); setPresent(true) }}>
+        <Icon name="spark" size={16} /> <span>Present</span>
+      </button>
       <button className={`tool ${compare ? 'on' : ''}`} aria-pressed={compare} aria-label="Compare" onClick={() => setCompare(!compare)}>
         <Icon name="compare" size={16} /> <span>Compare</span>
       </button>
@@ -155,7 +189,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
             value={String(slot)}
             onChange={(e) => {
               const v = e.target.value
-              const next: Slot = v === 'bare' || v === 'current' || v === 'recommended' ? v : Number(v)
+              const next: Slot = v === 'bare' || v === 'current' || v === 'recommended' || v.startsWith('mat:') ? (v as Slot) : Number(v)
               setSlots((prev) => ({ ...prev, [mode]: prev[mode].map((x, j) => (j === i ? next : x)) }))
             }}
           >
@@ -205,7 +239,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
       s={s}
       mode={mode}
       panels={panels}
-      opts={{ view, thermal, stage: stages[mode], mobile, units }}
+      opts={{ view, thermal: thermal && !present, stage: stages[mode], mobile, units, autoRotate: present }}
       bare={ev.bare}
       inset={{ left: insetLeft, right: insetRight }}
       sync={sync}
@@ -217,9 +251,24 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
       mode={mode} s={s} ev={ev} recs={recs} units={units} compact={mobile}
       onApply={(t) => set({ thicknessIn: t })}
       onSet={set}
+      onCompareMaterial={(id) => {
+        setSlots((prev) => ({ ...prev, [mode]: ['current', `mat:${id}`] }))
+        setCompare(true)
+      }}
       onUseMaterial={(next) => set({ insulation: next.insulation, kProduct: next.kProduct, jacket: next.jacket, facing: next.facing, thicknessIn: next.thicknessIn })}
     />
   )
+
+  if (present) {
+    let preparedFor = ''
+    try { preparedFor = localStorage.getItem('il.report.for') ?? '' } catch { /* private mode */ }
+    return (
+      <div className="sim presenting-root" style={{ '--acc': acc } as React.CSSProperties}>
+        {stage}
+        <Presentation mode={mode} s={s} ev={ev} units={units} step={step} setStep={setStep} onExit={() => setPresent(false)} preparedFor={preparedFor} />
+      </div>
+    )
+  }
 
   if (mobile) {
     return (
@@ -240,6 +289,7 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
                 </button>
               ))}
             </div>
+            <Scenarios mode={mode} s={s} onLoad={loadScenario} />
             {unitToggle}
           </div>
           <div className="sheet-presets"><PresetGrid mode={mode} active={s.presetId} onPick={pickPreset} /></div>
@@ -282,7 +332,11 @@ export function Simulator({ mode, mobile, units, setUnits }: { mode: SimMode; mo
       <aside className="panel sim-results">
         <header>
           <h2 className="title">Results</h2>
-          {unitToggle}
+          <div className="hdr-right">
+            <ReportButton make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} />
+            <Scenarios mode={mode} s={s} onLoad={loadScenario} />
+            {unitToggle}
+          </div>
         </header>
         <div className="scroll">{results}</div>
       </aside>
