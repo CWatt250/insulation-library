@@ -1,5 +1,7 @@
 import { INSULATION, JACKETS } from '../data/catalog'
-import { NPS } from '../data/pipe'
+import { PIPE_LABEL } from '../data/pipe'
+import { PIPE_SRC, pipeLabel, pipeSpec } from '../data/pipes'
+import { PIPE_PROPS, PIPE_LIMITS } from '../data/pipeWalls'
 import { SPECS } from '../data/specs'
 import { codeMinimum } from './code'
 import { annualCost, money } from './cost'
@@ -42,7 +44,7 @@ export function buildReport(r: ReportInput): string {
   const m = ins.moisture
   const sys = systemFor(s, mode)
   const product = productFor(s)
-  const p = NPS[s.npsIndex]
+  const p = pipeSpec(s.pipe, s.npsIndex)
   const finish = sys.jacketId !== 'none' ? JACKETS[sys.jacketId].label : sys.facing === 'asj' ? 'ASJ facing' : 'No jacket'
   const cost = annualCost(s, mode, ev)
   const fit = fittingResult(s, ev)
@@ -63,6 +65,7 @@ export function buildReport(r: ReportInput): string {
   // sources actually used
   const used = new Set<string>([...METHOD_REFS, ...VALIDATION_REFS, ...accuracyRows().flatMap((a) => a.src), ...ins.surface.src, ...(ins.surface.limitSrc ?? []), ...ev.bare.surface.src])
   r.design.rows.forEach((x) => x.c.src.forEach((id) => used.add(id)))
+  PIPE_SRC[s.pipe].forEach((id) => used.add(id))
   if (fit && 'eq' in fit) fit.eq.src.forEach((id) => used.add(id))
   if (vap) [...vap.requiredSrc, ...(vap.retarder.materialSrc ? [] : vap.retarder.src)].forEach((id) => used.add(id))
   if ('minIn' in code) code.src.forEach((id) => used.add(id))
@@ -110,7 +113,7 @@ export function buildReport(r: ReportInput): string {
 <header>
   <div>
     <h1>${esc(TITLE[mode])} insulation assessment</h1>
-    <div class="note">${esc(COMPONENT[s.component])} · NPS ${esc(p.nps)}" steel · ${esc(INSULATION[s.insulation].label)} ${esc(inchLabel(s.thicknessIn))}</div>
+    <div class="note">${esc(COMPONENT[s.component])} · ${esc(pipeLabel(s.pipe, p))}${s.pipe === 'copper' ? '' : ` ${esc(PIPE_LABEL[s.pipe].toLowerCase())}`} · ${esc(INSULATION[s.insulation].label)} ${esc(inchLabel(s.thicknessIn))}</div>
     <span class="tag">Preliminary estimate — educational tool</span>
   </div>
   <div class="meta">${r.preparedFor ? `Prepared for <b>${esc(r.preparedFor)}</b><br>` : ''}${r.project ? `${esc(r.project)}<br>` : ''}${esc(date)}</div>
@@ -122,7 +125,7 @@ ${images}
 <section>
 <h2>System</h2>
 <table>
-${row('Pipe', `NPS ${esc(p.nps)}" steel, ${esc(p.od)}" OD`)}
+${row('Pipe', esc(`${PIPE_LABEL[s.pipe]}, ${pipeLabel(s.pipe, p)}, ${p.od}" OD`), PIPE_LIMITS[s.pipe] && s.processF > PIPE_LIMITS[s.pipe]!.maxF ? esc(`Above the ${PIPE_LIMITS[s.pipe]!.maxF}°F rating published for ${PIPE_LIMITS[s.pipe]!.label}`) : undefined)}
 ${row(mode === 'hot' ? 'Process temperature' : 'Pipe / fluid temperature', esc(T(s.processF)))}
 ${row('Ambient air', esc(`${T(s.ambientF)}${mode !== 'hot' ? `, ${s.rh}% RH` : ''}${s.windMph ? `, ${s.windMph} mph wind` : ', still air'}`))}
 ${row('Insulation', esc(`${INSULATION[s.insulation].label}, ${inchLabel(s.thicknessIn)}`), esc(`k from ${product.name}${ins.geo ? ` · OD ${ins.geo.insOdIn.toFixed(2)}" (${ins.geo.c585 ? 'ASTM C585' : 'pipe OD + 2t'})` : ''}`))}
@@ -154,7 +157,7 @@ ${r.others.map((o) => row(o.label, esc(o.rec.thicknessIn === null ? `more than $
 </table>
 
 ${fit && 'eq' in fit ? `<h2>${esc(COMPONENT[s.component])}</h2><table>
-${row('Equivalent length', esc(`${fit.eq.ft.toFixed(2)} ft of NPS ${p.nps}" pipe`), esc(fit.eq.basis))}
+${row('Equivalent length', esc(`${fit.eq.ft.toFixed(2)} ft of ${pipeLabel(s.pipe, p)} pipe`), esc(fit.eq.basis))}
 ${row(`Bare ${COMPONENT[s.component].toLowerCase()}`, esc(`${Math.round(fit.bare).toLocaleString('en-US')} Btu/hr`))}
 ${row('Insulated / covered', esc(`${Math.round(fit.covered).toLocaleString('en-US')} Btu/hr`), 'same equivalent length on the insulated pipe (Illinois TRM / Hart method) — an estimate')}
 ${row('Saved by insulating it', esc(`${Math.round(fit.savedBtuHr).toLocaleString('en-US')} Btu/hr`))}
@@ -168,7 +171,7 @@ ${vap.ozPerYearPer100ft !== null ? row('Vapor through it (sealed)', esc(`≈ ${v
 
 <h2>Assumptions</h2>
 <ul>
-<li>Steady state; long horizontal run; pipe surface at the fluid temperature (no inside film or wall resistance).</li>
+<li>Steady state; long horizontal run; ${s.pipe === 'pvc' ? `PVC wall conduction included (k = ${PIPE_PROPS.pvc?.kIp} Btu·in/hr·ft²·°F, minimum wall); no inside film.` : 'pipe surface at the fluid temperature (no inside film; metal wall resistance neglected).'}</li>
 <li>Insulation k varies with temperature (published k-vs-mean points, integrated through the layer); insulation dry, joints tight.</li>
 <li>Outer surface per ASTM C680: Churchill–Chu natural convection${s.windMph ? ', blended with Churchill–Bernstein forced convection' : ''}; C680 air properties; radiation to surroundings at air temperature.</li>
 <li>Jackets, facings and membranes add no insulation value; they set the surface emittance.</li>

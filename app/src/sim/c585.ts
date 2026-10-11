@@ -25,3 +25,33 @@ export const C585_OD: Record<string, Record<string, number>> = {
 }
 
 export const C585_SOURCE = { id: 'D6', label: 'ASTM C585 outside diameters (Sproule reproduction, cross-checked with OC Fiberglas Pipe Insulation Sizing Manual)', file: 'research/pipe-dimensions.json' }
+
+// Copper tube (ASTM B88, CDA Copper Tube Handbook Table 14.2b) insulation OD by nominal tube size and
+// nominal thickness: Sproule reproduction (D6), Extol (D7) where Sproule does not list it.
+export const C585_OD_COPPER: Record<string, Record<string, number>> = {
+  '1/2': { '1': 2.875, '1.5': 3.5, '2': 4.5, '2.5': 5.5625, '3': 6.625, '3.5': 7.62, '4': 8.62 },
+  '3/4': { '1': 2.875, '1.5': 4.0, '2': 5.0, '2.5': 6.625, '3': 7.625, '3.5': 8.625, '4': 9.625 },
+  '1': { '1': 2.875, '1.5': 4.0, '2': 5.0, '2.5': 6.625, '3': 7.625, '3.5': 8.625, '4': 9.625 },
+  '1-1/4': { '1': 3.5, '1.5': 4.5, '2': 5.5625, '2.5': 6.625, '3': 7.625, '3.5': 8.625, '4': 9.625 },
+  '1-1/2': { '1': 3.5, '1.5': 4.5, '2': 5.5625, '2.5': 6.625, '3': 7.625, '3.5': 8.625, '4': 9.625 },
+  '2': { '1': 4.0, '1.5': 5.0, '2': 6.625, '2.5': 7.625, '3': 8.625, '3.5': 9.625, '4': 10.75 },
+  '2-1/2': { '1': 4.5, '1.5': 5.5625, '2': 6.625, '2.5': 7.625, '3': 8.625, '3.5': 9.625, '4': 10.75 },
+  '3': { '1': 5.0, '1.5': 6.625, '2': 7.625, '2.5': 8.625, '3': 9.625, '3.5': 10.75, '4': 11.75 },
+  '3-1/2': { '1': 5.625, '1.5': 6.625, '2': 7.625, '2.5': 8.625, '3': 9.625, '3.5': 10.75, '4': 11.75 },
+  '4': { '1': 6.625, '1.5': 7.625, '2': 8.625, '2.5': 9.625, '3': 10.75, '3.5': 11.75, '4': 12.75 },
+}
+
+/** Copper tube OD by nominal size, inches (CDA Copper Tube Handbook Table 14.2b, research/pipe-dimensions.json). */
+export const COPPER_OD: { nps: string; od: number }[] = [
+  { nps: '1/2', od: 0.625 },
+  { nps: '5/8', od: 0.75 },
+  { nps: '3/4', od: 0.875 },
+  { nps: '1', od: 1.125 },
+  { nps: '1-1/4', od: 1.375 },
+  { nps: '1-1/2', od: 1.625 },
+  { nps: '2', od: 2.125 },
+  { nps: '2-1/2', od: 2.625 },
+  { nps: '3', od: 3.125 },
+  { nps: '3-1/2', od: 3.625 },
+  { nps: '4', od: 4.125 },
+]

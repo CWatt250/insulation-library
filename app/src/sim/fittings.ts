@@ -1,4 +1,5 @@
-import { NPS } from '../data/pipe'
+import type { PipeMaterial } from '../data/pipe'
+import { pipeSpec } from '../data/pipes'
 import type { Component } from '../geo/assembly'
 import { ELBOW_TEE_FT, FLANGE_FT2_150, VALVE_FT2_150 } from './fittingsData'
 import type { Evaluation } from './model'
@@ -41,9 +42,19 @@ function lerp(table: { nps: number }[], nps: number, key: (r: never) => number):
   return { v: key(a as never) + f * (key(b as never) - key(a as never)), interpolated: true }
 }
 
-export function equivalentLength(component: Component, npsIndex: number): FittingEq | null {
-  const p = NPS[npsIndex]
+/** Illinois TRM small-pipe (copper) elbow/tee lengths, 1/2 and 3/4 in. only; the TRM does not explain them (F12). */
+const COPPER_SMALL: Record<string, { elbow: number; tee: number }> = { '1/2': { elbow: 0.04, tee: 0.03 }, '3/4': { elbow: 0.06, tee: 0.05 } }
+
+export function equivalentLength(component: Component, npsIndex: number, pipe: PipeMaterial = 'steel'): FittingEq | null {
+  const p = pipeSpec(pipe, npsIndex)
   const nps = npsValue(p.nps)
+  // PVC fittings are socket-type with a different shape; no published lengths.
+  if (pipe === 'pvc') return null
+  if (pipe === 'copper') {
+    const r = COPPER_SMALL[p.nps]
+    if (!r || (component !== 'elbow' && component !== 'tee')) return null
+    return { ft: r[component], basis: `Illinois TRM small-pipe (copper) ${component} equivalent length — the TRM does not explain these values; treat with caution`, src: ['F12'], interpolated: false }
+  }
   if (component === 'elbow' || component === 'tee') {
     const r = lerp(ELBOW_TEE_FT, nps, (row: { elbow: number; tee: number }) => (component === 'elbow' ? row.elbow : row.tee))
     if (!r) return null
@@ -78,8 +89,12 @@ export interface FittingResult {
 
 export function fittingResult(s: SimState, ev: Evaluation): FittingResult | { none: string } | null {
   if (s.component === 'straight') return null
-  const eq = equivalentLength(s.component, s.npsIndex)
-  if (!eq) return { none: `No published equivalent length for NPS ${NPS[s.npsIndex].nps}" — the tables cover NPS 1–12.` }
+  const eq = equivalentLength(s.component, s.npsIndex, s.pipe)
+  if (!eq) {
+    if (s.pipe === 'pvc') return { none: 'No published equivalent lengths for PVC fittings.' }
+    if (s.pipe === 'copper') return { none: 'Published copper equivalent lengths cover only 1/2" and 3/4" elbows and tees.' }
+    return { none: `No published equivalent length for NPS ${pipeSpec(s.pipe, s.npsIndex).nps}" — the tables cover NPS 1–12.` }
+  }
   const bare = eq.ft * Math.abs(ev.bare.result.qBtuHrFt)
   const covered = eq.ft * Math.abs(ev.ins.result.qBtuHrFt)
   const coveredNow = !((s.component === 'valve' || s.component === 'flange') && s.fittingCover === 'none')

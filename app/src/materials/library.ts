@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import scales from '../data/textureScales.json'
 import { INSULATION, type InsulationId, type JacketId } from '../data/catalog'
+import type { PipeMaterial } from '../data/pipe'
 
 export type { InsulationId, JacketId }
 
@@ -105,6 +106,10 @@ export const Slot = {
 export const SLOT_COUNT = 29
 
 const steelOuter = () => pbr('steel-millscale', { metalness: 0.75 })
+const copperOuter = () => pbr('copper-tube', { metalness: 0.9 })
+const copperEnd = () => pbr('copper-tube', { metalness: 0.95, roughness: 0.6, color: '#f2c9a8' })
+const pvcOuter = () => pbr('pvc-pipe', { clearcoat: 0.25, clearcoatRoughness: 0.4 })
+const pvcBore = () => plain({ color: '#c9c9c4', roughness: 0.6 })
 const steelBore = () => plain({ color: '#2a2622', roughness: 0.85, metalness: 0.3 })
 const steelEnd = () => pbr('steel-millscale', { metalness: 0.6, color: '#c3c6c9', roughness: 0.5 })
 const pvc = () => pbr('pvc-white', { clearcoat: 0.3, clearcoatRoughness: 0.25 })
@@ -162,13 +167,13 @@ function jacket(id: JacketId) {
 const bandMat = () =>
   pbr('ss-2b', { metalness: 1, roughness: 0.85, color: new THREE.Color(1.15, 1.15, 1.15) })
 
-export function buildSlots(ins: InsulationId, jac: JacketId): THREE.Material[] {
+export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial = 'steel'): THREE.Material[] {
   const i = insulation(ins)
   const j = jacket(jac)
   const slots: THREE.Material[] = new Array(SLOT_COUNT)
-  slots[Slot.PipeOuter] = steelOuter()
-  slots[Slot.PipeEnd] = steelEnd()
-  slots[Slot.PipeBore] = steelBore()
+  slots[Slot.PipeOuter] = pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()
+  slots[Slot.PipeEnd] = pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()
+  slots[Slot.PipeBore] = pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()
   slots[Slot.InsSkin] = i.skin
   slots[Slot.InsCut] = i.cut
   slots[Slot.InsBore] = i.bore ?? i.skin

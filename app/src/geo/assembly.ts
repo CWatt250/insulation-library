@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { sweep, annulusProfile, bandProfile, type Profile, type ProfileEdge } from './sweep'
-import { IN, NPS, aluminumGauge, stainlessGauge } from '../data/pipe'
+import { IN, aluminumGauge, stainlessGauge, type PipeMaterial } from '../data/pipe'
+import { pipeSpec } from '../data/pipes'
 import { Slot } from '../materials/library'
 import {
   INSULATION, JACKETS, layerCount,
@@ -41,6 +42,8 @@ export interface AssemblyParams {
   view: ViewMode
   /** Straight-run length (m) for long installed runs, e.g. wall to wall in the mech room. */
   span?: number
+  /** Pipe material; sizes index into that material's list (data/pipes.ts). Default steel. */
+  pipe?: PipeMaterial
   /** Metal elbow cover style; 'auto' = pressed through 12" NPS, gored above (JM guide). */
   elbowCover?: 'auto' | 'pressed' | 'gored'
 }
@@ -86,6 +89,9 @@ export interface SimZone {
   bareZ?: [number, number] | null
   wedge?: [number, number]
   zWedge?: number
+  /** Rectangular duct: exposed half-width and half-height (insulated, and shown bare), m. */
+  box?: [number, number]
+  boxBare?: [number, number]
 }
 
 export interface Assembly {
@@ -150,6 +156,7 @@ function npsValue(nps: string): number {
 // ------------------------------------------------------------------ dimensions
 
 interface Dims {
+  pipe: PipeMaterial
   rPipe: number
   rBore: number
   T: number
@@ -225,7 +232,7 @@ export function resolveSystem(p: Pick<AssemblyParams, 'insulation' | 'jacket' | 
 }
 
 function dims(p: AssemblyParams): Dims {
-  const pipe = NPS[p.npsIndex]
+  const pipe = pipeSpec(p.pipe, p.npsIndex)
   const rPipe = (pipe.od / 2) * IN
   const T = p.thicknessIn * IN
   const rIns0 = rPipe + 0.0004
@@ -276,7 +283,8 @@ function dims(p: AssemblyParams): Dims {
       : 'none',
     npsNominal: npsValue(pipe.nps),
     rPipe,
-    rBore: rPipe - pipe.wall40 * IN,
+    rBore: rPipe - pipe.wall * IN,
+    pipe: p.pipe ?? 'steel',
     T,
     layers: layerCount(ins, p.thicknessIn),
     rIns0,
@@ -707,6 +715,8 @@ function arrangeCallouts(list: Callout[], vertical = false): Callout[] {
 
 function NPS_LABEL(d: Dims) {
   const od = ((d.rPipe * 2) / IN).toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
+  if (d.pipe === 'copper') return { title: 'Copper tube', detail: `${npsLabel(d.npsNominal)}" Type L · ${od}" OD` }
+  if (d.pipe === 'pvc') return { title: 'PVC pipe', detail: `NPS ${npsLabel(d.npsNominal)}" Sch 40 · ${od}" OD` }
   return { title: 'Steel pipe', detail: `NPS ${npsLabel(d.npsNominal)}" Sch 40 · ${od}" OD` }
 }
 

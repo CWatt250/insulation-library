@@ -16,6 +16,7 @@ WANT = {
     "pipe-dimensions.json": ["D3", "D6"],
     "vapor-code-verified.json": ["R1", "R2", "R5", "R9", "R14", "R16", "R18", "R21", "R22", "R23", "R30", "R32"],
     "fittings-verified.json": ["F1", "F6", "F12", "F13"],
+    "pipe-materials-verified.json": ["G1", "G3", "G5", "G6", "G8"],
 }
 KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard"}
 NOTES = {
@@ -33,8 +34,13 @@ NOTES = {
     "R1": "Below-ambient vapor retarder ≤0.02 perm (≤0.01 below 0°F)",
     "F12": "Fitting equivalent lengths (elbows, tees) and C1129 valve/flange areas",
     "F1": "DOE: savings from removable insulated valve covers",
+    "G1": "Copper tube sizes and walls (ASTM B88)",
+    "G3": "PVC Sch 40 dimensions (ASTM D1785), conductivity 1.2, 140°F limit",
+    "G5": "PVC dimensions; prints conductivity 1.02",
+    "G6": "PVC dimensions; conductivity 1.2 (ASTM C177)",
+    "G8": "NIA calculator code: pipe-wall shell resistance (D/2)·ln(OD/ID)/k",
 }
-DATASHEET = re.compile(r"^(J|D|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
+DATASHEET = re.compile(r"^(J|D|G[1-6]$|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
 
 def clean(s):
     return str(s or "").replace("'", "’").replace("\n", " ")

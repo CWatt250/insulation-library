@@ -6,7 +6,7 @@ import type { SimMode, SimState } from '../../sim/types'
 import { rayIntensity, systemFor } from '../../sim/model'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { StatusChip } from './Status'
-import { NPS } from '../../data/pipe'
+import { pipeSpec } from '../../data/pipes'
 
 export interface PanelSpec {
   key: string
@@ -93,6 +93,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
       service={sys.service}
       view={opts.view}
       component={s.component}
+      pipe={s.pipe}
       stage={opts.stage}
       mobile={opts.mobile}
       sim={{ ...sim, bare: panel.bare }}
@@ -126,7 +127,7 @@ export function Stage({ s, mode, panels, bare, opts, inset, sync }: {
   // frame every panel for the largest model in the row so the views line up
   const frameRadius = Math.max(...panels.map((p) => {
     const st = p.state ?? s
-    return (NPS[st.npsIndex].od / 2 + p.modelThickness + 0.1) * 0.0254
+    return (pipeSpec(st.pipe, st.npsIndex).od / 2 + p.modelThickness + 0.1) * 0.0254
   }))
   return (
     <div className={`sim-stage compare n${panels.length}`} style={opts.mobile ? undefined : { left: inset.left, right: inset.right }}>

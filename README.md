@@ -75,6 +75,14 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
   - Large headline numbers, plus "Prepared for" from the report dialog.
   - ← / → to step, Esc to exit.
 
+**Pipe materials (Phase 4): steel, copper and PVC.**
+- **Copper:** Type L tube (ASTM B88) with sizes and walls from the CDA Copper Tube Handbook, copper-tube insulation ODs from ASTM C585, and 3E Plus emittance 0.6.
+- **PVC:** Schedule 40 (ASTM D1785), with OD and minimum wall from the Charlotte, Spears and IPEX manuals.
+  - The PVC wall's own resistance is modelled as a cylindrical shell at k = 1.2 Btu·in/hr·ft²·°F (ASTM C177, Charlotte and IPEX; Spears prints 1.02). As a result, a bare PVC line runs warmer than its fluid.
+  - The app warns above PVC's published 140°F rating.
+- **Metal walls:** neglected, as in C680, so the pipe surface sits at the fluid temperature.
+- **Data:** `tools/build_pipes.py` generates `app/src/data/pipeWalls.ts` from `research/pipe-materials-verified.json` (G-ids). A test reproduces Charlotte's published PVC wall R-values.
+
 **Engine** (`app/src/sim/`): steady-state ASTM C680 approach.
 - Conduction uses temperature-dependent k, integrated through the layer, from the manufacturer's published k-vs-mean points.
 - The outer surface coefficient is the C680 form:
@@ -96,7 +104,7 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - JM Micro-Lok HP tables are reported but not matched: they come from an unstated 3E Plus version and imply a k-curve above Micro-Lok's published values.
 
 **Sources:**
-- Every emittance, limit, preset range and method reference traces to `research/calc-method-verified.json` (M-ids), `research/emittance-verified.json` (E-ids), `research/validation-cases.json` (V-ids), `research/jackets-verified.json` (J-ids) or `research/vapor-code-verified.json` (R-ids). `tools/build_sources.py` regenerates the reference registry from those files.
+- Every emittance, limit, preset range and method reference traces to `research/calc-method-verified.json` (M-ids), `research/emittance-verified.json` (E-ids), `research/validation-cases.json` (V-ids), `research/jackets-verified.json` (J-ids), `research/vapor-code-verified.json` (R-ids) or `research/pipe-materials-verified.json` (G-ids). `tools/build_sources.py` regenerates the reference registry from those files.
 - `app/src/sim/data.test.ts` fails if one doesn't.
 - It is an educational / preliminary design tool, labelled as such in the app.
 

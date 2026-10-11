@@ -1,11 +1,15 @@
 import { INSULATIONS, INSULATION, JACKETS, snapThickness, thicknessesFor, type OuterJacketId } from '../../data/catalog'
-import { NPS, THICKNESSES } from '../../data/pipe'
+import { PIPE_LABEL, THICKNESSES, type PipeMaterial } from '../../data/pipe'
+import { equivalentIndex, pipeSizes } from '../../data/pipes'
+import { PIPE_LIMITS } from '../../data/pipeWalls'
 import { presetsFor, type Preset } from '../../sim/presets'
 import { availability, kProducts, productForTemp, systemFor } from '../../sim/model'
 import { outerSurface } from '../../sim/emittance'
 import type { MetalFinish, SimMode, SimState, VrQuality } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Disclosure, Icon, Segmented, Slider } from '../controls'
+
+const PIPE_HINT: Record<PipeMaterial, string> = { steel: 'Steel pipe, Sch 40', copper: 'Copper tube, Type L', pvc: 'PVC pipe, Sch 40' }
 
 export const ACCENT: Record<SimMode, string> = { hot: '#ff8a3d', cold: '#8fd0ff', condensate: '#14b8a6' }
 
@@ -50,6 +54,9 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
   const products = kProducts(s.insulation)
   const metal = sys.jacketId === 'alu-smooth' || sys.jacketId === 'alu-stucco' || sys.jacketId === 'ss'
   const facingLocked = mode !== 'hot' && ins.vapor.kind === 'facing'
+  const sizes = pipeSizes(s.pipe)
+  const limit = PIPE_LIMITS[s.pipe]
+  const pvcHot = limit && s.processF > limit.maxF ? `${limit.label} is rated to ${fmt.temp(limit.maxF, units)} [${limit.src.join(', ')}] — this temperature is above its rating.` : null
 
   const pickMaterial = (id: typeof s.insulation) => {
     const next = INSULATION[id]
@@ -88,15 +95,26 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
         {mode !== 'hot' && (
           <Slider label="Relative humidity" value={s.rh} min={10} max={98} onChange={(v) => set({ rh: v })} format={(v) => `${v}%`} accent={acc} />
         )}
+        <div className="field">
+          <span className="field-label">Pipe material</span>
+          <Segmented<PipeMaterial>
+            size="sm"
+            label="Pipe material"
+            value={s.pipe}
+            onChange={(v) => set({ pipe: v, npsIndex: equivalentIndex(s.pipe, s.npsIndex, v), ...(v !== 'steel' && (s.component === 'valve' || s.component === 'flange') ? { component: 'straight' as const } : {}) })}
+            options={(['steel', 'copper', 'pvc'] as PipeMaterial[]).map((id) => ({ id, label: PIPE_LABEL[id] }))}
+          />
+        </div>
         <Slider
           label="Pipe size"
-          value={s.npsIndex}
-          values={NPS.map((_, i) => i)}
+          value={Math.min(s.npsIndex, sizes.length - 1)}
+          values={sizes.map((_, i) => i)}
           onChange={(v) => set({ npsIndex: v })}
-          format={(v) => `NPS ${NPS[v].nps}"`}
-          hint={<span>Steel pipe · {fmt.inches(NPS[s.npsIndex].od, units)} OD</span>}
+          format={(v) => (s.pipe === 'copper' ? `${sizes[v].nps}" tube` : `NPS ${sizes[v].nps}"`)}
+          hint={<span>{PIPE_HINT[s.pipe]} · {fmt.inches(sizes[Math.min(s.npsIndex, sizes.length - 1)].od, units)} OD</span>}
           accent={acc}
         />
+        {pvcHot && <p className="field-warn">{pvcHot}</p>}
       </section>
 
       <section>
@@ -110,8 +128,8 @@ export function SetupPanel({ mode, s, set, units }: { mode: SimMode; s: SimState
             { id: 'straight', label: 'Straight' },
             { id: 'elbow', label: 'Elbow' },
             { id: 'tee', label: 'Tee' },
-            { id: 'valve', label: 'Valve' },
-            { id: 'flange', label: 'Flanges' },
+            { id: 'valve', label: 'Valve', disabled: s.pipe !== 'steel', title: s.pipe !== 'steel' ? 'The valve and flanges are modelled for steel pipe (class 150)' : undefined },
+            { id: 'flange', label: 'Flanges', disabled: s.pipe !== 'steel', title: s.pipe !== 'steel' ? 'The valve and flanges are modelled for steel pipe (class 150)' : undefined },
           ]}
         />
         {(s.component === 'valve' || s.component === 'flange') && (

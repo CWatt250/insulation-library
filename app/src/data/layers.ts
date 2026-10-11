@@ -1,6 +1,6 @@
 import { systemInfo, type AssemblyParams } from '../geo/assembly'
 import { INSULATION, JACKETS, layerCount, type InsulationId, type LayerId } from './catalog'
-import { NPS } from './pipe'
+import { pipeSpec } from './pipes'
 
 /**
  * Plain-language description of each layer in the build-up, for the layer list.
@@ -67,7 +67,7 @@ const VAPOR_COLD: Record<InsulationId, { facing?: string; membrane?: string; int
 export function describeLayers(p: AssemblyParams): LayerInfo[] {
   const s = systemInfo(p)
   const ins = INSULATION[p.insulation]
-  const pipe = NPS[p.npsIndex]
+  const pipe = pipeSpec(p.pipe, p.npsIndex)
   const J = JACKETS[s.jacketId]
   const out: LayerInfo[] = []
 
@@ -75,8 +75,12 @@ export function describeLayers(p: AssemblyParams): LayerInfo[] {
     id: 'pipe',
     present: true,
     name: 'Pipe',
-    value: `Steel NPS ${pipe.nps}" Sch 40`,
-    detail: `${pipe.od}" OD, ${pipe.wall40}" wall (ASME B36.10M).${p.component === 'valve' ? ' Flanged gate valve, Class 150.' : ''}`,
+    value: p.pipe === 'copper' ? `Copper ${pipe.nps}" Type L` : p.pipe === 'pvc' ? `PVC NPS ${pipe.nps}" Sch 40` : `Steel NPS ${pipe.nps}" Sch 40`,
+    detail: p.pipe === 'copper'
+      ? `${pipe.od}" OD, ${pipe.wall}" wall (ASTM B88, CDA Copper Tube Handbook).`
+      : p.pipe === 'pvc'
+        ? `${pipe.od}" OD, ${pipe.wall}" wall (ASTM D1785).`
+        : `${pipe.od}" OD, ${pipe.wall}" wall (ASME B36.10M).${p.component === 'valve' ? ' Flanged gate valve, Class 150.' : ''}`,
   })
 
   const layers = layerCount(ins, p.thicknessIn)

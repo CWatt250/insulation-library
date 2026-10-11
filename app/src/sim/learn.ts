@@ -71,12 +71,22 @@ export const TOPICS: Record<string, Topic> = {
       'Try it: on Cold Pipe, switch the jacket between PVC and aluminum and watch the surface temperature and margin.',
     ],
   },
+  pipeMaterial: {
+    id: 'pipeMaterial',
+    title: 'Does the pipe material matter?',
+    body: [
+      'Steel and copper conduct heat so well that their outside surface sits at the fluid temperature; only the insulation outside them slows the heat.',
+      'PVC is different: its wall is itself a weak insulator, so a bare PVC line runs a little warmer than the water inside it and gains less heat than a steel pipe of the same size. PVC makers say insulation is often not needed inside conditioned buildings — but in humid spaces a cold PVC line can still drop below the dew point and sweat.',
+      'PVC pressure pipe is rated to 140°F, so it does not belong on hot water or steam. Bare copper also radiates less than steel (a lower emittance), which changes a bare line\'s heat flow a little.',
+      'Try it: on Condensate, switch Pipe material between Steel and PVC and watch the bare-pipe surface temperature.',
+    ],
+  },
 }
 
 export const LEARN: Record<SimMode, string[]> = {
-  hot: ['heatLoss', 'surfaceTemp', 'jacket'],
-  cold: ['heatGain', 'sweat', 'dewPoint', 'vapor', 'jacket'],
-  condensate: ['condensate', 'sweat', 'dewPoint', 'vapor', 'jacket'],
+  hot: ['heatLoss', 'surfaceTemp', 'jacket', 'pipeMaterial'],
+  cold: ['heatGain', 'sweat', 'dewPoint', 'vapor', 'jacket', 'pipeMaterial'],
+  condensate: ['condensate', 'sweat', 'dewPoint', 'vapor', 'jacket', 'pipeMaterial'],
 }
 
 export const INTRO: Record<SimMode, string> = {

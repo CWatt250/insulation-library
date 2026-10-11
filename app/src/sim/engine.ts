@@ -12,7 +12,9 @@ import type { KPoint } from '../data/specs'
  * heat conducted through the insulation equals the heat leaving the surface.
  *
  * Simplifications (listed in the UI's assumptions footer):
- *  - pipe outer surface = fluid temperature (no inside film or wall resistance)
+ *  - no inside film; the pipe wall is neglected (metal) or conducts at a constant
+ *    k (plastic pipe, `wall`) as a cylindrical shell, ln(OD/ID)/(2πk) per unit
+ *    length — the shell form the NIA calculators use for their steel wall (G8)
  *  - jackets, facings and membranes add no conduction resistance; they only set
  *    the surface emittance
  *  - surroundings for radiation are at the ambient air temperature
@@ -37,6 +39,8 @@ export interface CaseInput {
   layers: InsLayer[]
   /** Emittance of the outermost surface (the pipe itself when bare). */
   emittance: number
+  /** Plastic pipe: wall conduction, constant k (W/m·K) from the bore radius (m) to pipeOd/2. */
+  wall?: { kWmK: number; rIn: number }
 }
 
 export interface CaseResult {
@@ -78,14 +82,16 @@ export function solveCase(c: CaseInput): CaseResult {
     return { q: h.h * (Ts - Ta) * Math.PI * D, h }
   }
 
+  // temperature drop across a plastic pipe wall carrying q
+  const wallDrop = (q: number) => (c.wall ? (q * Math.log(c.pipeOd / 2 / c.wall.rIn)) / (2 * Math.PI * c.wall.kWmK) : 0)
   let Ts = Ti
-  if (c.layers.length) {
-    // residual: pipe temperature implied by a guessed surface temperature, minus the real one
+  if (c.layers.length || c.wall) {
+    // residual: fluid temperature implied by a guessed surface temperature, minus the real one
     const residual = (ts: number) => {
       const { q } = surfaceQ(ts)
       let T = ts
       for (let i = c.layers.length - 1; i >= 0; i--) T = innerTemp(c.layers[i], T, q)
-      return T - Ti
+      return T + wallDrop(q) - Ti
     }
     let lo = Math.min(Ti, Ta)
     let hi = Math.max(Ti, Ta)
@@ -110,7 +116,7 @@ export function solveCase(c: CaseInput): CaseResult {
     bounds.unshift(T)
   }
   // pin the pipe surface to the process temperature (bisection residual ~1e-6 K)
-  if (c.layers.length) bounds[0] = Ti
+  if (c.layers.length && !c.wall) bounds[0] = Ti
 
   const layerMeanF: number[] = []
   const layerKIp: number[] = []
@@ -125,7 +131,7 @@ export function solveCase(c: CaseInput): CaseResult {
     if (mean < L.k.min - 1e-6 || mean > L.k.max + 1e-6) extrapolated = true
   })
 
-  const profile: { r: number; tF: number }[] = [{ r: c.pipeOd / 2, tF: c.processF }]
+  const profile: { r: number; tF: number }[] = [{ r: c.pipeOd / 2, tF: kToF(bounds[0]) }]
   c.layers.forEach((L, i) => {
     const Tin = bounds[i]
     const n = 10

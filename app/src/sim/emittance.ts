@@ -24,6 +24,8 @@ export interface SurfaceRef {
 
 export const SURFACES: Record<string, SurfaceRef> = {
   steel: { key: 'steel', label: 'Bare steel pipe', value: 0.8, src: ['E1', 'E2'], note: '3E Plus "Steel"; ASHRAE "iron or steel"' },
+  copper: { key: 'copper', label: 'Bare copper tube', value: 0.6, src: ['E1'], note: '3E Plus "Copper" (condition not stated); ASHRAE: 0.03 highly polished, 0.8 oxidized (E2)' },
+  'pvc-pipe': { key: 'pvc-pipe', label: 'Bare PVC pipe', value: 0.9, src: ['E2'], note: 'ASHRAE "plastic pipe or jacket (PVC, PVDC, or PET)"' },
   asj: { key: 'asj', label: 'ASJ facing', value: 0.9, src: ['E1', 'E2', 'E5'], maxSurfaceF: 150, limitSrc: ['J24'] },
   pvc: { key: 'pvc', label: 'PVC jacket', value: 0.9, src: ['E1', 'E2'], maxSurfaceF: 150, limitSrc: ['J1', 'J2', 'J6'] },
   'alu-oxidized': { key: 'alu-oxidized', label: 'Aluminum jacket (oxidized, in service)', value: 0.1, src: ['E1', 'E8'], maxSurfaceF: 180, limitSrc: ['J17'], note: 'Limit is the polyfilm liner, 180°F long-term' },
@@ -39,6 +41,8 @@ export const SURFACES: Record<string, SurfaceRef> = {
 }
 
 export const BARE_PIPE = SURFACES.steel
+
+export const barePipe = (pipe: 'steel' | 'copper' | 'pvc' = 'steel') => (pipe === 'copper' ? SURFACES.copper : pipe === 'pvc' ? SURFACES['pvc-pipe'] : SURFACES.steel)
 
 export function outerSurface(p: { insulation: InsulationId; jacket: OuterJacketId; facing: FacingId; membrane: boolean; metalFinish: MetalFinish }): SurfaceRef {
   if (p.jacket === 'alu-smooth' || p.jacket === 'alu-stucco') return SURFACES[`alu-${p.metalFinish}`]

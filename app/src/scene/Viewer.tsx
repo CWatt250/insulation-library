@@ -13,7 +13,8 @@ import { PhysicalCamera } from 'three-gpu-pathtracer'
 import { buildSlots, cradleMat, padMat, pbr, setMaxAnisotropy } from '../materials/library'
 import { ZoneEffects, type RunExtent, type SimVisual } from './effects'
 import { thermalMaterial, updateThermal } from './thermal'
-import { IN, NPS } from '../data/pipe'
+import { IN } from '../data/pipe'
+import { pipeSpec } from '../data/pipes'
 
 /** Shared camera state for side-by-side compare: whoever is being dragged leads. */
 export class CamSync {
@@ -79,7 +80,7 @@ function useAssembly(props: ViewerProps): Built {
       if (import.meta.env.DEV) (window as unknown as { __buildMs: number }).__buildMs = performance.now() - t0
       return { ...a, groups }
     },
-    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.facing, props.service, props.view, props.stage === 'room'], // eslint-disable-line react-hooks/exhaustive-deps
+    [props.component, props.npsIndex, props.thicknessIn, props.insulation, props.jacket, props.facing, props.service, props.view, props.stage === 'room', props.pipe], // eslint-disable-line react-hooks/exhaustive-deps
   )
   useEffect(() => () => asm.groups.forEach((g) => g.meshes.forEach((m) => m.geometry.dispose())), [asm])
   return asm
@@ -105,14 +106,14 @@ function LayerGroup({ lift, animate, visible, selected, children }: { lift: numb
 }
 
 function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
-  const slots = useMemo(() => buildSlots(props.insulation, props.jacket), [props.insulation, props.jacket])
+  const slots = useMemo(() => buildSlots(props.insulation, props.jacket, props.pipe), [props.insulation, props.jacket, props.pipe])
   useEffect(() => () => slots.forEach((m) => m.dispose()), [slots])
   const thermal = useMemo(() => thermalMaterial(), [])
   useEffect(() => () => thermal.dispose(), [thermal])
   const groupRef = useRef<THREE.Group>(null)
   const sim = props.sim
   const hidden = sim?.bare ? SHEET_LAYERS : sim?.fittingBare ? ['blanket' as LayerId] : props.hidden ?? []
-  const rPipe = (NPS[props.npsIndex].od / 2) * IN
+  const rPipe = (pipeSpec(props.pipe, props.npsIndex).od / 2) * IN
   const rIns = rPipe + 0.0004 + props.thicknessIn * IN
   if (sim?.thermal) updateThermal(thermal, sim, rPipe, rIns)
   const onSelect = props.onSelect
@@ -156,6 +157,7 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           z0: span[0], z1: span[1],
           wedge: sim.bare ? null : z.wedge ?? null, zWedge: z.zWedge ?? Infinity,
           floorY: FLOOR_Y, vertical: z.vertical,
+          box: sim.bare ? z.boxBare : z.box,
         }
         const fx = <ZoneEffects key={z.key} extent={extent} mode={sim.mode} zone={state} />
         return z.matrix ? <group key={z.key} matrix={z.matrix} matrixAutoUpdate={false}>{fx}</group> : fx
@@ -596,7 +598,7 @@ export function Viewer(props: ViewerProps) {
       />
       <PhotoMode
         active={!!props.photo}
-        sceneKey={`${props.component}-${props.npsIndex}-${props.thicknessIn}-${props.insulation}-${props.jacket}-${props.facing}-${props.service}-${props.view}-${props.stage}-${(props.hidden ?? []).join()}`}
+        sceneKey={`${props.pipe}-${props.component}-${props.npsIndex}-${props.thicknessIn}-${props.insulation}-${props.jacket}-${props.facing}-${props.service}-${props.view}-${props.stage}-${(props.hidden ?? []).join()}`}
         onProgress={props.onPhotoProgress}
       />
       {!props.photo && (

@@ -831,10 +831,56 @@ def polyolefin(scales):
     save("polyolefin-cut", alb, normal_from_height(h, 1.0), np.clip(rough, 0.3, 1), tile, scales)
 
 
+def pipe_materials(scales):
+    # ---- drawn copper tube: warm metal, fine drawing lines along V (the tube axis),
+    # patchy darker tarnish and a few handling smudges.
+    tile = 120.0
+    n = N
+    px = n / tile
+    draw = spectral(n, 1001, beta=0.8, fmin=60, stretch=(0.02, 1.0))
+    draw2 = spectral(n, 1002, beta=1.4, fmin=8, stretch=(0.05, 1.0))
+    tarn = np.clip(spectral(n, 1003, beta=3.0, fmin=1) * 1.4 + 0.1, -1, 1)
+    smudge = np.clip(spectral(n, 1004, beta=2.6, fmin=3) * 2.0 - 0.6, 0, 1)
+    h = 0.04 * slope(draw) + 0.03 * slope(draw2)
+    alb = mix_hex("#8A4A2A", "#D08A5C", 0.55 + 0.18 * draw2 + 0.12 * draw - 0.22 * np.clip(tarn, 0, 1))
+    alb = alb * (1 - 0.25 * smudge[..., None])
+    rough = 0.32 + 0.1 * np.clip(tarn, 0, 1) + 0.08 * smudge + 0.03 * draw
+    save("copper-tube", alb, normal_from_height(h, 1.0), np.clip(rough, 0.15, 1), tile, scales)
+
+    # ---- PVC Sch 40 pipe: white, satin, faint extrusion bands along V.
+    tile = 200.0
+    px = n / tile
+    ext = spectral(n, 1011, beta=1.2, fmin=3, stretch=(0.03, 1.0))
+    grit = spectral(n, 1012, beta=0.3, fmin=160)
+    mott = spectral(n, 1013, beta=3.0, fmin=1)
+    h = 0.02 * slope(ext) + 0.01 * slope(grit)
+    alb = mix_hex("#D9D9D5", "#F1F1EE", 0.6 + 0.15 * mott + 0.1 * ext)
+    rough = 0.38 + 0.04 * grit + 0.03 * mott
+    save("pvc-pipe", alb, normal_from_height(h, 1.0), rough, tile, scales)
+
+
+def galvanized(scales):
+    # ---- G90 galvanized duct sheet: zinc spangle (large flat crystals of slightly
+    # different brightness with faint dendrite sheen), mill roll lines, light oil haze.
+    tile = 300.0
+    n = N
+    f1, f2, cell = worley(n, 140, 2001)
+    shade = rng(2002).uniform(-1, 1, 140)[cell]
+    edge = np.clip((f2 - f1) / 3.0, 0, 1)
+    dend = spectral(n, 2003, beta=0.9, fmin=40)
+    roll = spectral(n, 2004, beta=1.0, fmin=30, stretch=(0.02, 1.0))
+    haze = spectral(n, 2005, beta=3.0, fmin=1)
+    h = 0.02 * slope(dend) * (0.5 + 0.5 * shade[...] ** 2) + 0.015 * slope(roll) + 0.01 * (1 - edge)
+    alb = mix_hex("#8E959B", "#C9CED2", 0.62 + 0.07 * shade + 0.08 * dend + 0.05 * roll - 0.03 * (1 - edge))
+    rough = 0.4 + 0.1 * shade + 0.06 * haze + 0.05 * np.abs(dend)
+    save("galvanized", alb, normal_from_height(h, 1.0), np.clip(rough, 0.2, 1), tile, scales)
+
+
 ALL = {"room": mech_room, "valve": valve_and_blanket, "calsil": calsil, "aluminum": aluminum, "stainless": stainless, "steel": carbon_steel,
        "fiberglass": fiberglass, "mineralwool": mineralwool, "cellglass": cellglass,
        "elastomeric": elastomeric, "phenolic": phenolic, "jackets_soft": jackets_soft,
-       "pir": pir, "aerogel": aerogel, "perlite": perlite, "polyolefin": polyolefin}
+       "pir": pir, "aerogel": aerogel, "perlite": perlite, "polyolefin": polyolefin,
+       "pipes": pipe_materials, "galvanized": galvanized}
 
 if __name__ == "__main__":
     which = sys.argv[1:] or list(ALL)

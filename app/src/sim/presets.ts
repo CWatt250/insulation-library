@@ -1,4 +1,6 @@
 import type { SimMode, SimState } from './types'
+import type { PipeMaterial } from '../data/pipe'
+import { pipeSizes } from '../data/pipes'
 import { DEW_MARGIN_DEFAULT_F, PP_DEFAULT_F } from './model'
 
 /**
@@ -18,8 +20,9 @@ export interface Preset {
   stage?: 'studio' | 'plant'
 }
 
-// NPS indices into data/pipe.ts NPS[]
-const NPS_1 = 2, NPS_1_5 = 4, NPS_2 = 5, NPS_3 = 7, NPS_4 = 8, NPS_6 = 10, NPS_8 = 11
+/** Index of a nominal size in a pipe material's size list. */
+const size = (pipe: PipeMaterial, nps: string) => Math.max(0, pipeSizes(pipe).findIndex((p) => p.nps === nps))
+const NPS_3 = size('steel', '3'), NPS_4 = size('steel', '4'), NPS_6 = size('steel', '6'), NPS_8 = size('steel', '8')
 
 /*
  * Wind is 0 mph (still air) throughout: NIA's calculators say to use 0 mph for
@@ -47,7 +50,7 @@ export const PRESETS: Preset[] = [
   {
     id: 'dhw', mode: 'hot', label: 'Domestic hot water', blurb: 'Service hot water supply',
     range: { text: 'Domestic hot water: 100–140°F', src: ['V22'] },
-    set: { processF: 140, ambientF: 75, rh: 50, npsIndex: NPS_1_5, insulation: 'fiberglass', thicknessIn: 1, jacket: 'none', facing: 'asj', windMph: 0 },
+    set: { processF: 140, ambientF: 75, rh: 50, pipe: 'copper', npsIndex: size('copper', '1-1/2'), insulation: 'fiberglass', thicknessIn: 1, jacket: 'none', facing: 'asj', windMph: 0 },
   },
   {
     id: 'process', mode: 'hot', label: 'Process hot pipe', blurb: 'Outdoor process line, jacketed',
@@ -69,11 +72,11 @@ export const PRESETS: Preset[] = [
   {
     id: 'suction', mode: 'cold', label: 'Refrigerant suction', blurb: 'DX suction line',
     range: { text: 'DX refrigerant suction grouped with chilled water, 40–60°F', src: ['V21'] },
-    set: { processF: 40, ambientF: 85, rh: 70, npsIndex: NPS_1, insulation: 'elastomeric', thicknessIn: 1, jacket: 'none', facing: 'none', windMph: 0 },
+    set: { processF: 40, ambientF: 85, rh: 70, pipe: 'copper', npsIndex: size('copper', '1'), insulation: 'elastomeric', thicknessIn: 1, jacket: 'none', facing: 'none', windMph: 0 },
   },
   {
     id: 'dcw', mode: 'cold', label: 'Domestic cold water', blurb: 'Cold water main in a warm ceiling space',
-    set: { processF: 55, ambientF: 80, rh: 60, npsIndex: NPS_2, insulation: 'fiberglass', thicknessIn: 0.5, jacket: 'none', facing: 'asj', windMph: 0 },
+    set: { processF: 55, ambientF: 80, rh: 60, pipe: 'copper', npsIndex: size('copper', '2'), insulation: 'fiberglass', thicknessIn: 0.5, jacket: 'none', facing: 'asj', windMph: 0 },
   },
   {
     id: 'glycol', mode: 'cold', label: 'Glycol / brine', blurb: 'Low-temperature process glycol',
@@ -83,23 +86,23 @@ export const PRESETS: Preset[] = [
   // ----------------------------------------------------------- condensate
   {
     id: 'cd-drain', mode: 'condensate', label: 'HVAC condensate drain', blurb: 'Coil drain line in a ceiling space',
-    set: { processF: 55, ambientF: 80, rh: 60, npsIndex: NPS_1, insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
+    set: { processF: 55, ambientF: 80, rh: 60, pipe: 'pvc', npsIndex: size('pvc', '1'), insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
   },
   {
     id: 'cd-lowtemp', mode: 'condensate', label: 'Low-temp condensate', blurb: 'Cold condensate off a low-temp coil',
-    set: { processF: 45, ambientF: 80, rh: 65, npsIndex: NPS_1_5, insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
+    set: { processF: 45, ambientF: 80, rh: 65, pipe: 'pvc', npsIndex: size('pvc', '1-1/2'), insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
   },
   {
     id: 'cd-mechroom', mode: 'condensate', label: 'Humid mechanical room', blurb: 'Drain line near open equipment',
-    set: { processF: 55, ambientF: 88, rh: 80, npsIndex: NPS_1_5, insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
+    set: { processF: 55, ambientF: 88, rh: 80, pipe: 'pvc', npsIndex: size('pvc', '1-1/2'), insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
   },
   {
     id: 'cd-indoor', mode: 'condensate', label: 'Conditioned space', blurb: 'Drain line in an occupied area',
-    set: { processF: 55, ambientF: 75, rh: 50, npsIndex: NPS_1, insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
+    set: { processF: 55, ambientF: 75, rh: 50, pipe: 'pvc', npsIndex: size('pvc', '1'), insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'none', facing: 'none', windMph: 0 },
   },
   {
     id: 'cd-outdoor', mode: 'condensate', label: 'Outdoor, warm & humid', blurb: 'Rooftop drain line, PVC-jacketed',
-    set: { processF: 55, ambientF: 90, rh: 85, npsIndex: NPS_1_5, insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'pvc', facing: 'none', windMph: 0 },
+    set: { processF: 55, ambientF: 90, rh: 85, pipe: 'pvc', npsIndex: size('pvc', '1-1/2'), insulation: 'elastomeric', thicknessIn: 0.5, jacket: 'pvc', facing: 'none', windMph: 0 },
     stage: 'plant',
   },
 ]
@@ -108,6 +111,7 @@ export const presetsFor = (mode: SimMode) => PRESETS.filter((p) => p.mode === mo
 
 const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   presetId: null,
+  pipe: 'steel',
   component: 'straight',
   fittingCover: 'blanket',
   rh: 50,

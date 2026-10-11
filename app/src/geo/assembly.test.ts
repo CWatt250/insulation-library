@@ -30,3 +30,20 @@ for (const component of COMPONENTS) {
     }
   })
 }
+
+describe('copper and PVC pipe', () => {
+  for (const pipe of ['copper', 'pvc'] as const) {
+    for (const component of ['straight', 'elbow', 'tee'] as Component[]) {
+      it(`builds ${pipe} ${component}`, () => {
+        for (const npsIndex of [0, 5, 99]) {
+          const a = buildAssembly({ component, npsIndex, thicknessIn: 1, insulation: 'elastomeric', jacket: 'none', view: 'cutaway', pipe })
+          expect(a.parts.length).toBeGreaterThan(0)
+          for (const p of a.parts) {
+            expect(Number.isFinite(p.geometry.getAttribute('position').getX(0))).toBe(true)
+            p.geometry.dispose()
+          }
+        }
+      }, 30000)
+    }
+  }
+})

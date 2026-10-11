@@ -2,6 +2,8 @@ import type { Evaluation } from '../../sim/model'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimState } from '../../sim/types'
 import { CALC_REFS, METHOD_REFS, refsFor } from '../../sim/sources'
+import { PIPE_SRC, pipeSpec } from '../../data/pipes'
+import { PIPE_PROPS } from '../../data/pipeWalls'
 import { accuracyRows } from '../../sim/accuracy'
 import { SPECS } from '../../data/specs'
 import { fmt, type UnitSystem } from '../../sim/units'
@@ -24,7 +26,13 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
         </p>
         <h4>Model</h4>
         <ul>
-          <li>Steady state, long horizontal run of NPS steel pipe ({geo ? `${geo.pipeOdIn}" OD` : 'bare'}); pipe surface at the fluid temperature (no inside film or wall resistance).</li>
+          <li>
+            Steady state, long horizontal run of {s.pipe === 'copper' ? 'Type L copper tube' : s.pipe === 'pvc' ? 'Schedule 40 PVC pipe' : 'Schedule 40 steel pipe'} ({fmt.inches(pipeSpec(s.pipe, s.npsIndex).od, units)} OD).{' '}
+            {s.pipe === 'pvc'
+              ? <>The PVC wall conducts at k = {PIPE_PROPS.pvc?.kIp} Btu·in/hr·ft²·°F (ASTM C177, Charlotte and IPEX; Spears prints 1.02) through its published minimum wall, so a bare PVC line runs warmer than its fluid; no inside film.</>
+              : <>Pipe surface at the fluid temperature: no inside film, and the metal wall's resistance is neglected.</>}
+            {refsFor(PIPE_SRC[s.pipe]).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}
+          </li>
           <li>Conduction through the insulation with k varying with temperature: {product.name}, {k.length} published points from {k[0].meanF}°F to {k[k.length - 1].meanF}°F mean{ev.ins.result.extrapolated ? ' (extended linearly beyond them here)' : ''}.</li>
           <li>
             Insulation OD {geo ? `${geo.insOdIn.toFixed(3)}" ` : ''}

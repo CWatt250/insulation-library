@@ -1,10 +1,12 @@
 import { INSULATION, thicknessesFor, type InsulationId } from '../data/catalog'
-import { NPS, THICKNESSES } from '../data/pipe'
+import { THICKNESSES, type PipeMaterial } from '../data/pipe'
+import { pipeSpec } from '../data/pipes'
+import { PIPE_PROPS } from '../data/pipeWalls'
 import { SPECS, type ProductSpec } from '../data/specs'
 import { resolveSystem } from '../geo/assembly'
-import { C585_OD } from './c585'
+import { C585_OD, C585_OD_COPPER } from './c585'
 import { annualBtu, curveFrom, moisture, solveCase, type CaseInput, type CaseResult, type Moisture } from './engine'
-import { BARE_PIPE, outerSurface, type SurfaceRef } from './emittance'
+import { barePipe, outerSurface, type SurfaceRef } from './emittance'
 import type { CondensationStatus, SimMode, SimState } from './types'
 import { IN_M } from './units'
 
@@ -40,9 +42,10 @@ export interface Geometry {
   actualThicknessIn: number
 }
 
-export function geometry(npsIndex: number, thicknessIn: number, nominal = false): Geometry {
-  const p = NPS[npsIndex]
-  const c = nominal ? undefined : C585_OD[p.nps]?.[String(thicknessIn)]
+export function geometry(npsIndex: number, thicknessIn: number, nominal = false, pipe: PipeMaterial = 'steel'): Geometry {
+  const p = pipeSpec(pipe, npsIndex)
+  const table = pipe === 'copper' ? C585_OD_COPPER : C585_OD
+  const c = nominal ? undefined : table[p.nps]?.[String(thicknessIn)]
   const insOdIn = c ?? p.od + 2 * thicknessIn
   return { pipeOdIn: p.od, insOdIn, c585: c !== undefined, actualThicknessIn: (insOdIn - p.od) / 2 }
 }
@@ -59,16 +62,20 @@ export function systemFor(s: SimState, mode: SimMode) {
 
 /** `nominal` uses pipe OD + 2t even where a C585 OD exists (for continuous thickness solving). */
 export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null, nominal = false): { input: CaseInput; geo: Geometry | null; surface: SurfaceRef } {
-  const pipeOd = NPS[s.npsIndex].od * IN_M
+  const p = pipeSpec(s.pipe, s.npsIndex)
+  const pipeOd = p.od * IN_M
+  // plastic pipe walls conduct poorly enough to matter; metal walls are neglected (as in C680)
+  const wallK = PIPE_PROPS[s.pipe]?.wallKWmK
+  const wall = wallK ? { kWmK: wallK, rIn: (p.od / 2 - p.wall) * IN_M } : undefined
   if (thicknessIn === null || thicknessIn <= 0) {
-    const surface = BARE_PIPE
+    const surface = barePipe(s.pipe)
     return {
-      input: { pipeOd, processF: s.processF, ambientF: s.ambientF, windMph: s.windMph, layers: [], emittance: surface.value },
+      input: { pipeOd, processF: s.processF, ambientF: s.ambientF, windMph: s.windMph, layers: [], emittance: surface.value, wall },
       geo: null,
       surface,
     }
   }
-  const geo = geometry(s.npsIndex, thicknessIn, nominal)
+  const geo = geometry(s.npsIndex, thicknessIn, nominal, s.pipe)
   const sys = systemFor(s, mode)
   const surface = outerSurface({ insulation: s.insulation, jacket: sys.jacketId, facing: sys.facing, membrane: sys.membrane, metalFinish: s.metalFinish })
   const emittance = s.emittanceOverride ?? surface.value
@@ -81,6 +88,7 @@ export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null, 
       windMph: s.windMph,
       layers: [{ k, rIn: pipeOd / 2, rOut: (geo.insOdIn * IN_M) / 2 }],
       emittance,
+      wall,
     },
     geo,
     surface: s.emittanceOverride === null ? surface : { ...surface, value: s.emittanceOverride, label: 'Custom emittance', src: [] },

@@ -46,6 +46,7 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
     else if (k === 'presetId' && (v === null || typeof v === 'string')) out.presetId = v as string | null
     else if (k === 'emittanceOverride' && (v === null || typeof v === 'number')) out.emittanceOverride = v as number | null
   }
+  if (!['steel', 'copper', 'pvc'].includes(out.pipe)) out.pipe = 'steel'
   return out
 }
 

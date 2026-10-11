@@ -1,4 +1,4 @@
-import { NPS } from '../data/pipe'
+import { pipeSpec } from '../data/pipes'
 import { kAt } from './conductivity'
 import { curveFrom } from './engine'
 import { productFor } from './model'
@@ -60,7 +60,7 @@ export function codeMinimum(s: SimState, mode: SimMode): CodeMinimum | { none: s
   if (mode === 'cold' && T > 60) return { none: 'Above the 60°F top of the 90.1 cooling table.' }
   const row = rows.find((r) => T >= r.lo && T <= r.hi)
   if (!row) return { none: 'Outside the 90.1 table ranges.' }
-  const p = NPS[s.npsIndex]
+  const p = pipeSpec(s.pipe, s.npsIndex)
   const tableIn = row.t[column(npsValue(p.nps))]
   const curve = curveFrom(productFor(s).k)
   const K = kAt(curve, ((row.meanF - 32) * 5) / 9 + 273.15) / 0.144227888

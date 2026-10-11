@@ -6,7 +6,7 @@ import { vaporCheck } from '../../sim/vapor'
 import { fittingResult } from '../../sim/fittings'
 import { annualCost, money } from '../../sim/cost'
 import { SPECS } from '../../data/specs'
-import { NPS } from '../../data/pipe'
+import { pipeLabel, pipeSpec } from '../../data/pipes'
 import { refsFor } from '../../sim/sources'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
@@ -153,7 +153,7 @@ function FittingCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: E
   )
 }
 
-const NPSLabel = (s: SimState) => `NPS ${NPS[s.npsIndex].nps}"`
+const NPSLabel = (s: SimState) => pipeLabel(s.pipe, pipeSpec(s.pipe, s.npsIndex))
 
 function VaporCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Evaluation; units: UnitSystem }) {
   const v = vaporCheck(s, mode, ev.ins)

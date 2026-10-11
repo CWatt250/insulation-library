@@ -59,7 +59,70 @@ export interface RunExtent {
   floorY: number
   /** The zone's axis points up (riser, tee branch): heat rises along it and water runs down it. */
   vertical?: boolean
+  /** Rectangular duct: half-width (x) and half-height (y) of the exposed surface, m. `radius` is then the smaller. */
+  box?: [number, number]
 }
+
+/** Point on the exposed surface at angle θ and its outward normal: the cylinder, or the duct's flat faces. */
+function surfacePoint(e: RunExtent, theta: number, p: THREE.Vector3, n: THREE.Vector3) {
+  const c = Math.cos(theta)
+  const s = Math.sin(theta)
+  if (!e.box) {
+    n.set(c, s, 0)
+    p.copy(n).multiplyScalar(e.radius)
+    return
+  }
+  const tx = e.box[0] / Math.max(Math.abs(c), 1e-4)
+  const ty = e.box[1] / Math.max(Math.abs(s), 1e-4)
+  if (tx < ty) {
+    p.set(c * tx, s * tx, 0)
+    n.set(Math.sign(c), 0, 0)
+  } else {
+    p.set(c * ty, s * ty, 0)
+    n.set(0, Math.sign(s), 0)
+  }
+}
+
+/**
+ * On a duct, spread angles evenly by distance round the perimeter rather than by
+ * angle (which would bunch effects at the corners of a wide duct).
+ */
+function perimeterAngle(e: RunExtent, theta: number) {
+  if (!e.box) return theta
+  const [w, h] = e.box
+  const per = 4 * (w + h)
+  // walk the perimeter from θ = 0 (right face, mid-height) anticlockwise
+  let d = ((((theta / TAU) % 1) + 1) % 1) * per
+  const seg: [number, (t: number) => [number, number]][] = [
+    [h, (t) => [w, t]],
+    [2 * w, (t) => [w - t, h]],
+    [2 * h, (t) => [-w, h - t]],
+    [2 * w, (t) => [-w + t, -h]],
+    [h, (t) => [w, -h + t]],
+  ]
+  for (const [len, at] of seg) {
+    if (d <= len) {
+      const [x, y] = at(d)
+      return Math.atan2(y, x)
+    }
+    d -= len
+  }
+  return theta
+}
+
+/** GLSL twin of surfacePoint; uBox = 0 for a round surface of radius uBoxR. */
+const surfGlsl = /* glsl */ `
+  uniform vec2 uBox;
+  uniform float uBoxR;
+  void surf(float a, out vec3 p, out vec3 n) {
+    vec3 d = vec3(cos(a), sin(a), 0.0);
+    if (uBox.x <= 0.0) { p = d * uBoxR; n = d; return; }
+    float tx = uBox.x / max(abs(d.x), 1e-4);
+    float ty = uBox.y / max(abs(d.y), 1e-4);
+    if (tx < ty) { p = d * tx; n = vec3(sign(d.x), 0.0, 0.0); }
+    else { p = d * ty; n = vec3(0.0, sign(d.y), 0.0); }
+  }
+`
 
 /** Deterministic PRNG so effects don't reshuffle on every render. */
 function rng(seed: number) {
@@ -116,7 +179,8 @@ function ringLayout(e: RunExtent, spacing: number, angles: (ring: number, rand: 
   const out: { theta: number; z: number; ring: number; rand: number }[] = []
   for (let k = 0; k < rings; k++) {
     const z = e.z0 + ((k + 0.5) / rings) * len
-    for (const theta of angles(k, rand)) {
+    for (const theta0 of angles(k, rand)) {
+      const theta = perimeterAngle(e, theta0)
       const zz = z + (rand() - 0.5) * (len / rings) * 0.35
       if (!inWedge(theta, zz, e)) out.push({ theta, z: zz, ring: k, rand: rand() })
     }
@@ -161,14 +225,17 @@ const waveVert = /* glsl */ `
   varying float vU;
   varying float vV;
   varying float vFade;
+  ${surfGlsl}
   void main() {
     float on = step(fract(iA.w * 13.37), uActive);
     float p = fract(uTime * 0.16 + iA.z);
-    vec3 radial = vec3(cos(iA.x), sin(iA.x), 0.0);
+    vec3 base;
+    vec3 radial;
+    surf(iA.x, base, radial);
     // heat leaves outward and the warm air carries it up
     vec3 D = normalize(radial + uUp * uRise);
     float s = p * uTravel + aU * uLen;
-    vec3 local = radial * uR0 + D * s + vec3(0.0, 0.0, iA.y);
+    vec3 local = base + radial * (uR0 - uBoxR) + D * s + vec3(0.0, 0.0, iA.y);
     vec4 world = modelMatrix * vec4(local, 1.0);
     vec3 dir = normalize(mat3(modelMatrix) * D);
     vec3 toCam = normalize(cameraPosition - world.xyz);
@@ -219,6 +286,7 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
   const mat = useMemo(() => glowMaterial(waveVert, waveFrag, {
     uTime: { value: 0 }, uR0: { value: 0.05 }, uLen: { value: 0.1 }, uTravel: { value: 0.1 }, uWidth: { value: 0.01 },
     uAmp: { value: 0.01 }, uActive: { value: 1 }, uRise: { value: 0.8 }, uOpacity: { value: 0.5 }, uUp: { value: new THREE.Vector3(0, 1, 0) },
+    uBox: { value: new THREE.Vector2() }, uBoxR: { value: 0.05 },
     uCore: { value: new THREE.Color('#ffd08a') }, uEdge: { value: new THREE.Color('#ff6a1a') },
   }), [])
   useEffect(() => () => mat.dispose(), [mat])
@@ -226,6 +294,8 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
   const u = mat.uniforms
   const size = Math.min(Math.max(extent.radius, 0.03), 0.16)
   u.uR0.value = extent.radius + 0.004
+  u.uBoxR.value = extent.radius
+  ;(u.uBox.value as THREE.Vector2).set(extent.box?.[0] ?? 0, extent.box?.[1] ?? 0)
   u.uLen.value = size * (0.9 + 0.9 * i)
   u.uTravel.value = size * (0.5 + 1.1 * i)
   u.uWidth.value = size * 0.16
@@ -256,16 +326,18 @@ const arrowVert = /* glsl */ `
   varying float vU;
   varying float vEdge;
   varying float vFade;
+  ${surfGlsl}
   void main() {
     float on = step(fract(iA.w * 7.31), uActive);
     float p = fract(uTime * 0.22 + iA.z);
-    vec3 radial = vec3(cos(iA.x), sin(iA.x), 0.0);
-    vec3 tang = vec3(-sin(iA.x), cos(iA.x), 0.0);
+    vec3 base;
+    vec3 radial;
+    surf(iA.x, base, radial);
+    vec3 tang = vec3(-radial.y, radial.x, 0.0);
     // the head (u = 1) points at the pipe; the whole arrow drifts inward
-    float headR = uR0 + 0.006 + (1.0 - p) * uTravel;
-    float r = headR + (1.0 - aU) * uLen;
+    float off = uR0 - uBoxR + 0.006 + (1.0 - p) * uTravel + (1.0 - aU) * uLen;
     float curl = (fract(iA.w * 3.7) - 0.5) * 0.5;
-    vec3 local = radial * r + tang * curl * uLen * aU * (1.0 - aU) + vec3(0.0, 0.0, iA.y);
+    vec3 local = base + radial * off + tang * curl * uLen * aU * (1.0 - aU) + vec3(0.0, 0.0, iA.y);
     vec4 world = modelMatrix * vec4(local, 1.0);
     vec3 dir = normalize(mat3(modelMatrix) * radial);
     vec3 toCam = normalize(cameraPosition - world.xyz);
@@ -350,6 +422,7 @@ export function AirArrows({ extent, intensity, mode }: { extent: RunExtent; inte
   const mat = useMemo(() => glowMaterial(arrowVert, arrowFrag, {
     uTime: { value: 0 }, uR0: { value: 0.05 }, uLen: { value: 0.1 }, uTravel: { value: 0.05 }, uWidth: { value: 0.006 },
     uActive: { value: 1 }, uOpacity: { value: 0.5 },
+    uBox: { value: new THREE.Vector2() }, uBoxR: { value: 0.05 },
     uHead: { value: new THREE.Color('#d6efff') }, uTail: { value: new THREE.Color('#3b7fe0') },
   }), [])
   useEffect(() => () => mat.dispose(), [mat])
@@ -357,6 +430,8 @@ export function AirArrows({ extent, intensity, mode }: { extent: RunExtent; inte
   const u = mat.uniforms
   const size = Math.min(Math.max(extent.radius, 0.03), 0.14)
   u.uR0.value = extent.radius
+  u.uBoxR.value = extent.radius
+  ;(u.uBox.value as THREE.Vector2).set(extent.box?.[0] ?? 0, extent.box?.[1] ?? 0)
   u.uLen.value = size * (0.6 + 0.5 * i)
   u.uTravel.value = size * (0.3 + 0.35 * i)
   u.uWidth.value = size * 0.05
@@ -411,11 +486,13 @@ const tintFrag = /* glsl */ `
 /** A thin shell over the exposed surface: a glow on a hot bare pipe that follows heat flux; an icy tint on a cold one. */
 export function SurfaceTint({ extent, mode, intensity }: { extent: RunExtent; mode: SimMode; intensity: number }) {
   const hot = mode === 'hot'
+  const boxed = !!extent.box
   const geo = useMemo(() => {
+    if (boxed) return rectTube()
     const g = new THREE.CylinderGeometry(1, 1, 1, 96, 1, true)
     g.rotateX(Math.PI / 2)
     return g
-  }, [])
+  }, [boxed])
   useEffect(() => () => geo.dispose(), [geo])
   const mat = useMemo(() => glowMaterial(shellVert, tintFrag, {
     uColor: { value: new THREE.Color() }, uRim: { value: new THREE.Color() }, uAmount: { value: 0 }, uTime: { value: 0 },
@@ -425,11 +502,12 @@ export function SurfaceTint({ extent, mode, intensity }: { extent: RunExtent; mo
   useEffect(() => () => mat.dispose(), [mat])
   const i = Math.min(1, Math.max(0, intensity))
   const len = extent.z1 - extent.z0
-  const R = extent.radius * 1.004
+  const Rx = (extent.box?.[0] ?? extent.radius) * 1.004 + (extent.box ? 0.001 : 0)
+  const Ry = (extent.box?.[1] ?? extent.radius) * 1.004 + (extent.box ? 0.001 : 0)
   const zc = (extent.z0 + extent.z1) / 2
   const u = mat.uniforms
   // shell vertices are unit-cylinder coordinates: map them back to the local frame for the wedge test
-  ;(u.uLocal.value as THREE.Matrix4).compose(new THREE.Vector3(0, 0, zc), new THREE.Quaternion(), new THREE.Vector3(R, R, len))
+  ;(u.uLocal.value as THREE.Matrix4).compose(new THREE.Vector3(0, 0, zc), new THREE.Quaternion(), new THREE.Vector3(Rx, Ry, len))
   ;(u.uWedge.value as THREE.Vector2).set(extent.wedge?.[0] ?? 0, extent.wedge?.[1] ?? 0)
   u.uZWedge.value = extent.wedge ? extent.zWedge : 1e9
   const pal = COOL[mode === 'condensate' ? 'condensate' : 'cold']
@@ -438,13 +516,37 @@ export function SurfaceTint({ extent, mode, intensity }: { extent: RunExtent; mo
   u.uAmount.value = hot ? i ** 1.6 * 0.85 : i ** 1.4 * 0.45
   useFrame((_, dt) => { u.uTime.value += dt })
   if (i < 0.12) return null
-  return <mesh geometry={geo} material={mat} position={[0, 0, zc]} scale={[R, R, len]} renderOrder={4} raycast={noRaycast} />
+  return <mesh geometry={geo} material={mat} position={[0, 0, zc]} scale={[Rx, Ry, len]} renderOrder={4} raycast={noRaycast} />
+}
+
+/** Open rectangular tube, ±1 in x and y, z from −½ to ½; uv.y runs along z like the cylinder's. */
+function rectTube() {
+  const pos: number[] = []
+  const nor: number[] = []
+  const uv: number[] = []
+  const faces: [number, number][] = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+  for (const [nx, ny] of faces) {
+    // two corners of the face edge, anticlockwise seen from outside
+    const a: [number, number] = nx ? [nx, -nx] : [ny, ny]
+    const b: [number, number] = nx ? [nx, nx] : [-ny, ny]
+    const quad: [number, number, number][] = [[a[0], a[1], -0.5], [b[0], b[1], -0.5], [b[0], b[1], 0.5], [a[0], a[1], -0.5], [b[0], b[1], 0.5], [a[0], a[1], 0.5]]
+    for (const [x, y, z] of quad) {
+      pos.push(x, y, z)
+      nor.push(nx, ny, 0)
+      uv.push(0, z + 0.5)
+    }
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3))
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2))
+  return g
 }
 
 // ----------------------------------------------------------- condensation
 
 interface Bead { theta: number; z: number; r: number; max: number; state: 0 | 1 | 2; speed: number }
-interface Hang { z: number; vol: number; fall: number; fallV: number; puddle: number }
+interface Hang { x: number; z: number; vol: number; fall: number; fallV: number; puddle: number }
 
 const MAX_BEADS = 520
 
@@ -501,6 +603,8 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
     const rand = rng(91)
     const nHang = Math.max(2, Math.round((extent.z1 - extent.z0) / Math.max(0.07, extent.radius * 1.6)))
     const hangs: Hang[] = Array.from({ length: nHang }, (_, k) => ({
+      // a duct's flat underside drips across its width
+      x: extent.box ? (rand() - 0.5) * 1.6 * extent.box[0] : 0,
       z: extent.z0 + ((k + 0.5 + (rand() - 0.5) * 0.4) / nHang) * (extent.z1 - extent.z0),
       vol: 0, fall: -1, fallV: 0, puddle: 0,
     }))
@@ -514,6 +618,7 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
   zoneRef.current = zone
   const tmp = useMemo(() => ({ m: new THREE.Matrix4(), q: new THREE.Quaternion(), s: new THREE.Vector3(), p: new THREE.Vector3(), n: new THREE.Vector3(), z: new THREE.Vector3(0, 0, 1) }), [])
 
+  const bottom = extent.box ? extent.box[1] : extent.radius
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.05)
     const zs = zoneRef.current
@@ -564,7 +669,10 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
         b.speed = Math.min(b.speed + dt * 6 * pull, 3.2)
         b.theta += toward * b.speed * dt * (unit / extent.radius) * 9
         b.r += grow * dt * 0.4
-        if (Math.abs(wrap(b.theta) - Math.PI * 1.5) < 0.12) {
+        const under = extent.box
+          ? Math.abs(Math.sin(wrap(b.theta))) * extent.box[0] > Math.abs(Math.cos(wrap(b.theta))) * extent.box[1] + 1e-6 && Math.sin(wrap(b.theta)) < 0
+          : Math.abs(wrap(b.theta) - Math.PI * 1.5) < 0.12
+        if (under) {
           // joins the nearest hanging drop
           let h = hangs[0]
           for (const x of hangs) if (Math.abs(x.z - b.z) < Math.abs(h.z - b.z)) h = x
@@ -585,7 +693,7 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
         // slowed fall so the eye can follow it
         h.fallV += 9.8 * 0.35 * dt
         h.fall += h.fallV * dt
-        if (-extent.radius - h.fall < extent.floorY) {
+        if (-bottom - h.fall < extent.floorY) {
           h.fall = -1
           h.puddle = Math.min(1, h.puddle + 0.08)
           // the drop that fell under an odd slot lands in its neighbour's puddle
@@ -601,10 +709,10 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
       let n = 0
       for (const b of beads) {
         if (!b.state) continue
-        tmp.n.set(Math.cos(b.theta), Math.sin(b.theta), 0)
+        surfacePoint(extent, b.theta, tmp.p, tmp.n)
         tmp.q.setFromUnitVectors(tmp.z, tmp.n)
         const stretch = b.state === 2 && !extent.vertical ? 1.5 : 1
-        tmp.p.copy(tmp.n).multiplyScalar(extent.radius + b.r * 0.12)
+        tmp.p.addScaledVector(tmp.n, b.r * 0.12)
         tmp.p.z = b.z
         tmp.s.set(b.r * stretch, b.r * (b.state === 2 && extent.vertical ? 1.5 : 1), b.r * (frost ? 0.45 : 0.6))
         tmp.m.compose(tmp.p, tmp.q, tmp.s)
@@ -620,14 +728,14 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
       for (const h of hangs) {
         if (h.vol > 0.05) {
           const r = unit * (0.6 + 1.1 * Math.min(h.vol, 1))
-          tmp.p.set(0, -extent.radius - r * 0.9, h.z)
+          tmp.p.set(h.x, -bottom - r * 0.9, h.z)
           tmp.s.set(r, r * (1.1 + 0.5 * Math.min(h.vol, 1)), r)
           tmp.m.compose(tmp.p, tmp.q, tmp.s)
           dm.setMatrixAt(n++, tmp.m)
         }
         if (h.fall >= 0) {
           const r2 = unit * 1.3
-          tmp.p.set(0, -extent.radius - unit * 2 - h.fall, h.z)
+          tmp.p.set(h.x, -bottom - unit * 2 - h.fall, h.z)
           tmp.s.set(r2 * 0.85, r2 * 1.5, r2 * 0.85)
           tmp.m.compose(tmp.p, tmp.q, tmp.s)
           dm.setMatrixAt(n++, tmp.m)
@@ -644,7 +752,7 @@ export function Condensation({ extent, zone }: { extent: RunExtent; zone: ZoneSt
         const h = hangs[k]
         if (h.puddle <= 0.01) continue
         const r = (0.012 + 0.04 * h.puddle) * Math.min(1, 0.4 + extent.radius * 8)
-        tmp.p.set(0, extent.floorY + 0.0015, h.z)
+        tmp.p.set(h.x, extent.floorY + 0.0015, h.z)
         tmp.s.set(r * 1.3, r, 1)
         tmp.m.compose(tmp.p, tmp.q, tmp.s)
         pm.setMatrixAt(n++, tmp.m)

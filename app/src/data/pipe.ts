@@ -44,3 +44,17 @@ export function stainlessGauge(insulationOdIn: number): number {
   if (insulationOdIn <= 36) return 0.016
   return 0.02
 }
+
+// ------------------------------------------------------------------ pipe materials
+
+export type PipeMaterial = 'steel' | 'copper' | 'pvc'
+
+export interface PipeSize {
+  /** Nominal size label as printed (NPS for steel and PVC, nominal tube size for copper). */
+  nps: string
+  /** Outside diameter and wall, inches. */
+  od: number
+  wall: number
+}
+
+export const PIPE_LABEL: Record<PipeMaterial, string> = { steel: 'Steel', copper: 'Copper', pvc: 'PVC' }
