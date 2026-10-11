@@ -70,3 +70,14 @@ describe('PVC pipe wall', () => {
     expect(evaluateSide(s, 'hot', null).result.surfaceF).toBeCloseTo(s.processF, 6)
   })
 })
+
+describe('inch labels', () => {
+  it('print fractions to the sixteenth and decimals otherwise', async () => {
+    const { inchLabel } = await import('./units')
+    expect(inchLabel(2.1875)).toBe('2-3/16"')
+    expect(inchLabel(1.5)).toBe('1-1/2"')
+    expect(inchLabel(0.375)).toBe('3/8"')
+    expect(inchLabel(3.15)).toBe('3.15"')
+    expect(inchLabel(0.79)).toBe('0.79"')
+  })
+})

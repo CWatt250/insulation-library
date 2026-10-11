@@ -16,7 +16,7 @@ import { refsFor } from '../../sim/sources'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Icon, Segmented, Slider } from '../controls'
-import { Stage, type PanelSpec } from './Stage'
+import { Stage } from './Stage'
 import { DuctGuide } from './DuctGuide'
 import { DuctSize } from './DuctSetup'
 
@@ -38,27 +38,19 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
   const T = (f: number) => fmt.temp(f, units)
 
   // ---------------------------------------------------------------- answer
-  const result = useMemo(() => recommendation(a), [a])
-  const { s, d, ev, options, pick } = result
-  const beh = physicsMode(s, mode)
-  const vap = vaporCheck(s, mode, ev.ins)
-  const dew = dewPointF(a.ambientF, a.rh)
-  const label = a.system === 'duct' ? DUCT_INSULATIONS.find((m) => m.id === pick)!.label : INSULATION[pick as keyof typeof INSULATION].label
-
-  // notes worth acting on, each with its source
-  const notes: { text: string; src: string[] }[] = []
-  if (a.system === 'pipe' && mode !== 'condensate') {
-    const c = codeMinimum(s, mode)
-    if ('none' in c) notes.push({ text: `Energy code: ${c.none}`, src: [] })
+  // worked out when Recommend is pressed, from the answers at that moment
+  const [applied, setApplied] = useState<Answers | null>(null)
+  const [runs, setRuns] = useState(0)
+  const stale = applied !== null && JSON.stringify(applied) !== JSON.stringify(a)
+  const run = () => {
+    setApplied(a)
+    setRuns((n) => n + 1)
+    if (mobile) setTimeout(() => document.querySelector('.rec-answer')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60)
   }
-  if (mode === 'condensate') notes.push({ text: 'No model code requires insulating HVAC condensate drain lines, and ASHRAE 90.1-2019 exempts them from its pipe tables. Insulate where sweating would cause damage, or where the equipment maker\'s instructions call for it.', src: ['C7', 'C19'] })
-  if (a.system === 'pipe' && a.outdoors) notes.push({ text: 'IECC C403.12.3.1: "Piping insulation exposed to the weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind" (no adhesive tape). The recommendation uses an aluminum jacket where the material offers one.', src: ['C1'] })
-  if (a.system === 'pipe' && PIPE_LIMITS[a.pipe] && a.processF > PIPE_LIMITS[a.pipe]!.maxF) notes.push({ text: `${PIPE_LIMITS[a.pipe]!.label} is rated to ${T(PIPE_LIMITS[a.pipe]!.maxF)} — this temperature is above its rating.`, src: PIPE_LIMITS[a.pipe]!.src })
-  if (a.system === 'duct' && beh !== 'hot') notes.push({ text: 'Cooling ducts: a vapor retarder of 0.05 perm or less, every seam, staple and pin sealed (IMC 604.11).', src: ['C6'] })
-  if (a.system === 'duct' && (a.duct.ductType === 'outdoor' || a.duct.ductType === 'exhaust')) notes.push({ text: 'Neither energy code sets an R-value for outside-air or exhaust ducts; the thickness here keeps the outside from sweating (IMC 603.12).', src: ['C1', 'C19'] })
+  const result = useMemo(() => (applied ? recommendation(applied) : null), [applied])
+  const dew = dewPointF(a.ambientF, a.rh)
 
   // ------------------------------------------------------------------ 3D
-  const panels: PanelSpec[] = [{ key: `rec-${pick}-${s.thicknessIn}`, title: 'Recommended', side: ev.ins, modelThickness: s.thicknessIn, bare: false }]
   const pipeSizesList = pipeSizes(a.pipe)
   const mats = materialsFor(a, mode)
   const acc = mode === 'hot' ? '#ff8a3d' : mode === 'condensate' ? '#14b8a6' : mode === 'duct' ? '#b9a2ff' : '#8fd0ff'
@@ -71,8 +63,16 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
 
   return (
     <div className={`sim recommend ${mobile ? 'is-mobile' : ''}`} style={{ '--acc': acc } as React.CSSProperties}>
-      {!mobile && (
-        <Stage s={s} mode={beh} panels={panels} bare={ev.bare} opts={{ view: 'cutaway', thermal: false, stage: 'studio', mobile, units }} inset={{ left: 380, right: 392 }} sync={sync} />
+      {!mobile && result && (
+        <Stage
+          s={result.s}
+          mode={physicsMode(result.s, result.mode)}
+          panels={[{ key: `rec-${result.pick}-${result.s.thicknessIn}`, title: 'Recommended', side: result.ev.ins, modelThickness: result.s.thicknessIn, bare: false }]}
+          bare={result.ev.bare}
+          opts={{ view: 'cutaway', thermal: false, stage: 'studio', mobile, units }}
+          inset={{ left: 380, right: 392 }}
+          sync={sync}
+        />
       )}
       <aside className="panel sim-setup rec-questions">
         <header className="sim-head">
@@ -135,78 +135,33 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
             ))}
           </div>
         ))}
+        {!mobile && (
+          <button className={`primary rec-run ${stale || !applied ? 'pulse' : ''}`} onClick={run}>
+            <Icon name="target" size={17} /> {applied ? (stale ? 'Update recommendation' : 'Recommend again') : 'Recommend'}
+          </button>
+        )}
       </aside>
       <aside className="panel sim-results rec-answer">
         <header><h2 className="title">Recommendation</h2></header>
         <div className="scroll">
-          <div className={`hero ${d.thicknessIn === null ? 'bad' : 'good'}`}>
-            <div className="hero-top"><span className="hero-tag">Preliminary estimate</span></div>
-            {d.thicknessIn === null ? (
-              <>
-                <div className="hero-big">Over {inchLabel(d.maxIn)}<small>{label}</small></div>
-                <p className="hero-sub">This material can't meet every requirement within its range — pick another below.</p>
-              </>
-            ) : (
-              <>
-                <div className="hero-big">{inchLabel(d.thicknessIn)}<small>{label}</small></div>
-                <p className="hero-sub">
-                  {d.governing ? <>Governed by <b>{d.governing.label.split(':')[0].toLowerCase()}</b>. </> : null}
-                  Surface {T(ev.ins.result.surfaceF)}{beh !== 'hot' ? `, ${fmt.tempDelta(ev.ins.moisture.marginF, units, 1)} above the ${T(ev.ins.moisture.dewF)} dew point` : ''}.
-                </p>
-              </>
-            )}
-          </div>
-          <section className="recs">
-            <h3><Icon name="target" size={14} /> Every requirement</h3>
-            <ul className="design-rows">
-              {d.rows.map(({ c, rec }) => (
-                <li key={c.id} className={d.governing?.id === c.id ? 'gov' : ''}>
-                  <span>{c.label}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}</span>
-                  <b>{rec.thicknessIn === null ? `> ${inchLabel(rec.maxIn)}` : rec.alreadyMet ? 'Met bare' : inchLabel(rec.thicknessIn)}</b>
-                </li>
-              ))}
-            </ul>
-            {a.system === 'duct' && (() => {
-              const c = ductCode(s)
-              return <p className="field-note">Energy code ({DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}): {c.label}{c.derived ? ' (derived)' : ''}.</p>
-            })()}
-            {vap && (
-              <p className="field-note">
-                Vapor retarder: needs ≤ {vap.required} perm; {vap.retarder.label} is {vap.retarder.perm === null ? 'not published' : `${vap.retarder.upper ? '≤ ' : ''}${vap.retarder.perm.toFixed(3)} perm`} — {vap.meets === null ? 'check with the maker' : vap.meets ? 'meets it' : 'add or upgrade the retarder'}.
-              </p>
-            )}
-          </section>
-          {notes.length > 0 && (
-            <ul className="warnings">
-              {notes.map((n) => (
-                <li key={n.text} className="info"><Icon name="info" size={14} />{n.text}{refsFor(n.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}</li>
-              ))}
-            </ul>
+          {result && applied ? (
+            <Answer key={runs} ap={applied} r={result} units={units} stale={stale} onPick={(id) => { const next = { ...a, material: id }; setA(next); setApplied(next); setRuns((n) => n + 1) }} onOpen={onOpen} />
+          ) : (
+            <div className="rec-empty">
+              <Icon name="target" size={28} />
+              <b>Set your conditions, then press Recommend.</b>
+              <p>The recommendation is the thickness that keeps the outside from sweating and meets the energy code and safety limits, with every requirement and its source.</p>
+            </div>
           )}
-          <section className="recs">
-            <h3><Icon name="layers" size={14} /> Other insulations</h3>
-            <table className="mat-compare">
-              <tbody>
-                {options.slice(0, 6).map((o) => (
-                  <tr key={o.id} className={o.id === pick ? 'on' : ''}>
-                    <td>{o.label}</td>
-                    <td>{o.design && o.design.thicknessIn !== null ? <b>{inchLabel(o.design.thicknessIn)}</b> : <span className="muted">{o.reason ?? 'beyond its range'}</span>}</td>
-                    <td className="mc-act">{o.id !== pick && o.design?.thicknessIn != null && <button className="apply sm" onClick={() => set({ material: o.id })}>Pick</button>}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-          <button className="primary rec-open" onClick={() => onOpen(mode, s)}>
-            <Icon name="cube" size={16} /> Open in the simulator
-          </button>
-          <p className="field-note">Calculated with the simulator's engine (ASTM C680 method) and design rules; an educational / preliminary tool — confirm before specifying.</p>
         </div>
       </aside>
       {mobile && (
-        <button className="rec-sticky" onClick={() => document.querySelector('.rec-answer')?.scrollIntoView({ behavior: 'smooth' })}>
-          <b>{d.thicknessIn === null ? `Over ${inchLabel(d.maxIn)}` : inchLabel(d.thicknessIn)}</b> {label}
-          <span>See why <Icon name="target" size={14} /></span>
+        <button className={`rec-sticky ${stale || !applied ? 'pulse' : ''}`} onClick={run}>
+          {result && !stale ? (
+            <><b>{result.d.thicknessIn === null ? `Over ${inchLabel(result.d.maxIn)}` : inchLabel(result.d.thicknessIn)}</b> {matLabel(result.s, result.pick)}<span>Recommend again <Icon name="target" size={14} /></span></>
+          ) : (
+            <><Icon name="target" size={17} /> <b className="plain">{applied ? 'Update recommendation' : 'Recommend'}</b></>
+          )}
         </button>
       )}
       {guide && (
@@ -216,6 +171,117 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
           onClose={() => setGuide(false)}
         />
       )}
+    </div>
+  )
+}
+
+
+const matLabel = (s: SimState, pick: string) => (s.system === 'duct' ? DUCT_INSULATIONS.find((m) => m.id === pick)!.label : INSULATION[pick as keyof typeof INSULATION].label)
+
+/** The recommendation for the answers that were applied, with what it was based on. */
+function Answer({ ap, r, units, stale, onPick, onOpen }: {
+  ap: Answers
+  r: ReturnType<typeof recommendation>
+  units: UnitSystem
+  stale: boolean
+  onPick: (id: string) => void
+  onOpen: (mode: SimMode, state: SimState) => void
+}) {
+  const { s, d, ev, options, pick, mode } = r
+  const T = (f: number) => fmt.temp(f, units)
+  const beh = physicsMode(s, mode)
+  const vap = vaporCheck(s, mode, ev.ins)
+  const label = matLabel(s, pick)
+  const Q = (b: number) => `${fmt.flow(Math.abs(b), units)} ${fmt.flowUnit(units)}`
+  const what = ap.system === 'duct'
+    ? `${DUCT_TYPES.find((t) => t.id === ap.duct.ductType)!.label} duct, ${ap.duct.ductShape === 'round' ? `${ap.duct.ductD}" round` : `${ap.duct.ductW}" × ${ap.duct.ductH}"`}, ${DUCT_LOCATIONS.find((l) => l.id === ap.duct.ductLocation)!.short.toLowerCase()}, zone ${ap.duct.climateZone}`
+    : `${ap.pipe === 'steel' ? 'Steel' : ap.pipe === 'copper' ? 'Copper' : 'PVC'} ${pipeSizes(ap.pipe)[Math.min(ap.npsIndex, pipeSizes(ap.pipe).length - 1)].nps}" pipe${ap.drain ? ' (condensate drain)' : ''}, ${ap.outdoors ? 'outdoors' : 'indoors'}`
+
+  // notes worth acting on, each with its source
+  const notes: { text: string; src: string[] }[] = []
+  if (ap.system === 'pipe' && mode !== 'condensate') {
+    const c = codeMinimum(s, mode)
+    if ('none' in c) notes.push({ text: `Energy code: ${c.none}`, src: [] })
+  }
+  if (mode === 'condensate') notes.push({ text: 'No model code requires insulating HVAC condensate drain lines, and ASHRAE 90.1-2019 exempts them from its pipe tables. Insulate where sweating would cause damage, or where the equipment maker\'s instructions call for it.', src: ['C7', 'C19'] })
+  if (ap.system === 'pipe' && ap.outdoors) notes.push({ text: 'IECC C403.12.3.1: "Piping insulation exposed to the weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind" (no adhesive tape). The recommendation uses an aluminum jacket where the material offers one.', src: ['C1'] })
+  if (ap.system === 'pipe' && PIPE_LIMITS[ap.pipe] && ap.processF > PIPE_LIMITS[ap.pipe]!.maxF) notes.push({ text: `${PIPE_LIMITS[ap.pipe]!.label} is rated to ${T(PIPE_LIMITS[ap.pipe]!.maxF)} — this temperature is above its rating.`, src: PIPE_LIMITS[ap.pipe]!.src })
+  if (ap.system === 'duct' && beh !== 'hot') notes.push({ text: 'Cooling ducts: a vapor retarder of 0.05 perm or less, every seam, staple and pin sealed (IMC 604.11).', src: ['C6'] })
+  if (ap.system === 'duct' && (ap.duct.ductType === 'outdoor' || ap.duct.ductType === 'exhaust')) notes.push({ text: 'Neither energy code sets an R-value for outside-air or exhaust ducts; the thickness here keeps the outside from sweating (IMC 603.12).', src: ['C1', 'C19'] })
+
+  return (
+    <div className={`rec-result ${stale ? 'stale' : ''}`}>
+      {stale && <p className="rec-stale"><Icon name="alert" size={14} /> You've changed the inputs — press <b>Update recommendation</b> to recalculate.</p>}
+      <div className={`hero ${d.thicknessIn === null ? 'bad' : 'good'}`}>
+        <div className="hero-top"><span className="hero-tag">Preliminary estimate</span></div>
+        {d.thicknessIn === null ? (
+          <>
+            <div className="hero-big">Over {inchLabel(d.maxIn)}<small>{label}</small></div>
+            <p className="hero-sub">This material can't meet every requirement within its range — pick another below.</p>
+          </>
+        ) : (
+          <>
+            <div className="hero-big">{inchLabel(d.thicknessIn)}<small>{label}</small></div>
+            <p className="hero-sub">{d.governing ? <>Governed by <b>{d.governing.label.split(':')[0].toLowerCase()}</b>.</> : null}</p>
+          </>
+        )}
+        <p className="rec-for">For: {what}; {T(ap.processF)} {ap.system === 'duct' ? 'air' : 'fluid'} in {T(ap.ambientF)} air at {ap.rh}% RH.</p>
+      </div>
+      <div className="rcards">
+        <div className="rcard"><span className="rcard-label">Outer surface</span><span className="rcard-value">{T(ev.ins.result.surfaceF)}</span><span className="rcard-sub">bare: {T(ev.bare.result.surfaceF)}</span></div>
+        {beh !== 'hot' ? (
+          <div className={`rcard ${ev.ins.moisture.marginF >= s.dewMarginF ? 'good' : 'bad'}`}><span className="rcard-label">Dew point margin</span><span className="rcard-value">{fmt.tempDelta(ev.ins.moisture.marginF, units, 1)}</span><span className="rcard-sub">dew point {T(ev.ins.moisture.dewF)}</span></div>
+        ) : (
+          <div className={`rcard ${ev.ins.result.surfaceF <= s.ppF ? 'good' : 'bad'}`}><span className="rcard-label">Safe-touch limit</span><span className="rcard-value">{T(s.ppF)}</span><span className="rcard-sub">{ev.ins.result.surfaceF <= s.ppF ? 'met' : 'not met'}</span></div>
+        )}
+        <div className="rcard"><span className="rcard-label">Heat {beh === 'hot' ? 'loss' : 'gain'} · bare</span><span className="rcard-value">{Q(ev.bare.result.qBtuHrFt)}</span></div>
+        <div className="rcard good"><span className="rcard-label">Heat {beh === 'hot' ? 'loss' : 'gain'} · insulated</span><span className="rcard-value">{Q(ev.ins.result.qBtuHrFt)}</span><span className="rcard-sub">{Math.round(ev.reductionPct)}% less</span></div>
+      </div>
+      <section className="recs">
+        <h3><Icon name="target" size={14} /> Every requirement</h3>
+        <ul className="design-rows">
+          {d.rows.map(({ c, rec }) => (
+            <li key={c.id} className={d.governing?.id === c.id ? 'gov' : ''}>
+              <span>{c.label}{refsFor(c.src).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</span>
+              <b>{rec.thicknessIn === null ? `> ${inchLabel(rec.maxIn)}` : rec.alreadyMet ? 'Met bare' : inchLabel(rec.thicknessIn)}</b>
+            </li>
+          ))}
+        </ul>
+        {ap.system === 'duct' && (() => {
+          const c = ductCode(s)
+          return <p className="field-note">Energy code ({DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}): {c.label}{c.derived ? ' (derived)' : ''}.</p>
+        })()}
+        {vap && (
+          <p className="field-note">
+            Vapor retarder: needs ≤ {vap.required} perm; {vap.retarder.label} is {vap.retarder.perm === null ? 'not published' : `${vap.retarder.upper ? '≤ ' : ''}${vap.retarder.perm.toFixed(3)} perm`} — {vap.meets === null ? 'check with the maker' : vap.meets ? 'meets it' : 'add or upgrade the retarder'}.
+          </p>
+        )}
+      </section>
+      {notes.length > 0 && (
+        <ul className="warnings">
+          {notes.map((n) => (
+            <li key={n.text} className="info"><Icon name="info" size={14} />{n.text}{refsFor(n.src).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</li>
+          ))}
+        </ul>
+      )}
+      <section className="recs">
+        <h3><Icon name="layers" size={14} /> Other insulations</h3>
+        <table className="mat-compare">
+          <tbody>
+            {options.slice(0, 6).map((o) => (
+              <tr key={o.id} className={o.id === pick ? 'on' : ''}>
+                <td>{o.label}</td>
+                <td>{o.design && o.design.thicknessIn !== null ? <b>{inchLabel(o.design.thicknessIn)}</b> : <span className="muted">{o.reason ?? 'beyond its range'}</span>}</td>
+                <td className="mc-act">{o.id !== pick && o.design?.thicknessIn != null && <button className="apply sm" onClick={() => onPick(o.id)}>Pick</button>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+      <button className="primary rec-open" onClick={() => onOpen(mode, s)}>
+        <Icon name="cube" size={16} /> Open in the simulator
+      </button>
+      <p className="field-note">Calculated with the simulator's engine (ASTM C680 method) and design rules; an educational / preliminary tool — confirm before specifying.</p>
     </div>
   )
 }

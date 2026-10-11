@@ -83,7 +83,7 @@ export function inchLabel(v: number) {
       let den = 16
       while (num % 2 === 0 && den > 1) { num /= 2; den /= 2 }
       f = `${num}/${den}`
-    } else f = frac.toFixed(2)
+    } else return `${(whole + frac).toFixed(2)}"` // not a sixteenth (e.g. aerogel's 10 mm wraps): plain decimal
   }
   if (!whole) return `${f || '0'}"`
   return f ? `${whole}-${f}"` : `${whole}"`

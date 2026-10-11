@@ -112,6 +112,7 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **The answer:** the design thickness, with every requirement and its source — no condensation (dew point + 0.75°F), the energy code (ASHRAE 90.1 pipe or duct tables, or IECC for ducts), personnel protection and finish limits. The governing requirement is called out.
 - **Extra notes:** the vapor-retarder check, outdoor protection (IECC C403.12.3.1), condensate-drain code status and the IMC 604.11 duct vapor retarder.
 - **Alternatives:** the other insulations, compared side by side.
+- **Recommend button:** nothing is calculated until you press **Recommend**. The answer lists the inputs it used; if you change an input afterwards, the answer greys out with an "inputs changed" notice until you press **Update recommendation**.
 - **Open in the simulator:** hands the result to the matching tab.
 - **Code:** `app/src/sim/recommend.ts`, tested in `recommend.test.ts`.
 
