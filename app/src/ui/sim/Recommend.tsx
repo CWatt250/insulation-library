@@ -111,11 +111,13 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
             <Slider label="Pipe size" value={Math.min(a.npsIndex, pipeSizesList.length - 1)} values={pipeSizesList.map((_, i) => i)} onChange={(v) => set({ npsIndex: v })} format={(v) => (a.pipe === 'copper' ? `${pipeSizesList[v].nps}" tube` : `NPS ${pipeSizesList[v].nps}"`)} accent={acc} />
             <div className="field">
               <span className="field-label">What does it carry? <small className="muted">fills typical temperatures</small></span>
-              <div className="chips">
+              <div className="chips" role="radiogroup" aria-label="What does it carry?">
                 {PIPE_USES.map((u) => {
                   const p = PRESETS.find((x) => x.id === u.id)!
+                  // lit while its temperatures are the ones in use (moving a slider clears it)
+                  const on = p.set.processF === a.processF && p.set.ambientF === a.ambientF && (p.set.rh ?? a.rh) === a.rh && (p.mode === 'condensate') === a.drain
                   return (
-                    <button key={u.id} onClick={() => set({ processF: p.set.processF, ambientF: p.set.ambientF, rh: p.set.rh ?? a.rh, drain: p.mode === 'condensate', material: 'auto' })}>{u.label}</button>
+                    <button key={u.id} role="radio" aria-checked={on} className={on ? 'on' : ''} onClick={() => set({ processF: p.set.processF, ambientF: p.set.ambientF, rh: p.set.rh ?? a.rh, drain: p.mode === 'condensate', material: 'auto' })}>{u.label}</button>
                   )
                 })}
               </div>
