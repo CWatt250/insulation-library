@@ -302,8 +302,9 @@ export function HeatWaves({ extent, intensity }: { extent: RunExtent; intensity:
   u.uTravel.value = size * (0.5 + 1.1 * i)
   u.uWidth.value = size * 0.16
   u.uAmp.value = size * 0.12
-  u.uActive.value = 0.12 + 0.88 * i
-  u.uOpacity.value = 0.18 + 0.5 * i
+  // no floor: how many waves show, and how bright, follows the heat flow
+  u.uActive.value = i
+  u.uOpacity.value = 0.3 + 0.4 * i
   ;(u.uUp.value as THREE.Vector3).set(0, extent.vertical ? 0 : 1, extent.vertical ? 1 : 0)
   u.uRise.value = extent.vertical ? 1.4 : 0.8
   useFrame((_, dt) => { u.uTime.value += dt })

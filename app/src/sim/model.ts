@@ -259,8 +259,12 @@ export function recommend(s: SimState, mode: SimMode, goal: Goal): Recommendatio
 export function rayIntensity(side: Side, mode: SimMode): number {
   const area = Math.PI * side.result.outerD // m² per m
   const flux = Math.abs(side.result.qWm) / area // W/m²
-  const ref = mode === 'hot' ? 2500 : 250
-  return Math.min(1, Math.sqrt(flux / ref))
+  // Heat waves scale with the heat actually leaving the surface, so a well
+  // insulated jacket (often under 1/10 of the bare pipe's flux) shows a faint
+  // shimmer at most while the bare stub beside it pours heat; a bare steam pipe
+  // (~1,350 W/m²) is near full strength.
+  if (mode === 'hot') return Math.min(1, flux / 1500)
+  return Math.min(1, Math.sqrt(flux / 250))
 }
 
 // ------------------------------------------------------------------ ducts
