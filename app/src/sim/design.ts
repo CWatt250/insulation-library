@@ -24,7 +24,7 @@ export function constraintsFor(s: SimState, mode: SimMode): Constraint[] {
   if (s.system === 'duct') return ductConstraints(s, mode)
   const out: Constraint[] = []
   if (mode === 'hot') {
-    out.push({ id: 'pp', label: `Personnel protection: surface ≤ ${s.ppF}°F`, goal: { kind: 'surfaceMax', F: s.ppF }, src: ['M6'] })
+    out.push({ id: 'pp', label: `Personnel protection: surface ≤ ${s.ppF}°F`, goal: { kind: 'surfaceMax', F: s.ppF }, src: ['M6', 'M10'] })
     const surf = caseFor(s, mode, 1).surface
     if (surf.maxSurfaceF !== undefined) {
       out.push({ id: 'finish', label: `${surf.label}: surface ≤ ${surf.maxSurfaceF}°F`, goal: { kind: 'surfaceMax', F: surf.maxSurfaceF }, src: surf.limitSrc ?? [] })
@@ -157,7 +157,7 @@ export function ductCode(s: SimState): DuctCodeResult {
 function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
   const out: Constraint[] = []
   if (mode === 'hot') {
-    out.push({ id: 'pp', label: `Personnel protection: surface ≤ ${s.ppF}°F`, goal: { kind: 'surfaceMax', F: s.ppF }, src: ['M6'] })
+    out.push({ id: 'pp', label: `Personnel protection: surface ≤ ${s.ppF}°F`, goal: { kind: 'surfaceMax', F: s.ppF }, src: ['M6', 'M10'] })
     // IMC 604.2: ducts above 120°F insulated to keep the exposed surface at or below 120°F
     if (s.processF > 120) out.push({ id: 'imc', label: 'IMC 604.2: duct surface ≤ 120°F', goal: { kind: 'surfaceMax', F: 120 }, src: ['C6'] })
     const surf = ductSurface(s, true)

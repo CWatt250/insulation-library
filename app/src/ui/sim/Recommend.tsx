@@ -5,7 +5,7 @@ import { INSULATION } from '../../data/catalog'
 import { PIPE_LABEL, type PipeMaterial } from '../../data/pipe'
 import { equivalentIndex, pipeSizes } from '../../data/pipes'
 import { PIPE_LIMITS } from '../../data/pipeWalls'
-import { physicsMode } from '../../sim/model'
+import { physicsMode, touchWords } from '../../sim/model'
 import { ductCode } from '../../sim/design'
 import { vaporCheck } from '../../sim/vapor'
 import { codeMinimum, PIPE_CODES } from '../../sim/code'
@@ -271,7 +271,7 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
         {beh !== 'hot' ? (
           <div className={`rcard ${ev.ins.moisture.marginF >= s.dewMarginF ? 'good' : 'bad'}`}><span className="rcard-label">Dew point margin</span><span className="rcard-value">{fmt.tempDelta(ev.ins.moisture.marginF, units, 1)}</span><span className="rcard-sub">dew point {T(ev.ins.moisture.dewF)}</span></div>
         ) : (
-          <div className={`rcard ${ev.ins.result.surfaceF <= s.ppF ? 'good' : 'bad'}`}><span className="rcard-label">Safe-touch limit</span><span className="rcard-value">{T(s.ppF)}</span><span className="rcard-sub">{ev.ins.result.surfaceF <= s.ppF ? 'met' : 'not met'}</span></div>
+          <div className={`rcard ${ev.ins.result.surfaceF <= s.ppF ? 'good' : 'bad'}`}><span className="rcard-label">Safe-touch limit</span><span className="rcard-value">{T(s.ppF)}</span><span className="rcard-sub">{ev.ins.result.surfaceF <= s.ppF ? 'met' : 'not met'} · {touchWords(ev.ins.result.surfaceF)}</span></div>
         )}
         <div className="rcard"><span className="rcard-label">Heat {beh === 'hot' ? 'loss' : 'gain'} · bare</span><span className="rcard-value">{Q(ev.bare.result.qBtuHrFt)}</span></div>
         <div className="rcard good"><span className="rcard-label">Heat {beh === 'hot' ? 'loss' : 'gain'} · insulated</span><span className="rcard-value">{Q(ev.ins.result.qBtuHrFt)}</span><span className="rcard-sub">{Math.round(ev.reductionPct)}% less</span></div>

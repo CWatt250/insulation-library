@@ -8,7 +8,7 @@ import { annualCost, money } from '../../sim/cost'
 import { SPECS } from '../../data/specs'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
 import { refsFor } from '../../sim/sources'
-import { DRIP_RATE } from '../../sim/model'
+import { DRIP_RATE, touchWords } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { currentMaterial, noun, type MaterialId } from '../../sim/system'
 import { ductCode } from '../../sim/design'
@@ -317,7 +317,7 @@ function Answer({ mode, s, ev, d, units, onApply, onSet, onGuide }: { mode: SimM
         {mode === 'hot' ? <SafetyChip safe={safe} small /> : <StatusChip status={ins.status} mode={mode} small />}
         <span>
           {mode === 'hot'
-            ? <>{yours}: <b>{Math.round(ev.reductionPct)}% less heat loss</b> · surface {T(r.surfaceF)} (safe-touch ≤ {T(s.ppF)})</>
+            ? <>{yours}: <b>{Math.round(ev.reductionPct)}% less heat loss</b> · surface {T(r.surfaceF)}, {touchWords(r.surfaceF)}</>
             : <>{yours}: surface {T(r.surfaceF)} · dew point {T(m.dewF)} (<b>{fmt.tempDelta(m.marginF, units, 1)}</b>){m.frost ? ' · frost' : ''}</>}
         </span>
       </div>

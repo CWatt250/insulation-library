@@ -38,7 +38,7 @@ export const PRESETS: Preset[] = [
     set: { processF: 250, ambientF: 80, rh: 50, npsIndex: NPS_4, insulation: 'mineral-wool', thicknessIn: 2, jacket: 'alu-smooth', facing: 'none', windMph: 0 },
   },
   {
-    id: 'hthw', mode: 'hot', label: 'High-temp heating water', blurb: 'Plant HTW distribution',
+    id: 'hthw', mode: 'hot', label: 'High-temp hot water (plant)', blurb: 'Pressurized central-plant HTW — hotter than low-pressure steam',
     range: { text: 'HTW: over 350°F, design supply usually about 400°F max', src: ['V14'] },
     set: { processF: 400, ambientF: 80, rh: 50, npsIndex: NPS_6, insulation: 'calsil', thicknessIn: 2.5, jacket: 'alu-smooth', facing: 'none', windMph: 0 },
   },

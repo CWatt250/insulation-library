@@ -3,7 +3,7 @@ import { PIPE_LABEL, THICKNESSES, type PipeMaterial } from '../../data/pipe'
 import { equivalentIndex, pipeSizes } from '../../data/pipes'
 import { PIPE_LIMITS } from '../../data/pipeWalls'
 import { presetsFor, type Preset } from '../../sim/presets'
-import { availability, kProducts, physicsMode, productForTemp, systemFor } from '../../sim/model'
+import { availability, kProducts, physicsMode, productForTemp, systemFor, touchWords } from '../../sim/model'
 import { outerSurface } from '../../sim/emittance'
 import type { MetalFinish, SimMode, SimState, VrQuality } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -313,7 +313,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
         )}
         <h4 className="adv-h">Limits and targets</h4>
         {beh === 'hot' ? (
-          <Slider label="Safe-touch limit (personnel protection)" value={s.ppF} min={100} max={180} onChange={(v) => set({ ppF: v })} format={(v) => fmt.temp(v, units)} accent={acc} />
+          <Slider label="Safe-touch limit (personnel protection)" value={s.ppF} min={100} max={180} onChange={(v) => set({ ppF: v })} format={(v) => fmt.temp(v, units)} hint={`At ${fmt.temp(s.ppF, units)} a surface ${touchWords(s.ppF)} (ASTM C1055, NIA). 125°F allows over a minute; the usual industrial spec, 140°F, about 5 seconds.`} accent={acc} />
         ) : (
           <Slider label="Required margin above dew point" value={s.dewMarginF} min={0} max={10} step={0.25} hint="3E Plus and NIA use 0.75°F." onChange={(v) => set({ dewMarginF: v })} format={(v) => fmt.margin(v, units)} accent={acc} />
         )}

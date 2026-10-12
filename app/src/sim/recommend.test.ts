@@ -92,3 +92,18 @@ describe('the answer is what an insulator would use', () => {
     expect(d.tone).toBe('warn')
   })
 })
+
+describe('safe-touch', () => {
+  it('defaults to 125°F, the most a surface can be for over a minute of contact (NIA fit to ASTM C1055) [M10]', async () => {
+    const { PP_DEFAULT_F, contactSeconds, touchWords } = await import('./model')
+    expect(PP_DEFAULT_F).toBe(125)
+    expect(contactSeconds(125)).toBe(Infinity)
+    expect(contactSeconds(128)).toBeGreaterThan(25)
+    expect(contactSeconds(128)).toBeLessThan(40)
+    // 140°F: NIA's "contact times up to about 5 seconds" [M6]
+    expect(contactSeconds(140)).toBeGreaterThan(2)
+    expect(contactSeconds(140)).toBeLessThan(6)
+    expect(contactSeconds(150)).toBe(0)
+    expect(touchWords(128)).toBe('burns after about 35 s of contact')
+  })
+})

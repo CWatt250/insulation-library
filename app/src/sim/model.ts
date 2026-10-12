@@ -97,11 +97,33 @@ export function caseFor(s: SimState, mode: SimMode, thicknessIn: number | null, 
 }
 
 /**
- * Default safe-touch surface limit, °F: "Standard industry practice is to
- * specify a maximum temperature of 140°F for surfaces that may be contacted by
- * personnel" (NIA Mechanical Insulation Design Guide, M6).
+ * Default safe-touch surface limit, °F: 125°F, under the 125.8°F below which
+ * NIA's personnel-protection calculator (a fit to ASTM C1055 Fig. 1, Threshold
+ * B) allows more than 60 seconds of contact (M10). The industry's usual 140°F
+ * "would cause no more than first-degree burns … for contact times up to about
+ * 5 seconds" (NIA MIDG, M6) — still one tap away in Advanced.
  */
-export const PP_DEFAULT_F = 140
+export const PP_DEFAULT_F = 125
+
+/**
+ * How long skin can touch a surface before a burn (reversible epidermal injury),
+ * seconds: NIA's fit to ASTM C1055 Fig. 1, Threshold B (M10). Infinity = over a
+ * minute; 0 = under a second. The fit doesn't separate jacket materials.
+ */
+export function contactSeconds(surfaceF: number): number {
+  if (surfaceF < 125.8) return Infinity
+  if (surfaceF > 148) return 0
+  const L = Math.log(surfaceF)
+  return Math.exp(1722.2 - 674.42 * L + 65.996 * L * L)
+}
+
+/** "safe to touch for over a minute", "burns after about 30 s of contact", … */
+export function touchWords(surfaceF: number): string {
+  const t = contactSeconds(surfaceF)
+  if (t === Infinity) return 'safe to touch for over a minute'
+  if (t < 1) return 'burns in under a second of contact'
+  return `burns after about ${t < 10 ? Math.round(t) : Math.round(t / 5) * 5} s of contact`
+}
 
 /** 3E Plus / NIA condensation-control margin above the dew point, °F (M4, M7, M8). */
 export const DEW_MARGIN_DEFAULT_F = 0.75
