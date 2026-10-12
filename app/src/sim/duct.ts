@@ -1,4 +1,5 @@
 import { DUCT_WRAP, ELASTOMERIC_SHEET, TABLE_6_8_2, type DuctLocation, type DuctService } from '../data/ductData'
+import { WSEC_DUCT_R } from '../data/wsecData'
 import { kCurve, kMean, solveIntegral, type KCurve } from './conductivity'
 import { solveCase, LEWIS, type CaseInput, type CaseResult, type Moisture } from './engine'
 import { flatCoeffs, surfaceCoeffs, type FlatFace } from './surface'
@@ -307,12 +308,24 @@ export function ductCodeR(service: DuctService, zone: number, location: DuctLoca
   return row ? row[location] : null
 }
 
-export type DuctCodeBasis = 'ashrae' | 'iecc'
+export type DuctCodeBasis = 'ashrae' | 'iecc' | 'wsec'
 
-export const DUCT_CODES: { id: DuctCodeBasis; label: string; short: string }[] = [
-  { id: 'ashrae', label: 'ASHRAE 90.1-2019', short: 'ASHRAE 90.1' },
-  { id: 'iecc', label: 'IECC 2021 / 2024 commercial', short: 'IECC' },
+export const DUCT_CODES: { id: DuctCodeBasis; label: string; short: string; hint?: string }[] = [
+  { id: 'ashrae', label: 'ASHRAE 90.1-2019', short: 'ASHRAE 90.1', hint: 'ASHRAE 90.1-2019 Table 6.8.2' },
+  { id: 'iecc', label: 'IECC commercial', short: 'IECC', hint: 'IECC 2021 C403.12.1 / 2024 C403.13.1' },
+  { id: 'wsec', label: 'Washington (WSEC)', short: 'WSEC', hint: '2021 Washington State Energy Code, commercial — C403.10.1' },
 ]
+
+/** Washington-only duct details: which side of the shutoff damper, unit size, energy recovery. */
+export interface WsecDuctOptions {
+  zone: '4C' | '5B'
+  /** Outdoor-air / exhaust duct: between the outside and the motorized shutoff damper, or after it. */
+  damper: 'upstream' | 'downstream'
+  /** Outdoor air: the unit moves 2,800 cfm or more. */
+  bigUnit: boolean
+  /** Return or exhaust duct downstream of energy-recovery media. */
+  erv: boolean
+}
 
 export interface DuctCodeResult {
   /** Minimum installed R; null = none required (or not stated: `notStated`). */
@@ -335,8 +348,9 @@ export interface DuctCodeResult {
  * supply and return ducts only (DM-12, DM-24).
  * @param dT design temperature difference across the duct wall, °F (IECC exception 2)
  */
-export function ductRequirement(type: DuctType, location: DuctPlace, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae', dT = Infinity): DuctCodeResult {
+export function ductRequirement(type: DuctType, location: DuctPlace, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae', dT = Infinity, wa?: WsecDuctOptions, supplyF?: number): DuctCodeResult {
   const place = DUCT_LOCATIONS.find((l) => l.id === location)!
+  if (basis === 'wsec') return wsecDuct(type, location, dT, wa ?? { zone: '4C', damper: 'downstream', bigUnit: true, erv: false }, supplyF)
   const where = `${place.short.toLowerCase()}, climate zone ${zone}`
   if (type === 'outdoor' || type === 'exhaust') {
     const what = type === 'outdoor' ? 'outside-air' : 'exhaust'
@@ -378,4 +392,47 @@ export function ductRequirement(type: DuctType, location: DuctPlace, service: Du
     label: R === null ? `None required (${svc}, ${where})` : `Installed R-${R} — ${col} column (${svc}, ${where})`,
     src: ['C19'],
   }
+}
+
+/**
+ * 2021 WSEC-C C403.10.1 (W5; research/wsec-verified.json rows WD-1..31).
+ * Washington is the one code here that sets R-values for outdoor-air and
+ * exhaust ducts. Indirectly conditioned space (return plenums) is read as
+ * conditioned space, as the IECC does (derived).
+ */
+function wsecDuct(type: DuctType, location: DuctPlace, dT: number, o: WsecDuctOptions, supplyF?: number): DuctCodeResult {
+  const z = o.zone
+  const src = ['W5']
+  const inside = location === 'conditioned' || location === 'indirect'
+  const derived = location === 'indirect'
+  const outside = location === 'exterior' || location === 'attic' || location === 'crawl' || location === 'garage'
+  if (location === 'buried') return { R: null, notStated: true, label: 'Underground ducts: "insulated as required in this section" or a listed equivalent — no R-value singled out', src }
+  if (type === 'outdoor') {
+    if (!inside) return { R: null, notStated: true, label: 'WSEC sets outdoor-air duct R-values for ducts inside the conditioned space only', src }
+    if (!o.bigUnit) return { R: WSEC_DUCT_R.outdoorAirSmallUnit[z], derived, label: `Installed R-${WSEC_DUCT_R.outdoorAirSmallUnit[z]} — outdoor-air duct, unit under 2,800 cfm (zone ${z})`, src }
+    return o.damper === 'upstream'
+      ? { R: WSEC_DUCT_R.outdoorAirBeforeDamper[z], derived, label: `Installed R-${WSEC_DUCT_R.outdoorAirBeforeDamper[z]} — outdoor-air duct between the outside and the shutoff damper (zone ${z})`, src }
+      : { R: WSEC_DUCT_R.outdoorAirAfterDamper[z], derived, label: `Installed R-${WSEC_DUCT_R.outdoorAirAfterDamper[z]} — outdoor-air duct after the shutoff damper (zone ${z})`, src }
+  }
+  if (type === 'exhaust') {
+    if (!inside) return { R: null, notStated: true, label: 'WSEC sets no R-value for exhaust ducts outdoors or in unconditioned space', src }
+    if (o.erv) return { R: WSEC_DUCT_R.afterEnergyRecovery[z], derived, label: `Installed R-${WSEC_DUCT_R.afterEnergyRecovery[z]} — exhaust downstream of energy recovery (zone ${z})`, src }
+    if (o.damper === 'downstream') return { R: WSEC_DUCT_R.exhaustAfterDamper[z], derived, label: `Installed R-${WSEC_DUCT_R.exhaustAfterDamper[z]} — exhaust or relief after the shutoff damper (zone ${z})`, src }
+    return { R: null, notStated: true, label: 'WSEC sets no R-value for exhaust ducts before the shutoff damper', src }
+  }
+  if (outside) return { R: WSEC_DUCT_R.outsideSupplyReturn[z], label: `Installed R-${WSEC_DUCT_R.outsideSupplyReturn[z]} — outside the building (includes attics above insulated ceilings, parking garages and crawl spaces), zone ${z}`, src }
+  if (location === 'unconditioned') {
+    return dT <= 15
+      ? { R: WSEC_DUCT_R.unconditionedSmallDT[z], label: `Installed R-${WSEC_DUCT_R.unconditionedSmallDT[z]} — unconditioned space, duct air within 15°F of the space (zone ${z})`, src }
+      : { R: WSEC_DUCT_R.unconditioned[z], label: `Installed R-${WSEC_DUCT_R.unconditioned[z]} — unconditioned space (zone ${z})`, src }
+  }
+  // conditioned space
+  if (type === 'return') {
+    return o.erv
+      ? { R: WSEC_DUCT_R.afterEnergyRecovery[z], derived, label: `Installed R-${WSEC_DUCT_R.afterEnergyRecovery[z]} — return downstream of energy recovery (zone ${z})`, src }
+      : { R: null, notStated: true, label: 'WSEC sets no R-value for return ducts in conditioned space (unless downstream of energy recovery)', src }
+  }
+  const f = supplyF ?? 55
+  if (f < 55 || f > 105) return { R: WSEC_DUCT_R.supplyConditioned[z], derived, label: `Installed R-${WSEC_DUCT_R.supplyConditioned[z]} — supply air below 55°F or above 105°F in conditioned space; none where the duct is exposed within the zone it serves`, src }
+  return { R: null, derived, label: 'None — supply air 55–105°F in conditioned space', src }
 }

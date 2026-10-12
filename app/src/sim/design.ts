@@ -2,7 +2,8 @@ import { INSULATION, INSULATIONS, layerCount, snapThickness, type InsulationId }
 import { THICKNESSES } from '../data/pipe'
 import { codeMinimum } from './code'
 import { availability, physicsMode, caseFor, evaluateSide, kProducts, meets, recommend, thicknessOptions, type Goal, type Recommendation, type Side } from './model'
-import { DUCT_CODES, DUCT_INSULATIONS, ductProduct, ductRequirement, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
+import { WA_COUNTIES } from '../data/wsecData'
+import { DUCT_CODES, DUCT_INSULATIONS, ductProduct, ductRequirement, type WsecDuctOptions, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
 import type { SimMode, SimState } from './types'
 import { IN_M } from './units'
 
@@ -140,9 +141,14 @@ export function materialOptions(s: SimState, mode: SimMode): MaterialOption[] {
 
 // ------------------------------------------------------------------ ducts
 
+/** Washington's county → zone, plus the duct details WSEC asks for. */
+export function waOptions(s: SimState): WsecDuctOptions {
+  return { zone: WA_COUNTIES.find((c) => c.county === s.waCounty)?.zone ?? '4C', damper: s.ductDamper, bigUnit: s.bigUnit, erv: s.erv }
+}
+
 /** The duct's code minimum for its type, location and climate zone (ASHRAE 90.1-2019 Table 6.8.2, C19). */
 export function ductCode(s: SimState): DuctCodeResult {
-  return ductRequirement(s.ductType, s.ductLocation, s.ductService, s.climateZone, s.ductCodeBasis, Math.abs(s.processF - s.ambientF))
+  return ductRequirement(s.ductType, s.ductLocation, s.ductService, s.climateZone, s.ductCodeBasis, Math.abs(s.processF - s.ambientF), waOptions(s), s.processF)
 }
 
 function ductConstraints(s: SimState, mode: SimMode): Constraint[] {

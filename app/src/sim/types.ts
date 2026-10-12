@@ -37,6 +37,11 @@ export interface SimState {
   pipeCodeBasis: PipeCodeBasis
   /** Which energy code sets the duct minimum. */
   ductCodeBasis: DuctCodeBasis
+  /** Washington: the county (sets zone 4C or 5B), and the outdoor-air / exhaust duct details WSEC asks for. */
+  waCounty: string
+  ductDamper: 'upstream' | 'downstream'
+  bigUnit: boolean
+  erv: boolean
   climateZone: number
   /** Include the inside air film (otherwise the duct wall is at the air temperature, as in 3E Plus). */
   insideFilm: boolean

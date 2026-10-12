@@ -38,13 +38,13 @@ export interface Answers {
   material: string
   /** Pipes: which energy code sets the minimum. */
   pipeCode: SimState['pipeCodeBasis']
-  duct: Pick<SimState, 'ductType' | 'ductLocation' | 'ductService' | 'climateZone' | 'ductCodeBasis' | 'ductShape' | 'ductW' | 'ductH' | 'ductD'>
+  duct: Pick<SimState, 'ductType' | 'ductLocation' | 'ductService' | 'climateZone' | 'ductCodeBasis' | 'ductShape' | 'ductW' | 'ductH' | 'ductD' | 'waCounty' | 'ductDamper' | 'bigUnit' | 'erv'>
 }
 
 export const START: Answers = {
   system: 'pipe', pipe: 'copper', npsIndex: 3, drain: false, outdoors: false,
   processF: 45, ambientF: 85, rh: 70, material: 'auto', pipeCode: 'ashrae',
-  duct: { ductType: 'supply', ductLocation: 'attic', ductService: 'both', climateZone: 4, ductCodeBasis: 'ashrae', ductShape: 'rect', ductW: 24, ductH: 12, ductD: 14 },
+  duct: { ductType: 'supply', ductLocation: 'attic', ductService: 'both', climateZone: 4, ductCodeBasis: 'ashrae', ductShape: 'rect', ductW: 24, ductH: 12, ductD: 14, waCounty: 'King', ductDamper: 'downstream', bigUnit: true, erv: false },
 }
 
 /** The simulator mode these answers belong to. */

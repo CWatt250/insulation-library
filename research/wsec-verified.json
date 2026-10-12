@@ -1,0 +1,2714 @@
+{
+ "dataset": "Washington State Energy Code (WSEC) 2021 pipe and duct insulation requirements - commercial (WAC 51-11C) and residential (WAC 51-11R) - transcribed verbatim from the Washington Administrative Code and cross-checked against the SBCC-published code books, errata and UpCodes Washington: edition in effect, climate zones (counties), Table C403.10.3 pipe insulation thickness with footnotes and every difference from IECC 2021 Table C403.12.3, service-water-heating pipe rules (C404.6, C404.7.3.1), residential piping (R403.4, R403.5.3), commercial duct Tables C403.10.1.1/C403.10.1.2 as rows, and residential duct rules (R403.3).",
+ "generated": "2026-10-11",
+ "conventions": {
+  "unverified": "The literal string 'unverified', status 'not_addressed', or an entry in the top-level 'unverified' list means no fetched source stated the item. Nothing was guessed, interpolated or filled from memory.",
+  "src": "Every item carries 'src', a list of ids in this file's 'sources' array (W1...W29). 'C1' and 'C2' are reused source ids of code-requirements-verified.json (C1 = IECC 2021 Chapter 4 [CE], C2 = IECC 2021 Chapter 4 [RE], both UpCodes Colorado 'Adopts Without Amendments'); their previously downloaded text was re-read for the IECC comparisons. 'DM-n' ids refer to duct-code-verified.json requirements_matrix cells.",
+  "quotes": "Every 'quote', '*_quote(s)', 'check*', 'title_quote' and similar string was machine-verified as a substring of the downloaded source text (whitespace collapsed) when this file was built; 'absent' checks were verified NOT to occur. Fields ending '_sup_marked' use '^{..}' for text in a raised (superscript) span of the WAC HTML. Fields ending '_image_read' were read from a rendered PDF page.",
+  "wac_formatting": "WAC HTML loses superscript formatting in plain text: 'R-valuea,b' = R-value with footnotes a,b; 'weather)c' = footnote c; 'ft2' = ft². Table cells are joined with ' | '. The first pipe-table row is served as '˃ 350' (U+02C3).",
+  "summaries": "Fields named 'note', 'parsed', 'effect', 'summary', 'condition', 'location' and row 'R'/'R_text' are the agent's structured reading of the quotes; the quotes govern.",
+  "status_values": {
+   "stated": "the WSEC text states the value",
+   "none_stated": "the WSEC text says 'None' / not required",
+   "stated_without_value": "the text states a rule but no single R-value",
+   "derived": "follows from combining quoted text; agent's reading",
+   "not_addressed": "no WSEC text read sets a value for this case"
+  },
+  "units": {
+   "R": "h·ft²·°F/Btu (installed; WSEC-C footnote a)",
+   "thickness": "inches",
+   "k": "Btu·in/(h·ft²·°F)",
+   "temperature": "°F"
+  },
+  "state_amendment": "Everything here is a Washington STATE code. Do not apply outside Washington.",
+  "verification_count": "534 strings machine-checked against source text, 0 failures"
+ },
+ "sources": [
+  {
+   "id": "W1",
+   "title": "WAC 51-11C-10100 Section C101 - Scope and general requirements (WSEC Commercial)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-10100",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-03-085, § 51-11C-10100, filed 1/16/24, effective 3/15/24'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W2",
+   "title": "WAC 51-11R-10100 Section R101 - Scope and general requirements (WSEC Residential)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-10100",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-03-084, § 51-11R-10100, filed 1/16/24, effective 3/15/24'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W3",
+   "title": "WAC 51-11C-30100 Section C301 - Climate zones (Table C301.1)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-30100",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 13-23-096, § 51-11C-30100, filed 11/20/13, effective 4/1/14.' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W4",
+   "title": "WAC 51-11R-30100 Section R301 - Climate zones (Table R301.1)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-30100",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 13-23-096, § 51-11R-30100, filed 11/20/13, effective 4/1/14.' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W5",
+   "title": "WAC 51-11C-40391 Section C403.10 - Construction of HVAC system elements (C403.10.1 duct insulation, C403.10.3 piping insulation, C403.10.4 refrigerant piping)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40391",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 22-14-091, 23-12-101, and 23-20-021, § 51-11C-40391, filed 7/1/22, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W6",
+   "title": "WAC 51-11C-40406 Section C404.6 - Pipe insulation (service water heating)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40406",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 22-14-091, 23-12-101, and 23-20-021, § 51-11C-40406, filed 7/1/22, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W7",
+   "title": "WAC 51-11C-40407 Section C404.7 - Heated-water circulating and temperature maintenance systems (C404.7.3.1 pipe insulation)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40407",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 22-14-091, 23-12-101, and 23-20-021, § 51-11C-40407, filed 7/1/22, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W8",
+   "title": "WAC 51-11C-40401 Section C404.1 - General (service water heating scope)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40401",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 22-14-091, 23-12-101, and 23-20-021, § 51-11C-40401, filed 7/1/22, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W9",
+   "title": "WAC 51-11C-40243 Section C402.5.5 - Rooms containing fuel-burning appliances (combustion-air duct R-16)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40243",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-16-145, § 51-11C-40243, filed 8/7/24, effective 9/7/24.' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W10",
+   "title": "WAC 51-11C-40378 Section C403.7.8 - Shutoff dampers",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C-40378",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "see history note on page (not used for values; cross-reference sentence only)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W11",
+   "title": "WAC 51-11R-40320 Section R403.3 - Ducts (WSEC Residential)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-40320",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-03-084, § 51-11R-40320, filed 1/16/24, effective 3/15/24' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W12",
+   "title": "WAC 51-11R-40330 Section R403.4 - Mechanical system piping insulation (WSEC Residential)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-40330",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 23-02-060, 23-12-102, and 23-20-022, § 51-11R-40330, filed 1/3/23, 6/7/23, and 9/25/23, effective 3/15/24.'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W13",
+   "title": "WAC 51-11R-40340 Section R403.5 - Service hot water systems (R403.5.3 hot water pipe insulation)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-40340",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-03-084, § 51-11R-40340, filed 1/16/24, effective 3/15/24' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W14",
+   "title": "WAC 51-11R-40370 Section R403.8 - Systems serving multiple dwelling units",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-40370",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 20-01-047, § 51-11R-40370, filed 12/9/19, effective 7/1/20.' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W15",
+   "title": "WAC 51-11R-40230 Section R402.3 - Fenestration (contains R402.3.5 Combustion air openings, combustion-air duct R-8)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R-40230",
+   "doc_type": "state administrative code web page (Washington State Energy Code section)",
+   "pub_no_or_date": "history note on page: 'WSR 24-03-084, § 51-11R-40230, filed 1/16/24, effective 3/15/24' (latest filing)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Page served in full; no sign-up wall."
+  },
+  {
+   "id": "W16",
+   "title": "Chapter 51-11C WAC - section index (WSEC Commercial)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C",
+   "doc_type": "state administrative code chapter index page",
+   "pub_no_or_date": "page: 'Last update: 11/20/24'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Used for the chapter title (edition) and the section-number map."
+  },
+  {
+   "id": "W17",
+   "title": "Chapter 51-11R WAC - section index (WSEC Residential)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R",
+   "doc_type": "state administrative code chapter index page",
+   "pub_no_or_date": "page: 'Last update: 1/16/24'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Used for the chapter title (edition) and the section-number map."
+  },
+  {
+   "id": "W18",
+   "title": "Chapter 51-11C WAC - complete chapter (WSEC Commercial, all sections on one page)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11C&full=true",
+   "doc_type": "state administrative code complete-chapter web page (6.3 MB HTML)",
+   "pub_no_or_date": "chapter index 'Last update: 11/20/24' (W16)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Searched for every occurrence of insulat*/duct/pip* to find clauses outside C403.10 and C404.6/7 (e.g. C401.2.2)."
+  },
+  {
+   "id": "W19",
+   "title": "Chapter 51-11R WAC - complete chapter (WSEC Residential, all sections on one page)",
+   "publisher": "Washington State Legislature (Washington Administrative Code)",
+   "url": "https://app.leg.wa.gov/wac/default.aspx?cite=51-11R&full=true",
+   "doc_type": "state administrative code complete-chapter web page (1.1 MB HTML)",
+   "pub_no_or_date": "chapter index 'Last update: 1/16/24' (W17)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); server-rendered HTML converted to text with a local HTML parser (table cells kept as ' | '-separated cells). Searched for every occurrence of insulat*/duct/pip* (found R402.3.5, Table R406.3 credit options 5.6/5.7)."
+  },
+  {
+   "id": "W20",
+   "title": "SBCC home page - Announcements: 2024 Codes",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/",
+   "doc_type": "agency web page",
+   "pub_no_or_date": "as served 2026-10-11 (announcement references CR-102 filed July 1, 2026)",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); HTML converted to text."
+  },
+  {
+   "id": "W21",
+   "title": "SBCC Energy Code page (State Codes, Regulations & Guidelines > Energy Code)",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/state-codes-regulations-guidelines/state-building-code/energy-code",
+   "doc_type": "agency web page",
+   "pub_no_or_date": "as served 2026-10-11",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login); HTML converted to text. Links on this page lead to W23-W26."
+  },
+  {
+   "id": "W22",
+   "title": "Remaining 2024 Code Adoption Cycle Schedule (revised 8/14/2026)",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/sites/default/files/2026-08/2024CodeAdoptionSchedule_Revised_08142026_dc.pdf",
+   "doc_type": "agency schedule PDF (2 pp.)",
+   "pub_no_or_date": "header '8/14/2026'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + pdftotext -layout (no login)."
+  },
+  {
+   "id": "W23",
+   "title": "2021 Washington State Energy Code - Commercial Provisions (chapter 51-11C WAC), 2nd Edition (Jan 2024)",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/sites/default/files/2024-01/2021_WSEC_C_2ndEd_012824.pdf",
+   "doc_type": "published code book PDF (292 pp.)",
+   "pub_no_or_date": "SBCC link text 'WAC 51-11C (Commercial) 2nd Edition (Jan 2024)'; PDF CreationDate 2024-01-28",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + pdftotext (-layout and raw), no login. PDF pages 120 (CE-114) and 122 (CE-116) rendered at 110 dpi and read visually to confirm Table C403.10.1.1 (< 2800 CFM) and Table C403.10.3 (incl. the footnote-b equation and the < 40 row). The book uses Symbol-font private-use glyphs for some < and degree signs, so checks on this source use rows whose characters extracted cleanly."
+  },
+  {
+   "id": "W24",
+   "title": "Errata 2021 WSEC-Commercial, Chapter 4 (applies to Second Printing), posted February 29, 2024",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/sites/default/files/2024-03/Errata_WSEC_C_2ndEd_Feb2024.pdf",
+   "doc_type": "errata PDF (3 pp.)",
+   "pub_no_or_date": "'Posted: February 29, 2024'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + pdftotext -layout; read in full. Corrections cover Table C402.1.3 footnote i, C402.1.4.3, C402.5.5, C403.4.1.1, C403.8.3, Table C403.8.4 - none in C301, C403.10 or C404.6/C404.7."
+  },
+  {
+   "id": "W25",
+   "title": "2021 Washington State Energy Code - Residential Provisions (chapter 51-11R WAC), 2nd Edition, 2nd Printing (Sept 2024)",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/sites/default/files/2024-10/2021%20WSEC_R%20_Sept2024.pdf",
+   "doc_type": "published code book PDF (71 pp.)",
+   "pub_no_or_date": "SBCC link text 'WAC 51-11R (Residential) 2nd Edition, 2nd Printing (Sept 2024)'; PDF CreationDate 2024-09-30",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + pdftotext (-layout and raw), no login."
+  },
+  {
+   "id": "W26",
+   "title": "ERRATA for 2021 WSEC Residential, 2nd Edition, First Printing",
+   "publisher": "Washington State Building Code Council (SBCC)",
+   "url": "https://sbcc.wa.gov/sites/default/files/2024-10/2021_WSEC_R_second_errata.pdf",
+   "doc_type": "errata PDF (6 pp.)",
+   "pub_no_or_date": "PDF CreationDate 2024-10-01",
+   "accessed": "2026-10-11",
+   "retrieval": "curl + pdftotext -layout; read in full; page 3 rendered and read visually. Corrections cover a Chapter 2 definition, Table R405.4.2(1), Table R406.3, R502.3.4 - none in R301, R403.3, R403.4 or R403.5.3."
+  },
+  {
+   "id": "W27",
+   "title": "Washington State Commercial Energy Code 2021, Chapter 4 [CE] Commercial Energy Efficiency",
+   "publisher": "UpCodes (hosting the Washington adoption)",
+   "url": "https://up.codes/viewer/washington/wa-energy-code-commercial-provisions-2021/chapter/CE_4/ce-commercial-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "page header: 'Washington State Commercial Energy Code 2021' / 'Adopts With Amendments' / 'International Energy Conservation Code 2021 (IECC 2021)'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login; chapter text served in full, no sign-up wall); HTML converted to text. Used as an independent third rendering of Tables C403.10.1.1 and C403.10.3. UpCodes loses superscripts (e.g. 'R-valuea,b')."
+  },
+  {
+   "id": "W28",
+   "title": "Washington State Residential Energy Code 2021, Chapter 4 [RE] Residential Energy Efficiency",
+   "publisher": "UpCodes (hosting the Washington adoption)",
+   "url": "https://up.codes/viewer/washington/wa-energy-code-residential-provisions-2021/chapter/RE_4/re-residential-energy-efficiency",
+   "doc_type": "code-hosting web page (full chapter, server-rendered HTML)",
+   "pub_no_or_date": "page header: 'Washington State Residential Energy Code 2021' / 'Adopts With Amendments'",
+   "accessed": "2026-10-11",
+   "retrieval": "curl (no login; chapter text served in full, no sign-up wall); HTML converted to text."
+  },
+  {
+   "id": "W29",
+   "title": "Washington State Residential Energy Code Technical Support and Education",
+   "publisher": "Washington State University Energy Program",
+   "url": "https://energy.wsu.edu/our-work/building-efficiency/washington-state-residential-energy-code-technical-support-and-education/",
+   "doc_type": "university extension web page (code support)",
+   "pub_no_or_date": "as served 2026-10-11",
+   "accessed": "2026-10-11",
+   "retrieval": "curl of https://www.energy.wsu.edu/BuildingEfficiency/EnergyCode.aspx (redirected here), HTML converted to text. The WSU 2021 WSEC-R compliance certificate and plan-submittal checklist PDFs linked from the 2021 forms page were also downloaded; they contain no duct or pipe insulation values and were not used."
+  }
+ ],
+ "edition": {
+  "summary": "In effect on 2026-10-11: the 2021 Washington State Energy Code (WSEC), based on the 2021 IECC - Commercial Provisions = chapter 51-11C WAC (WSEC-C), Residential Provisions = chapter 51-11R WAC (WSEC-R) - effective statewide March 15, 2024. The 2024 WSEC is in rulemaking (CR-102 filed July 1, 2026; final adoption targeted November 20, 2026); SBCC states the 2024 codes take effect May 3, 2027. Values in this file are the 2021 WSEC.",
+  "current": {
+   "commercial": {
+    "name": "Washington State Energy Code (2021 edition), Commercial Provisions",
+    "wac_chapter": "51-11C",
+    "effective": "2024-03-15",
+    "model_code": "2021 IECC (commercial)"
+   },
+   "residential": {
+    "name": "Washington State Energy Code-Residential (2021 edition)",
+    "wac_chapter": "51-11R",
+    "effective": "2024-03-15",
+    "model_code": "2021 IECC (residential)"
+   }
+  },
+  "items": [
+   {
+    "id": "ED-1",
+    "src": [
+     "W1"
+    ],
+    "section": "C101.1 Title (WAC 51-11C-10100)",
+    "quote": "C101.1 Title. This code shall be known as the Washington State Energy Code, and shall be cited as such.",
+    "adoption_quote": "The 2021 edition of the Washington State Energy Code is hereby adopted. The Washington State Energy Code adopted under chapter 51-11C WAC shall become effective in all counties and cities of this state on March 15, 2024."
+   },
+   {
+    "id": "ED-2",
+    "src": [
+     "W2"
+    ],
+    "section": "R101.1 Title (WAC 51-11R-10100)",
+    "quote": "R101.1 Title. This code shall be known as the Washington State Energy Code-Residential, and shall be cited as such.",
+    "adoption_quote": "The 2021 edition of the Washington State Energy Code is hereby adopted. The Washington State Energy Code adopted under chapter 51-11R WAC shall become effective in all counties and cities of this state on March 15, 2024."
+   },
+   {
+    "id": "ED-3",
+    "src": [
+     "W16",
+     "W17"
+    ],
+    "section": "WAC chapter titles",
+    "quote_51_11C": "STATE BUILDING CODE ADOPTION AND AMENDMENT OF THE 2021 EDITION OF THE INTERNATIONAL ENERGY CONSERVATION CODE, COMMERCIAL",
+    "quote_51_11R": "STATE BUILDING CODE ADOPTION AND AMENDMENT OF THE 2021 EDITION OF THE INTERNATIONAL ENERGY CONSERVATION CODE, RESIDENTIAL",
+    "last_update_quotes": [
+     "Last update: 11/20/24",
+     "Last update: 1/16/24"
+    ]
+   },
+   {
+    "id": "ED-4",
+    "src": [
+     "W21"
+    ],
+    "section": "SBCC Energy Code page",
+    "quotes": [
+     "2021 Washington State Energy Code",
+     "WAC 51-11C (Commercial) 2nd Edition (Jan 2024)",
+     "WAC 51-11R (Residential) 2nd Edition, 2nd Printing (Sept 2024)",
+     "Effective March 15, 2024",
+     "Based on the 2021 IECC."
+    ],
+    "scope_split_quote": "includes One- and Two-family dwellings, Townhouses and R-3 buildings three stories or less, and Group R-2 buildings three stories or less with dwelling units that are accessed directly from the exterior.",
+    "scope_split_note": "This sentence follows 'Please note that \"Residential\"' on the page; the page continues that \"Commercial\" includes all buildings not covered under \"Residential\". So multifamily/commercial buildings outside that list use WSEC-C (pipe Table C403.10.3, duct Tables C403.10.1.1/C403.10.1.2).",
+    "prior_edition_quotes": [
+     "2018 Washington State Energy Code",
+     "Effective February 1, 2021."
+    ]
+   },
+   {
+    "id": "ED-5",
+    "src": [
+     "W20"
+    ],
+    "section": "SBCC announcement - 2024 Codes (next edition, NOT yet in effect)",
+    "quotes": [
+     "The SBCC has filed CR-102 for the Washington State Energy Codes, Commercial and Residential July 1, 2026.",
+     "Final adoption for the Energy Codes is targeted for November 20, 2026.",
+     "The effective date of the 2024 codes will be May 3, 2027."
+    ]
+   },
+   {
+    "id": "ED-6",
+    "src": [
+     "W22"
+    ],
+    "section": "SBCC 2024 code adoption schedule (Energy Codes rows)",
+    "checks": [
+     "Remaining 2024 Code Adoption Cycle Schedule",
+     "7/1/26 through 8/7/26",
+     "11/20/26",
+     "12/2/26",
+     "Monday, May 3, 2027"
+    ],
+    "note": "Layout-extracted schedule grid: Energy Codes comment period 7/1/26-8/7/26, Council meeting for CR-103 (final adoption) 11/20/26, CR-103P filing 12/2/26, code publication/implementation Monday, May 3, 2027. Read together with ED-5."
+   },
+   {
+    "id": "ED-7",
+    "src": [
+     "W29"
+    ],
+    "section": "WSU Energy Program residential code support page",
+    "quote": "If the building permit was submitted after March 15th, 2024, it must meet requirements of 2021 WSEC-R."
+   },
+   {
+    "id": "ED-8",
+    "src": [
+     "W27",
+     "W28"
+    ],
+    "section": "UpCodes Washington page headers",
+    "quotes": [
+     "Adopts With Amendments",
+     "International Energy Conservation Code 2021 (IECC 2021)"
+    ]
+   }
+  ],
+  "wac_section_map": [
+   {
+    "code_section": "C101 Scope (edition, effective date)",
+    "wac": "51-11C-10100",
+    "src": [
+     "W1"
+    ]
+   },
+   {
+    "code_section": "C301 Climate zones / Table C301.1",
+    "wac": "51-11C-30100",
+    "src": [
+     "W3"
+    ]
+   },
+   {
+    "code_section": "C402.5.5 Rooms containing fuel-burning appliances (combustion-air duct)",
+    "wac": "51-11C-40243",
+    "src": [
+     "W9"
+    ]
+   },
+   {
+    "code_section": "C403.7.8 Shutoff dampers",
+    "wac": "51-11C-40378",
+    "src": [
+     "W10"
+    ]
+   },
+   {
+    "code_section": "C403.10 Construction of HVAC system elements: C403.10.1 duct and plenum insulation (Tables C403.10.1.1, C403.10.1.2), C403.10.2 duct construction, C403.10.3 piping insulation (Table C403.10.3), C403.10.3.1 protection, C403.10.4 refrigerant piping",
+    "wac": "51-11C-40391",
+    "src": [
+     "W5"
+    ],
+    "index_check": "51-11C-40391 | Section C403.10—Construction of HVAC system elements."
+   },
+   {
+    "code_section": "C404.1 Service water heating - General",
+    "wac": "51-11C-40401",
+    "src": [
+     "W8"
+    ]
+   },
+   {
+    "code_section": "C404.6 Pipe insulation (service hot water), C404.6.1 storage tank insulation",
+    "wac": "51-11C-40406",
+    "src": [
+     "W6"
+    ],
+    "index_check": "51-11C-40406 | Section C404.6—Pipe insulation."
+   },
+   {
+    "code_section": "C404.7 Heated-water circulating systems (C404.7.3.1 pipe insulation +1.0 in.)",
+    "wac": "51-11C-40407",
+    "src": [
+     "W7"
+    ]
+   },
+   {
+    "code_section": "R101 Scope (edition, effective date)",
+    "wac": "51-11R-10100",
+    "src": [
+     "W2"
+    ]
+   },
+   {
+    "code_section": "R301 Climate zones / Table R301.1",
+    "wac": "51-11R-30100",
+    "src": [
+     "W4"
+    ]
+   },
+   {
+    "code_section": "R402.3 Fenestration (R402.3.5 combustion-air duct R-8)",
+    "wac": "51-11R-40230",
+    "src": [
+     "W15"
+    ]
+   },
+   {
+    "code_section": "R403.3 Ducts",
+    "wac": "51-11R-40320",
+    "src": [
+     "W11"
+    ],
+    "index_check": "51-11R-40320 | Section R403.3—Ducts."
+   },
+   {
+    "code_section": "R403.4 Mechanical system piping insulation",
+    "wac": "51-11R-40330",
+    "src": [
+     "W12"
+    ],
+    "index_check": "51-11R-40330 | Section R403.4—Mechanical system piping insulation."
+   },
+   {
+    "code_section": "R403.5 Service hot water systems (R403.5.3 hot water pipe insulation)",
+    "wac": "51-11R-40340",
+    "src": [
+     "W13"
+    ],
+    "index_check": "51-11R-40340 | Section R403.5—Service hot water systems."
+   },
+   {
+    "code_section": "R403.8 Systems serving multiple dwelling units",
+    "wac": "51-11R-40370",
+    "src": [
+     "W14"
+    ]
+   }
+  ],
+  "numbering_vs_iecc_2021": {
+   "note": "WSEC renumbers the IECC 2021 sections. Quotes on each side are in pipe_commercial / duct_commercial / pipe_residential.",
+   "map": [
+    {
+     "wsec_2021": "C403.10 Construction of HVAC system elements",
+     "iecc_2021": "C403.12 Construction of HVAC System Elements",
+     "src": [
+      "W5",
+      "C1"
+     ]
+    },
+    {
+     "wsec_2021": "C403.10.1 (C403.10.1.1, C403.10.1.2) duct insulation + Tables C403.10.1.1, C403.10.1.2",
+     "iecc_2021": "C403.12.1 Duct and Plenum Insulation and Sealing (no table)",
+     "src": [
+      "W5",
+      "C1"
+     ]
+    },
+    {
+     "wsec_2021": "C403.10.3 Piping insulation / Table C403.10.3",
+     "iecc_2021": "C403.12.3 Piping Insulation / Table C403.12.3",
+     "src": [
+      "W5",
+      "C1"
+     ]
+    },
+    {
+     "wsec_2021": "C403.10.4 Insulation of HVAC system refrigerant piping",
+     "iecc_2021": "none (no refrigerant-piping clause in C1 C403.12)",
+     "src": [
+      "W5",
+      "C1"
+     ]
+    },
+    {
+     "wsec_2021": "C404.6 Insulation of piping (service hot water)",
+     "iecc_2021": "C404.4 Insulation of Piping",
+     "src": [
+      "W6",
+      "C1"
+     ]
+    },
+    {
+     "wsec_2021": "R403.5.3 Hot water pipe insulation",
+     "iecc_2021": "R403.5.2 Hot Water Pipe Insulation",
+     "src": [
+      "W13",
+      "C2"
+     ]
+    }
+   ]
+  }
+ },
+ "climate_zones": {
+  "summary": "WSEC uses two climate zones: 4C and 5B. Tables C301.1 (commercial) and R301.1 (residential) assign all 39 Washington counties: 18 to 4C and 21 to 5B. No county is 6B (or 5C) in WSEC - Ferry, Okanogan, Pend Oreille and Stevens are listed as 5B. The table key defines C = Marine and B = Dry; the labels \"west\"/\"east\" are not in the code.",
+  "zones_used": [
+   "4C",
+   "5B"
+  ],
+  "zone_6B": "none - no 6B entry in WSEC Table C301.1 or R301.1 (all four renderings checked: W3, W4, W23, W25)",
+  "commercial": {
+   "src": [
+    "W3",
+    "W23"
+   ],
+   "section": "C301.1 / Table C301.1 (WAC 51-11C-30100)",
+   "quote": "C301.1 General. Climate zones from Table C301.1 shall be used in determining the applicable requirements from Chapter 4.",
+   "table_title": "Table C301.1 Climate Zones and Moisture Regimes Designations by State and County",
+   "key_quote": "Key: A - Moist, B - Dry, C - Marine. Absence of moisture designation indicates moisture regime is irrelevant."
+  },
+  "residential": {
+   "src": [
+    "W4",
+    "W25"
+   ],
+   "section": "R301.1 / Table R301.1 (WAC 51-11R-30100)",
+   "quote": "R301.1 General. Climate zones from Table R301.1 shall be used in determining the applicable requirements from Chapter 4. Locations not in Table R301.1 (outside the United States) shall be assigned a climate zone based on Section R301.3.",
+   "table_title": "TABLE R301.1 CLIMATE ZONES, MOISTURE REGIMES, AND WARM-HUMID DESIGNATIONS BY STATE AND COUNTY",
+   "key_quote": "Key: A - Moist, B - Dry, C - Marine. Absence of moisture designation indicates moisture regime is irrelevant. Asterisk (*) indicates a warm-humid location.",
+   "warm_humid": "no Washington county carries an asterisk in the WAC table"
+  },
+  "agreement_check": "The county->zone lists of WAC Table C301.1 (W3), WAC Table R301.1 (W4), SBCC book Table C301.1 (W23) and SBCC book Table R301.1 (W25) were machine-diffed: identical, 39 counties.",
+  "by_zone": {
+   "5B": [
+    "Adams",
+    "Asotin",
+    "Benton",
+    "Chelan",
+    "Columbia",
+    "Douglas",
+    "Ferry",
+    "Franklin",
+    "Garfield",
+    "Grant",
+    "Kittitas",
+    "Klickitat",
+    "Lincoln",
+    "Okanogan",
+    "Pend Oreille",
+    "Skamania",
+    "Spokane",
+    "Stevens",
+    "Walla Walla",
+    "Whitman",
+    "Yakima"
+   ],
+   "4C": [
+    "Clallam",
+    "Clark",
+    "Cowlitz",
+    "Grays Harbor",
+    "Island",
+    "Jefferson",
+    "King",
+    "Kitsap",
+    "Lewis",
+    "Mason",
+    "Pacific",
+    "Pierce",
+    "San Juan",
+    "Skagit",
+    "Snohomish",
+    "Thurston",
+    "Wahkiakum",
+    "Whatcom"
+   ]
+  },
+  "counties": [
+   {
+    "county": "Adams",
+    "zone": "5B",
+    "check": "5B Adams"
+   },
+   {
+    "county": "Asotin",
+    "zone": "5B",
+    "check": "5B Asotin"
+   },
+   {
+    "county": "Benton",
+    "zone": "5B",
+    "check": "5B Benton"
+   },
+   {
+    "county": "Chelan",
+    "zone": "5B",
+    "check": "5B Chelan"
+   },
+   {
+    "county": "Clallam",
+    "zone": "4C",
+    "check": "4C Clallam"
+   },
+   {
+    "county": "Clark",
+    "zone": "4C",
+    "check": "4C Clark"
+   },
+   {
+    "county": "Columbia",
+    "zone": "5B",
+    "check": "5B Columbia"
+   },
+   {
+    "county": "Cowlitz",
+    "zone": "4C",
+    "check": "4C Cowlitz"
+   },
+   {
+    "county": "Douglas",
+    "zone": "5B",
+    "check": "5B Douglas"
+   },
+   {
+    "county": "Ferry",
+    "zone": "5B",
+    "check": "5B Ferry"
+   },
+   {
+    "county": "Franklin",
+    "zone": "5B",
+    "check": "5B Franklin"
+   },
+   {
+    "county": "Garfield",
+    "zone": "5B",
+    "check": "5B Garfield"
+   },
+   {
+    "county": "Grant",
+    "zone": "5B",
+    "check": "5B Grant"
+   },
+   {
+    "county": "Grays Harbor",
+    "zone": "4C",
+    "check": "4C Grays Harbor"
+   },
+   {
+    "county": "Island",
+    "zone": "4C",
+    "check": "4C Island"
+   },
+   {
+    "county": "Jefferson",
+    "zone": "4C",
+    "check": "4C Jefferson"
+   },
+   {
+    "county": "King",
+    "zone": "4C",
+    "check": "4C King"
+   },
+   {
+    "county": "Kitsap",
+    "zone": "4C",
+    "check": "4C Kitsap"
+   },
+   {
+    "county": "Kittitas",
+    "zone": "5B",
+    "check": "5B Kittitas"
+   },
+   {
+    "county": "Klickitat",
+    "zone": "5B",
+    "check": "5B Klickitat"
+   },
+   {
+    "county": "Lewis",
+    "zone": "4C",
+    "check": "4C Lewis"
+   },
+   {
+    "county": "Lincoln",
+    "zone": "5B",
+    "check": "5B Lincoln"
+   },
+   {
+    "county": "Mason",
+    "zone": "4C",
+    "check": "4C Mason"
+   },
+   {
+    "county": "Okanogan",
+    "zone": "5B",
+    "check": "5B Okanogan"
+   },
+   {
+    "county": "Pacific",
+    "zone": "4C",
+    "check": "4C Pacific"
+   },
+   {
+    "county": "Pend Oreille",
+    "zone": "5B",
+    "check": "5B Pend Oreille"
+   },
+   {
+    "county": "Pierce",
+    "zone": "4C",
+    "check": "4C Pierce"
+   },
+   {
+    "county": "San Juan",
+    "zone": "4C",
+    "check": "4C San Juan"
+   },
+   {
+    "county": "Skagit",
+    "zone": "4C",
+    "check": "4C Skagit"
+   },
+   {
+    "county": "Skamania",
+    "zone": "5B",
+    "check": "5B Skamania"
+   },
+   {
+    "county": "Snohomish",
+    "zone": "4C",
+    "check": "4C Snohomish"
+   },
+   {
+    "county": "Spokane",
+    "zone": "5B",
+    "check": "5B Spokane"
+   },
+   {
+    "county": "Stevens",
+    "zone": "5B",
+    "check": "5B Stevens"
+   },
+   {
+    "county": "Thurston",
+    "zone": "4C",
+    "check": "4C Thurston"
+   },
+   {
+    "county": "Wahkiakum",
+    "zone": "4C",
+    "check": "4C Wahkiakum"
+   },
+   {
+    "county": "Walla Walla",
+    "zone": "5B",
+    "check": "5B Walla Walla"
+   },
+   {
+    "county": "Whatcom",
+    "zone": "4C",
+    "check": "4C Whatcom"
+   },
+   {
+    "county": "Whitman",
+    "zone": "5B",
+    "check": "5B Whitman"
+   },
+   {
+    "county": "Yakima",
+    "zone": "5B",
+    "check": "5B Yakima"
+   }
+  ],
+  "how_the_duct_text_names_zones": {
+   "src": [
+    "W5"
+   ],
+   "quote": "where located outside the building with a minimum of R-8 insulation in Climate Zone 4 and R-12 insulation in Climate Zone 5.",
+   "note": "C403.10.1.2 body text says \"Climate Zone 4\"/\"Climate Zone 5\"; the tables say \"4C\", \"5B\" or \"4C and 5B\". Pipe Table C403.10.3 and all WSEC-R duct/pipe values do not vary by climate zone."
+  }
+ },
+ "pipe_commercial": {
+  "section": "C403.10.3 Piping insulation + Table C403.10.3 (WAC 51-11C-40391)",
+  "src": [
+   "W5",
+   "W23",
+   "W27"
+  ],
+  "status": "verified (three renderings agree on every cell: WAC HTML W5, SBCC 2nd Ed. book W23 incl. visual read of p. CE-116, UpCodes Washington W27)",
+  "scope_quote": "C403.10 Construction of HVAC system elements. Ducts, plenums, piping and other elements that are part of an HVAC system shall be constructed and insulated in accordance with Sections C403.10.1 through C403.10.3.1.",
+  "quote": "C403.10.3 Piping insulation. All piping, other than field installed HVAC system refrigerant piping, serving as part of a heating or cooling system shall be thermally insulated in accordance with Table C403.10.3.",
+  "exceptions": [
+   {
+    "n": 1,
+    "quote": "Factory-installed piping within HVAC equipment tested and rated in accordance with a test procedure referenced by this code."
+   },
+   {
+    "n": 2,
+    "quote": "Factory-installed piping within room fan-coils and unit ventilators tested and rated according to AHRI 440 (except that the sampling and variation provisions of Section 6.5 shall not apply) and 840, respectively."
+   },
+   {
+    "n": 3,
+    "quote": "Piping that conveys fluids that have a design operating temperature range between 60°F (15°C) and 105°F (41°C)."
+   },
+   {
+    "n": 4,
+    "quote": "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electric power."
+   },
+   {
+    "n": 5,
+    "quote": "Strainers, control valves, and balancing valves associated with piping 1 inch (25 mm) or less in diameter."
+   },
+   {
+    "n": 6,
+    "quote": "Direct buried piping that conveys fluids at or below 60°F (15°C)."
+   },
+   {
+    "n": 7,
+    "quote": "In radiant heating systems, sections of piping intended by design to radiate heat.",
+    "book_variant_quote": "In radiant heating systems, section of piping intended by design to radiate heat."
+   }
+  ],
+  "table": {
+   "title_quote": "Table C403.10.3 Minimum Pipe Insulation Thickness (thickness in inches)a",
+   "title_quote_sup_marked": "Minimum Pipe Insulation Thickness (thickness in inches)^{a}",
+   "title_note": "The trailing \"a\" is the footnote-a superscript (W5 HTML marks it with a raised span). Only footnote a is attached to the title; the IECC 2021 title carries \"a, c\".",
+   "column_heading_quotes": [
+    "Fluid Operating Temperature Range and Usage (°F)",
+    "Insulation Conductivity",
+    "Nominal Pipe or Tube Size (inches)",
+    "Btu • in. /(h • ft^{2} • °F)^{b}",
+    "Mean Rating Temperature, °F"
+   ],
+   "units": {
+    "thickness": "inches of insulation",
+    "conductivity": "Btu·in/(h·ft²·°F)",
+    "temperatures": "°F"
+   },
+   "size_columns_in": [
+    "< 1",
+    "1 to < 1-1/2",
+    "1-1/2 to < 4",
+    "4 to < 8",
+    "≥ 8"
+   ],
+   "size_columns_note": "Nominal pipe or tube size, inches. Last column is \"≥ 8\" in all three WSEC renderings. \"˃\" in the first row is U+02C3 as served by the WAC HTML (UpCodes and the book print \">\").",
+   "rows": [
+    {
+     "fluid_range_F_as_served": "˃ 350",
+     "fluid_min_F": 350,
+     "fluid_max_F": null,
+     "k_range_as_served": "0.32 - 0.34",
+     "k_min": 0.32,
+     "k_max": 0.34,
+     "mean_rating_temp_F": 250,
+     "thickness_in": {
+      "< 1": 4.5,
+      "1 to < 1-1/2": 5.0,
+      "1-1/2 to < 4": 5.0,
+      "4 to < 8": 5.0,
+      "≥ 8": 5.0
+     },
+     "check_wac": "˃ 350 | 0.32 - 0.34 | 250 | 4.5 | 5.0 | 5.0 | 5.0 | 5.0",
+     "check_upcodes_wa": "> 350 | 0.32 - 0.34 | 250 | 4.5 | 5.0 | 5.0 | 5.0 | 5.0",
+     "check_book": "> 350 0.32 – 0.34 250 4.5 5.0 5.0 5.0 5.0"
+    },
+    {
+     "fluid_range_F_as_served": "251 - 350",
+     "fluid_min_F": 251,
+     "fluid_max_F": 350,
+     "k_range_as_served": "0.29 - 0.32",
+     "k_min": 0.29,
+     "k_max": 0.32,
+     "mean_rating_temp_F": 200,
+     "thickness_in": {
+      "< 1": 3.0,
+      "1 to < 1-1/2": 4.0,
+      "1-1/2 to < 4": 4.5,
+      "4 to < 8": 4.5,
+      "≥ 8": 4.5
+     },
+     "check_wac": "251 - 350 | 0.29 - 0.32 | 200 | 3.0 | 4.0 | 4.5 | 4.5 | 4.5",
+     "check_upcodes_wa": "251 - 350 | 0.29 - 0.32 | 200 | 3.0 | 4.0 | 4.5 | 4.5 | 4.5",
+     "check_book": "251 – 350 0.29 – 0.32 200 3.0 4.0 4.5 4.5 4.5"
+    },
+    {
+     "fluid_range_F_as_served": "201 - 250",
+     "fluid_min_F": 201,
+     "fluid_max_F": 250,
+     "k_range_as_served": "0.27 - 0.30",
+     "k_min": 0.27,
+     "k_max": 0.3,
+     "mean_rating_temp_F": 150,
+     "thickness_in": {
+      "< 1": 2.5,
+      "1 to < 1-1/2": 2.5,
+      "1-1/2 to < 4": 2.5,
+      "4 to < 8": 3.0,
+      "≥ 8": 3.0
+     },
+     "check_wac": "201 - 250 | 0.27 - 0.30 | 150 | 2.5 | 2.5 | 2.5 | 3.0 | 3.0",
+     "check_upcodes_wa": "201 - 250 | 0.27 - 0.30 | 150 | 2.5 | 2.5 | 2.5 | 3.0 | 3.0",
+     "check_book": "201 – 250 0.27 – 0.30 150 2.5 2.5 2.5 3.0 3.0"
+    },
+    {
+     "fluid_range_F_as_served": "141 - 200",
+     "fluid_min_F": 141,
+     "fluid_max_F": 200,
+     "k_range_as_served": "0.25 - 0.29",
+     "k_min": 0.25,
+     "k_max": 0.29,
+     "mean_rating_temp_F": 125,
+     "thickness_in": {
+      "< 1": 1.5,
+      "1 to < 1-1/2": 1.5,
+      "1-1/2 to < 4": 2.0,
+      "4 to < 8": 2.0,
+      "≥ 8": 2.0
+     },
+     "check_wac": "141 - 200 | 0.25 - 0.29 | 125 | 1.5 | 1.5 | 2.0 | 2.0 | 2.0",
+     "check_upcodes_wa": "141 - 200 | 0.25 - 0.29 | 125 | 1.5 | 1.5 | 2.0 | 2.0 | 2.0",
+     "check_book": "141 – 200 0.25 – 0.29 125 1.5 1.5 2.0 2.0 2.0"
+    },
+    {
+     "fluid_range_F_as_served": "105 - 140",
+     "fluid_min_F": 105,
+     "fluid_max_F": 140,
+     "k_range_as_served": "0.21 - 0.28",
+     "k_min": 0.21,
+     "k_max": 0.28,
+     "mean_rating_temp_F": 100,
+     "thickness_in": {
+      "< 1": 1.0,
+      "1 to < 1-1/2": 1.0,
+      "1-1/2 to < 4": 1.5,
+      "4 to < 8": 1.5,
+      "≥ 8": 1.5
+     },
+     "check_wac": "105 - 140 | 0.21 - 0.28 | 100 | 1.0 | 1.0 | 1.5 | 1.5 | 1.5",
+     "check_upcodes_wa": "105 - 140 | 0.21 - 0.28 | 100 | 1.0 | 1.0 | 1.5 | 1.5 | 1.5",
+     "check_book": "105 – 140 0.21 – 0.28 100 1.0 1.0 1.5 1.5 1.5"
+    },
+    {
+     "fluid_range_F_as_served": "40 - 60",
+     "fluid_min_F": 40,
+     "fluid_max_F": 60,
+     "k_range_as_served": "0.21 - 0.27",
+     "k_min": 0.21,
+     "k_max": 0.27,
+     "mean_rating_temp_F": 75,
+     "thickness_in": {
+      "< 1": 0.5,
+      "1 to < 1-1/2": 0.5,
+      "1-1/2 to < 4": 1.0,
+      "4 to < 8": 1.0,
+      "≥ 8": 1.0
+     },
+     "check_wac": "40 - 60 | 0.21 - 0.27 | 75 | 0.5 | 0.5 | 1.0 | 1.0 | 1.0",
+     "check_upcodes_wa": "40 - 60 | 0.21 - 0.27 | 75 | 0.5 | 0.5 | 1.0 | 1.0 | 1.0",
+     "check_book": "40 – 60 0.21 – 0.27 75 0.5 0.5 1.0 1.0 1.0"
+    },
+    {
+     "fluid_range_F_as_served": "< 40",
+     "fluid_min_F": null,
+     "fluid_max_F": 40,
+     "k_range_as_served": "0.20 - 0.26",
+     "k_min": 0.2,
+     "k_max": 0.26,
+     "mean_rating_temp_F": 75,
+     "thickness_in": {
+      "< 1": 0.5,
+      "1 to < 1-1/2": 1.0,
+      "1-1/2 to < 4": 1.0,
+      "4 to < 8": 1.0,
+      "≥ 8": 1.5
+     },
+     "check_wac": "< 40 | 0.20 - 0.26 | 75 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5",
+     "check_upcodes_wa": "< 40 | 0.20 - 0.26 | 75 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5",
+     "check_book": "< 40 0.20 – 0.26 75 0.5 1.0 1.0 1.0 1.5"
+    }
+   ],
+   "footnotes": {
+    "a": {
+     "quote": "For piping smaller than 1-1/2 inch (38 mm) and located in partitions within conditioned spaces, reduction of these thicknesses by 1 inch (25 mm) shall be permitted (before thickness adjustment required in footnote b) but not to a thickness less than 1 inch (25 mm).",
+     "parsed": {
+      "applies_to": "pipe < 1-1/2 in. in partitions within conditioned spaces",
+      "reduction_in": 1.0,
+      "floor_in": 1.0,
+      "order": "apply before footnote-b K/k adjustment"
+     }
+    },
+    "b": {
+     "quote": "For insulation outside the stated conductivity range, the minimum thickness (T) shall be determined as follows:",
+     "equation_as_served_wac_sup_marked": "r{(1 + t/r)^{K/k} - 1}",
+     "equation_as_served_wac_note": "The WAC HTML prints \"T\", an empty cell, then \"r{(1 + t/r)^(K/k) - 1}\" (K/k in a raised span); the \"=\" sign is NOT present in the served HTML.",
+     "equation_book": "T = r{(1 + t/r)K/k – 1}",
+     "equation_book_image_read": "T = r{(1 + t/r)^(K/k) - 1}  (p. CE-116 read visually: K/k is a superscript exponent)",
+     "equation_normalized": "T = r * ((1 + t/r)^(K/k) - 1)",
+     "variables": {
+      "T": "Minimum insulation thickness.",
+      "r": "Actual outside radius of pipe.",
+      "t": "Insulation thickness listed in the table for applicable fluid temperature and pipe size.",
+      "K": "Conductivity of alternate material at mean rating temperature indicated for the applicable fluid temperature (Btu × in/h × ft2 × °F).",
+      "k": "The upper value of the conductivity range listed in the table for the applicable fluid temperature."
+     }
+    },
+    "c": {
+     "quote": "For direct-buried heating and hot water system piping, reduction of these thicknesses by 1-1/2 inches (38 mm) shall be permitted (before thickness adjustment required in footnote b but not to thicknesses less than 1 inch (25 mm).",
+     "parsed": {
+      "applies_to": "direct-buried heating and hot water system piping",
+      "reduction_in": 1.5,
+      "floor_in": 1.0,
+      "order": "apply before footnote-b K/k adjustment"
+     },
+     "marker_note": "Footnote c is printed under the table in W5, W23 and W27, but no \"c\" marker appears in the WSEC table title, headings or cells (W5 HTML superscripts are only a, b and ft2; W23 p. CE-116 read visually). The closing parenthesis after \"footnote b\" is missing as printed (same in IECC 2021)."
+    }
+   }
+  },
+  "protection_C403_10_3_1": {
+   "src": [
+    "W5"
+   ],
+   "quote": "C403.10.3.1 Protection of piping insulation. Piping insulation exposed to weather shall be protected from damage, including that due to sunlight, moisture, physical damage and wind, and shall provide shielding from solar radiation that can cause degradation of the material. Protection shall be removable for no less than six feet from the equipment for maintenance. Adhesive tape shall not be permitted."
+  },
+  "refrigerant_piping_C403_10_4": {
+   "src": [
+    "W5",
+    "W23"
+   ],
+   "quote": "C403.10.4 Insulation of HVAC system refrigerant piping. Field installed HVAC refrigerant piping, other than piping factory installed in HVAC equipment, shall have insulation as listed below, at a conductivity rating of 0.21 to 0.26 Btu × in/(h × ft2 × °F) with a mean temperature rating of 75°F. Piping insulation exposed to weather shall be protected from damage, including that due to sunlight, moisture, physical damage and wind, and shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall not be permitted. Manufacturer's required minimum pipe insulation shall be maintained.",
+   "items_quotes": [
+    "1. For lines that convey hot gas for space heating:",
+    "1.1. Minimum 1-inch insulation on the portions outside the building thermal envelope.",
+    "1.2. Minimum 1/2-inch insulation on the portions within the building thermal envelope.",
+    "2. Minimum 1/2-inch insulation on the liquid line for mini-split systems and other systems for which insulation is required by the manufacturer, or where the metering device is located in the outdoor unit.",
+    "3. No insulation is required on the liquid line for other heat pump types or for cooling-only units where insulation is not required by the manufacturer."
+   ],
+   "parsed": [
+    {
+     "line": "hot gas (space heating)",
+     "location": "outside building thermal envelope",
+     "min_thickness_in": 1.0
+    },
+    {
+     "line": "hot gas (space heating)",
+     "location": "within building thermal envelope",
+     "min_thickness_in": 0.5
+    },
+    {
+     "line": "liquid",
+     "condition": "mini-split, or manufacturer requires insulation, or metering device in outdoor unit",
+     "min_thickness_in": 0.5
+    },
+    {
+     "line": "liquid",
+     "condition": "other heat pump types / cooling-only units where manufacturer does not require insulation",
+     "min_thickness_in": 0
+    }
+   ],
+   "k_basis": {
+    "k_min": 0.21,
+    "k_max": 0.26,
+    "mean_rating_temp_F": 75
+   },
+   "note": "C403.10.4 sets no thickness for suction (vapor) lines of cooling systems; it only adds \"Manufacturer's required minimum pipe insulation shall be maintained.\" Field-installed refrigerant piping is carved out of C403.10.3, so Table C403.10.3 does not apply to it."
+  },
+  "process_equipment_C401_2_2": {
+   "src": [
+    "W18"
+   ],
+   "quote": "C401.2.2 Application to process equipment. Energy using equipment used by a manufacturing, industrial, or commercial process other than for conditioning spaces or maintaining comfort and amenities for the occupants shall comply with Section C401.3.1 Item 2, C403.3.2, Tables C403.3.2(1) through (16) inclusive, Sections C403.3.4.1 through C403.3.4.3, C403.7.7, C403.9.2.1, C403.10.3, C403.11.2, C403.11.3, Table C404.2, and Sections C405.8, C410, and C412.",
+   "note": "Process equipment remains subject to C403.10.3 (pipe insulation) even though it is exempt from most of C403."
+  },
+  "differences_from_iecc_2021_table_C403_12_3": {
+   "iecc_src": [
+    "C1"
+   ],
+   "per_row": [
+    {
+     "row": "˃ 350",
+     "iecc_check": "> 350 | 0.32—0.34 | 250 | 4.5 | 5.0 | 5.0 | 5.0 | 5.0",
+     "differences": "none"
+    },
+    {
+     "row": "251 - 350",
+     "iecc_check": "251—350 | 0.29—0.32 | 200 | 3.0 | 4.0 | 4.5 | 4.5 | 4.5",
+     "differences": "none"
+    },
+    {
+     "row": "201 - 250",
+     "iecc_check": "201—250 | 0.27—0.30 | 150 | 2.5 | 2.5 | 2.5 | 3.0 | 3.0",
+     "differences": "none"
+    },
+    {
+     "row": "141 - 200",
+     "iecc_check": "141—200 | 0.25—0.29 | 125 | 1.5 | 1.5 | 2.0 | 2.0 | 2.0",
+     "differences": "none"
+    },
+    {
+     "row": "105 - 140",
+     "iecc_check": "105—140 | 0.21—0.28 | 100 | 1.0 | 1.0 | 1.5 | 1.5 | 1.5",
+     "differences": "none"
+    },
+    {
+     "row": "40 - 60",
+     "iecc_check": "40—60 | 0.21—0.27 | 75 | 0.5 | 0.5 | 1.0 | 1.0 | 1.0",
+     "differences": "none"
+    },
+    {
+     "row": "< 40",
+     "iecc_check": "< 40 | 0.20—0.26 | 50 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5",
+     "differences": {
+      "mean_rating_temperature_F": {
+       "wsec": 75,
+       "iecc_2021": 50
+      }
+     }
+    }
+   ],
+   "summary": [
+    {
+     "id": "PD-1",
+     "what": "Mean rating temperature of the \"< 40\" °F row",
+     "wsec": 75,
+     "iecc_2021": 50,
+     "wsec_checks": [
+      "| < 40 | 0.20 - 0.26 | 75 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5 |",
+      "< 40 0.20 – 0.26 75 0.5 1.0 1.0 1.0 1.5",
+      "< 40 | 0.20 - 0.26 | 75 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5"
+     ],
+     "iecc_check": "< 40 | 0.20—0.26 | 50 | 0.5 | 1.0 | 1.0 | 1.0 | 1.5",
+     "effect": "Only affects the footnote-b correction: K of an alternate material for < 40 °F service is taken at 75 °F mean in WSEC vs 50 °F in IECC 2021. Thicknesses and the 0.20-0.26 range are identical."
+    },
+    {
+     "id": "PD-2",
+     "what": "All other cells (6 rows x conductivity range, mean temperature, 5 thicknesses)",
+     "wsec": "identical",
+     "iecc_2021": "identical",
+     "note": "Machine comparison against code-requirements-verified.json PIPE-1 rows (whose check strings were re-verified in C1). The IECC values quoted in the task (>350 0.32-0.34 250 4.5/5/5/5/5; 251-350 0.29-0.32 3/4/4.5/4.5/4.5; 201-250 0.27-0.30 2.5/2.5/2.5/3/3; 141-200 0.25-0.29 1.5/1.5/2/2/2; 105-140 0.21-0.28 1/1/1.5/1.5/1.5; 40-60 0.21-0.27 0.5/0.5/1/1/1; <40 0.20-0.26 0.5/1/1/1/1.5) equal the WSEC values cell for cell."
+    },
+    {
+     "id": "PD-3",
+     "what": "Scope sentence - field-installed refrigerant piping",
+     "wsec": "All piping, other than field installed HVAC system refrigerant piping, serving as part of a heating or cooling system",
+     "iecc_2021": "Piping serving as part of a heating or cooling system shall be thermally insulated in accordance with Table C403.12.3.",
+     "effect": "WSEC removes field-installed refrigerant piping from the table and regulates it by C403.10.4 (1 in./0.5 in. hot-gas, 0.5 in. liquid lines). IECC 2021 C403.12.3 has no such carve-out."
+    },
+    {
+     "id": "PD-4",
+     "what": "Title footnote markers",
+     "wsec": "a",
+     "iecc_2021": "a, c",
+     "iecc_check": "MINIMUM PIPE INSULATION THICKNESS (in inches)a, c",
+     "effect": "Footnote c (direct-buried hot piping -1.5 in., not below 1 in.) is printed in both; in WSEC it is not tied to any marker. Treat as applicable (it is part of the adopted table text)."
+    },
+    {
+     "id": "PD-5",
+     "what": "Footnote a wording",
+     "wsec": "SI equivalents added (\"1-1/2 inch (38 mm)\", \"1 inch (25 mm)\"), \"footnote b\"",
+     "iecc_2021": "For piping smaller than 11/2 inches and located in partitions within conditioned spaces, reduction of these thicknesses by 1 inch shall be permitted (before thickness adjustment required in Note b) but not to a thickness less than 1 inch.",
+     "effect": "editorial; same rule"
+    },
+    {
+     "id": "PD-6",
+     "what": "Footnote c wording",
+     "wsec": "\"footnote b\", \"(25 mm)\" added",
+     "iecc_2021": "For direct-buried heating and hot water system piping, reduction of these thicknesses by 11/2 inches (38 mm) shall be permitted (before thickness adjustment required in Note b but not to thicknesses less than 1 inch.",
+     "effect": "editorial; same rule"
+    },
+    {
+     "id": "PD-7",
+     "what": "Exception 2 wording",
+     "wsec": "\"... and 840, respectively.\"",
+     "iecc_2021": "and AHRI 840, respectively.",
+     "effect": "editorial (WSEC drops the second \"AHRI\")"
+    },
+    {
+     "id": "PD-8",
+     "what": "Exceptions 1, 3, 4, 5, 6, 7",
+     "wsec": "identical text",
+     "iecc_2021": "identical text",
+     "iecc_checks": [
+      "Factory-installed piping within HVAC equipment tested and rated in accordance with a test procedure referenced by this code.",
+      "Piping that conveys fluids that have a design operating temperature range between 60°F (15°C) and 105°F (41°C).",
+      "Piping that conveys fluids that have not been heated or cooled through the use of fossil fuels or electric power.",
+      "Strainers, control valves, and balancing valves associated with piping 1 inch (25 mm) or less in diameter.",
+      "Direct buried piping that conveys fluids at or below 60°F (15°C).",
+      "In radiant heating systems, sections of piping intended by design to radiate heat."
+     ]
+    },
+    {
+     "id": "PD-9",
+     "what": "Last size-column heading",
+     "wsec": "≥ 8",
+     "iecc_2021": "> 8 (as served by UpCodes C1)",
+     "effect": "C1 record (code-requirements-verified.json PIPE-1) already notes UpCodes serves \"> 8\" while 90.1 and IECC 2024 print \"≥ 8\"; WSEC prints \"≥ 8\". Treat as \">= 8\"."
+    },
+    {
+     "id": "PD-10",
+     "what": "Protection of piping insulation (C403.10.3.1 vs C403.12.3.1)",
+     "wsec": "adds \"physical damage\" and \"Protection shall be removable for no less than six feet from the equipment for maintenance.\"; drops \"equipment maintenance\" from the list of damage causes",
+     "iecc_2021": "Piping insulation exposed to the weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind, and shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall not be permitted."
+    },
+    {
+     "id": "PD-11",
+     "what": "SI conversion line under the table",
+     "wsec": "absent",
+     "iecc_2021": "For SI: 1 inch = 25.4 mm, °C = [(°F) — 32]/1.8.",
+     "wsec_absent_check": "For SI: 1 inch = 25.4 mm"
+    },
+    {
+     "id": "PD-12",
+     "what": "Footnote-b equation rendering",
+     "wsec": "WAC HTML omits \"=\"; SBCC book prints \"T = r{(1 + t/r)K/k – 1}\" with K/k superscript",
+     "iecc_2021": "equation image not present in the served C1 HTML (per code-requirements-verified.json PIPE-1)"
+    }
+   ]
+  },
+  "service_water_heating": {
+   "scope_C404_1": {
+    "src": [
+     "W8"
+    ],
+    "quote": "C404.1 General. This section covers the minimum efficiency of, and controls for, service water-heating equipment and insulation of service hot water piping.",
+    "exception_quote": "Energy using equipment used by a manufacturing, industrial or commercial process other than maintaining comfort and amenities for the occupants are exempt from all Section C404 subsections except Sections C404.2 and C404.13."
+   },
+   "C404_6": {
+    "section": "C404.6 Insulation of piping (WAC 51-11C-40406)",
+    "src": [
+     "W6",
+     "W27"
+    ],
+    "quote": "C404.6 Insulation of piping. Piping from a water heater to the termination of the heated water fixture supply pipe shall be insulated in accordance with Table C403.10.3. On both the inlet and outlet piping of a storage water heater or heated water storage tank, the piping to a heat trap or the first 8 feet (2438 mm) of piping, whichever is less, shall be insulated. Piping that is heat traced shall be insulated in accordance with Table C403.10.3 or the heat trace manufacturer's instructions. Tubular pipe insulation shall be installed in accordance with the insulation manufacturer's instructions. Pipe insulation shall be continuous, including through hangers and supports, such that thermal bridging is prevented, except where the piping passes through a framing member. The minimum insulation thickness requirements of this section shall not supersede any greater insulation thickness requirements necessary for the protection of piping from freezing temperatures or the protection of personnel against external surface temperatures on the insulation.",
+    "exception_intro_quote": "Tubular pipe insulation shall not be required on the following:",
+    "exceptions": [
+     {
+      "n": 1,
+      "quote": "The tubing from the connection at the termination of the fixture supply piping to a plumbing fixture or plumbing appliance."
+     },
+     {
+      "n": 2,
+      "quote": "Valves, pumps, strainers and threaded unions in piping that is 1 inch (25 mm) or less in nominal diameter."
+     },
+     {
+      "n": 3,
+      "quote": "Piping from user-controlled shower and bath mixing valves to the water outlets."
+     },
+     {
+      "n": 4,
+      "quote": "Cold-water piping of a demand recirculation water system."
+     },
+     {
+      "n": 5,
+      "quote": "Tubing from a hot drinking-water heating unit to the water outlet."
+     },
+     {
+      "n": 6,
+      "quote": "Piping at locations where a vertical support of the piping is installed."
+     },
+     {
+      "n": 7,
+      "quote": "Piping surrounded by building insulation with a thermal resistance (R-value) of not less than R-3."
+     },
+     {
+      "n": 8,
+      "quote": "Hot water piping that is part of the final pipe run to the plumbing fixture and is not part of the heated-water circulation system circulation path is not required to meet the minimum insulation requirements of Section C404.6."
+     }
+    ],
+    "parsed": "Service hot water piping uses Table C403.10.3 by design water temperature: 105-140 °F row -> 1.0 in. (< 1 and 1 to < 1-1/2 in. pipe), 1.5 in. (>= 1-1/2 in.); 141-200 °F row -> 1.5 / 1.5 / 2.0 / 2.0 / 2.0 in.",
+    "parsed_status": "derived (table lookup; the row depends on the design water temperature)"
+   },
+   "C404_6_1_storage_tank": {
+    "src": [
+     "W6"
+    ],
+    "quote": "C404.6.1 Storage tank insulation. Unfired storage tanks used to store service hot water at temperatures above 130°F (54°C) shall be wrapped with an insulating product, installed in accordance with the insulation manufacturer's instructions and providing a minimum of R-2 additional insulation for every 10°F (5°C) increase in stored water temperature above 130°F (54°C). Such additional insulation is also permitted to be integral to the tank. The insulation is permitted to be discontinuous at structural supports."
+   },
+   "C404_7_3_1_circulation": {
+    "src": [
+     "W7",
+     "W27"
+    ],
+    "quote": "C404.7.3.1 Pipe insulation. For heated water circulation systems, both supply and return pipe insulation shall be at minimum 1.0 inch thicker than that required by Table C403.10.3.",
+    "exception_quote": "Where piping is centered within a wall, ceiling or floor framing cavity with a depth at least 4 inches greater than the diameter of the pipe and that is completely filled with batt or blown-in insulation, additional pipe insulation is not required.",
+    "parsed": {
+     "adder_in": 1.0,
+     "applies_to": "supply and return piping of heated-water circulation systems"
+    },
+    "check_upcodes": "For heated water circulation systems, both supply and return pipe insulation shall be at minimum 1.0 inch thicker than that required by Table C403.10.3."
+   },
+   "differences_from_iecc_2021_C404_4": [
+    {
+     "id": "SD-1",
+     "what": "section number",
+     "wsec": "C404.6",
+     "iecc_2021": "C404.4",
+     "iecc_check": "C404.4 Insulation of Piping"
+    },
+    {
+     "id": "SD-2",
+     "what": "continuity sentence",
+     "wsec": "Pipe insulation shall be continuous, including through hangers and supports, such that thermal bridging is prevented, except where the piping passes through a framing member.",
+     "iecc_2021": "Pipe insulation shall be continuous except where the piping passes through a framing member."
+    },
+    {
+     "id": "SD-3",
+     "what": "exception 8 (final run to fixture outside the circulation path)",
+     "wsec": "present",
+     "iecc_2021": "absent",
+     "iecc_absent_check": "final pipe run to the plumbing fixture"
+    },
+    {
+     "id": "SD-4",
+     "what": "circulation-system supply and return piping +1.0 in. (C404.7.3.1)",
+     "wsec": "present",
+     "iecc_2021": "absent",
+     "iecc_absent_check": "thicker than that required by Table"
+    },
+    {
+     "id": "SD-5",
+     "what": "unfired storage tank wrap R-2 per 10 °F above 130 °F (C404.6.1)",
+     "wsec": "present",
+     "iecc_2021": "absent from C404 text",
+     "iecc_absent_check": "R-2 additional insulation"
+    },
+    {
+     "id": "SD-6",
+     "what": "exceptions 1-7 and the inlet/outlet 8 ft / heat-trace sentences",
+     "wsec": "same text",
+     "iecc_2021": "same text",
+     "iecc_checks": [
+      "Piping surrounded by building insulation with a thermal resistance (R-value) of not less than R-3.",
+      "On both the inlet and outlet piping of a storage water heater or heated water storage tank, the piping to a heat trap or the first 8 feet (2438 mm) of piping, whichever is less, shall be insulated."
+     ]
+    }
+   ]
+  }
+ },
+ "pipe_residential": {
+  "scope_note": "WSEC-R covers one- and two-family dwellings, townhouses, R-3 <= 3 stories and R-2 <= 3 stories with dwelling units accessed directly from the exterior (ED-4). Systems serving multiple dwelling units use WSEC-C C403/C404 instead (R403.8 below).",
+  "R403_4": {
+   "section": "R403.4 Mechanical system piping insulation (WAC 51-11R-40330)",
+   "src": [
+    "W12",
+    "W25",
+    "W28"
+   ],
+   "quote": "Mechanical system piping capable of carrying fluids above 105°F (41°C) or below 55°F (13°C) shall be insulated to a minimum of R-6.",
+   "exception_quote": "Up to 200 feet of hydronic system piping installed within the conditioned space may be insulated with a minimum of 1/2-inch insulation with a k value of 0.28.",
+   "exception_book_quote": "insulated with a minimum of ½-inch insulation with a k value of 0.28.",
+   "parsed": {
+    "hot_threshold_F": ">105",
+    "cold_threshold_F": "<55",
+    "min_R": 6,
+    "exception": {
+     "max_length_ft": 200,
+     "location": "within conditioned space",
+     "piping": "hydronic system piping",
+     "min_thickness_in": 0.5,
+     "k": 0.28
+    }
+   },
+   "climate_zone": "no zone qualifier in the text (applies in 4C and 5B alike)"
+  },
+  "R403_4_1_protection": {
+   "src": [
+    "W12"
+   ],
+   "quote": "R403.4.1 Protection of piping insulation. Piping insulation, including termination ends, exposed to weather shall be protected from damage, including that caused by sunlight, moisture, physical damage, and wind, and shall provide shielding from solar radiation that can cause degradation of the material. Protection shall be removable for the exposed length or no less than six inches from the equipment for maintenance. Adhesive tape shall not be permitted."
+  },
+  "R403_5_3_hot_water": {
+   "section": "R403.5.3 Hot water pipe insulation (WAC 51-11R-40340)",
+   "src": [
+    "W13",
+    "W25",
+    "W28"
+   ],
+   "quote": "Insulation for service hot water pipe, both within and outside the conditioned space, shall have a minimum thermal resistance (R-value) of R-3.",
+   "exception_quote": "Pipe insulation is permitted to be discontinuous where it passes through studs, joists or other structural members and where the insulated pipes pass other piping, conduit or vents, provided the insulation is installed tight to each obstruction.",
+   "parsed": {
+    "min_R": 3,
+    "applies_to": "all service hot water pipe, inside and outside conditioned space (no pipe-size or location limits)"
+   },
+   "section_intro_quote": "R403.5 Service hot water systems. Energy conservation measures for service hot water systems shall be in accordance with this section."
+  },
+  "R403_8_multi_unit": {
+   "src": [
+    "W14"
+   ],
+   "quote": "R403.8 Systems serving multiple dwelling units. Systems serving multiple dwelling units shall comply with Sections C403 and C404 of the WSEC—Commercial Provisions in lieu of Section R403.",
+   "parsed": "Central hydronic / DHW systems serving more than one dwelling unit -> commercial Table C403.10.3 (pipe_commercial) and C404.6/C404.7.3.1."
+  },
+  "R406_credit_R8_option": {
+   "src": [
+    "W19"
+   ],
+   "quote": "If one water heater is serving more than one dwelling unit, all hot water supply and recirculation piping shall be insulated with R-8 minimum pipe insulation.",
+   "context_quote": "For R-2 Occupancy, electric heat pump water heater(s), meeting the standards for Tier III of NEEA's advanced water heating specification, shall supply domestic hot water to all units.",
+   "status": "credit-option condition only (Table R406.3 water-heating options 5.6 and 5.7, R-2 occupancy); NOT a baseline prescriptive minimum"
+  },
+  "differences_from_iecc_2021": [
+   {
+    "id": "RD-1",
+    "what": "mechanical system piping minimum R",
+    "wsec": "R-6 (\"above 105°F ... or below 55°F\")",
+    "iecc_2021": "Mechanical system piping capable of carrying fluids greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3."
+   },
+   {
+    "id": "RD-2",
+    "what": "200 ft hydronic exception (1/2 in., k 0.28)",
+    "wsec": "present",
+    "iecc_2021": "absent",
+    "iecc_absent_check": "Up to 200 feet of hydronic"
+   },
+   {
+    "id": "RD-3",
+    "what": "protection of piping insulation",
+    "wsec": "adds \"including termination ends\", \"physical damage\", and removable \"for the exposed length or no less than six inches from the equipment\"; drops \"equipment maintenance\"",
+    "iecc_2021": "Piping insulation exposed to weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind. The protection shall provide shielding from solar radiation that can cause degradation of the material. Adhesive tape shall be prohibited."
+   },
+   {
+    "id": "RD-4",
+    "what": "service hot water pipe insulation scope",
+    "wsec": "R-3 on all service hot water pipe, within and outside conditioned space (R403.5.3)",
+    "iecc_2021": "Insulation for service hot water piping with a thermal resistance, R-value, of not less than R-3 shall be applied to the following:",
+    "iecc_2021_list_checks": [
+     "Piping 3/4 inch (19.1 mm) and larger in nominal diameter located inside the conditioned space.",
+     "Piping serving more than one dwelling unit.",
+     "Piping located outside the conditioned space.",
+     "Piping from the water heater to a distribution manifold.",
+     "Piping located under a floor slab.",
+     "Buried piping.",
+     "Supply and return piping in circulation and recirculation systems other than cold water pipe return demand recirculation systems."
+    ],
+    "effect": "WSEC removes the IECC list (so small-diameter pipe inside conditioned space also needs R-3) and adds the discontinuity exception. Section number R403.5.3 (WSEC) vs R403.5.2 (IECC 2021)."
+   }
+  ]
+ },
+ "duct_commercial": {
+  "section": "C403.10.1 Duct and plenum insulation and sealing (WAC 51-11C-40391); also C402.5.5 item 2.5 (WAC 51-11C-40243)",
+  "src": [
+   "W5",
+   "W23",
+   "W27",
+   "W9"
+  ],
+  "status": "verified - WAC HTML (W5), SBCC book p. CE-113/114/115 (W23; Table C403.10.1.1 page read visually) and UpCodes Washington (W27) agree on every R-value; one boundary discrepancy (<= vs < 2800 CFM, see WD-5/6).",
+  "text": {
+   "C403_10_1_1_shafts_plenums": "C403.10.1.1 Ducts, shafts, and plenums conveying outdoor air. Shafts and plenums conveying outdoor air from the exterior of the building to the mechanical system shall meet all air leakage and building envelope insulation requirements of Section C402, plus building envelope vapor control requirements from the International Building Code.",
+   "C403_10_1_1_ducts": "Ducts conveying outdoor air shall be insulated continuously from the building exterior to an automatic shutoff damper or heating or cooling equipment. Duct surfaces shall be insulated with the minimum insulation values in Table C403.10.1.1. Duct surfaces included as part of the building envelope shall not be used in the calculation of maximum glazing area as described in Section C402.4.1.",
+   "C403_10_1_1_exception_2800_cfm": "Outdoor air ducts serving individual supply air units with less than 2,800 cfm of total supply air capacity, provided these are insulated to the minimum insulation values in Table C403.10.1.1.",
+   "C403_10_1_1_exception_note": "The exception is unnumbered, but Table C403.10.1.1 row 4 cites \"Exception 1 to Section C403.10.1.1\". It sends units < 2,800 cfm to the R-7 row instead of the R-16 / R-8 / R-12 rows.",
+   "C403_10_1_2_body": "C403.10.1.2 Other supply and return ducts. All other supply and return air ducts and plenums shall be insulated with a minimum of R-6 insulation where located in unconditioned spaces, and where located outside the building with a minimum of R-8 insulation in Climate Zone 4 and R-12 insulation in Climate Zone 5. Ducts located underground beneath buildings shall be insulated as required in this section or have an equivalent thermal distribution efficiency. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency. Where located within a building envelope assembly, the duct or plenum shall be separated from the building exterior or unconditioned or exempt spaces by minimum insulation value as required for exterior walls by Section C402.1.3.",
+   "C403_10_1_2_exceptions": [
+    "1. Where located within equipment.",
+    "2. Supply and return ductwork located in unconditioned spaces where the design temperature difference between the interior and exterior of the duct or plenum does not exceed 15°F (8°C) and are insulated in accordance with Table C403.10.1.2."
+   ],
+   "C403_10_1_2_conditioned_supply": "Where located within conditioned space, supply ducts which convey supply air at temperatures less than 55°F or greater than 105°F shall be insulated with a minimum insulation R-value in accordance with Table C403.10.1.2.",
+   "C403_10_1_2_conditioned_supply_exception": "Ductwork exposed to view within a zone that serves that zone is not required to be insulated.",
+   "C403_10_1_2_downstream_erv": "Where located within conditioned space, return or exhaust air ducts that convey return or exhaust air downstream of an energy recovery media shall be insulated with a minimum insulation R-value in accordance with Table C403.10.1.2.",
+   "C403_10_1_2_sealing": "All ducts, air handlers, and filter boxes shall be sealed. Joints and seams shall comply with Section 603.9 of the International Mechanical Code.",
+   "C403_7_8_1_damper_cross_ref": "C403.7.8.1 Shutoff dampers for building isolation. Outdoor air supply, exhaust openings and relief outlets and stairway and elevator hoistway shaft vents shall be provided with Class I motorized dampers. See Sections C403.10.1 and C403.10.2 for ductwork insulation requirements upstream and downstream of the shutoff damper.",
+   "pressure_class_cross_refs": [
+    "C403.10.2.2 Medium-pressure duct systems. Ducts and plenums designed to operate at a static pressure greater than 2 inches water gauge (w.g.) (500 Pa) but less than 3 inches w.g. (750 Pa) shall be insulated and sealed in accordance with Section C403.10.1.",
+    "C403.10.2.3 High-pressure duct systems. Ducts designed to operate at static pressures equal to or greater than 3 inches water gauge (w.g.) (750 Pa) shall be insulated and sealed in accordance with Section C403.10.1."
+   ]
+  },
+  "tables": {
+   "C403_10_1_1": {
+    "title_quote": "Table C403.10.1.1 Outdoor Air Ductwork Insulation",
+    "headings_check": "Duct system | Duct Location and Use | Climate Zone | Airflow | Minimum Installed Duct Insulation R-valuea,b | Notes",
+    "row_note_checks": [
+     "See Section C403.10.1.1 for additional requirements",
+     "See Exception 1 to Section C403.10.1.1 for additional details"
+    ]
+   },
+   "C403_10_1_2": {
+    "title_quote": "Table C403.10.1.2 Supply, Return, Exhaust and Relief Air Ductwork Insulation",
+    "headings_check": "Duct System | Duct Location and Use | Climate Zone | Minimum Installed Duct Insulation R-valuea,b | Notes",
+    "row_note_checks": [
+     "See IMC Section 603.12 for additional requirements for condensation control at ductwork",
+     "Duct or plenum is separated from building envelope assembly with the minimum insulation value"
+    ]
+   },
+   "footnotes": {
+    "a": "Insulation R-values, measured in h·ft2·°F/Btu, are for the insulation as installed and do not include film resistance. The required minimum thicknesses do not consider water vapor transmission and possible surface condensation. Insulation resistance measured on a horizontal plane in accordance with ASTM C518 at a mean temperature of 75°F at the installed thickness.",
+    "b": "See International Mechanical Code Sections 603.12 and 604 for further details on duct insulation requirements.",
+    "c": "Includes attics above insulated ceilings, parking garages and crawl spaces.",
+    "note": "Footnotes a and b are attached to the R-value heading of both tables; footnote c (Table C403.10.1.2 only) is attached to \"Outside the building (outdoors and exposed to weather)\" (W5 superscript markup: \"weather)^{c}\").",
+    "c_marker_check": "Outside the building (outdoors and exposed to weather)^{c}"
+   }
+  },
+  "rows_note": "One row per table row per climate zone (\"4C and 5B\" rows are split). R is the minimum installed duct insulation R-value (h·ft²·°F/Btu, footnote a); R = null with status none_stated means the code says \"None\"/not required; status not_addressed means no WSEC text read sets a value for that case. No 6B rows exist (WSEC has no 6B).",
+  "rows": [
+   {
+    "id": "WD-1",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space, upstream of automatic shutoff damper",
+    "condition": "airflow >= 2800 CFM",
+    "zone": "4C",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space and upstream of automatic shutoff damper | 4C and 5B | ≥ 2800 CFM | R-16",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space and upstream of automatic shutoff damper | 4C and 5B | ≥ 2800 CFM | R-16",
+    "check_book": "Outdoor Air Inside conditioned space and upstream of automatic shutoff damper 4C and 5B ≥ 2800 CFM R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-2",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space, upstream of automatic shutoff damper",
+    "condition": "airflow >= 2800 CFM",
+    "zone": "5B",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space and upstream of automatic shutoff damper | 4C and 5B | ≥ 2800 CFM | R-16",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space and upstream of automatic shutoff damper | 4C and 5B | ≥ 2800 CFM | R-16",
+    "check_book": "Outdoor Air Inside conditioned space and upstream of automatic shutoff damper 4C and 5B ≥ 2800 CFM R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-3",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space, downstream of automatic shutoff damper to HVAC unit or room",
+    "condition": "airflow >= 2800 CFM",
+    "zone": "4C",
+    "R": 8,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 4C | ≥ 2800 CFM | R-8",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 4C | ≥ 2800 CFM | R-8",
+    "check_book": "Outdoor Air Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room 4C ≥ 2800 CFM R-8",
+    "R_text": "R-8"
+   },
+   {
+    "id": "WD-4",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space, downstream of automatic shutoff damper to HVAC unit or room",
+    "condition": "airflow >= 2800 CFM",
+    "zone": "5B",
+    "R": 12,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 5B | ≥ 2800 CFM | R-12",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room | 5B | ≥ 2800 CFM | R-12",
+    "check_book": "Outdoor Air Inside conditioned space and downstream of automatic shutoff damper to HVAC unit or room 5B ≥ 2800 CFM R-12",
+    "R_text": "R-12"
+   },
+   {
+    "id": "WD-5",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space (no damper position stated)",
+    "condition": "airflow <= 2800 CFM (WAC/UpCodes \"≤\"); book prints \"< 2800\"; exception: individual supply air units with < 2,800 cfm total supply air",
+    "zone": "4C",
+    "R": 7,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space | 4C and 5B | ≤ 2800 CFM | R-7",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space | 4C and 5B | ≤ 2800 CFM | R-7",
+    "check_book": "Outdoor Air Inside conditioned space 4C and 5B < 2800 CFM R-7",
+    "R_text": "R-7"
+   },
+   {
+    "id": "WD-6",
+    "table": "C403.10.1.1",
+    "duct_type": "outdoor air",
+    "location": "inside conditioned space (no damper position stated)",
+    "condition": "airflow <= 2800 CFM (WAC/UpCodes \"≤\"); book prints \"< 2800\"; exception: individual supply air units with < 2,800 cfm total supply air",
+    "zone": "5B",
+    "R": 7,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Outdoor Air | Inside conditioned space | 4C and 5B | ≤ 2800 CFM | R-7",
+    "check_upcodes_wa": "Outdoor Air | Inside conditioned space | 4C and 5B | ≤ 2800 CFM | R-7",
+    "check_book": "Outdoor Air Inside conditioned space 4C and 5B < 2800 CFM R-7",
+    "R_text": "R-7"
+   },
+   {
+    "id": "WD-7",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "outside the building (outdoors and exposed to weather)",
+    "condition": "outside the building = outdoors and exposed to weather; footnote c: includes attics above insulated ceilings, parking garages and crawl spaces",
+    "zone": "4C",
+    "R": 8,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 4C | R-8",
+    "check_upcodes_wa": "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 4C | R-8",
+    "check_book": "Supply Air or Return Air Outside the building (outdoors and exposed to weather)c 4C R-8",
+    "R_text": "R-8"
+   },
+   {
+    "id": "WD-8",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "outside the building (outdoors and exposed to weather)",
+    "condition": "outside the building = outdoors and exposed to weather; footnote c: includes attics above insulated ceilings, parking garages and crawl spaces",
+    "zone": "5B",
+    "R": 12,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 5B | R-12",
+    "check_upcodes_wa": "Supply air or return air | Outside the building (outdoors and exposed to weather)c | 5B | R-12",
+    "check_book": "Supply Air or Return Air Outside the building (outdoors and exposed to weather)c 5B R-12",
+    "R_text": "R-12"
+   },
+   {
+    "id": "WD-9",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "unconditioned space (enclosed but not in the building conditioned envelope)",
+    "condition": "-",
+    "zone": "4C",
+    "R": 6,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Unconditioned space (enclosed but not in the building conditioned envelope) | 4C and 5B | R-6",
+    "check_upcodes_wa": "Supply air or return air | Unconditioned space (enclosed but not in the building conditioned envelope) | 4C and 5B | R-6",
+    "check_book": "Supply Air or Return Air Unconditioned space (enclosed but not in the building conditioned envelope) 4C and 5B R-6",
+    "R_text": "R-6"
+   },
+   {
+    "id": "WD-10",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "unconditioned space (enclosed but not in the building conditioned envelope)",
+    "condition": "-",
+    "zone": "5B",
+    "R": 6,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Unconditioned space (enclosed but not in the building conditioned envelope) | 4C and 5B | R-6",
+    "check_upcodes_wa": "Supply air or return air | Unconditioned space (enclosed but not in the building conditioned envelope) | 4C and 5B | R-6",
+    "check_book": "Supply Air or Return Air Unconditioned space (enclosed but not in the building conditioned envelope) 4C and 5B R-6",
+    "R_text": "R-6"
+   },
+   {
+    "id": "WD-11",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "unconditioned space",
+    "condition": "duct air within 15 °F of the surrounding unconditioned-space air (design ΔT <= 15 °F; exception 2 of C403.10.1.2)",
+    "zone": "4C",
+    "R": 3.3,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space | 4C and 5B | R-3.3",
+    "check_upcodes_wa": "Supply air or return air | Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space | 4C and 5B | R-3.3",
+    "check_book": "Supply Air or Return Air Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space 4C and 5B R-3.3",
+    "R_text": "R-3.3"
+   },
+   {
+    "id": "WD-12",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "unconditioned space",
+    "condition": "duct air within 15 °F of the surrounding unconditioned-space air (design ΔT <= 15 °F; exception 2 of C403.10.1.2)",
+    "zone": "5B",
+    "R": 3.3,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space | 4C and 5B | R-3.3",
+    "check_upcodes_wa": "Supply air or return air | Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space | 4C and 5B | R-3.3",
+    "check_book": "Supply Air or Return Air Unconditioned space where the duct conveys air that is within 15°F of the air temperature of the surrounding unconditioned space 4C and 5B R-3.3",
+    "R_text": "R-3.3"
+   },
+   {
+    "id": "WD-13",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "within a building envelope assembly",
+    "condition": "table value; body text: separation \"by minimum insulation value as required for exterior walls by Section C402.1.3\"",
+    "zone": "4C",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Where located in a building envelope assembly | 4C and 5B | R-16",
+    "check_upcodes_wa": "Supply air or return air | Where located in a building envelope assembly | 4C and 5B | R-16",
+    "check_book": "Supply Air or Return Air Where located in a building envelope assembly 4C and 5B R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-14",
+    "table": "C403.10.1.2",
+    "duct_type": "supply or return",
+    "location": "within a building envelope assembly",
+    "condition": "table value; body text: separation \"by minimum insulation value as required for exterior walls by Section C402.1.3\"",
+    "zone": "5B",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air or return air | Where located in a building envelope assembly | 4C and 5B | R-16",
+    "check_upcodes_wa": "Supply air or return air | Where located in a building envelope assembly | 4C and 5B | R-16",
+    "check_book": "Supply Air or Return Air Where located in a building envelope assembly 4C and 5B R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-15",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within conditioned space",
+    "condition": "supply air < 55 °F or > 105 °F",
+    "zone": "4C",
+    "R": 3.3,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | R-3.3",
+    "check_upcodes_wa": "Supply air | Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | R-3.3",
+    "check_book": "Supply Air Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F 4C and 5B R-3.3",
+    "R_text": "R-3.3"
+   },
+   {
+    "id": "WD-16",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within conditioned space",
+    "condition": "supply air < 55 °F or > 105 °F",
+    "zone": "5B",
+    "R": 3.3,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | R-3.3",
+    "check_upcodes_wa": "Supply air | Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | R-3.3",
+    "check_book": "Supply Air Within conditioned space where the supply duct conveys air that is less than 55°F or greater than 105°F 4C and 5B R-3.3",
+    "R_text": "R-3.3"
+   },
+   {
+    "id": "WD-17",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within the conditioned space (zone) that the duct directly serves",
+    "condition": "supply air < 55 °F or > 105 °F (exception: ductwork exposed to view within the zone it serves)",
+    "zone": "4C",
+    "R": null,
+    "status": "none_stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | None",
+    "check_upcodes_wa": "Supply air | Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | None",
+    "check_book": "Supply Air Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F 4C and 5B None",
+    "R_text": "None"
+   },
+   {
+    "id": "WD-18",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within the conditioned space (zone) that the duct directly serves",
+    "condition": "supply air < 55 °F or > 105 °F (exception: ductwork exposed to view within the zone it serves)",
+    "zone": "5B",
+    "R": null,
+    "status": "none_stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | None",
+    "check_upcodes_wa": "Supply air | Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F | 4C and 5B | None",
+    "check_book": "Supply Air Within conditioned space that the duct directly serves where the supply duct conveys air that is less than 55°F or greater than 105°F 4C and 5B None",
+    "R_text": "None"
+   },
+   {
+    "id": "WD-19",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within conditioned space",
+    "condition": "55 °F <= supply air <= 105 °F",
+    "zone": "4C",
+    "R": null,
+    "status": "none_stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space where the supply duct conveys air that is 55°F or greater and 105°F or less | 4C and 5B | None",
+    "check_upcodes_wa": "Supply air | Within conditioned space where the supply duct conveys air that is 55°F or greater and 105°F or less | 4C and 5B | None",
+    "check_book": "Supply Air Within conditioned space where the supply duct conveys air that is 55 °F or greater and 105 °F or less 4C and 5B None",
+    "R_text": "None"
+   },
+   {
+    "id": "WD-20",
+    "table": "C403.10.1.2",
+    "duct_type": "supply",
+    "location": "within conditioned space",
+    "condition": "55 °F <= supply air <= 105 °F",
+    "zone": "5B",
+    "R": null,
+    "status": "none_stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Supply air | Within conditioned space where the supply duct conveys air that is 55°F or greater and 105°F or less | 4C and 5B | None",
+    "check_upcodes_wa": "Supply air | Within conditioned space where the supply duct conveys air that is 55°F or greater and 105°F or less | 4C and 5B | None",
+    "check_book": "Supply Air Within conditioned space where the supply duct conveys air that is 55 °F or greater and 105 °F or less 4C and 5B None",
+    "R_text": "None"
+   },
+   {
+    "id": "WD-21",
+    "table": "C403.10.1.2",
+    "duct_type": "return or exhaust",
+    "location": "within conditioned space",
+    "condition": "downstream of an energy recovery media, upstream of an automatic shutoff damper",
+    "zone": "4C",
+    "R": 8,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 4C | R-8",
+    "check_upcodes_wa": "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 4C | R-8",
+    "check_book": "Return or Exhaust Air Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper 4C R-8",
+    "R_text": "R-8"
+   },
+   {
+    "id": "WD-22",
+    "table": "C403.10.1.2",
+    "duct_type": "return or exhaust",
+    "location": "within conditioned space",
+    "condition": "downstream of an energy recovery media, upstream of an automatic shutoff damper",
+    "zone": "5B",
+    "R": 12,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 5B | R-12",
+    "check_upcodes_wa": "Return or exhaust air | Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper | 5B | R-12",
+    "check_book": "Return or Exhaust Air Within conditioned space, downstream of an energy recovery media, upstream of an automatic shutoff damper 5B R-12",
+    "R_text": "R-12"
+   },
+   {
+    "id": "WD-23",
+    "table": "C403.10.1.2",
+    "duct_type": "relief or exhaust",
+    "location": "conditioned space",
+    "condition": "downstream of an automatic shutoff damper",
+    "zone": "4C",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Relief or exhaust air | Conditioned space and downstream of an automatic shutoff damper | 4C and 5B | R-16",
+    "check_upcodes_wa": "Relief or exhaust air | Conditioned space and downstream of an automatic shutoff damper | 4C and 5B | R-16",
+    "check_book": "Relief or Exhaust Air Conditioned space and downstream of an automatic shutoff damper 4C and 5B R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-24",
+    "table": "C403.10.1.2",
+    "duct_type": "relief or exhaust",
+    "location": "conditioned space",
+    "condition": "downstream of an automatic shutoff damper",
+    "zone": "5B",
+    "R": 16,
+    "status": "stated",
+    "src": [
+     "W5",
+     "W23",
+     "W27"
+    ],
+    "check": "Relief or exhaust air | Conditioned space and downstream of an automatic shutoff damper | 4C and 5B | R-16",
+    "check_upcodes_wa": "Relief or exhaust air | Conditioned space and downstream of an automatic shutoff damper | 4C and 5B | R-16",
+    "check_book": "Relief or Exhaust Air Conditioned space and downstream of an automatic shutoff damper 4C and 5B R-16",
+    "R_text": "R-16"
+   },
+   {
+    "id": "WD-25",
+    "table": null,
+    "duct_type": "supply or return",
+    "location": "within equipment",
+    "condition": "C403.10.1.2 exception 1",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "none required",
+    "status": "none_stated",
+    "src": [
+     "W5"
+    ],
+    "quote": "1. Where located within equipment."
+   },
+   {
+    "id": "WD-26",
+    "table": null,
+    "duct_type": "supply or return",
+    "location": "underground beneath buildings",
+    "condition": "-",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "as required in C403.10.1.2 (no specific value for this location) or a listed and labeled equivalent thermal distribution efficiency",
+    "status": "stated_without_value",
+    "src": [
+     "W5"
+    ],
+    "quote": "Ducts located underground beneath buildings shall be insulated as required in this section or have an equivalent thermal distribution efficiency. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency."
+   },
+   {
+    "id": "WD-27",
+    "table": null,
+    "duct_type": "combustion air (to an enclosed room containing a space-conditioning fuel-burning appliance, C402.5.5 option 2)",
+    "location": "passing through conditioned space",
+    "condition": "combustion air supplied through openings in an exterior wall to a room with a space conditioning fuel-burning appliance",
+    "zone": "4C and 5B",
+    "R": 16,
+    "R_text": "R-16",
+    "status": "stated",
+    "src": [
+     "W9",
+     "W24"
+    ],
+    "quote": "Where the air duct supplying combustion air to the enclosed room or space passes through conditioned space, the duct shall be insulated to an R-value of not less than R-16.",
+    "scope_quote": "C402.5.5 Rooms containing fuel-burning appliances. Where combustion air is supplied through openings in an exterior wall to a room or space containing a space conditioning fuel-burning appliance, one of the following shall apply:",
+    "exception_quote": "Fireplaces and stoves complying with Sections 901 through 905 of the International Mechanical Code, and Section 2111.14 of the International Building Code.",
+    "note": "Not in DM-43..DM-52. The SBCC errata (W24) reprints C402.5.5 with item 2.5 unchanged (its correction is the IBC section reference in the exception)."
+   },
+   {
+    "id": "WD-28",
+    "table": null,
+    "duct_type": "outdoor air",
+    "location": "outdoors or in unconditioned space (outside the conditioned space)",
+    "condition": "-",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "no R-value stated",
+    "status": "not_addressed",
+    "src": [
+     "W5"
+    ],
+    "quote": "Ducts conveying outdoor air shall be insulated continuously from the building exterior to an automatic shutoff damper or heating or cooling equipment.",
+    "note": "Every Table C403.10.1.1 row is \"Inside conditioned space\"; C403.10.1.2 covers \"other supply and return\" ducts. No WSEC text read gives an R-value for outdoor-air ducts located outdoors or in unconditioned space. Shafts/plenums conveying outdoor air must meet C402 envelope insulation (see shaft_plenum quote)."
+   },
+   {
+    "id": "WD-29",
+    "table": null,
+    "duct_type": "return",
+    "location": "within conditioned space",
+    "condition": "not downstream of energy recovery media",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "no requirement stated",
+    "status": "not_addressed",
+    "src": [
+     "W5"
+    ],
+    "note": "C403.10.1.2 requires conditioned-space insulation only for supply ducts (< 55 °F or > 105 °F) and return/exhaust ducts downstream of energy recovery media."
+   },
+   {
+    "id": "WD-30",
+    "table": null,
+    "duct_type": "exhaust or relief",
+    "location": "outdoors or in unconditioned space",
+    "condition": "-",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "no R-value stated",
+    "status": "not_addressed",
+    "src": [
+     "W5"
+    ],
+    "note": "Table C403.10.1.2 rows for exhaust/relief are conditioned-space rows only (downstream of ERV media; downstream of an automatic shutoff damper)."
+   },
+   {
+    "id": "WD-31",
+    "table": null,
+    "duct_type": "exhaust or relief",
+    "location": "within conditioned space, upstream of the automatic shutoff damper",
+    "condition": "not downstream of energy recovery media",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "no requirement stated",
+    "status": "not_addressed",
+    "src": [
+     "W5"
+    ]
+   }
+  ],
+  "dm_cross_check": {
+   "note": "duct-code-verified.json DM-43..DM-52 (source D_C21 = same URL as W5) were re-checked: every DM check string is present in today's W5 download, and their R-values equal rows WD-1..WD-24. Additions here: WD-25..WD-31 (text-only rows), the combustion-air R-16 rule (WD-27), the envelope-assembly body-text wording, and the SBCC-book \"< 2800\" discrepancy for DM-46.",
+   "results": [
+    {
+     "dm": "DM-43",
+     "wd_rows": [
+      "WD-28"
+     ],
+     "strings_rechecked_in_W5": 2,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-44",
+     "wd_rows": [
+      "WD-1",
+      "WD-2"
+     ],
+     "strings_rechecked_in_W5": 1,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-45",
+     "wd_rows": [
+      "WD-3",
+      "WD-4"
+     ],
+     "strings_rechecked_in_W5": 2,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-46",
+     "wd_rows": [
+      "WD-5",
+      "WD-6"
+     ],
+     "strings_rechecked_in_W5": 2,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-47",
+     "wd_rows": [
+      "WD-7",
+      "WD-8"
+     ],
+     "strings_rechecked_in_W5": 3,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-48",
+     "wd_rows": [
+      "WD-9",
+      "WD-10",
+      "WD-11",
+      "WD-12"
+     ],
+     "strings_rechecked_in_W5": 2,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-49",
+     "wd_rows": [
+      "WD-13",
+      "WD-14"
+     ],
+     "strings_rechecked_in_W5": 1,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-50",
+     "wd_rows": [
+      "WD-15",
+      "WD-16",
+      "WD-17",
+      "WD-18",
+      "WD-19",
+      "WD-20"
+     ],
+     "strings_rechecked_in_W5": 4,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-51",
+     "wd_rows": [
+      "WD-21",
+      "WD-22"
+     ],
+     "strings_rechecked_in_W5": 2,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-52",
+     "wd_rows": [
+      "WD-23",
+      "WD-24"
+     ],
+     "strings_rechecked_in_W5": 1,
+     "result": "confirmed"
+    },
+    {
+     "dm": "DM-46",
+     "discrepancy": "DM-46 check uses \"≤ 2800 CFM\" (WAC HTML, also UpCodes WA). The SBCC 2nd Ed. book prints \"< 2800 CFM\" (page CE-114 read visually) and the exception text says \"less than 2,800 cfm\". At exactly 2,800 cfm the WAC table overlaps the \">= 2800\" rows."
+    }
+   ]
+  },
+  "differences_from_iecc_2021_C403_12_1": [
+   {
+    "id": "DD-1",
+    "what": "form",
+    "wsec": "two tables (C403.10.1.1 outdoor air; C403.10.1.2 supply/return/exhaust/relief) plus body text",
+    "iecc_2021": "one paragraph, no table (C403.12.1)"
+   },
+   {
+    "id": "DD-2",
+    "what": "supply/return outside the building",
+    "wsec": "R-8 (4C) / R-12 (5B) - same values",
+    "iecc_2021": "Supply and return air ducts and plenums shall be insulated with not less than R-6 insulation where located in unconditioned spaces and where located outside the building with not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8.",
+    "effect": "Same R-6 / R-8 / R-12. WSEC footnote c adds that attics above insulated ceilings, parking garages and crawl spaces count as \"outside the building\" (no such footnote in C1)."
+   },
+   {
+    "id": "DD-3",
+    "what": "within a building envelope assembly",
+    "wsec": "R-16 (table); body text: exterior-wall insulation value per C402.1.3",
+    "iecc_2021": "Where located within a building envelope assembly, the duct or plenum shall be separated from the building exterior or unconditioned or exempt spaces by not less than R-8 insulation in Climate Zones 0 through 4 and not less than R-12 insulation in Climate Zones 5 through 8."
+   },
+   {
+    "id": "DD-4",
+    "what": "design ΔT <= 15 °F in unconditioned space",
+    "wsec": "R-3.3 required (exception 2 points to Table C403.10.1.2)",
+    "iecc_2021": "Where the design temperature difference between the interior and exterior of the duct or plenum is not greater than 15°F (8°C).",
+    "effect": "IECC 2021: exempt (no insulation). WSEC: R-3.3."
+   },
+   {
+    "id": "DD-5",
+    "what": "supply ducts in conditioned space carrying < 55 °F or > 105 °F air",
+    "wsec": "R-3.3 (none within the zone served / exposed to view in that zone)",
+    "iecc_2021": "no requirement in C403.12.1",
+    "iecc_absent_check": "less than 55°F or greater than 105°F"
+   },
+   {
+    "id": "DD-6",
+    "what": "outdoor-air ducts (Table C403.10.1.1: R-16 upstream of shutoff damper, R-8/R-12 downstream, R-7 for units < 2,800 cfm)",
+    "wsec": "present",
+    "iecc_2021": "absent from C403.12.1",
+    "iecc_absent_check": "automatic shutoff damper or heating or cooling equipment"
+   },
+   {
+    "id": "DD-7",
+    "what": "return/exhaust downstream of energy recovery media (R-8 4C / R-12 5B) and relief/exhaust downstream of a shutoff damper (R-16)",
+    "wsec": "present",
+    "iecc_2021": "absent",
+    "iecc_absent_check": "downstream of an energy recovery media"
+   },
+   {
+    "id": "DD-8",
+    "what": "installed-R definition (footnote a: as installed, no film resistance, ASTM C518 at 75 °F mean)",
+    "wsec": "present",
+    "iecc_2021": "absent from C403.12.1",
+    "iecc_absent_check": "Insulation resistance measured on a horizontal plane"
+   },
+   {
+    "id": "DD-9",
+    "what": "combustion-air duct through conditioned space (C402.5.5 item 2.5)",
+    "wsec": "R-16, no climate-zone qualifier",
+    "iecc_2021": "Where an air duct supplying combustion air to the enclosed room or space passes through conditioned space, the duct shall be insulated to an R-value of not less than R-8.",
+    "iecc_2021_scope_check": "In Climate Zones 3 through 8, where combustion air is supplied through openings in an exterior wall to a room or space containing a space-conditioning fuel-burning appliance, one of the following shall apply:"
+   }
+  ]
+ },
+ "duct_residential": {
+  "section": "R403.3 Ducts (WAC 51-11R-40320); R402.3.5 combustion-air duct (WAC 51-11R-40230)",
+  "src": [
+   "W11",
+   "W15",
+   "W25",
+   "W28"
+  ],
+  "quotes": {
+   "R403_3": "Ducts and air handlers shall be installed in accordance with Sections R403.3.1 through R403.3.7.",
+   "R403_3_1": "Supply and return ducts located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter. Ducts buried beneath a building shall be insulated as required per this section or have an equivalent thermal distribution efficiency. Ducts within a concrete slab or in the ground shall be insulated to R-10 with insulation designed to be used below grade. Underground ducts utilizing the thermal distribution efficiency method shall be listed and labeled to indicate the R-value equivalency.",
+   "R403_3_1_book_check": "Ducts within a concrete slab or in the ground shall be insulated to R-10 with insulation designed to be used below grade.",
+   "R403_3_2_intro_wac": "R403.3.2 Ducts located in conditioned space. For ducts to be considered as being located inside a conditioned space, such ducts shall comply with the following:",
+   "R403_3_2_intro_book": "R403.3.2 Ducts located in conditioned space. For ducts to be considered as being located inside a conditioned space, such ducts shall comply with one of the following:",
+   "R403_3_2_items": [
+    "1. All duct systems shall be located completely within the continuous air barrier and within the building thermal envelope.",
+    "2. All heating, cooling, and ventilation system components shall be installed inside the conditioned space including, but not limited to, forced air ducts, hydronic piping, hydronic floor heating loops, convectors and radiators. Combustion equipment shall be direct vent or sealed combustion.",
+    "3. For forced air ducts, a maximum of 10 linear feet of return ducts and 5 linear feet of supply ducts is permitted to be located outside the conditioned space, provided they are insulated to a minimum of R-8.",
+    "3.1. Metallic ducts located outside the conditioned space must have both transverse and longitudinal joints sealed with mastic.",
+    "3.2. If flex ducts are used, they cannot contain splices. Flex duct connections must be made with nylon straps and installed using a plastic strapping tensioning tool.",
+    "4. Ductwork in floor cavities located over unconditioned space shall comply with all of the following:",
+    "4.1. A continuous air barrier installed between unconditioned space and the duct.",
+    "4.2. Insulation installed in accordance with Section R402.2.7.",
+    "4.3. A minimum R-19 insulation installed in the cavity width separating the duct from unconditioned space.",
+    "5. Ductwork located within exterior walls of the building thermal envelope shall comply with the following:",
+    "5.1. A continuous air barrier installed between unconditioned space and the duct.",
+    "5.2. A minimum R-10 insulation installed in the cavity width separating the duct from unconditioned space.",
+    "5.3. The remainder of the cavity insulation shall be fully insulated to the drywall side."
+   ],
+   "R403_3_2_item_5_2_book": "Minimum R-10 insulation installed in the cavity width separating the duct from the outside sheathing.",
+   "R403_3_3": "R403.3.3 Ducts buried within ceiling insulation. Where supply and return air ducts are partially or completely buried in ceiling insulation, such ducts shall comply with all of the following:",
+   "R403_3_3_items": [
+    "1. The supply and return ducts shall have an insulation R-value not less than R-8.",
+    "2. At all points along each duct, the sum of the ceiling insulation R-value against and above the top of the duct, and against and below the bottom of the duct, shall be not less than R-19, excluding the R-value of the duct insulation."
+   ],
+   "R403_3_3_exception": "Sections of the supply duct that are less than 3 feet (914 mm) from the supply outlet shall not be required to comply with these requirements.",
+   "R403_3_3_1": "R403.3.3.1 Effective R-value of deeply buried ducts. Where using the total building performance compliance option in Section R405, sections of ducts that are: Installed in accordance with Section R403.3.3; located directly on, or within 5.5 inches (140 mm) of the ceiling; surrounded with blown-in attic insulation having an R-value of R-30 or greater and located such that the top of the duct is not less than 3.5 inches (89 mm) below the top of the insulation, shall be considered as having an effective duct insulation R-value of R-25.",
+   "R403_3_6_item3_crawlspace": "Ducts located in crawl spaces do not qualify for this exception.",
+   "R403_3_7": "R403.3.7 Building cavities. Building framing cavities shall not be used as ducts or plenums. Installation of ducts in exterior walls, floors or ceilings shall not displace required envelope insulation.",
+   "R402_3_5_combustion_air": "The combustion air duct shall be insulated where it passes through conditioned space to a minimum of R-8.",
+   "R402_3_5_context": "Where open combustion air ducts provide combustion air to open combustion, space conditioning fuel burning appliances, the appliances and combustion air openings shall be located outside of the building thermal envelope, or enclosed in a room isolated from inside the thermal envelope.",
+   "R402_3_5_exceptions": [
+    "1. Direct vent appliances with both intake and exhaust pipes installed continuous to the outside.",
+    "2. Fireplaces and stoves complying with Section R402.3.6 of this code and Section R1006 of the International Residential Code."
+   ]
+  },
+  "rows": [
+   {
+    "id": "WR-1",
+    "duct_type": "supply or return",
+    "location": "outside conditioned space",
+    "location_note": "agent's reading: includes unconditioned attics, crawl spaces, garages and outdoors (the code text says only 'outside conditioned space')",
+    "condition": "duct diameter >= 3 in.",
+    "zone": "4C and 5B",
+    "R": 8,
+    "R_text": "R-8",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W25",
+     "W28"
+    ]
+   },
+   {
+    "id": "WR-2",
+    "duct_type": "supply or return",
+    "location": "outside conditioned space",
+    "condition": "duct diameter < 3 in.",
+    "zone": "4C and 5B",
+    "R": 6,
+    "R_text": "R-6",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W25",
+     "W28"
+    ]
+   },
+   {
+    "id": "WR-3",
+    "duct_type": "supply or return",
+    "location": "attic (vented or unvented) outside the building thermal envelope",
+    "condition": "no attic-specific rule in WSEC-R R403.3.1; an attic outside the thermal envelope is \"outside conditioned space\" -> use WR-1 (R-8, >= 3 in.) / WR-2 (R-6, < 3 in.)",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "see WR-1 / WR-2",
+    "status": "derived",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-4",
+    "duct_type": "supply or return",
+    "location": "partially or completely buried in ceiling (attic) insulation",
+    "condition": "duct R-8 AND ceiling insulation above + below the duct >= R-19 excluding duct R; supply sections < 3 ft from the outlet exempt",
+    "zone": "4C and 5B",
+    "R": 8,
+    "R_text": "R-8 (+ >= R-19 ceiling insulation around duct)",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W28"
+    ]
+   },
+   {
+    "id": "WR-5",
+    "duct_type": "supply or return",
+    "location": "deeply buried in attic insulation (R405 performance path only)",
+    "condition": "per R403.3.3; on/within 5.5 in. of ceiling; >= R-30 blown insulation; duct top >= 3.5 in. below insulation top",
+    "zone": "4C and 5B",
+    "R": 25,
+    "R_text": "effective R-25 for modeling",
+    "status": "stated",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-6",
+    "duct_type": "supply or return",
+    "location": "buried beneath a building",
+    "condition": "-",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "as WR-1/WR-2 or listed and labeled equivalent thermal distribution efficiency",
+    "status": "stated_without_value",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-7",
+    "duct_type": "supply or return",
+    "location": "within a concrete slab or in the ground",
+    "condition": "insulation designed to be used below grade",
+    "zone": "4C and 5B",
+    "R": 10,
+    "R_text": "R-10",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W25",
+     "W28"
+    ]
+   },
+   {
+    "id": "WR-8",
+    "duct_type": "return (forced air)",
+    "location": "outside conditioned space, in a system claimed as \"ducts inside conditioned space\" (R403.3.2 item 3)",
+    "condition": "max 10 linear ft",
+    "zone": "4C and 5B",
+    "R": 8,
+    "R_text": "R-8",
+    "status": "stated",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-9",
+    "duct_type": "supply (forced air)",
+    "location": "outside conditioned space, in a system claimed as \"ducts inside conditioned space\" (R403.3.2 item 3)",
+    "condition": "max 5 linear ft",
+    "zone": "4C and 5B",
+    "R": 8,
+    "R_text": "R-8",
+    "status": "stated",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-10",
+    "duct_type": "any (counted as inside conditioned space)",
+    "location": "floor cavity over unconditioned space",
+    "condition": "continuous air barrier + R-19 in the cavity width separating duct from unconditioned space (envelope insulation, not duct wrap)",
+    "zone": "4C and 5B",
+    "R": 19,
+    "R_text": "R-19 (cavity, between duct and unconditioned space)",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W25"
+    ]
+   },
+   {
+    "id": "WR-11",
+    "duct_type": "any (counted as inside conditioned space)",
+    "location": "within exterior walls of the building thermal envelope",
+    "condition": "continuous air barrier + R-10 in the cavity width separating duct from unconditioned space (WAC; book: \"from the outside sheathing\"); rest of cavity insulated to drywall side",
+    "zone": "4C and 5B",
+    "R": 10,
+    "R_text": "R-10 (cavity, between duct and exterior)",
+    "status": "stated",
+    "src": [
+     "W11",
+     "W25"
+    ]
+   },
+   {
+    "id": "WR-12",
+    "duct_type": "supply or return",
+    "location": "inside conditioned space (meeting R403.3.2)",
+    "condition": "-",
+    "zone": "4C and 5B",
+    "R": null,
+    "R_text": "no duct insulation R stated",
+    "status": "not_addressed",
+    "src": [
+     "W11"
+    ]
+   },
+   {
+    "id": "WR-13",
+    "duct_type": "combustion air (open-combustion space-conditioning appliance in an isolated room)",
+    "location": "passing through conditioned space",
+    "condition": "R402.3.5; exceptions: direct-vent appliances, complying fireplaces/stoves",
+    "zone": "4C and 5B",
+    "R": 8,
+    "R_text": "R-8",
+    "status": "stated",
+    "src": [
+     "W15",
+     "W25"
+    ]
+   }
+  ],
+  "climate_zone_note": "No WSEC-R duct or pipe insulation value varies by climate zone (no zone qualifiers in R403.3/R403.4/R403.5.3/R402.3.5).",
+  "multi_unit_note": "R403.8: systems serving multiple dwelling units use WSEC-C C403 (duct Tables C403.10.1.1/C403.10.1.2).",
+  "differences_from_iecc_2021": [
+   {
+    "id": "RDD-1",
+    "what": "R403.3.1 first two sentences (R-8 >= 3 in., R-6 < 3 in.; buried beneath building)",
+    "wsec": "same",
+    "iecc_2021": "Supply and return ducts located outside conditioned space shall be insulated to an R-value of not less than R-8 for ducts 3 inches (76 mm) in diameter and larger and not less than R-6 for ducts smaller than 3 inches (76 mm) in diameter."
+   },
+   {
+    "id": "RDD-2",
+    "what": "ducts within a concrete slab or in the ground: R-10, below-grade insulation",
+    "wsec": "present",
+    "iecc_2021": "absent",
+    "iecc_absent_check": "Ducts within a concrete slab or in the ground"
+   },
+   {
+    "id": "RDD-3",
+    "what": "R403.3.2 ducts in conditioned space",
+    "wsec": "items 1-5 (all components inside; 10 ft return / 5 ft supply outside at R-8; floor cavity R-19; exterior wall R-10)",
+    "iecc_2021": "Ductwork in ventilated attic spaces shall be buried within ceiling insulation in accordance with Section R403.3.3 and all of the following conditions shall exist:",
+    "effect": "WSEC drops the IECC 2021 \"buried in ventilated attic counts as inside\" option and adds items 2 and 3."
+   },
+   {
+    "id": "RDD-4",
+    "what": "R403.3.3 humid-zone sentence (CZ 0A-3A R-13)",
+    "wsec": "absent (not applicable to WA zones)",
+    "iecc_2021": "In Climate Zones 0A, 1A, 2A and 3A, the supply ducts shall be completely buried within ceiling insulation, insulated to an R-value of not less than R-13",
+    "wsec_absent_check": "Climate Zones 0A"
+   },
+   {
+    "id": "RDD-6",
+    "what": "combustion-air duct through conditioned space",
+    "wsec": "R-8 (R402.3.5) - same value as IECC 2021",
+    "iecc_2021": "The combustion air duct shall be insulated where it passes through conditioned space to an R-value of not less than R-8."
+   },
+   {
+    "id": "RDD-5",
+    "what": "R403.3.7 building cavities",
+    "wsec": "adds \"Installation of ducts in exterior walls, floors or ceilings shall not displace required envelope insulation.\"",
+    "iecc_2021": "Building framing cavities shall not be used as ducts or plenums."
+   }
+  ]
+ },
+ "notes": [
+  {
+   "id": "N-1",
+   "note": "Authoritative text is the WAC (app.leg.wa.gov). The SBCC book PDFs and UpCodes Washington were used as independent renderings; every pipe-table cell and every duct R-value agrees across all three.",
+   "src": [
+    "W5",
+    "W23",
+    "W27",
+    "W11",
+    "W25",
+    "W28"
+   ]
+  },
+  {
+   "id": "N-2",
+   "note": "Table C403.10.1.1 last row: WAC HTML and UpCodes WA print \"≤ 2800 CFM\"; the SBCC 2nd Ed. book prints \"< 2800 CFM\" (visual read p. CE-114) and the C403.10.1.1 exception says \"less than 2,800 cfm\". A simulator should treat < 2,800 cfm -> R-7 and >= 2,800 cfm -> R-16/R-8/R-12 and flag exactly 2,800 cfm as ambiguous.",
+   "src": [
+    "W5",
+    "W23",
+    "W27"
+   ]
+  },
+  {
+   "id": "N-3",
+   "note": "Table C403.10.3 differs from IECC 2021 Table C403.12.3 in exactly one cell: the < 40 °F row mean rating temperature (WSEC 75 °F; IECC 2021 50 °F). Thicknesses and conductivity ranges are identical. Other differences are scope (refrigerant piping carved out to C403.10.4), footnote markers and wording.",
+   "src": [
+    "W5",
+    "W23",
+    "W27",
+    "C1"
+   ]
+  },
+  {
+   "id": "N-4",
+   "note": "Footnote b equation: the WAC HTML omits the \"=\" sign (blank cell between \"T\" and the right-hand side); the SBCC book prints \"T = r{(1 + t/r)K/k – 1}\" with K/k as the exponent (visual read). Use T = r[(1 + t/r)^(K/k) - 1].",
+   "src": [
+    "W5",
+    "W23"
+   ]
+  },
+  {
+   "id": "N-5",
+   "note": "Order of operations stated by footnotes a and c: apply the 1 in. (partitions, pipe < 1-1/2 in.) or 1-1/2 in. (direct-buried heating/hot water) reduction to the table thickness first, not below 1 in., then apply the footnote-b K/k correction.",
+   "src": [
+    "W5"
+   ]
+  },
+  {
+   "id": "N-6",
+   "note": "Commercial service hot water piping: Table C403.10.3 thickness (C404.6) and, for heated-water circulation systems, +1.0 in. on both supply and return (C404.7.3.1) unless centered in a fully insulated cavity >= 4 in. deeper than the pipe diameter.",
+   "src": [
+    "W6",
+    "W7"
+   ]
+  },
+  {
+   "id": "N-7",
+   "note": "Residential: mechanical piping R-6 (IECC 2021: R-3); service hot water pipe R-3 everywhere (IECC 2021: R-3 only for listed categories). Systems serving multiple dwelling units fall back to the commercial C403/C404 rules (R403.8).",
+   "src": [
+    "W12",
+    "W13",
+    "W14",
+    "C2"
+   ]
+  },
+  {
+   "id": "N-8",
+   "note": "Neither errata document (W24 commercial, W26 residential) changes C301, C403.10, C404.6, C404.7, R301, R403.3, R403.4 or R403.5.3. The commercial errata reprints C402.5.5 with the combustion-air duct R-16 sentence unchanged.",
+   "src": [
+    "W24",
+    "W26"
+   ]
+  },
+  {
+   "id": "N-9",
+   "note": "Minor book-vs-WAC wording differences found (no value changes): WSEC-R R403.3.2 intro \"comply with the following\" (WAC/UpCodes) vs \"comply with one of the following\" (book); item 5.2 \"from unconditioned space\" (WAC) vs \"from the outside sheathing\" (book); Table R406.3 option 2.3 \"Duct installation shall comply with Section R403.3.2\" (WAC) vs \"Duct insulation shall comply ...\" (book/errata); WSEC-C exception 7 \"sections\" (WAC) vs \"section\" (book).",
+   "src": [
+    "W11",
+    "W25",
+    "W26",
+    "W19",
+    "W5",
+    "W23"
+   ],
+   "checks": [
+    "Duct installation shall comply with Section R403.3.2.",
+    "Duct insulation shall comply with Section R403.3.2.",
+    "Duct insulation shall comply with Section R403.3.2."
+   ]
+  },
+  {
+   "id": "N-10",
+   "note": "Next edition: the 2024 WSEC (2024 IECC basis) is in rulemaking; SBCC says the 2024 codes take effect May 3, 2027. Its proposed duct/pipe text was NOT read; re-verify this file when the 2024 WSEC is adopted.",
+   "src": [
+    "W20",
+    "W22"
+   ]
+  },
+  {
+   "id": "N-11",
+   "note": "These are Washington STATE requirements. Do not apply them outside Washington. Seattle and other local amendments (Seattle Energy Code) were not read.",
+   "src": []
+  }
+ ],
+ "unverified": [
+  "Outdoor-air ducts located outdoors or in unconditioned space (WSEC-C): no R-value found in C403.10.1.1/Table C403.10.1.1 (all rows are \"Inside conditioned space\"); WD-28.",
+  "Exhaust/relief ducts outdoors, in unconditioned space, or in conditioned space upstream of the shutoff damper (not downstream of ERV media): no WSEC R-value found; WD-30, WD-31.",
+  "Return ducts in conditioned space not downstream of energy recovery media: no WSEC requirement found; WD-29.",
+  "Supply/return ducts within a building envelope assembly: the table says R-16 but the body text says \"minimum insulation value as required for exterior walls by Section C402.1.3\"; the C402.1.3 exterior-wall values (Table C402.1.3) were not transcribed.",
+  "Exactly 2,800 cfm outdoor-air duct boundary: WAC \"≤ 2800\" vs book \"< 2800\" (N-2). Which governs at exactly 2,800 cfm is unverified.",
+  "IECC 2021 county climate-zone map for Washington: not read from an allowed source, so whether the model code assigns 6B (or 5C) to any Washington county is not verified here. Lead only, not used: a previously downloaded UpCodes Texas IRC 2024 Chapter 11 page (outside this task's source list) lists 6B Ferry, 6B Pend Oreille, 6B Stevens and 5C Clallam, Island, Kitsap, San Juan, whereas WSEC lists all of them as 4C/5B.",
+  "Proposed 2024 WSEC (CR-102, July 1, 2026) duct and pipe insulation text: not read.",
+  "Seattle Energy Code and other local amendments: not read.",
+  "Earlier WSEC editions (2018 WSEC, effective February 1, 2021) pipe/duct tables: not read or compared."
+ ]
+}

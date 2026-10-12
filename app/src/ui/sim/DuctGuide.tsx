@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { DUCT_SPOTS, spotRequirement, type DuctSpot } from '../../sim/ductSpots'
 import { DUCT_LOCATIONS, DUCT_TYPES } from '../../sim/duct'
 import { DOE_SPOT_NOTES } from '../../data/ductData'
+import { waOptions } from '../../sim/design'
 import { refsFor } from '../../sim/sources'
 import type { SimState } from '../../sim/types'
 import { Icon } from '../controls'
@@ -80,6 +81,8 @@ export function DuctGuide({ s, set, onClose }: { s: SimState; set: (p: Partial<S
   const spot = DUCT_SPOTS.find((x) => x.n === sel)!
   const req = spotRequirement(spot, s.ductService, s.climateZone, 'ashrae')
   const iecc = spotRequirement(spot, s.ductService, s.climateZone, 'iecc')
+  const wa = waOptions(s)
+  const wsec = spotRequirement(spot, s.ductService, s.climateZone, 'wsec', wa)
   const doe = DOE_SPOT_NOTES[spot.n]
   const doeRef = refsFor(['D_C27'])[0]
   const lit = hover ?? sel
@@ -186,7 +189,7 @@ export function DuctGuide({ s, set, onClose }: { s: SimState; set: (p: Partial<S
               <p className="field-note">The code rule for this location hasn't been verified against the code text yet — it is being researched.</p>
             ) : (
               <>
-                {[{ code: 'ASHRAE 90.1-2019', r: req }, { code: 'IECC 2021 / 2024', r: iecc }].map(({ code, r }) => r && (
+                {[{ code: 'ASHRAE 90.1-2019', r: req }, { code: 'IECC 2021 / 2024', r: iecc }, { code: `Washington WSEC · ${s.waCounty} County (${wa.zone})`, r: wsec }].map(({ code, r }) => r && (
                   <div key={code} className={`g-req ${r.R === null ? 'none' : ''}`}>
                     <small>{code}{r.derived ? ' · derived' : ''}</small>
                     <b>{r.R === null ? (r.notStated ? 'No R-value set' : 'No minimum') : `Installed R-${r.R} minimum`}</b>

@@ -18,8 +18,9 @@ import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Icon, Segmented, Slider } from '../controls'
 import { Stage } from './Stage'
 import { DuctGuide } from './DuctGuide'
-import { DuctSize } from './DuctSetup'
+import { DuctSize, WsecInputs } from './DuctSetup'
 import { ReportButton } from './ReportButton'
+import { CodeChips } from './CodeChips'
 
 /**
  * Recommendations: answer a few questions — pipe or duct, what kind, the
@@ -108,7 +109,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
             <label className="check-row"><input type="checkbox" checked={a.drain} onChange={(e) => set({ drain: e.target.checked })} /><span>It's a condensate drain line <small className="muted">sized for sweating only</small></span></label>
             <div className="field">
               <span className="field-label">Energy code</span>
-              <Segmented<SimState['pipeCodeBasis']> size="sm" label="Energy code" value={a.pipeCode} onChange={(v) => set({ pipeCode: v })} options={PIPE_CODES.map((x) => ({ id: x.id, label: x.label, title: x.hint }))} />
+              <CodeChips<SimState['pipeCodeBasis']> label="Energy code" value={a.pipeCode} onChange={(v) => set({ pipeCode: v })} options={PIPE_CODES} />
               <p className="field-note">{PIPE_CODES.find((x) => x.id === a.pipeCode)!.hint}</p>
             </div>
           </>
@@ -119,8 +120,13 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
               {DUCT_LOCATIONS.map((l) => <button key={l.id} className={l.id === a.duct.ductLocation ? 'on' : ''} onClick={() => setDuct({ ductLocation: l.id })}>{l.label}</button>)}
             </div>
             <button className="tool guide-open" onClick={() => setGuide(true)}><Icon name="layers" size={15} /> Not sure? Location guide</button>
-            <Segmented<SimState['ductCodeBasis']> size="sm" label="Energy code" value={a.duct.ductCodeBasis} onChange={(v) => setDuct({ ductCodeBasis: v })} options={DUCT_CODES.map((c) => ({ id: c.id, label: c.label }))} />
-            <Slider label="Climate zone" value={a.duct.climateZone} min={0} max={8} onChange={(v) => setDuct({ climateZone: v })} format={(v) => `Zone ${v}`} accent={acc} />
+            <div className="field">
+              <span className="field-label">Energy code</span>
+              <CodeChips<SimState['ductCodeBasis']> label="Energy code" value={a.duct.ductCodeBasis} onChange={(v) => setDuct({ ductCodeBasis: v })} options={DUCT_CODES} />
+            </div>
+            {a.duct.ductCodeBasis === 'wsec'
+              ? <WsecInputs s={{ ...initialState('duct'), ...a.duct }} set={(p) => setDuct(p)} />
+              : <Slider label="Climate zone" value={a.duct.climateZone} min={0} max={8} onChange={(v) => setDuct({ climateZone: v })} format={(v) => `Zone ${v}`} accent={acc} />}
             <DuctSize s={{ ...initialState('duct'), ...a.duct }} set={(p) => setDuct(p)} units={units} acc={acc} />
           </>
         ))}

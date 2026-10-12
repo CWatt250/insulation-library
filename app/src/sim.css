@@ -574,3 +574,6 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 .rp-form { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); }
 .rp-form .rp-field input { font-size: 16px; }
 .rp-form .scn-actions .primary { display: inline-flex; align-items: center; gap: 6px; }
+.code-chips button { font-weight: 600; }
+.code-chips button.on { background: color-mix(in srgb, var(--acc) 22%, transparent); border-color: var(--acc); color: var(--ink); }
+.big-select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--chip-line); background: var(--chip); color: var(--ink); font: inherit; font-size: 16px; }

@@ -1,4 +1,4 @@
-import { ductRequirement, type DuctCodeBasis, type DuctCodeResult, type DuctPlace, type DuctType } from './duct'
+import { ductRequirement, type DuctCodeBasis, type DuctCodeResult, type DuctPlace, type DuctType, type WsecDuctOptions } from './duct'
 import type { DuctService } from '../data/ductData'
 
 /**
@@ -45,7 +45,7 @@ export const DUCT_SPOTS: DuctSpot[] = [
 ]
 
 /** What the code asks of a spot, at the user's climate zone and system service. */
-export function spotRequirement(spot: DuctSpot, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae'): DuctCodeResult | null {
+export function spotRequirement(spot: DuctSpot, service: DuctService, zone: number, basis: DuctCodeBasis = 'ashrae', wa?: WsecDuctOptions): DuctCodeResult | null {
   if (spot.pending || !spot.type || !spot.place) return null
-  return ductRequirement(spot.type, spot.place, service, zone, basis)
+  return ductRequirement(spot.type, spot.place, service, zone, basis, Infinity, wa, 55)
 }

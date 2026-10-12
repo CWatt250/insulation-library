@@ -4,6 +4,8 @@ import { physicsMode } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Icon, Segmented, Slider } from '../controls'
+import { CodeChips } from './CodeChips'
+import { WA_COUNTIES } from '../../data/wsecData'
 
 const RECT_W = Array.from({ length: 28 }, (_, i) => 6 + 2 * i) // 6–60"
 const RECT_H = Array.from({ length: 22 }, (_, i) => 6 + 2 * i) // 6–48"
@@ -87,7 +89,7 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
       )}
       <div className="field">
         <span className="field-label">Energy code</span>
-        <Segmented<DuctCodeBasis> size="sm" label="Energy code" value={s.ductCodeBasis} onChange={(v) => set({ ductCodeBasis: v })} options={DUCT_CODES.map((c) => ({ id: c.id, label: c.label }))} />
+        <CodeChips<DuctCodeBasis> label="Energy code" value={s.ductCodeBasis} onChange={(v) => set({ ductCodeBasis: v })} options={DUCT_CODES} />
       </div>
       <div className="field">
         <span className="field-label">Duct type</span>
@@ -107,7 +109,43 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
           <Segmented<SimState['ductService']> size="sm" label="Duct service" value={s.ductService} onChange={(v) => set({ ductService: v })} options={DUCT_SERVICES.map((l) => ({ id: l.id, label: l.label }))} />
         </div>
       )}
-      <Slider label="Climate zone" value={s.climateZone} min={0} max={8} onChange={(v) => set({ climateZone: v })} format={(v) => `Zone ${v}`} hint="ASHRAE 169 / IECC climate zone of the building site" accent={acc} />
+      {s.ductCodeBasis === 'wsec' ? (
+        <WsecInputs s={s} set={set} />
+      ) : (
+        <Slider label="Climate zone" value={s.climateZone} min={0} max={8} onChange={(v) => set({ climateZone: v })} format={(v) => `Zone ${v}`} hint="ASHRAE 169 / IECC climate zone of the building site" accent={acc} />
+      )}
+    </>
+  )
+}
+
+/** Washington: county (→ zone 4C or 5B), and what WSEC needs to know about outdoor-air, exhaust and return ducts. */
+export function WsecInputs({ s, set }: { s: SimState; set: (p: Partial<SimState>) => void }) {
+  const zone = WA_COUNTIES.find((c) => c.county === s.waCounty)?.zone ?? '4C'
+  const damperQ = s.ductType === 'outdoor' || s.ductType === 'exhaust'
+  return (
+    <>
+      <label className="field">
+        <span className="field-label">Washington county <small className="muted">sets the climate zone</small></span>
+        <select className="big-select" value={s.waCounty} onChange={(e) => set({ waCounty: e.target.value })}>
+          {WA_COUNTIES.map((c) => <option key={c.county} value={c.county}>{c.county} — zone {c.zone}</option>)}
+        </select>
+        <span className="field-note">Climate zone <b>{zone}</b> ({zone === '4C' ? 'marine' : 'dry'}) — WSEC Table C301.1</span>
+      </label>
+      {s.ductType === 'outdoor' && (
+        <div className="field">
+          <span className="field-label">How much air does the unit move?</span>
+          <Segmented<'big' | 'small'> size="sm" label="Unit airflow" value={s.bigUnit ? 'big' : 'small'} onChange={(v) => set({ bigUnit: v === 'big' })} options={[{ id: 'big', label: '2,800 cfm or more' }, { id: 'small', label: 'Under 2,800 cfm' }]} />
+        </div>
+      )}
+      {damperQ && (s.ductType !== 'outdoor' || s.bigUnit) && (
+        <div className="field">
+          <span className="field-label">Which part of the duct? <small className="muted">relative to the motorized shutoff damper</small></span>
+          <Segmented<'upstream' | 'downstream'> size="sm" label="Damper position" value={s.ductDamper} onChange={(v) => set({ ductDamper: v })} options={[{ id: 'upstream', label: s.ductType === 'outdoor' ? 'Outside → damper' : 'Before the damper' }, { id: 'downstream', label: 'After the damper' }]} />
+        </div>
+      )}
+      {(s.ductType === 'exhaust' || s.ductType === 'return') && (
+        <label className="check-row"><input type="checkbox" checked={s.erv} onChange={(e) => set({ erv: e.target.checked })} /><span>Downstream of energy recovery <small className="muted">heat-recovery wheel, plate or coil</small></span></label>
+      )}
     </>
   )
 }

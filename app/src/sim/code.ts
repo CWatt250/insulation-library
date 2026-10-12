@@ -1,4 +1,5 @@
 import { pipeSpec } from '../data/pipes'
+import { WSEC_PIPE } from '../data/wsecData'
 import { kAt } from './conductivity'
 import { curveFrom } from './engine'
 import { productFor } from './model'
@@ -42,6 +43,18 @@ export function pipeR(pipeOdIn: number, thicknessIn: number, kIp: number) {
   return (ro * Math.log(ro / ri)) / kIp
 }
 
+/** WSEC-C Table C403.10.3 (W5): the IECC table, with the below-40°F row rated at 75°F mean. */
+const WSEC_ROWS: Row[] = WSEC_PIPE.map((r) => ({
+  label: r.label.replace(/ - /g, '–'),
+  lo: r.lo === null ? -Infinity : r.hi === null ? r.lo + 0.0001 : r.lo,
+  hi: r.hi === null ? Infinity : r.lo === null ? r.hi - 0.0001 : r.hi,
+  k: r.k,
+  meanF: r.meanF,
+  t: r.t,
+}))
+const WSEC_HEATING = WSEC_ROWS.filter((r) => r.lo >= 105)
+const WSEC_COOLING = WSEC_ROWS.filter((r) => r.lo < 105)
+
 const npsValue = (nps: string) => nps.split('-').reduce((sum, part) => {
   const [a, b] = part.split('/').map(Number)
   return sum + (b ? a / b : a)
@@ -49,12 +62,14 @@ const npsValue = (nps: string) => nps.split('-').reduce((sum, part) => {
 
 const column = (nps: number) => (nps < 1 ? 0 : nps < 1.5 ? 1 : nps < 4 ? 2 : nps < 8 ? 3 : 4)
 
-export type PipeCodeBasis = 'ashrae' | 'iecc' | 'iecc-res'
+export type PipeCodeBasis = 'ashrae' | 'iecc' | 'iecc-res' | 'wsec' | 'wsec-res'
 
 export const PIPE_CODES: { id: PipeCodeBasis; label: string; hint: string }[] = [
   { id: 'ashrae', label: 'ASHRAE 90.1', hint: 'ASHRAE 90.1-2019 Tables 6.8.3-1/-2 (commercial)' },
   { id: 'iecc', label: 'IECC commercial', hint: 'IECC 2021 Table C403.12.3' },
   { id: 'iecc-res', label: 'IECC residential', hint: 'IECC 2021 R403.4: R-3 above 105°F or below 55°F' },
+  { id: 'wsec', label: 'Washington (WSEC)', hint: '2021 Washington State Energy Code, commercial — Table C403.10.3' },
+  { id: 'wsec-res', label: 'Washington residential', hint: '2021 WSEC-R R403.4: R-6 above 105°F or below 55°F (service hot water R-3)' },
 ]
 
 export interface CodeMinimum {
@@ -77,27 +92,29 @@ export interface CodeMinimum {
 
 export function codeMinimum(s: SimState, mode: SimMode): CodeMinimum | { none: string } {
   const basis = s.pipeCodeBasis ?? 'ashrae'
-  const name = basis === 'ashrae' ? 'ASHRAE 90.1' : 'IECC'
+  const name = basis === 'ashrae' ? 'ASHRAE 90.1' : basis.startsWith('wsec') ? 'WSEC' : 'IECC'
   if (mode === 'condensate') return { none: `${name} pipe insulation rules cover heating, hot-water, chilled-water, brine and refrigerant piping — not condensate drains.` }
   const T = s.processF
   const p0 = pipeSpec(s.pipe, s.npsIndex)
-  if (basis === 'iecc-res') {
-    // R403.4: "greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3"
-    if (T <= 105 && T >= 55) return { none: 'IECC residential R403.4 covers piping above 105°F or below 55°F.' }
+  if (basis === 'iecc-res' || basis === 'wsec-res') {
+    // IECC R403.4: R-3; WSEC-R R403.4: "above 105°F (41°C) or below 55°F (13°C) shall be insulated to a minimum of R-6"
+    const wa = basis === 'wsec-res'
+    const minR = wa ? 6 : 3
+    if (T <= 105 && T >= 55) return { none: `${wa ? 'WSEC' : 'IECC'} residential R403.4 covers piping above 105°F or below 55°F.` }
     const K = kAt(curveFrom(productFor(s).k), ((75 - 32) * 5) / 9 + 273.15) / 0.144227888
     let lo = 0
     let hi = 6
     for (let i = 0; i < 40; i++) {
       const mid = (lo + hi) / 2
-      if (pipeR(p0.od, mid, K) >= 3) hi = mid
+      if (pipeR(p0.od, mid, K) >= minR) hi = mid
       else lo = mid
     }
     return {
-      edition: 'IECC 2021 residential', minR: 3, table: 'R403.4', row: T > 105 ? 'above 105°F' : 'below 55°F',
-      tableIn: hi, K, kRange: [K, K], meanF: 75, minIn: hi, corrected: false, src: ['C2', 'C3'],
+      edition: wa ? '2021 WSEC residential' : 'IECC 2021 residential', minR, table: 'R403.4', row: T > 105 ? 'above 105°F' : 'below 55°F',
+      tableIn: hi, K, kRange: [K, K], meanF: 75, minIn: hi, corrected: false, src: wa ? ['W12', 'C3'] : ['C2', 'C3'],
     }
   }
-  const rows = mode === 'hot' ? (basis === 'iecc' ? IECC_HEATING : HEATING) : COOLING
+  const rows = basis === 'wsec' ? (mode === 'hot' ? WSEC_HEATING : WSEC_COOLING) : mode === 'hot' ? (basis === 'iecc' ? IECC_HEATING : HEATING) : COOLING
   if (mode === 'hot' && T < 105) return { none: `Below the 105°F bottom of the ${name} heating table.` }
   if (mode === 'cold' && T > 60) return { none: `Above the 60°F top of the ${name} cooling table.` }
   const row = rows.find((r) => T >= r.lo && T <= r.hi)
@@ -109,6 +126,9 @@ export function codeMinimum(s: SimState, mode: SimMode): CodeMinimum | { none: s
   const r = p.od / 2
   const outside = K > row.k[1] || K < row.k[0]
   const minIn = outside ? r * ((1 + tableIn / r) ** (K / row.k[1]) - 1) : tableIn
+  if (basis === 'wsec') {
+    return { edition: '2021 WSEC commercial', table: 'Table C403.10.3', row: row.label, tableIn, K, kRange: row.k, meanF: row.meanF, minIn, corrected: outside, src: ['W5'] }
+  }
   if (basis === 'iecc') {
     return { edition: 'IECC 2021 commercial', table: 'Table C403.12.3', row: row.label, tableIn, K, kRange: row.k, meanF: row.meanF, minIn, corrected: outside, src: ['C1'] }
   }

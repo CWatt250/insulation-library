@@ -10,6 +10,7 @@ import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { Disclosure, Icon, Segmented, Slider } from '../controls'
 import { DuctCodeInputs, DuctInsulationSection, DuctSize } from './DuctSetup'
 import { PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
+import { CodeChips } from './CodeChips'
 
 const PIPE_HINT: Record<PipeMaterial, string> = { steel: 'Steel pipe, Sch 40', copper: 'Copper tube, Type L', pvc: 'PVC pipe, Sch 40' }
 
@@ -213,7 +214,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
         {mode !== 'condensate' && (
           <div className="field">
             <span className="field-label">Energy code <small className="muted">sets the code-minimum thickness in Results</small></span>
-            <Segmented<PipeCodeBasis> size="sm" label="Energy code" value={s.pipeCodeBasis} onChange={(v) => set({ pipeCodeBasis: v })} options={PIPE_CODES.map((x) => ({ id: x.id, label: x.label, title: x.hint }))} />
+            <CodeChips<PipeCodeBasis> label="Energy code" value={s.pipeCodeBasis} onChange={(v) => set({ pipeCodeBasis: v })} options={PIPE_CODES} />
             <p className="field-note">{PIPE_CODES.find((x) => x.id === s.pipeCodeBasis)!.hint}</p>
           </div>
         )}

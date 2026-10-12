@@ -17,7 +17,8 @@ import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES } from '../../sim/duct'
 import type { DuctFaceResult } from '../../sim/duct'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { DUCT_LEARN, INTRO, LEARN, TOPICS } from '../../sim/learn'
-import { Disclosure, Icon, Segmented } from '../controls'
+import { Disclosure, Icon } from '../controls'
+import { CodeChips } from './CodeChips'
 import { CodeChip, SafetyChip, StatusChip, STATUS_TONE } from './Status'
 import { ACCENT } from './SetupPanel'
 import { Assumptions } from './Assumptions'
@@ -125,7 +126,7 @@ function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Pa
   const picker = (
     <div className="code-pick">
       <span>Energy code</span>
-      <Segmented<PipeCodeBasis> size="sm" label="Energy code" value={s.pipeCodeBasis} onChange={(v) => onSet({ pipeCodeBasis: v })} options={PIPE_CODES.map((x) => ({ id: x.id, label: x.label, title: x.hint }))} />
+      <CodeChips<PipeCodeBasis> label="Energy code" value={s.pipeCodeBasis} onChange={(v) => onSet({ pipeCodeBasis: v })} options={PIPE_CODES} />
     </div>
   )
   if ('none' in c) return <>{picker}<p className="field-note">Energy code: {c.none}</p></>
@@ -139,7 +140,7 @@ function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Pa
           <b>{c.edition} minimum: {c.minR ? `R-${c.minR} → ${c.minIn.toFixed(2)}"` : `${c.minIn.toFixed(2)}"`}</b>
           <small>
             {c.minR
-              ? `R403.4: piping ${c.row} needs R-${c.minR}; this insulation reaches it at ${c.minIn.toFixed(2)}" (R = ro·ln(ro/ri)/k with k ${c.K.toFixed(3)} at 75°F, the IECC's pipe R-value)`
+              ? `R403.4: piping ${c.row} needs R-${c.minR}; this insulation reaches it at ${c.minIn.toFixed(2)}" (R = ro·ln(ro/ri)/k with k ${c.K.toFixed(3)} at 75°F, the IECC's pipe R-value)${s.pipeCodeBasis === 'wsec-res' ? '. Service hot water pipe needs R-3 instead (R403.5.3); up to 200 ft of hydronic pipe inside conditioned space may use 1/2" at k 0.28' : ''}`
               : <>{c.table}, {c.row}: {c.tableIn}" in the table{c.corrected ? `, corrected for k ${c.K.toFixed(3)} at ${c.meanF}°F (table range ${c.kRange[0]}–${c.kRange[1]})` : ` (k ${c.K.toFixed(3)} at ${c.meanF}°F is within ${c.kRange[0]}–${c.kRange[1]})`}</>}
             {refs.map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}. Include as a requirement.
           </small>
