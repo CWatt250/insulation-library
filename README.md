@@ -1,5 +1,7 @@
 # Insulation Library
 
+**A Watt Systems app. Created by Colton Watt.**
+
 Interactive, photoreal 3D library of mechanical insulation: pipe insulation materials, jacketing, fittings and removable blankets, with specs taken from manufacturer data sheets.
 
 ## What it does

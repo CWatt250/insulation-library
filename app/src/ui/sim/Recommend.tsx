@@ -20,6 +20,7 @@ import { Stage } from './Stage'
 import { DuctGuide } from './DuctGuide'
 import { DuctSize, WsecInputs } from './DuctSetup'
 import { ReportButton } from './ReportButton'
+import { BrandFooter, BrandLine } from '../brand'
 import { governedBy, shortfall } from './answerText'
 import { WA_COUNTIES } from '../../data/wsecData'
 import { CodeChips } from './CodeChips'
@@ -92,7 +93,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
       )}
       <aside className="panel sim-setup rec-questions">
         <header className="sim-head">
-          <span className="brand"><Icon name="layers" size={15} /> Insulation Library</span>
+          <BrandLine />
           <div className="title-row">
             <span className="mode-icon"><Icon name="target" size={26} /></span>
             <div>
@@ -170,6 +171,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
             <Icon name="target" size={17} /> {applied ? (stale ? 'Update recommendation' : 'Recommend again') : 'Recommend'}
           </button>
         )}
+        <BrandFooter />
       </aside>
       <aside className="panel sim-results rec-answer">
         <header><h2 className="title">Recommendation</h2></header>

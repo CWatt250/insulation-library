@@ -16,6 +16,7 @@ import type { AppMode } from './sim/types'
 import type { UnitSystem } from './sim/units'
 import { readShareHash } from './sim/scenarios'
 import { useCovered } from './ui/useCovered'
+import { BrandFooter, ProductMark } from './ui/brand'
 import './App.css'
 import './sim.css'
 
@@ -439,10 +440,12 @@ export default function App() {
         <>
           <aside className="panel controls">
             <header>
+              <span className="ws-brand ws-eyebrow"><ProductMark size={16} /> <span className="ws-by">by Watt Systems</span></span>
               <h1>Insulation Library</h1>
               <p className="sub">Mechanical pipe insulation, built to field practice</p>
             </header>
             {controls}
+            <BrandFooter />
           </aside>
           <SpecPanel {...spec} />
         </>
@@ -477,6 +480,7 @@ export default function App() {
           <div className="sheet-materials">{materials}</div>
           <div className="sheet-body">
             {tab === 'configure' ? <div className="controls-body">{controls}</div> : <SpecContent {...spec} showTitle />}
+            <BrandFooter />
           </div>
         </section>
       )}

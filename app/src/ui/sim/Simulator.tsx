@@ -19,6 +19,7 @@ import { DuctGuide } from './DuctGuide'
 import { QuickStart, useQuickStart } from './QuickStart'
 import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
 import { useCovered } from '../useCovered'
+import { BrandFooter, BrandLine } from '../brand'
 import { ductStage, placeDuct } from '../../sim/duct'
 
 const SIM_MODES: SimMode[] = ['hot', 'cold', 'condensate', 'duct']
@@ -381,6 +382,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <div className="sheet-body">
             {compareBar}
             {tab === 'results' ? <>{results}<ReportButton inline label="Save as report (PDF)" make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} /></> : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} /> : <Learn mode={mode} system={s.system} />}
+            <BrandFooter />
           </div>
         </section>
         {guideEl}
@@ -401,7 +403,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       </div>
       <aside className="panel sim-setup">
         <header className="sim-head">
-          <span className="brand"><Icon name="layers" size={15} /> Insulation Library</span>
+          <BrandLine />
           <div className="title-row">
             <span className="mode-icon"><Icon name={mode === 'hot' ? 'flame' : mode === 'cold' ? 'snow' : mode === 'duct' ? 'wind' : 'drop'} size={26} /></span>
             <div>
@@ -416,6 +418,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           {s.presetId && <PresetNote id={s.presetId} />}
         </section>
         <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} />
+        <BrandFooter />
       </aside>
       <aside className="panel sim-results">
         <header>

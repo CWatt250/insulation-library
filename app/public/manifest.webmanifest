@@ -1,7 +1,7 @@
 {
-  "name": "Insulation Library",
+  "name": "Insulation Library by Watt Systems",
   "short_name": "Insulation",
-  "description": "Mechanical insulation in 3D: materials, heat loss, condensation and energy-code thickness.",
+  "description": "Mechanical insulation in 3D: materials, heat loss, condensation and energy-code thickness. By Watt Systems, created by Colton Watt.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
