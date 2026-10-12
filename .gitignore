@@ -13,3 +13,4 @@ research/renders/
 # local tooling
 app/test-results
 *.log
+.vercel

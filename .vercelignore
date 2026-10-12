@@ -1,0 +1,11 @@
+# Manual deploys run from the repo root (Vercel Root Directory = app).
+# Keep the upload to what the build needs: no copyrighted reference photos,
+# renders, Python venv or local build output.
+research/refs
+research/renders
+tools/.venv
+node_modules
+app/node_modules
+app/dist
+app/test-results
+app/.env*
