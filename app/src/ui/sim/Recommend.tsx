@@ -9,7 +9,7 @@ import { physicsMode } from '../../sim/model'
 import { ductCode } from '../../sim/design'
 import { vaporCheck } from '../../sim/vapor'
 import { codeMinimum, PIPE_CODES } from '../../sim/code'
-import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES, ductInsLabel, ductStage, type DuctInsulation, type DuctType } from '../../sim/duct'
+import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPE_AIR, DUCT_TYPES, ductInsLabel, ductStage, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { dewPointF } from '../../sim/psychro'
 import { initialState, PRESETS } from '../../sim/presets'
 import { refsFor } from '../../sim/sources'
@@ -130,11 +130,11 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
           </>
         )) : step(2, 'What kind of duct, and where?', (
           <>
-            <Segmented<DuctType> size="sm" label="Duct type" value={a.duct.ductType} onChange={(v) => setDuct({ ductType: v })} options={DUCT_TYPES.map((t) => ({ id: t.id, label: t.short }))} />
+            <Segmented<DuctType> size="sm" label="Duct type" value={a.duct.ductType} onChange={(v) => { set(DUCT_TYPE_AIR[v]); setDuct({ ductType: v }) }} options={DUCT_TYPES.map((t) => ({ id: t.id, label: t.short }))} />
             <div className="chips loc-chips">
               {DUCT_LOCATIONS.map((l) => <button key={l.id} className={l.id === a.duct.ductLocation ? 'on' : ''} onClick={() => {
-                // a cooling duct's surroundings follow the location (adjust below)
-                if (a.processF < 70) set(DUCT_AIR[l.id])
+                // the surroundings follow the location (adjust below); outside-air ducts keep their winter room
+                if (a.duct.ductType !== 'outdoor' && a.processF <= 100) set(DUCT_AIR[l.id])
                 setDuct({ ductLocation: l.id })
               }}>{l.label}</button>)}
             </div>

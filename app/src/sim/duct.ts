@@ -32,6 +32,18 @@ import type { SimMode, SimState } from './types'
 export type DuctShape = 'rect' | 'round'
 export type DuctType = 'supply' | 'return' | 'outdoor' | 'exhaust'
 
+/**
+ * Typical air for each duct type, filled in when the type is picked (as the
+ * Ductwork presets): cooling supply air, room air coming back, winter outside
+ * air in a heated building, room air going out. Examples to adjust.
+ */
+export const DUCT_TYPE_AIR: Record<DuctType, Partial<Pick<SimState, 'processF' | 'ambientF' | 'rh'>>> = {
+  supply: { processF: 55 },
+  return: { processF: 75 },
+  outdoor: { processF: 20, ambientF: 70, rh: 35 },
+  exhaust: { processF: 72 },
+}
+
 export const DUCT_TYPES: { id: DuctType; label: string; short: string }[] = [
   { id: 'supply', label: 'Supply air', short: 'Supply' },
   { id: 'return', label: 'Return air', short: 'Return' },
@@ -92,6 +104,8 @@ const nearest = (list: number[], v: number) => list.reduce((b, x) => (Math.abs(x
  * Other patches pass through unchanged.
  */
 export function placeDuct(s: SimState, patch: Partial<SimState>): Partial<SimState> {
+  // a new duct type brings its usual air (return air is room air, not 55°F supply air)
+  if (patch.ductType !== undefined && patch.ductType !== s.ductType && patch.processF === undefined) patch = { ...DUCT_TYPE_AIR[patch.ductType], ...patch }
   if (patch.ductIns !== undefined) return patch
   const shape = patch.ductShape ?? s.ductShape
   const was = ductOutdoors(s)

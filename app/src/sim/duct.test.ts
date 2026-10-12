@@ -116,6 +116,13 @@ describe('indoors and outdoors', () => {
     const k = kCurve(ductKPoints('polyiso'))
     expect(kMean(k, fToK(40), fToK(120)) / 0.144227888).toBeCloseTo(0.16, 4)
   })
+  it('a new duct type brings its usual air: return air is room air, not 55°F supply air', () => {
+    expect(placeDuct(s, { ductType: 'return' }).processF).toBe(75)
+    expect(placeDuct(s, { ductType: 'outdoor' })).toMatchObject({ processF: 20, ambientF: 70, rh: 35 })
+    expect(placeDuct({ ...s, ductType: 'return' }, { ductType: 'supply' }).processF).toBe(55)
+    // an air temperature set with it wins
+    expect(placeDuct(s, { ductType: 'return', processF: 80 }).processF).toBe(80)
+  })
   it('opens an older outdoor file with wrap in board', () => {
     const n = normalize('duct', { ...s, ductLocation: 'exterior', ductIns: 'elastomeric' as never, thicknessIn: 2 })
     expect(n.ductIns).toBe('board')
