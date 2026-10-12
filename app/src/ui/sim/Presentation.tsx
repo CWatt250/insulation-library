@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { materialLabel, noun } from '../../sim/system'
 import { ductCode } from '../../sim/design'
-import { annualCost, money } from '../../sim/cost'
+import { annualCost, money, paybackWords } from '../../sim/cost'
 import type { Evaluation } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -43,7 +43,7 @@ function stats(mode: SimMode, s: SimState, ev: Evaluation, units: UnitSystem, st
     return [
       { value: `${Math.round(ev.reductionPct)}%`, label: `less heat loss with ${what}`, tone: 'good' },
       { value: T(ins.result.surfaceF), label: ins.result.surfaceF <= s.ppF ? 'surface — safe to touch' : `surface — above the ${T(s.ppF)} limit`, tone: ins.result.surfaceF <= s.ppF ? 'good' : 'bad' },
-      cost ? { value: money(cost.saved), label: `saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF${cost.paybackYr !== null ? ` · pays back in ${cost.paybackYr < 1 ? `${Math.max(1, Math.round(cost.paybackYr * 12))} months` : `${cost.paybackYr.toFixed(1)} years`}` : ''}`, tone: 'good' }
+      cost ? { value: money(cost.saved), label: `saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF${cost.paybackYr !== null ? ` · pays back in ${paybackWords(cost.paybackYr)}` : ''}`, tone: 'good' }
         : ev.annual ? { value: fmt.energy(ev.annual.saved, units), label: `energy saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'good' } : { value: Q(bare.result.qBtuHrFt - ins.result.qBtuHrFt), label: 'less heat lost per foot', tone: 'good' },
     ]
   }

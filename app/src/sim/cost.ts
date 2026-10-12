@@ -1,6 +1,6 @@
 import { physicsMode } from './model'
 import type { Evaluation } from './model'
-import type { SimMode, SimState } from './types'
+import type { Fuel, SimMode, SimState } from './types'
 
 /**
  * Annual energy cost. Prices and efficiencies are the user's inputs:
@@ -18,11 +18,48 @@ export const BTU_PER_TON_H = 12000
  *                  PSE Schedule 31 averages $1.47/therm = $14.72 [P5]
  *  power $0.12/kWh — Washington commercial average 11.78¢, July 2026 [P6]
  *  chiller plant 0.9 kW/ton — whole plant (chillers, pumps, tower) typically 0.8–1.0 [P7]
+ *  heat pump COP 2.5 — DOE: heat pump water heaters are two to three times as efficient as
+ *                  electric resistance [P8]
  */
 export const GAS_DEFAULT = 14
 export const POWER_DEFAULT = 0.12
 export const KW_PER_TON_DEFAULT = 0.9
 export const BOILER_DEFAULT = 80
+export const HEAT_PUMP_COP_DEFAULT = 2.5
+
+/**
+ * Heat delivered per unit bought, %, as each source opens: a gas boiler loses some up the flue;
+ * purchased steam is bought already made, so each Btu the pipe loses is about one Btu of steam;
+ * resistance heat is all heat; a heat pump moves 2–3 units of heat per unit of electricity.
+ */
+export const FUEL_EFF: Record<Fuel, number> = { gas: BOILER_DEFAULT, steam: 100, electric: 100, heatpump: HEAT_PUMP_COP_DEFAULT * 100 }
+
+/** Priced per kWh (electric, heat pump) rather than per MMBtu (gas, steam). */
+export const perKwh = (f: Fuel) => f === 'electric' || f === 'heatpump'
+
+/** Switching what pays for the heat: its efficiency, and a price in the right unit. */
+export function fuelSwitch(s: Pick<SimState, 'fuel' | 'fuelPrice'>, fuel: Fuel): Pick<SimState, 'fuel' | 'fuelPrice' | 'efficiencyPct'> {
+  const price = perKwh(fuel) === perKwh(s.fuel) ? s.fuelPrice : perKwh(fuel) ? POWER_DEFAULT : GAS_DEFAULT
+  return { fuel, fuelPrice: price, efficiencyPct: FUEL_EFF[fuel] }
+}
+
+/** Hours a year from a schedule: 24 h × 7 days × 12 months = 8,760. */
+export const scheduleHours = (hoursPerDay: number, daysPerWeek: number, months: number) =>
+  Math.round(hoursPerDay * 365 * (daysPerWeek / 7) * (months / 12))
+
+/** "24/7, all year" or "10 h a day, 5 days a week, 8 months a year". */
+export function scheduleWords(s: Pick<SimState, 'hoursPerDay' | 'daysPerWeek' | 'monthsPerYear'>): string {
+  if (s.hoursPerDay === 24 && s.daysPerWeek === 7 && s.monthsPerYear === 12) return '24/7, all year'
+  const months = s.monthsPerYear === 12 ? 'all year' : `${s.monthsPerYear} month${s.monthsPerYear === 1 ? '' : 's'} a year`
+  return `${s.hoursPerDay} h a day, ${s.daysPerWeek} day${s.daysPerWeek === 1 ? '' : 's'} a week, ${months}`
+}
+
+/** "7 months" under a year, "1.4 years (17 months)" under ten, then whole years. */
+export function paybackWords(yr: number): string {
+  const m = Math.max(1, Math.round(yr * 12))
+  if (yr < 1) return `${m} month${m === 1 ? '' : 's'}`
+  return yr < 10 ? `${yr.toFixed(1)} years (${m} months)` : `${Math.round(yr)} years`
+}
 
 export interface CostResult {
   bare: number
@@ -36,7 +73,7 @@ export interface CostResult {
 export function dollarsPerBtu(s: SimState, mode: SimMode): number {
   if (mode === 'hot') {
     const eff = Math.max(s.efficiencyPct, 1) / 100
-    return s.fuel === 'electric' ? s.fuelPrice / BTU_PER_KWH / eff : s.fuelPrice / 1e6 / eff
+    return perKwh(s.fuel) ? s.fuelPrice / BTU_PER_KWH / eff : s.fuelPrice / 1e6 / eff
   }
   return (s.kwPerTon / BTU_PER_TON_H) * s.coolPrice
 }
@@ -45,6 +82,7 @@ export function dollarsPerBtu(s: SimState, mode: SimMode): number {
 export function priceBasis(s: SimState, mode: SimMode): string {
   if (mode !== 'hot') return `electricity at $${s.coolPrice.toFixed(3)}/kWh, chiller plant ${s.kwPerTon.toFixed(2)} kW/ton`
   if (s.fuel === 'electric') return `electric heat at $${s.fuelPrice.toFixed(3)}/kWh, ${s.efficiencyPct}% efficient`
+  if (s.fuel === 'heatpump') return `heat pump at $${s.fuelPrice.toFixed(3)}/kWh, COP ${(s.efficiencyPct / 100).toFixed(1)}`
   return s.fuel === 'gas'
     ? `natural gas at $${s.fuelPrice.toFixed(2)}/MMBtu, ${s.efficiencyPct}% boiler efficiency`
     : `purchased steam at $${s.fuelPrice.toFixed(2)}/MMBtu, ${s.efficiencyPct}% system efficiency`
@@ -86,8 +124,8 @@ export function costSteps(s: SimState, mode: SimMode, qBtuHrFt: number): CostSte
   const btuYr = q * s.lengthFt * s.hours
   if (mode === 'hot') {
     const eff = Math.max(s.efficiencyPct, 1) / 100
-    const amount = s.fuel === 'electric' ? btuYr / BTU_PER_KWH / eff : btuYr / 1e6 / eff
-    return { q, btuYr, bought: { amount, unit: s.fuel === 'electric' ? 'kWh' : 'MMBtu' }, cost: amount * s.fuelPrice }
+    const amount = perKwh(s.fuel) ? btuYr / BTU_PER_KWH / eff : btuYr / 1e6 / eff
+    return { q, btuYr, bought: { amount, unit: perKwh(s.fuel) ? 'kWh' : 'MMBtu' }, cost: amount * s.fuelPrice }
   }
   const tonHr = btuYr / BTU_PER_TON_H
   const kwh = tonHr * s.kwPerTon

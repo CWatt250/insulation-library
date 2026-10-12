@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { annualCost, costSteps, GAS_DEFAULT, KW_PER_TON_DEFAULT, POWER_DEFAULT, priceBasis, runBasis } from './cost'
+import { annualCost, costSteps, fuelSwitch, GAS_DEFAULT, KW_PER_TON_DEFAULT, paybackWords, POWER_DEFAULT, priceBasis, runBasis, scheduleHours, scheduleWords } from './cost'
+import { normalize } from './scenarios'
 import { evaluate } from './model'
 import { applyPreset, initialState, PRESETS } from './presets'
 
@@ -56,5 +57,49 @@ describe('energy cost', () => {
     expect(runBasis({ ...s, hours: 4380 })).toBe('250 LF, 4,380 h/yr')
     expect(priceBasis(s, 'hot')).toBe('natural gas at $14.00/MMBtu, 80% boiler efficiency')
     expect(priceBasis(s, 'cold')).toBe('electricity at $0.120/kWh, chiller plant 0.90 kW/ton')
+  })
+
+  it('each heat source opens on its own efficiency and a price in its unit', () => {
+    const gas = { fuel: 'gas' as const, fuelPrice: 14 }
+    expect(fuelSwitch(gas, 'steam')).toEqual({ fuel: 'steam', fuelPrice: 14, efficiencyPct: 100 })
+    expect(fuelSwitch(gas, 'electric')).toEqual({ fuel: 'electric', fuelPrice: 0.12, efficiencyPct: 100 })
+    expect(fuelSwitch({ fuel: 'electric', fuelPrice: 0.19 }, 'heatpump')).toEqual({ fuel: 'heatpump', fuelPrice: 0.19, efficiencyPct: 250 })
+    expect(fuelSwitch({ fuel: 'heatpump', fuelPrice: 0.19 }, 'gas')).toEqual({ fuel: 'gas', fuelPrice: 14, efficiencyPct: 80 })
+  })
+
+  it('heat pump: Btu ÷ 3,412 per kWh ÷ COP', () => {
+    const s = { ...initialState('hot'), lengthFt: 10, hours: 1000, fuel: 'heatpump' as const, fuelPrice: 0.12, efficiencyPct: 250 }
+    const st = costSteps(s, 'hot', 341.214)
+    expect(st.bought.unit).toBe('kWh')
+    expect(st.bought.amount).toBeCloseTo(400, 3)
+    expect(st.cost).toBeCloseTo(48, 3)
+    expect(priceBasis(s, 'hot')).toBe('heat pump at $0.120/kWh, COP 2.5')
+  })
+
+  it('hours a year from hours a day, days a week and months a year', () => {
+    const s = initialState('hot')
+    expect([s.hoursPerDay, s.daysPerWeek, s.monthsPerYear, s.hours]).toEqual([24, 7, 12, 8760])
+    expect(scheduleHours(24, 7, 12)).toBe(8760)
+    expect(scheduleHours(24, 7, 6)).toBe(4380)
+    expect(scheduleHours(8, 5, 12)).toBe(2086)
+    expect(scheduleWords(s)).toBe('24/7, all year')
+    expect(scheduleWords({ hoursPerDay: 10, daysPerWeek: 5, monthsPerYear: 8 })).toBe('10 h a day, 5 days a week, 8 months a year')
+  })
+
+  it('payback from a cost per LF, in months under a year', () => {
+    const s = { ...initialState('hot'), lengthFt: 250, hours: 8760, installedPerFt: 25 }
+    const p = PRESETS.find((x) => x.id === 'steam')!
+    const st = { ...applyPreset(null, p), lengthFt: 250, installedPerFt: 25 }
+    const c = annualCost(st, 'hot', evaluate(st, 'hot'))!
+    expect(c.paybackYr).toBeCloseTo((25 * 250) / c.saved, 9)
+    expect(runBasis(s)).toBe('250 LF, running 24/7')
+    expect(paybackWords(0.35)).toBe('4 months')
+    expect(paybackWords(1.4)).toBe('1.4 years (17 months)')
+    expect(paybackWords(12.2)).toBe('12 years')
+  })
+
+  it('an unknown heat source in a saved file falls back to gas', () => {
+    expect(normalize('hot', { fuel: 'coal' as never }).fuel).toBe('gas')
+    expect(normalize('hot', { fuel: 'heatpump' }).fuel).toBe('heatpump')
   })
 })

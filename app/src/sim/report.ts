@@ -8,7 +8,7 @@ import { materialLabel } from './system'
 import { PIPE_PROPS, PIPE_LIMITS } from '../data/pipeWalls'
 import { SPECS } from '../data/specs'
 import { codeMinimum } from './code'
-import { annualCost, money, runBasis } from './cost'
+import { annualCost, money, paybackWords, runBasis } from './cost'
 import { dewZone, type Design } from './design'
 import { fittingResult } from './fittings'
 import { productFor, systemFor, type Evaluation, type Recommendation } from './model'
@@ -187,7 +187,8 @@ ${mode !== 'hot' ? row('Dew point', esc(T(m.dewF)), esc(`margin ${fmt.tempDelta(
 ${mode !== 'hot' && m.condensing ? row('Condensation', esc(`≈ ${(m.ozPerDayPerFt * 10).toFixed(1)} fl oz per day per 10 ft`)) : ''}
 ${zone && zone.fraction > 0 && zone.fraction < 1 ? row('Dew-point zone', esc(`inner ${zone.depthIn.toFixed(2)}" (${Math.round(zone.fraction * 100)}%) of the insulation is below the dew point`)) : ''}
 ${ev.annual ? row('Annual energy saved', esc(fmt.energy(ev.annual.saved, units)), esc(`vs. bare, ${runBasis(s)}`)) : ''}
-${cost ? row('Energy cost saved', esc(`${money(cost.saved)} per year · ${money(cost.saved / 12)} per month`), esc(`vs. bare: ${money(cost.bare)} → ${money(cost.ins)} a year · ${cost.basis}${cost.paybackYr !== null ? ` · payback ${cost.paybackYr.toFixed(1)} yr` : ''}`)) : ''}
+${cost ? row('Energy cost saved', esc(`${money(cost.saved)} per year · ${money(cost.saved / 12)} per month`), esc(`vs. bare: ${money(cost.bare)} → ${money(cost.ins)} a year · ${cost.basis}`)) : ''}
+${cost && cost.paybackYr !== null ? row('Payback', esc(paybackWords(cost.paybackYr)), esc(`${money(s.installedPerFt * s.lengthFt)} installed ($${s.installedPerFt.toFixed(2)}/LF × ${Math.round(s.lengthFt).toLocaleString('en-US')} LF) ÷ ${money(cost.saved)} saved a year`)) : ''}
 </table>
 </section>
 </div>

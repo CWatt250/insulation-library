@@ -1,22 +1,35 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Evaluation } from '../../sim/model'
 import { systemFor } from '../../sim/model'
-import { annualCost, BOILER_DEFAULT, costSteps, GAS_DEFAULT, money, POWER_DEFAULT, priceBasis, runBasis, type CostSteps } from '../../sim/cost'
+import { annualCost, costSteps, fuelSwitch, money, paybackWords, perKwh, priceBasis, runBasis, scheduleHours, scheduleWords, type CostSteps } from '../../sim/cost'
 import { JACKETS } from '../../data/catalog'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
 import { materialLabel, noun } from '../../sim/system'
 import { refsFor } from '../../sim/sources'
-import type { SimMode, SimState } from '../../sim/types'
+import type { Fuel, SimMode, SimState } from '../../sim/types'
 import { fmt, FT_M, type UnitSystem } from '../../sim/units'
-import { Disclosure, Icon, NumberField, Segmented } from '../controls'
+import { Disclosure, Icon, NumberField } from '../controls'
 
-/** Typical schedules, as hours a year. */
-const SCHEDULES: { hours: number; label: string; sub: string }[] = [
-  { hours: 8760, label: '24/7', sub: '8,760 h' },
-  { hours: 5840, label: '16 h/day', sub: '5,840 h' },
-  { hours: 4380, label: '12 h/day', sub: '4,380 h' },
-  { hours: 2080, label: '8 h M–F', sub: '2,080 h' },
+/** What pays for the heat a hot pipe loses, in plain words. */
+const FUELS: { id: Fuel; label: string; sub: string }[] = [
+  { id: 'gas', label: 'Natural gas', sub: 'gas boiler or water heater' },
+  { id: 'steam', label: 'Purchased steam', sub: 'bought from a steam plant' },
+  { id: 'electric', label: 'Electric', sub: 'electric boiler or heat trace' },
+  { id: 'heatpump', label: 'Heat pump', sub: 'electric heat-pump heater' },
 ]
+
+const range = (from: number, to: number) => Array.from({ length: from - to + 1 }, (_, i) => from - i)
+
+function Pick({ label, value, options, unit, onChange }: { label: string; value: number; options: number[]; unit: (v: number) => string; onChange: (v: number) => void }) {
+  return (
+    <label className="sv-pick">
+      <span>{label}</span>
+      <select value={value} onChange={(e) => onChange(Number(e.target.value))}>
+        {options.map((v) => <option key={v} value={v}>{unit(v)}</option>)}
+      </select>
+    </label>
+  )
+}
 
 function Src({ ids }: { ids: string[] }) {
   return <>{refsFor(ids).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={`${r.title} — ${r.publisher}`}> [{r.id}]</a>)}</>
@@ -32,11 +45,11 @@ function MathSteps({ title, st, s, mode, word }: { title: string; st: CostSteps;
     `Heat ${word}`,
     <>{num(st.q)} Btu/hr per ft × {Math.round(s.lengthFt).toLocaleString('en-US')} ft × {s.hours.toLocaleString('en-US')} h = <b>{mmbtu(st.btuYr)}/yr</b></>,
   ]]
-  if (mode === 'hot' && s.fuel !== 'electric') {
+  if (mode === 'hot' && !perKwh(s.fuel)) {
     rows.push([`${s.fuel === 'gas' ? 'Gas burned' : 'Steam bought'} to replace it`, <>{mmbtu(st.btuYr)} ÷ {s.efficiencyPct}% efficiency = <b>{num(st.bought.amount)} MMBtu</b></>])
     rows.push(['Cost', <>{num(st.bought.amount)} MMBtu × ${s.fuelPrice.toFixed(2)}/MMBtu = <b>{money(st.cost)}/yr</b></>])
   } else if (mode === 'hot') {
-    rows.push(['Electricity to replace it', <>{mmbtu(st.btuYr)} ÷ 3,412 Btu per kWh ÷ {s.efficiencyPct}% = <b>{num(st.bought.amount)} kWh</b></>])
+    rows.push(['Electricity to replace it', <>{mmbtu(st.btuYr)} ÷ 3,412 Btu per kWh ÷ {s.fuel === 'heatpump' ? `COP ${(s.efficiencyPct / 100).toFixed(1)}` : `${s.efficiencyPct}%`} = <b>{num(st.bought.amount)} kWh</b></>])
     rows.push(['Cost', <>{num(st.bought.amount)} kWh × ${s.fuelPrice.toFixed(3)}/kWh = <b>{money(st.cost)}/yr</b></>])
   } else {
     rows.push(['Cooling to remove it', <>{mmbtu(st.btuYr)} ÷ 12,000 Btu per ton-hour = <b>{num(st.tonHr ?? 0)} ton-hours</b></>])
@@ -77,13 +90,14 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
     : s.pipe === 'copper' ? `${pipeLabel(s.pipe, pipeSpec(s.pipe, s.npsIndex))} tube` : `${pipeLabel(s.pipe, pipeSpec(s.pipe, s.npsIndex))} ${s.pipe === 'pvc' ? 'PVC' : 'steel'}`
   const finish = duct ? null : sys.jacketId !== 'none' ? JACKETS[sys.jacketId].label : sys.facing === 'asj' ? 'ASJ facing' : null
 
-  const setFuel = (fuel: SimState['fuel']) => {
-    if (fuel === s.fuel) return
-    // electric heat turns all of its power into heat; gas and steam go back to the Washington gas price
-    if (fuel === 'electric') set({ fuel, fuelPrice: POWER_DEFAULT, efficiencyPct: 100 })
-    else if (s.fuel === 'electric') set({ fuel, fuelPrice: GAS_DEFAULT, efficiencyPct: BOILER_DEFAULT })
-    else set({ fuel })
+  // each source opens on its own efficiency, and a price in its own unit
+  const setFuel = (fuel: Fuel) => { if (fuel !== s.fuel) set(fuelSwitch(s, fuel)) }
+  const [schedOpen, setSchedOpen] = useState(false)
+  const setSched = (p: Partial<Pick<SimState, 'hoursPerDay' | 'daysPerWeek' | 'monthsPerYear'>>) => {
+    const next = { hoursPerDay: s.hoursPerDay, daysPerWeek: s.daysPerWeek, monthsPerYear: s.monthsPerYear, ...p }
+    set({ ...next, hours: scheduleHours(next.hoursPerDay, next.daysPerWeek, next.monthsPerYear) })
   }
+  const installed = s.installedPerFt * s.lengthFt
 
   const bareSteps = costSteps(s, mode, ev.bare.result.qBtuHrFt)
   const insSteps = costSteps(s, mode, ev.ins.result.qBtuHrFt)
@@ -108,16 +122,29 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
           onChange={(v) => set({ lengthFt: si ? v / FT_M : v })}
         />
         <div className="field">
-          <span className="field-label">How many hours it runs</span>
-          <div className="chips sv-sched" role="radiogroup" aria-label="How many hours it runs">
-            {SCHEDULES.map((o) => (
-              <button key={o.hours} role="radio" aria-checked={s.hours === o.hours} className={s.hours === o.hours ? 'on' : ''} onClick={() => set({ hours: o.hours })}>
-                {o.label}<small>{o.sub}</small>
-              </button>
-            ))}
+          <span className="field-label">How long it runs</span>
+          <div className="sv-sched-now">
+            <div><b>{scheduleWords(s)}</b><small>{s.hours.toLocaleString('en-US')} hours a year</small></div>
+            <button className="sv-link" aria-expanded={schedOpen} aria-label={schedOpen ? "Done changing how long it runs" : "Change how long it runs"} onClick={() => setSchedOpen(!schedOpen)}>{schedOpen ? 'Done' : 'Change'}</button>
           </div>
-          <NumberField label="Or type the hours per year" value={s.hours} digits={0} max={8760} unit="h/yr" onChange={(v) => set({ hours: v })} />
+          {schedOpen && (
+            <div className="sv-sched-picks">
+              <Pick label="Hours a day" value={s.hoursPerDay} options={range(24, 1)} unit={(v) => (v === 24 ? '24 h (around the clock)' : `${v} h`)} onChange={(v) => setSched({ hoursPerDay: v })} />
+              <Pick label="Days a week" value={s.daysPerWeek} options={range(7, 1)} unit={(v) => (v === 7 ? '7 days' : v === 5 ? '5 days (weekdays)' : `${v} day${v === 1 ? '' : 's'}`)} onChange={(v) => setSched({ daysPerWeek: v })} />
+              <Pick label="Months a year" value={s.monthsPerYear} options={range(12, 1)} unit={(v) => (v === 12 ? '12 months (all year)' : `${v} month${v === 1 ? '' : 's'}`)} onChange={(v) => setSched({ monthsPerYear: v })} />
+              {(s.hoursPerDay !== 24 || s.daysPerWeek !== 7 || s.monthsPerYear !== 12) && (
+                <button className="sv-reset" onClick={() => setSched({ hoursPerDay: 24, daysPerWeek: 7, monthsPerYear: 12 })}>Back to 24/7</button>
+              )}
+            </div>
+          )}
         </div>
+        <NumberField
+          label={<>Installed cost per {si ? 'foot' : 'LF'} <small className="muted">optional — shows how long the savings take to pay it back</small></>}
+          prefix="$" unit={si ? '/ft' : '/LF'} digits={2} max={1000}
+          value={s.installedPerFt}
+          onChange={(v) => set({ installedPerFt: v })}
+          hint={s.installedPerFt > 0 ? `${money(installed)} for ${run.split(',')[0]}.` : 'Leave at 0 to skip the payback.'}
+        />
       </section>
 
       {/* 2 — the answer */}
@@ -131,11 +158,17 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
             <p className="sv-per">
               {si ? `${money(c.saved / (s.lengthFt * FT_M))} per metre` : `${money(c.saved / s.lengthFt)} per LF`} per year · on {run}
             </p>
+            {installed > 0 && (
+              <div className="sv-payback">
+                <span>Pays for itself in</span>
+                <b>{c.paybackYr !== null ? paybackWords(c.paybackYr) : 'never — nothing is saved'}</b>
+                <small>{money(installed)} installed ÷ {money(c.saved)} saved a year</small>
+              </div>
+            )}
             <dl className="sv-break">
               <div><dt>Energy cost if left bare</dt><dd>{money(c.bare)} / yr</dd></div>
               <div><dt>Energy cost insulated</dt><dd>{money(c.ins)} / yr</dd></div>
               <div><dt>Energy saved</dt><dd>{fmt.energy(ev.annual!.saved, units)}{kwhSaved !== null && <small> · {Math.round(kwhSaved).toLocaleString('en-US')} kWh</small>}</dd></div>
-              {c.paybackYr !== null && <div><dt>Payback</dt><dd>{c.paybackYr < 1 ? `${Math.max(1, Math.round(c.paybackYr * 12))} months` : `${c.paybackYr.toFixed(1)} years`}</dd></div>}
             </dl>
           </>
         ) : (
@@ -151,16 +184,17 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
         {hot ? (
           <>
             <div className="field">
-              <span className="field-label">The heat comes from</span>
-              <Segmented<SimState['fuel']>
-                size="sm"
-                label="The heat comes from"
-                value={s.fuel}
-                onChange={setFuel}
-                options={[{ id: 'gas', label: 'Natural gas' }, { id: 'steam', label: 'Purchased steam' }, { id: 'electric', label: 'Electric' }]}
-              />
+              <span className="field-label">The heat comes from <small className="muted">— what you pay to replace the heat the {n} loses</small></span>
+              <div className="chips sv-fuel" role="radiogroup" aria-label="The heat comes from">
+                {FUELS.map((f) => (
+                  <button key={f.id} role="radio" aria-checked={s.fuel === f.id} className={s.fuel === f.id ? 'on' : ''} onClick={() => setFuel(f.id)}>
+                    {f.label}<small>{f.sub}</small>
+                  </button>
+                ))}
+              </div>
+              <p className="field-note">Pick what you pay for, not what’s in the {n}: steam made by your own gas boiler is Natural gas.</p>
             </div>
-            {s.fuel === 'electric' ? (
+            {perKwh(s.fuel) ? (
               <NumberField
                 label="Electricity price"
                 prefix="$" unit="/kWh" digits={3} fixed={3} max={2}
@@ -176,16 +210,30 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
                 onChange={(v) => set({ fuelPrice: v })}
                 hint={s.fuel === 'gas'
                   ? <>= ${(s.fuelPrice / 10).toFixed(3)} per therm. $14 is Washington’s commercial average: $13.80 in 2025, $14.56 so far in 2026 (EIA)<Src ids={['P1', 'P2', 'P4']} />; PSE Schedule 31 averages $1.47/therm<Src ids={['P5']} />.</>
-                  : <>Enter the rate from your steam bill, in $ per MMBtu (1 MMBtu = 10 therms).</>}
+                  : <>Enter the rate from your steam bill, in $ per MMBtu. Billed per 1,000 lb? Ask the supplier how many MMBtu that is — it depends on the steam pressure.</>}
               />
             )}
-            <NumberField
-              label={s.fuel === 'gas' ? 'Boiler efficiency' : s.fuel === 'steam' ? 'Steam system efficiency' : 'Electric heater efficiency'}
-              unit="%" digits={0} min={1} max={100}
-              value={s.efficiencyPct}
-              onChange={(v) => set({ efficiencyPct: v })}
-              hint={s.fuel === 'electric' ? 'Resistance heat turns all of its power into heat: 100%.' : `Share of the ${s.fuel === 'gas' ? 'gas' : 'steam'} energy that ends up as heat in the ${n}. 80% is an example; use your boiler’s rating.`}
-            />
+            {s.fuel === 'heatpump' ? (
+              <NumberField
+                label="Heat pump COP"
+                unit="COP" digits={1} fixed={1} min={1} max={6}
+                value={s.efficiencyPct / 100}
+                onChange={(v) => set({ efficiencyPct: Math.round(v * 100) })}
+                hint={<>Units of heat per unit of electricity. DOE: heat pump water heaters are two to three times as efficient as resistance heat (COP 2–3)<Src ids={['P8']} />. Use the COP from the unit’s data sheet.</>}
+              />
+            ) : (
+              <NumberField
+                label={s.fuel === 'gas' ? 'Boiler efficiency' : s.fuel === 'steam' ? 'Steam system efficiency' : 'Electric heater efficiency'}
+                unit="%" digits={0} min={1} max={100}
+                value={s.efficiencyPct}
+                onChange={(v) => set({ efficiencyPct: v })}
+                hint={s.fuel === 'gas'
+                  ? 'Share of the gas energy that ends up as heat in the water; the rest goes up the flue. 80% is an example — use your boiler’s rating.'
+                  : s.fuel === 'steam'
+                    ? `You buy the steam already made, so each Btu the ${n} loses is about one Btu of steam bought: 100%.`
+                    : 'Resistance heat turns all of its power into heat: 100%.'}
+              />
+            )}
           </>
         ) : (
           <>
@@ -205,13 +253,6 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
             />
           </>
         )}
-        <NumberField
-          label={<>Installed cost of the insulation <small className="muted">optional, for payback</small></>}
-          prefix="$" unit={si ? '/ft' : '/LF'} digits={2} max={1000}
-          value={s.installedPerFt}
-          onChange={(v) => set({ installedPerFt: v })}
-          hint={s.installedPerFt > 0 ? `${money(s.installedPerFt * s.lengthFt)} for ${run.split(',')[0]}.` : 'Leave at 0 to skip payback.'}
-        />
       </section>
 
       {/* 4 — what's being priced, and how */}
@@ -241,6 +282,22 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
               <li><span>Per month</span><span>{money(c.saved)} ÷ 12 = <b>{money(c.saved / 12)}</b></span></li>
             </ol>
           </div>
+          {installed > 0 && (
+            <div className="sv-steps">
+              <h4>Payback</h4>
+              <ol>
+                <li><span>Installed cost</span><span>${s.installedPerFt.toFixed(2)} per {si ? 'ft' : 'LF'} × {Math.round(s.lengthFt).toLocaleString('en-US')} {si ? 'ft' : 'LF'} = <b>{money(installed)}</b></span></li>
+                {c.paybackYr !== null ? (
+                  <>
+                    <li><span>Time to pay it back</span><span>{money(installed)} ÷ {money(c.saved)} saved a year = <b>{c.paybackYr.toFixed(2)} years</b></span></li>
+                    <li><span>In months</span><span>{c.paybackYr.toFixed(2)} × 12 = <b>{Math.max(1, Math.round(c.paybackYr * 12))} months</b></span></li>
+                  </>
+                ) : (
+                  <li><span>Time to pay it back</span><span>Nothing is saved, so it never pays back.</span></li>
+                )}
+              </ol>
+            </div>
+          )}
         </Disclosure>
       )}
 

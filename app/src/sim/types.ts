@@ -71,7 +71,11 @@ export interface SimState {
   kProduct: number
   /** Optional energy inputs. */
   lengthFt: number
+  /** Operating hours a year; the Savings tab sets it from the schedule below. */
   hours: number
+  hoursPerDay: number
+  daysPerWeek: number
+  monthsPerYear: number
   /** Personnel-protection (safe-touch) surface limit, °F. */
   ppF: number
   /** User's surface temperature target: a maximum on hot work, a minimum on cold work. */
@@ -82,11 +86,11 @@ export interface SimState {
   dewMarginF: number
   /** Include the ASHRAE 90.1 minimum thickness as a design requirement. */
   applyCode: boolean
-  /** Economics (user inputs; defaults are examples, not sourced prices). */
-  fuel: 'gas' | 'electric' | 'steam'
-  /** $/MMBtu for gas and purchased steam; $/kWh for electricity. */
+  /** Economics: user inputs, defaulting to Washington averages (sim/cost.ts). */
+  fuel: Fuel
+  /** $/MMBtu for gas and purchased steam; $/kWh for electric and heat pump. */
   fuelPrice: number
-  /** Heating plant conversion efficiency, %. */
+  /** Heat delivered per unit of energy bought, %; a heat pump's COP × 100 (COP 2.5 = 250). */
   efficiencyPct: number
   /** Cooling: electricity price $/kWh and plant efficiency kW/ton. */
   coolPrice: number
@@ -94,5 +98,8 @@ export interface SimState {
   /** Installed insulation cost, $ per linear foot (0 = no payback shown). */
   installedPerFt: number
 }
+
+/** What pays for the heat a hot pipe loses. */
+export type Fuel = 'gas' | 'steam' | 'electric' | 'heatpump'
 
 export type CondensationStatus = 'dry' | 'borderline' | 'sweating' | 'dripping'
