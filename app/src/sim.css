@@ -666,7 +666,7 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 /* ------------------------------------------------ Watt Systems branding */
 .ws-brand { display: inline-flex; align-items: center; gap: 6px; }
 .ws-brand .ws-by { color: var(--ink-3); font-weight: 550; }
-.ws-mark { flex: none; border-radius: 4px; }
+.ws-mark { flex: none; }
 .ws-foot {
   display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 18px 2px 6px; padding-top: 12px;
   border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3);

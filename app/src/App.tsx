@@ -440,7 +440,7 @@ export default function App() {
         <>
           <aside className="panel controls">
             <header>
-              <span className="ws-brand ws-eyebrow"><ProductMark size={16} /> <span className="ws-by">by Watt Systems</span></span>
+              <span className="ws-brand ws-eyebrow"><ProductMark size={18} /> <span className="ws-by">by Watt Systems</span></span>
               <h1>Insulation Library</h1>
               <p className="sub">Mechanical pipe insulation, built to field practice</p>
             </header>
