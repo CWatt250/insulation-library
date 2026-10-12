@@ -145,7 +145,7 @@ export function evaluateSide(s: SimState, mode: SimMode, thicknessIn: number | n
     return {
       thicknessIn, input: d.input, result: d.result, moisture: d.moisture, status: condensationStatus(d.moisture, s.dewMarginF), geo: null,
       surface: s.emittanceOverride === null || t === null ? surf : { ...surf, value: s.emittanceOverride, label: 'Custom emittance', src: [] },
-      ratedR: t === null ? 0 : ratedR(s.ductIns, t),
+      ratedR: t === null ? 0 : ratedR(s.ductIns, t, s.ductShape),
     }
   }
   const { input, geo, surface } = caseFor(s, mode, thicknessIn, nominal)
@@ -171,7 +171,7 @@ export function evaluate(s: SimState, mode: SimMode): Evaluation {
   mode = physicsMode(s, mode)
   const bare = evaluateSide(s, mode, null)
   const ins = evaluateSide(s, mode, s.thicknessIn)
-  const product = s.system === 'duct' ? ductProduct(s.ductIns) : productFor(s)
+  const product = s.system === 'duct' ? ductProduct(s.ductIns, s.ductFacing, s.ductShape) : productFor(s)
   const reductionPct = bare.result.qWm !== 0 ? (1 - ins.result.qWm / bare.result.qWm) * 100 : 0
   const annual = s.lengthFt > 0 && s.hours > 0
     ? (() => {
@@ -235,7 +235,7 @@ export function meets(goal: Goal, side: Side): boolean {
 /** Smallest standard thickness (0.5" steps, up to the material's max) meeting the goal. */
 /** Thicknesses on offer for the current system (ducts: the product's nominal sizes). */
 export function thicknessOptions(s: SimState): number[] {
-  return s.system === 'duct' ? ductThicknesses(s.ductIns) : thicknessesFor(INSULATION[s.insulation], THICKNESSES)
+  return s.system === 'duct' ? ductThicknesses(s.ductIns, s.ductShape) : thicknessesFor(INSULATION[s.insulation], THICKNESSES)
 }
 
 export function recommend(s: SimState, mode: SimMode, goal: Goal): Recommendation {

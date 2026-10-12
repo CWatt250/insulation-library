@@ -1,3 +1,4 @@
+import { boardFor, ductCover, isWrap } from '../../sim/duct'
 import type { Evaluation } from '../../sim/model'
 import { DRIP_RATE } from '../../sim/model'
 import type { SimState } from '../../sim/types'
@@ -89,7 +90,8 @@ export function Assumptions({ ev, s, units }: { ev: Evaluation; s: SimState; uni
 const Ref = ({ ids }: { ids: string[] }) => <>{refsFor(ids).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</>
 
 function DuctModel({ ev, s, units }: { ev: Evaluation; s: SimState; units: UnitSystem }) {
-  const wrap = s.ductIns !== 'elastomeric'
+  const wrap = isWrap(s.ductIns)
+  const alu = ductCover(s).jacket === 'alu'
   const surf = ev.ins.surface
   return (
     <ul>
@@ -97,7 +99,9 @@ function DuctModel({ ev, s, units }: { ev: Evaluation; s: SimState; units: UnitS
       {s.ductShape === 'rect'
         ? <li>Each face solved on its own as a flat slab: sides as vertical surfaces (L = face height), top and underside as horizontal surfaces (L = area ÷ perimeter), with the stable and unstable correlations swapped between warm and cold ducts; corners not modelled. No published source splits a duct by face — this is the simulator's construction from the C680 flat-surface geometries.<Ref ids={['U1', 'U9', 'U14']} /></li>
         : <li>Round duct solved as a horizontal cylinder (the pipe engine's C680 correlations).</li>}
-      <li>{wrap ? <>Duct wrap at its installed thickness, 75% of nominal (25% compression), as the IMC and the makers rate it; k vs temperature is the published out-of-package curve scaled by the installed ÷ out-of-package ratio printed at 75°F (this app's assumption — it reproduces the printed installed R).</> : <>Elastomeric sheet at its nominal thickness; k as published at 75 and 100°F.</>}<Ref ids={wrap ? ['U28', 'C6'] : ['U44']} /></li>
+      <li>{wrap
+        ? <>JM Microlite FSK duct wrap at its installed thickness, 75% of nominal (25% compression), as the IMC and JM rate it. JM prints k at 75°F only, so k vs temperature follows Knauf's published curve for the same density, scaled to JM's installed k at 75°F (this app's assumption — it reproduces JM's printed installed R).</>
+        : <>{boardFor(s.ductShape).product} at its labeled thickness (not compressed); k vs temperature {boardFor(s.ductShape).kNote}{s.ductShape === 'round' ? '; JM prints no R-values for Micro-Flex, so its R is thickness ÷ k at 75°F' : ''}.{alu ? ' Outdoors it goes under a 0.016" aluminum jacket (UFGS 23 07 00), which sets the surface emittance and adds no R-value.' : ''}</>}<Ref ids={wrap ? ['U23', 'U28', 'C6'] : [...boardFor(s.ductShape).src, ...(alu ? ['U66'] : [])]} /></li>
       <li>Emittance {(s.emittanceOverride ?? surf.value).toFixed(2)} for {s.emittanceOverride !== null ? 'a custom surface' : surf.label.toLowerCase()}{surf.note ? ` (${surf.note})` : ''}; bare duct {ev.bare.surface.value.toFixed(2)} ({ev.bare.surface.label.toLowerCase()}).<Ref ids={[...surf.src, ...ev.bare.surface.src]} /></li>
       <li>Flat-surface correlations checked: they reproduce all 12 bare flat-surface rows of DNV's C680 tables and 3E Plus Example 5 (see the accuracy table).</li>
       <li>Energy code check uses the rated installed R at 75°F mean (ASHRAE 90.1-2019 Table 6.8.2, footnote a), not the calculated in-service value.<Ref ids={['C19']} /></li>

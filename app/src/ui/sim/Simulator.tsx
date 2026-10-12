@@ -19,6 +19,7 @@ import { DuctGuide } from './DuctGuide'
 import { QuickStart, useQuickStart } from './QuickStart'
 import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
 import { useCovered } from '../useCovered'
+import { ductStage, placeDuct } from '../../sim/duct'
 
 const SIM_MODES: SimMode[] = ['hot', 'cold', 'condensate', 'duct']
 
@@ -104,7 +105,9 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     const codes = codesIn(patch)
     if (codes) saveCodes(codes)
     setStates((prev) => {
-      const next = { ...prev, [mode]: { ...prev[mode], ...patch } }
+      // a duct taken outdoors goes into board under a metal jacket, and back into wrap indoors
+      const p = mode === 'duct' ? placeDuct(prev.duct, patch) : patch
+      const next = { ...prev, [mode]: { ...prev[mode], ...p } }
       if (codes) for (const m of SIM_MODES) if (m !== mode) next[m] = { ...next[m], ...codes }
       return next
     })
@@ -316,7 +319,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       s={s}
       mode={beh}
       panels={panels}
-      opts={{ view, thermal: thermal && !present, stage: stages[mode], mobile, units, autoRotate: present, resetKey, onUserMove: () => setMovedIn(framing) }}
+      opts={{ view, thermal: thermal && !present, stage: mode === 'duct' ? ductStage(s) : stages[mode], mobile, units, autoRotate: present, resetKey, onUserMove: () => setMovedIn(framing) }}
       bare={ev.bare}
       inset={{ left: insetLeft, right: insetRight, top: mobile && !present ? covered.top + 6 : 0, bottom: mobile && !present ? covered.bottom + 6 : 0 }}
       sync={sync}

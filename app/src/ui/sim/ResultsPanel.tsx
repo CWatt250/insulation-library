@@ -413,7 +413,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
               {mode === 'cold' ? (
                 <Card label="Dew point" value={T(m.dewF)} sub={`${T(s.ambientF)} at ${s.rh}% RH`} />
               ) : s.system === 'duct' ? (
-                <Card label="Installed R" value={`R-${(ev.ins.ratedR ?? 0).toFixed(1)}`} sub={s.ductIns === 'elastomeric' ? 'as printed, 75°F mean' : 'at 25% compression, 75°F mean'} />
+                <Card label="Installed R" value={`R-${(ev.ins.ratedR ?? 0).toFixed(1)}`} sub={s.ductIns === 'board' ? 'as printed, 75°F mean' : 'at 25% compression, 75°F mean'} />
               ) : (
                 <Card label="Mean k used" value={ev.ins.result.layerKIp[0]?.toFixed(3) ?? '—'} sub={`at ${T(ev.ins.result.layerMeanF[0] ?? 0)} mean · Btu·in/hr·ft²·°F`} />
               )}

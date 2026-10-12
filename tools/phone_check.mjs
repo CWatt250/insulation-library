@@ -5,7 +5,8 @@
 //
 // Checks each tab for page errors, sideways scrolling, the section bar, the one-row
 // 3D toolbar and its More menu, the bare-stub tag framed between the status pill and
-// the toolbar, Reset view after a drag, and the bottom sheet opening on screen.
+// the toolbar, the duct's R-value tag, Reset view after a drag, and the bottom sheet
+// opening on screen.
 // Screenshots go to app/test-results/phone/. Exits 1 on any failure.
 // Runs before every push (.githooks/pre-push); SKIP_PHONE_CHECK=1 skips it.
 import { spawn, spawnSync } from 'node:child_process'
@@ -140,7 +141,14 @@ async function checkTab(page, tab, errors) {
       const ok = tag.x >= -1 && tag.x + tag.width <= W + 1 && tag.y >= top && tag.y + tag.height <= bottom
       check(tab, 'model framed in the open band', ok, `tag at ${tag.x.toFixed(0)},${tag.y.toFixed(0)} (band y ${top.toFixed(0)}–${bottom.toFixed(0)})`)
     }
-    if (tab === 'duct') check(tab, 'Location guide visible', await page.getByRole('button', { name: 'Location guide' }).first().isVisible().catch(() => false))
+    if (tab === 'duct') {
+      check(tab, 'Location guide visible', await page.getByRole('button', { name: 'Location guide' }).first().isVisible().catch(() => false))
+      // the duct's R-value and thickness, on the model and on screen
+      const ins = page.locator('.ins-tag').first()
+      const ib = await box(ins)
+      const txt = ib ? await ins.textContent() : ''
+      check(tab, 'R-value and thickness tag on screen', inside(ib) && /R-\d/.test(txt) && /"/.test(txt), ib ? `"${txt}" at ${ib.x.toFixed(0)},${ib.y.toFixed(0)}` : 'no .ins-tag')
+    }
   } else if (tab === 'explore') {
     check(tab, '3D canvas present', (await page.locator('canvas').count()) > 0)
   }

@@ -1,0 +1,271 @@
+{
+  "dataset": "Johns Manville rigid duct insulation: 800 Series Spin-Glas board (rectangular duct) and Micro-Flex (round duct), plus the outdoor metal-jacket practice",
+  "generated": "2026-10-12",
+  "conventions": "k in Btu·in/(hr·ft²·°F); R in hr·ft²·°F/Btu at 75°F mean; thickness in inches. Quotes are from pdftotext -layout of the PDFs, fetched 2026-10-12.",
+  "sources": [
+    {
+      "id": "U64",
+      "title": "800 Series Spin-Glas® – Fiberglass Duct and Equipment Rigid Board Insulation – Data Sheet",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/board-and-blanket/800-series-spin-glas/JM_MECH_800_Series_SpinGlas_Data_Sheet_EN.pdf",
+      "pub_no_or_date": "CI-9 07/31/25 (Replaces 08/24/22)",
+      "accessed": "2026-10-12",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "U65",
+      "title": "Micro-Flex® – Large Diameter Pipe & Tank Fiberglass Wrap – Data Sheet",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/board-and-blanket/micro-flex/JM_MECH_MicroFlex_Data_Sheet_EN.pdf",
+      "pub_no_or_date": "CI-187 06/30/25 (Replaces 04/14/25)",
+      "accessed": "2026-10-12",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "U66",
+      "title": "UFGS 23 07 00 Thermal Insulation for Mechanical Systems",
+      "publisher": "Whole Building Design Guide (US DoD Unified Facilities Guide Specifications)",
+      "url": "https://www.wbdg.org/FFC/DOD/UFGS/UFGS%2023%2007%2000.pdf",
+      "pub_no_or_date": "August 2024",
+      "accessed": "2026-10-12",
+      "retrieval": "curl+pdftotext",
+      "note": "§2.4.7.2.1 Aluminum Jackets: \"ASTM B209, Temper H14, minimum thickness of 27 gauge (0.41 mm 0.016 inch)\"; §3.3.7.2 round duct outdoors: aluminum jacket \"lapped no less than 75 mm 3 inches and secured with bands located at circumferential laps and at no more than 300 mm 12 inch intervals\"; §3.3.7.4 Rectangular Ducts: \"exterior is a metal jacketing applied for mechanical abuse and weather protection, and secure with screws\" (or a >3-ply membrane)"
+    }
+  ],
+  "board": {
+    "product": "800 Series Spin-Glas® Type 814 rigid fiberglass board",
+    "product_short": "JM 814 Spin-Glas® board",
+    "src": [
+      "U64"
+    ],
+    "density_pcf": 3.0,
+    "max_F": 450,
+    "facing_max_F": 150,
+    "thicknesses": [
+      {
+        "in": 1,
+        "R": 4.3
+      },
+      {
+        "in": 1.5,
+        "R": 6.5
+      },
+      {
+        "in": 2,
+        "R": 8.7
+      },
+      {
+        "in": 2.5,
+        "R": 10.9
+      },
+      {
+        "in": 3,
+        "R": 13.0
+      },
+      {
+        "in": 3.5,
+        "R": 15.2
+      },
+      {
+        "in": 4,
+        "R": 17.4
+      }
+    ],
+    "k_vs_mean": [
+      {
+        "meanF": 50,
+        "k": 0.21
+      },
+      {
+        "meanF": 75,
+        "k": 0.23
+      },
+      {
+        "meanF": 100,
+        "k": 0.24
+      },
+      {
+        "meanF": 200,
+        "k": 0.28
+      },
+      {
+        "meanF": 300,
+        "k": 0.34
+      }
+    ],
+    "k_note": "k at 75°F as printed (0.23); 50–300°F read from JM's k chart for 814 (about ±0.005), not printed as numbers",
+    "facings": {
+      "fsk": {
+        "perm": 0.02,
+        "src": [
+          "U64"
+        ],
+        "note": "FSK: 0.02 perms max"
+      },
+      "asj": {
+        "perm": 0.02,
+        "src": [
+          "U64"
+        ],
+        "note": "AP facing, JM's ASJ: 0.02 perms max"
+      }
+    },
+    "evidence": [
+      {
+        "quote": "“k” @ 75°F mean        0.24      0.23     0.23     0.22      0.22",
+        "location": "p1 Thermal Conductivity, Types 812 813 814 815 817"
+      },
+      {
+        "quote": "814         4.3     6.5        8.7       10.9     13.0      15.2     17.4",
+        "location": "p1 Thermal Performance (R-Values), 1\" to 4\""
+      },
+      {
+        "quote": "814            3.00           48             1–4                 25–102                1–4              25–102",
+        "location": "p2 Available Densities, Thicknesses and Facings (in ½\" increments)"
+      },
+      {
+        "quote": "Faced Side: 150°F (66°C)",
+        "location": "p1 Physical Properties"
+      },
+      {
+        "quote": "Unfaced Temp Limit (Max)                            450°F (232°C)",
+        "location": "p1 Physical Properties"
+      },
+      {
+        "quote": "Moisture Vapor Transmission                         0.02 perms max: FSK, AP, & Ultra",
+        "location": "p1 Physical Properties"
+      },
+      {
+        "quote": "AP (All Purpose). The AP or All Purpose facing is an ASJ comprised of white kraft bonded to aluminum foil, reinforced with fiber glass yarn and laminated with fire-resistant adhesive to kraft paper.",
+        "location": "p1 Facing Information"
+      },
+      {
+        "quote": "Types 813, 814, 815 and 817 provide neat square corners for an excellent finished appearance on duct and equipment systems.",
+        "location": "p1 Description"
+      },
+      {
+        "quote": "On systems operating below ambient temperatures, all seams should be tightly sealed with quality ASJ, foil, FSK or Ultra tapes depending on the desired finish.",
+        "location": "p1 Applications"
+      }
+    ]
+  },
+  "round": {
+    "product": "Micro-Flex® large-diameter pipe & tank fiberglass wrap",
+    "product_short": "JM Micro-Flex®",
+    "src": [
+      "U65"
+    ],
+    "density_pcf": 2.5,
+    "max_F": 850,
+    "facing_max_F": 150,
+    "thicknesses": [
+      {
+        "in": 1.5
+      },
+      {
+        "in": 2
+      },
+      {
+        "in": 2.5
+      },
+      {
+        "in": 3
+      },
+      {
+        "in": 3.5
+      },
+      {
+        "in": 4
+      }
+    ],
+    "thickness_note": "Stretch-out chart columns 1†, 1½, 2, 2½, 3, 3½, 4 in; 1 in carries a footnote and is left out here. JM prints no R-values: R = thickness ÷ k at 75°F (0.24).",
+    "k_vs_mean": [
+      {
+        "meanF": 75,
+        "k": 0.24
+      },
+      {
+        "meanF": 150,
+        "k": 0.28
+      },
+      {
+        "meanF": 200,
+        "k": 0.32
+      },
+      {
+        "meanF": 300,
+        "k": 0.39
+      },
+      {
+        "meanF": 400,
+        "k": 0.46
+      },
+      {
+        "meanF": 500,
+        "k": 0.58
+      }
+    ],
+    "k_note": "as printed (ASTM C518)",
+    "facings": {
+      "fsk": {
+        "perm": 0.02,
+        "src": [
+          "U65"
+        ],
+        "note": "ASJ/FSK facing 0.02 perms"
+      },
+      "asj": {
+        "perm": 0.02,
+        "src": [
+          "U65"
+        ],
+        "note": "AP (ASJ) facing 0.02 perms"
+      }
+    },
+    "evidence": [
+      {
+        "quote": "Micro-Flex large-diameter pipe and tank wrap is a 2.5 pcf (40.1 kg/m 3) density product made from high-temperature, semi-rigid fiberglass blanket bonded to a flexible facing.",
+        "location": "p1 Description"
+      },
+      {
+        "quote": "Micro-Flex can be installed indoors & outdoors depending on the application. Micro-Flex does require a weather barrier cladding such as aluminum jacketing or polyvinyl chloride (PVC) jacketing to protect it from the elements when installed outdoors.",
+        "location": "p1 Description"
+      },
+      {
+        "quote": "application on rounded shapes such as pipes, tanks, ducts, vessels and other similar round and irregular shapes.",
+        "location": "p1 Uses"
+      },
+      {
+        "quote": "Btu•in/(hr•ft2•°F)                          .24           .28       .32         .39     .46     .58",
+        "location": "p1 Thermal Conductivity at 75, 150, 200, 300, 400, 500°F mean"
+      },
+      {
+        "quote": "ASJ/FSK facing                            0.02 Perms",
+        "location": "p1 Physical Properties, Water Vapor Permeance"
+      },
+      {
+        "quote": "Facing Temperature Limit                       150°F (66°C)         C 1136",
+        "location": "p1 Physical Properties"
+      },
+      {
+        "quote": "Maximum Use Temperature                        850°F (454°C)        C 411",
+        "location": "p1 Physical Properties"
+      },
+      {
+        "quote": "(in.*)    (in.*)          1†     1½        2        2½     3      3½    4",
+        "location": "p2 Stretch-out chart thickness columns"
+      }
+    ]
+  },
+  "outdoor_jacket": {
+    "summary": "Outdoors the board goes under an aluminum jacket: UFGS 23 07 00 calls for ASTM B209 H14 aluminum, 0.016 in minimum; round duct outdoors lapped at least 3 in with bands at the laps and at most 12 in apart; rectangular duct outdoors a metal jacket secured with screws. Micro-Flex outdoors needs weather-barrier cladding such as aluminum (U65). JM's own rooftop-duct board is XSPECT ISOfoam APF (polyiso) under Cross-Flo jacketing; not used here.",
+    "src": [
+      "U66",
+      "U65"
+    ],
+    "unverified": [
+      "JM statement approving 800 Series Spin-Glas for outdoor use (none found)",
+      "Sloped / crowned top on rectangular outdoor duct (SMACNA HVAC-DCS 3.4 per a 3M guide; JM XSPECT tapers the top board on ducts over 32 in)"
+    ]
+  }
+}

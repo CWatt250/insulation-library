@@ -1,5 +1,6 @@
 import { INSULATION } from '../data/catalog'
-import { DUCT_WRAP, ELASTOMERIC_SHEET } from '../data/ductData'
+import { DUCT_WRAP } from '../data/ductData'
+import { boardFor, isWrap } from './duct'
 import { fToC } from './units'
 import { pSat } from './psychro'
 import { physicsMode, productFor, systemFor, type Side } from './model'
@@ -44,8 +45,11 @@ const OZ_PER_LB = 453.59237 / 29.5735 // water, ~1 g/mL
 
 function retarderFor(s: SimState, mode: SimMode): RetarderInfo {
   if (s.system === 'duct') {
-    if (s.ductIns === 'elastomeric') return { label: `${ELASTOMERIC_SHEET.product}, ${s.thicknessIn}"`, perm: ELASTOMERIC_SHEET.permIn / s.thicknessIn, src: ['U44'], note: `${ELASTOMERIC_SHEET.permIn} perm·in ÷ thickness` }
-    return { label: 'FSK facing on the duct wrap', perm: DUCT_WRAP.facingPerm, upper: true, src: ['U28'], note: '"0.02 perms or less" (ASTM E96 Procedure A)' }
+    if (!isWrap(s.ductIns)) {
+      const f = boardFor(s.ductShape).facings[s.ductFacing]
+      return { label: `${s.ductFacing.toUpperCase()} facing on the ${s.ductShape === 'round' ? 'Micro-Flex' : 'board'}`, perm: f.perm, upper: s.ductShape !== 'round', src: f.src, note: f.note }
+    }
+    return { label: 'FSK facing on the duct wrap', perm: DUCT_WRAP.facingPerm, src: DUCT_WRAP.src, note: '0.02 perms (ASTM E96 Procedure A, facing before lamination; JM: "After lamination, permeance values may be higher")' }
   }
   const sys = systemFor(s, mode)
   const id = s.insulation
@@ -86,7 +90,7 @@ export function vaporCheck(s: SimState, mode: SimMode, side: Side): VaporCheck |
   const notes: string[] = []
   if (s.system === 'duct') {
     notes.push('IMC 604.11: externally insulated cooling ducts need a vapor retarder of 0.05 perm or less (or 2-mil foil); insulation of 0.05 perm or less needs no cover. Seal every joint and seam.')
-    if (s.ductIns !== 'elastomeric') notes.push('Seal staples, pins, tears and punctures in the facing with foil tape (OC, JM, Knauf, CertainTeed install instructions).')
+    notes.push(isWrap(s.ductIns) ? 'Seal staples, pins, tears and punctures in the facing with foil tape (OC, JM, Knauf, CertainTeed install instructions).' : 'Tape every board joint and pin washer with facing tape.')
   }
   const sys = systemFor(s, mode)
   if (s.system !== 'duct' && sys.jacketId === 'pvc') notes.push('The PVC jacket protects the system but should not be relied on alone as the vapor retarder (ASHRAE).')

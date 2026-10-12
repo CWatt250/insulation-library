@@ -74,8 +74,9 @@ export const fmt = {
 export function inchLabel(v: number) {
   const whole = Math.floor(v + 1e-9)
   const frac = v - whole
-  // nearest sixteenth when it is one (duct wrap comes in 2-3/16" and 4-5/16"), reduced
+  // nearest sixteenth when it is one, reduced; or fifths, as JM labels duct wrap (2-1/5", 4-2/5")
   const n16 = Math.round(frac * 16)
+  const n5 = Math.round(frac * 5)
   let f = ''
   if (frac >= 0.01) {
     if (Math.abs(frac - n16 / 16) < 0.004) {
@@ -83,7 +84,8 @@ export function inchLabel(v: number) {
       let den = 16
       while (num % 2 === 0 && den > 1) { num /= 2; den /= 2 }
       f = `${num}/${den}`
-    } else return `${(whole + frac).toFixed(2)}"` // not a sixteenth (e.g. aerogel's 10 mm wraps): plain decimal
+    } else if (Math.abs(frac - n5 / 5) < 0.004) f = `${n5}/5`
+    else return `${(whole + frac).toFixed(2)}"` // neither (e.g. aerogel's 10 mm wraps): plain decimal
   }
   if (!whole) return `${f || '0'}"`
   return f ? `${whole}-${f}"` : `${whole}"`

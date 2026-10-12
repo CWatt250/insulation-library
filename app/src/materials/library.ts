@@ -109,10 +109,12 @@ export const Slot = {
   /** Vapor-retarder membrane over the insulation (cold service). */
   Vapor: 27,
   VaporEdge: 28,
-  /** FSK facing on duct wrap. */
+  /** FSK facing on duct wrap and board. */
   DuctFacing: 29,
+  /** FSK tape on duct seams, washers and corners (whatever the outer jacket). */
+  FoilTape: 30,
 } as const
-export const SLOT_COUNT = 30
+export const SLOT_COUNT = 31
 
 const steelOuter = () => pbr('steel-millscale', { metalness: 0.75 })
 const copperOuter = () => pbr('copper-tube', { metalness: 0.9 })
@@ -195,6 +197,7 @@ export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial 
   const j = once(() => jacket(jac))
   const f = once(() => jacket('asj'))
   const pvcCover = once(pvc)
+  const foilTape = once(() => pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }))
   // the vapor-retarder membrane as made: white (Insulrap 30-NG), silver foil (PITTWRAP IW50 AL) or black coating
   const look = v.vapor.membrane?.look ?? 'black'
   const make: Record<number, () => THREE.Material> = {
@@ -205,7 +208,8 @@ export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial 
     [Slot.InsSkin]: skin,
     [Slot.InsCut]: cut,
     [Slot.InsBore]: bore,
-    [Slot.JacketOuter]: () => j().outer,
+    // flat duct faces mirror the ground; stucco-embossed sheet reads brighter and more diffuse
+    [Slot.JacketOuter]: () => (pipe === 'galvanized' && jac === 'alu-stucco' ? pbr('alu-stucco', { metalness: 1, roughness: 1.45, color: '#f4f6f8' }) : j().outer),
     [Slot.JacketInner]: () => j().inner,
     [Slot.JacketEdge]: () => j().edge,
     [Slot.Band]: bandMat,
@@ -223,8 +227,10 @@ export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial 
     [Slot.BlanketCore]: () => pbr('blanket-mat', { sheen: 0.2, sheenColor: '#ffffff' }),
     [Slot.Hardware]: () => pbr('ss-2b', { metalness: 0.9, roughness: 1.6, color: '#c9ccd0' }),
     [Slot.Screw]: () => pbr('ss-2b', { metalness: 1, roughness: 1.5, color: '#8c9095' }),
-    [Slot.Tape]: () => (jac === 'fsk' ? pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }) : j().outer),
-    [Slot.Facing]: () => f().outer,
+    [Slot.Tape]: () => (jac === 'fsk' ? foilTape() : j().outer),
+    [Slot.FoilTape]: foilTape,
+    // ASJ on a duct's broad flat faces under room lights: a shade off paper-white so it keeps its texture
+    [Slot.Facing]: () => (pipe === 'galvanized' ? pbr('asj', { normalStrength: 0.9, color: '#dcdad3' }) : f().outer),
     [Slot.FacingInner]: () => f().inner,
     [Slot.FacingEdge]: () => f().edge,
     [Slot.FacingTape]: () => pbr('asj', { normalStrength: 0.7 }),

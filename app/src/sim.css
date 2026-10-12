@@ -613,19 +613,21 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 .is-mobile .reset-view.library { right: 12px; top: 70px; }
 
 /* ------------------------------------------------- bare stub tag (in 3D) */
-.stub-tag {
+.stub-tag, .ins-tag {
   position: relative; transform: translate(var(--dx, -50%), calc(-100% - 12px));
   padding: 4px 9px; border-radius: 999px; white-space: nowrap;
   font-size: 11.5px; font-weight: 650; line-height: 1.2; color: var(--ink);
   background: rgba(18, 19, 21, 0.84); border: 1px solid rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px);
 }
-.stub-tag::after {
+.stub-tag::after, .ins-tag::after {
   content: ''; position: absolute; left: var(--ax, 50%); top: 100%; width: 1px; height: 11px; background: rgba(255, 255, 255, 0.45);
 }
 .stub-tag.wet { border-color: #2dd4bf; color: #a7f3e9; }
 .stub-tag.frost { border-color: #bae6fd; color: #e0f2fe; }
 .stub-tag.hot { border-color: #ff8a3d; color: #ffd2ad; }
 .stub-tag.dry { color: var(--ink-2); }
+.ins-tag { color: var(--ink-2); font-weight: 600; }
+.ins-tag b { color: var(--ink); font-weight: 750; margin-right: 2px; }
 
 /* ------------------------------------------- results: the answer first */
 .answer .answer-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); font-weight: 700; }

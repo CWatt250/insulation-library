@@ -46,6 +46,8 @@ export interface SimVisual extends ZoneState {
   fittingBare: boolean
   /** On-screen tag on the bare stub, so its state reads apart from the insulated run's. */
   stubTag?: { text: string; tone: 'hot' | 'wet' | 'frost' | 'dry' }
+  /** What the insulation is, on the insulated run: "R-8.3 · 3" FSK duct wrap". */
+  insTag?: { r: string; text: string }
 }
 
 export interface RunExtent {

@@ -2,7 +2,7 @@ import { INSULATION, INSULATIONS } from '../data/catalog'
 import type { PipeMaterial } from '../data/pipe'
 import { availability, evaluate, productForTemp } from './model'
 import { design, materialOptions } from './design'
-import { DUCT_INSULATIONS, ductThicknesses, type DuctInsulation } from './duct'
+import { DUCT_INSULATIONS, ductInsLabel, ductOutdoors, ductThicknesses, isWrap, type DuctInsulation } from './duct'
 import { initialState } from './presets'
 import type { SimMode, SimState } from './types'
 
@@ -59,8 +59,8 @@ export function stateFor(a: Answers, mode: SimMode, material: string): SimState 
   const base = initialState(mode)
   if (a.system === 'duct') {
     const id = material as DuctInsulation
-    const list = ductThicknesses(id)
-    return { ...base, ...a.duct, system: 'duct', ductIns: id, thicknessIn: list[0], processF: a.processF, ambientF: a.ambientF, rh: a.rh, windMph: 0, presetId: null }
+    const list = ductThicknesses(id, a.duct.ductShape)
+    return { ...base, ...a.duct, system: 'duct', ductIns: id, ductFacing: 'fsk', thicknessIn: list[0], processF: a.processF, ambientF: a.ambientF, rh: a.rh, windMph: 0, presetId: null }
   }
   const ins = INSULATION[material as keyof typeof INSULATION]
   // outdoors: a metal jacket where the material offers one (weather protection)
@@ -75,7 +75,7 @@ export function stateFor(a: Answers, mode: SimMode, material: string): SimState 
 }
 
 export function materialsFor(a: Answers, mode: SimMode): { id: string; label: string; ok: boolean; reason?: string }[] {
-  if (a.system === 'duct') return DUCT_INSULATIONS.map((m) => ({ id: m.id, label: m.label, ok: true }))
+  if (a.system === 'duct') return DUCT_INSULATIONS.map((m) => ({ id: m.id, label: ductInsLabel(m.id, a.duct.ductShape), ok: !(ductOutdoors(a.duct) && isWrap(m.id)), reason: ductOutdoors(a.duct) && isWrap(m.id) ? 'Indoors only — outdoors gets a metal jacket over rigid insulation' : undefined }))
   return INSULATIONS.map((m) => {
     const av = availability(m.id, mode === 'condensate' ? 'cold' : mode)
     return { id: m.id, label: m.label, ok: av.ok, reason: av.reason }
@@ -86,9 +86,11 @@ export function materialsFor(a: Answers, mode: SimMode): { id: string; label: st
 /** The recommendation for a set of answers. */
 export function recommendation(a: Answers) {
   const mode = modeFor(a)
-  const options = materialOptions(stateFor(a, mode, a.system === 'duct' ? 'wrap75' : 'fiberglass'), mode)
+  const options = materialOptions(stateFor(a, mode, a.system === 'duct' ? (ductOutdoors(a.duct) ? 'board' : 'wrap75') : 'fiberglass'), mode)
   const usable = options.filter((o) => o.design && o.design.thicknessIn !== null)
-  const pick = a.material === 'auto' ? usable[0]?.id ?? options[0].id : a.material
+  // ducts: FSK duct wrap (0.75 pcf) indoors and rigid board outdoors, as installed; pipe: the thinnest that works
+  const ductPick = a.system === 'duct' ? (ductOutdoors(a.duct) ? 'board' : 'wrap75') : null
+  const pick = a.material === 'auto' ? (ductPick && usable.some((o) => o.id === ductPick) ? ductPick : usable[0]?.id ?? options[0].id) : a.material
   const s0 = stateFor(a, mode, pick)
   const d = design(s0, mode)
   const s = d.thicknessIn !== null ? { ...s0, thicknessIn: d.thicknessIn } : s0

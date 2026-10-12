@@ -9,7 +9,7 @@ import { physicsMode } from '../../sim/model'
 import { ductCode } from '../../sim/design'
 import { vaporCheck } from '../../sim/vapor'
 import { codeMinimum, PIPE_CODES } from '../../sim/code'
-import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_TYPES, type DuctType } from '../../sim/duct'
+import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES, ductInsLabel, ductStage, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { dewPointF } from '../../sim/psychro'
 import { initialState, PRESETS } from '../../sim/presets'
 import { refsFor } from '../../sim/sources'
@@ -83,7 +83,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
           mode={physicsMode(result.s, result.mode)}
           panels={[{ key: `rec-${result.pick}-${result.s.thicknessIn}`, title: 'Recommended', side: result.ev.ins, modelThickness: result.s.thicknessIn, bare: false }]}
           bare={result.ev.bare}
-          opts={{ view: 'cutaway', thermal: false, stage: 'plant', mobile, units }}
+          opts={{ view: 'cutaway', thermal: false, stage: result.s.system === 'duct' ? ductStage(result.s) : 'plant', mobile, units }}
           inset={{ left: 380, right: 392 }}
           sync={sync}
         />
@@ -200,7 +200,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
 }
 
 
-const matLabel = (s: SimState, pick: string) => (s.system === 'duct' ? DUCT_INSULATIONS.find((m) => m.id === pick)!.label : INSULATION[pick as keyof typeof INSULATION].label)
+const matLabel = (s: SimState, pick: string) => (s.system === 'duct' ? ductInsLabel(pick as DuctInsulation, s.ductShape) : INSULATION[pick as keyof typeof INSULATION].label)
 
 /** The recommendation for the answers that were applied, with what it was based on. */
 function Answer({ ap, r, units, stale, onPick, onOpen }: {

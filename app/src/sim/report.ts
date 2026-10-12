@@ -1,7 +1,7 @@
 import { INSULATION, JACKETS } from '../data/catalog'
 import { PIPE_LABEL } from '../data/pipe'
 import { PIPE_SRC, pipeLabel, pipeSpec } from '../data/pipes'
-import { DUCT_LOCATIONS, DUCT_TYPES, ductProduct, installedIn } from './duct'
+import { DUCT_LOCATIONS, DUCT_TYPES, ductCover, ductProduct, installedIn, isWrap } from './duct'
 import { physicsMode } from './model'
 import { ductCode } from './design'
 import { materialLabel } from './system'
@@ -61,7 +61,7 @@ export function buildReport(r: ReportInput): string {
   const m = ins.moisture
   const sys = systemFor(s, mode)
   const duct = s.system === 'duct'
-  const product = duct ? ductProduct(s.ductIns) : productFor(s)
+  const product = duct ? ductProduct(s.ductIns, s.ductFacing, s.ductShape) : productFor(s)
   const p = pipeSpec(s.pipe, s.npsIndex)
   const ductSize = s.ductShape === 'round' ? `${s.ductD}" round` : `${s.ductW}" × ${s.ductH}"`
   const dc = ductCode(s)
@@ -85,7 +85,7 @@ export function buildReport(r: ReportInput): string {
   // sources actually used
   const used = new Set<string>([...METHOD_REFS, ...VALIDATION_REFS, ...accuracyRows().flatMap((a) => a.src), ...ins.surface.src, ...(ins.surface.limitSrc ?? []), ...ev.bare.surface.src])
   r.design.rows.forEach((x) => x.c.src.forEach((id) => used.add(id)))
-  if (duct) [...product.sources, ...dc.src, 'U1', 'U9', 'U14', s.insideFilm ? 'U9' : 'U15', ...(s.ductIns === 'elastomeric' ? [] : ['C6'])].forEach((id) => used.add(id))
+  if (duct) [...product.sources, ...dc.src, 'U1', 'U9', 'U14', s.insideFilm ? 'U9' : 'U15', ...(isWrap(s.ductIns) ? ['C6'] : [])].forEach((id) => used.add(id))
   else PIPE_SRC[s.pipe].forEach((id) => used.add(id))
   if (fit && 'eq' in fit) fit.eq.src.forEach((id) => used.add(id))
   if (vap) [...vap.requiredSrc, ...(vap.retarder.materialSrc ? [] : vap.retarder.src)].forEach((id) => used.add(id))
@@ -164,7 +164,7 @@ ${duct ? row('Duct', esc(`${DUCT_TYPES.find((t) => t.id === s.ductType)!.label},
 ${row(duct ? 'Air in the duct' : mode === 'hot' ? 'Process temperature' : 'Pipe / fluid temperature', esc(T(s.processF)), duct && s.insideFilm ? esc(`inside air film at ${s.airFpm} fpm`) : '')}
 ${row('Ambient air', esc(`${T(s.ambientF)}${mode !== 'hot' ? `, ${s.rh}% RH` : ''}${s.windMph ? `, ${s.windMph} mph wind` : ', still air'}`))}
 ${duct
-    ? row('Insulation', esc(`${materialLabel(s)}, ${inchLabel(s.thicknessIn)}${s.ductIns === 'elastomeric' ? '' : ` nominal (${inchLabel(installedIn(s.ductIns, s.thicknessIn))} installed)`}`), esc(`installed R-${(ins.ratedR ?? 0).toFixed(1)} · ${product.name}`))
+    ? row('Insulation', esc(`${materialLabel(s)}, ${inchLabel(s.thicknessIn)}${isWrap(s.ductIns) ? ` nominal (${inchLabel(installedIn(s.ductIns, s.thicknessIn))} installed)` : ''}`), esc(`installed R-${(ins.ratedR ?? 0).toFixed(1)} · ${product.name}`))
     : row('Insulation', esc(`${INSULATION[s.insulation].label}, ${inchLabel(s.thicknessIn)}`), esc(`k from ${product.name}${ins.geo ? ` · OD ${ins.geo.insOdIn.toFixed(2)}" (${ins.geo.c585 ? 'ASTM C585' : 'pipe OD + 2t'})` : ''}`))}
 ${row('Finish', esc(duct ? ins.surface.label : finish), esc(`emittance ${(s.emittanceOverride ?? ins.surface.value).toFixed(2)}`))}
 ${!duct && s.component !== 'straight' ? row('Component', esc(COMPONENT[s.component] + (s.component === 'valve' || s.component === 'flange' ? (s.fittingCover === 'none' ? ', left bare' : ', removable blanket') : ''))) : ''}
@@ -212,7 +212,7 @@ ${vap.ozPerYearPer100ft !== null ? row('Vapor through it (sealed)', esc(`≈ ${v
 <ul>
 ${duct ? `<li>Steady state; long horizontal duct; duct wall at the air temperature${s.insideFilm ? ' plus an inside air film (ASHRAE simplified equation)' : ' (no inside film, as 3E Plus)'}.</li>
 <li>${s.ductShape === 'rect' ? 'Each face solved as a flat slab with its own C680 flat-surface correlation (sides vertical, top and underside horizontal, stable/unstable swapped between warm and cold ducts); corners not modelled. Published duct methods apply one average to the perimeter; the face split is this tool\'s construction.' : 'Round duct solved as a horizontal cylinder.'}</li>
-<li>${s.ductIns === 'elastomeric' ? 'Elastomeric sheet at nominal thickness, k as published.' : 'Duct wrap at its installed thickness, 75% of nominal (25% compression); k vs temperature scaled from the published out-of-package curve to the installed k printed at 75°F.'}</li>` : `<li>Steady state; long horizontal run; ${s.pipe === 'pvc' ? `PVC wall conduction included (k = ${PIPE_PROPS.pvc?.kIp} Btu·in/hr·ft²·°F, minimum wall); no inside film.` : 'pipe surface at the fluid temperature (no inside film; metal wall resistance neglected).'}</li>`}
+<li>${isWrap(s.ductIns) ? 'JM Microlite FSK duct wrap at its installed thickness, 75% of nominal (25% compression); JM prints k at 75°F only, so k vs temperature follows Knauf\'s published curve for the same density, scaled to JM\'s installed k at 75°F (this tool\'s assumption).' : `Rigid board at its labeled thickness, k as published${ductCover(s).jacket === 'alu' ? '; outdoors under an aluminum jacket' : ''}.`}</li>` : `<li>Steady state; long horizontal run; ${s.pipe === 'pvc' ? `PVC wall conduction included (k = ${PIPE_PROPS.pvc?.kIp} Btu·in/hr·ft²·°F, minimum wall); no inside film.` : 'pipe surface at the fluid temperature (no inside film; metal wall resistance neglected).'}</li>`}
 <li>Insulation k varies with temperature (published k-vs-mean points, integrated through the layer); insulation dry, joints tight.</li>
 ${duct && s.ductShape === 'rect' ? '<li>Outer surfaces per the C680 flat-surface correlations; C680 air properties; radiation to surroundings at air temperature.</li>' : `<li>Outer surface per ASTM C680: Churchill–Chu natural convection${s.windMph ? ', blended with Churchill–Bernstein forced convection' : ''}; C680 air properties; radiation to surroundings at air temperature.</li>`}
 <li>Jackets, facings and membranes add no insulation value; they set the surface emittance.</li>

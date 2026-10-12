@@ -1,5 +1,5 @@
-import { DUCT_WRAP, ELASTOMERIC_SHEET } from '../../data/ductData'
-import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, ductThicknesses, installedIn, ratedR, type DuctCodeBasis, type DuctInsulation, type DuctType } from '../../sim/duct'
+import { DUCT_WRAP } from '../../data/ductData'
+import { DUCT_CODES, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, boardFor, ductOutdoors, ductThicknesses, installedIn, isWrap, ratedR, type DuctCodeBasis, type DuctFacing, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { physicsMode } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -11,7 +11,6 @@ const RECT_W = Array.from({ length: 28 }, (_, i) => 6 + 2 * i) // 6–60"
 const RECT_H = Array.from({ length: 22 }, (_, i) => 6 + 2 * i) // 6–48"
 const ROUND_D = [4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 36]
 
-const SWATCH: Record<DuctInsulation, string> = { wrap75: '#e8c860', wrap100: '#e2bd55', wrap150: '#d9b048', elastomeric: '#2b2d2f' }
 
 /** Duct shape and sheet-metal size. */
 export function DuctSize({ s, set, units, acc }: { s: SimState; set: (p: Partial<SimState>) => void; units: UnitSystem; acc: string }) {
@@ -40,37 +39,60 @@ export function DuctSize({ s, set, units, acc }: { s: SimState; set: (p: Partial
   )
 }
 
-/** Duct insulation, thickness, and the energy-code inputs. */
+/**
+ * Duct insulation (Johns Manville): indoors FSK duct wrap by density, or rigid
+ * board with an FSK or ASJ facing; outdoors rigid board under an aluminum jacket,
+ * set by the location. Thickness, with its installed R-value.
+ */
 export function DuctInsulationSection({ s, set, mode, units, acc }: { s: SimState; set: (p: Partial<SimState>) => void; mode: SimMode; units: UnitSystem; acc: string }) {
-  const list = ductThicknesses(s.ductIns)
+  const list = ductThicknesses(s.ductIns, s.ductShape)
   const pick = (id: DuctInsulation) => {
-    const l = ductThicknesses(id)
+    const l = ductThicknesses(id, s.ductShape)
     set({ ductIns: id, thicknessIn: l.reduce((b, x) => (Math.abs(x - s.thicknessIn) < Math.abs(b - s.thicknessIn) ? x : b), l[0]) })
   }
-  const wrap = s.ductIns !== 'elastomeric'
+  const outdoors = ductOutdoors(s)
+  const wrap = isWrap(s.ductIns)
   const inst = installedIn(s.ductIns, s.thicknessIn)
+  const R = ratedR(s.ductIns, s.thicknessIn, s.ductShape)
+  const board = boardFor(s.ductShape)
+  const round = s.ductShape === 'round'
+  const type = s.ductIns === 'wrap100' ? '100' : s.ductIns === 'wrap150' ? '150' : '75'
   return (
     <section>
       <h2>Insulation</h2>
-      <div className="materials sim-materials">
-        {DUCT_INSULATIONS.map((m) => (
-          <button key={m.id} className={`mat ${m.id === s.ductIns ? 'on' : ''}`} onClick={() => pick(m.id)}>
-            <span className="swatch" style={{ background: SWATCH[m.id] }} />
-            {m.label}
-          </button>
-        ))}
-      </div>
+      {outdoors && !wrap ? (
+        <p className="field-note">Outdoors: {round ? 'Micro-Flex' : 'rigid board'} under a 0.016" aluminum jacket, set by the location — FSK duct wrap isn't made for the weather. Pick an indoor location for duct wrap.</p>
+      ) : (
+        <>
+          <div className="field">
+            <span className="field-label">Insulation <small className="muted">Johns Manville</small></span>
+            <Segmented<'wrap' | 'board'> size="sm" label="Insulation" value={wrap ? 'wrap' : 'board'} onChange={(v) => pick(v === 'wrap' ? 'wrap75' : 'board')} options={[{ id: 'wrap', label: 'Duct wrap' }, { id: 'board', label: round ? 'Micro-Flex' : 'Rigid board' }]} />
+          </div>
+          {wrap ? (
+            <div className="field">
+              <span className="field-label">Density <small className="muted">Microlite FSK</small></span>
+              <Segmented<DuctInsulation> size="sm" label="Duct wrap density" value={s.ductIns} onChange={pick} options={[{ id: 'wrap75', label: '0.75 pcf' }, { id: 'wrap100', label: '1 pcf' }, { id: 'wrap150', label: '1.5 pcf' }]} />
+            </div>
+          ) : (
+            <div className="field">
+              <span className="field-label">Facing</span>
+              <Segmented<DuctFacing> size="sm" label="Board facing" value={s.ductFacing} onChange={(v) => set({ ductFacing: v })} options={[{ id: 'fsk', label: 'FSK (foil)' }, { id: 'asj', label: 'ASJ (white)' }]} />
+            </div>
+          )}
+        </>
+      )}
       <Slider
-        label={wrap ? 'Wrap thickness (nominal)' : 'Sheet thickness'}
+        label={wrap ? 'Wrap thickness (labeled)' : round ? 'Micro-Flex thickness' : 'Board thickness'}
         value={s.thicknessIn}
         values={list}
         onChange={(v) => set({ thicknessIn: v })}
         format={(v) => (units === 'ip' ? inchLabel(v) : fmt.inches(v, units))}
         hint={wrap
-          ? <span>Installed {fmt.inches(+inst.toFixed(3), units)} at 25% compression · R-{ratedR(s.ductIns, s.thicknessIn)} installed ({DUCT_WRAP.product})</span>
-          : <span>R-{ratedR(s.ductIns, s.thicknessIn).toFixed(1)} · {ELASTOMERIC_SHEET.product}{s.thicknessIn > ELASTOMERIC_SHEET.plenumMaxIn ? ' · over 1": not 25/50 rated for plenums' : ''}</span>}
+          ? <span><b>R-{R.toFixed(1)} installed</b> · {fmt.inches(+inst.toFixed(3), units)} thick at 25% compression ({DUCT_WRAP.product}, {DUCT_WRAP.types[type].label})</span>
+          : <span><b>R-{R.toFixed(1)}</b>{round ? ' (thickness ÷ k at 75°F)' : ''} · {board.product}, {board.densityPcf} pcf</span>}
         accent={acc}
       />
+      {wrap && outdoors && <p className="field-note">FSK duct wrap outdoors needs a weatherproof jacket over it; pick the location again to switch to board.</p>}
       {physicsMode(s, mode) === 'hot' && s.processF > 120 && <p className="field-note">IMC 604.2: ducts above 120°F need enough insulation to hold the exposed surface at or below 120°F.</p>}
     </section>
   )

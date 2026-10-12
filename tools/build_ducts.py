@@ -1,9 +1,14 @@
-"""Generate app/src/data/ductData.ts from research/duct-verified.json and
-research/code-requirements-verified.json. Nothing is retyped by hand.
+"""Generate app/src/data/ductData.ts from research/duct-verified.json,
+research/duct-board-verified.json and research/code-requirements-verified.json.
+Nothing is retyped by hand.
 
-Duct wrap: Knauf Performance+ Duct Wrap (U28) — one maker's data throughout so
-values aren't mixed: thicknesses, out-of-package k vs mean temperature, installed
-(25 % compressed) k and R. Elastomeric sheet: AP ArmaFlex (U44, U46).
+Duct wrap: Johns Manville Microlite® FSK (U23) — thicknesses, installed (25 %
+compressed) and out-of-package R, installed and labeled k at 75°F. JM prints k at
+75°F only, so the change of k with temperature takes the shape of Knauf's
+published out-of-package curve for the same density (U28), scaled to JM's
+installed k at 75°F (this app's assumption, stated in the app).
+Rigid board (indoors FSK or ASJ; outdoors under an aluminum jacket): JM, from
+research/duct-board-verified.json.
 Duct insulation minimums: ASHRAE 90.1-2019 Table 6.8.2 (C19), IECC 2021 C403.12.1 (C1).
     python3 tools/build_ducts.py
 """
@@ -14,58 +19,38 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 D = json.loads((ROOT / "research/duct-verified.json").read_text())
 C = json.loads((ROOT / "research/code-requirements-verified.json").read_text())
+B = json.loads((ROOT / "research/duct-board-verified.json").read_text())
 
-MM = {38: 1.5, 51: 2.0, 56: 2.1875, 76: 3.0, 110: 4.3125}
+# ---- JM Microlite FSK (U23)
+jm = next(p for p in D["duct_wrap_products"]["products"] if p["src"] == ["U23"])
+assert jm["manufacturer"] == "Johns Manville"
+GROUP = {"Type 75 - 0.75 pcf": "75", "Type 100 - 1.00 pcf": "100", "Type 150 - 1.5 pcf": "150"}
+MM_IN = {25: 1.0, 38: 1.5, 51: 2.0, 56: 2.2, 76: 3.0, 112: 4.4, 146: 5.75, 178: 7.0}
+wrap = {t: {"thick": []} for t in GROUP.values()}
+for row in jm["r_value_table"]["rows"]:
+    t = GROUP[row["group"]]
+    nominal = MM_IN[int(row["printed"]["mm"])]
+    if nominal == 1.0:
+        continue  # "1\" for Canadian use only"
+    wrap[t]["thick"].append((nominal, float(row["printed"]["oop_R"]), float(row["printed"]["inst_R"])))
+kc = jm["k_75F"]
+assert "Tested with material thickness compressed 25%." in " ".join(kc["quote"])
+for t in wrap:
+    wrap[t]["kInst"] = kc["compressed_thickness"][f"Type {t}"]
+    wrap[t]["kLabeled"] = kc["labeled_thickness"][f"Type {t}"]
+maxF = jm["max_temp"]["value_F"]
+perm = jm["facings"][0]["permeance_perm"]
+assert jm["facings"][0]["facing"] == "FSK" and perm == 0.02
 
-def inches(s):
-    m = re.search(r"\((\d+)\s*mm\)", s)
-    assert m and int(m.group(1)) in MM, s
-    return MM[int(m.group(1))]
-
-def rnum(s):
-    m = re.match(r"R-([\d.]+)\s*\(([\d.]+)\)", s)
-    assert m, s
-    return float(m.group(1)), float(m.group(2))
-
+# ---- the shape of k vs mean temperature: Knauf Performance+ out-of-package curve (U28), same densities
 knauf = next(p for p in D["duct_wrap_products"]["products"] if p["manufacturer"].startswith("Knauf"))
 assert "U28" in knauf["src"]
-types = {"0.75 PCF": "75", "1.0 PCF": "100", "1.5 PCF": "150"}
-wrap = {t: {"thick": [], "kInst": None, "kOop75": None} for t in types.values()}
-for row in knauf["r_value_table"]["rows"]:
-    t = types[row["group"]]
-    nominal = inches(row["printed"]["t"])
-    oopR, oopK = rnum(row["printed"]["oop"])
-    instR, instK = rnum(row["printed"]["inst"])
-    wrap[t]["thick"].append((nominal, oopR, instR))
-    for key, v in (("kInst", instK), ("kOop75", oopK)):
-        assert wrap[t][key] in (None, v), (t, key, v)
-        wrap[t][key] = v
 kcols = {"75": "k075", "100": "k10", "150": "k15"}
-kpts = {t: [] for t in types.values()}
+kshape = {t: [] for t in kcols}
 for row in knauf["apparent_k_vs_mean_temp"]["rows"]:
     T = float(re.match(r"(\d+)", row["printed"]["T"]).group(1))
     for t, col in kcols.items():
-        kpts[t].append((T, float(row["printed"][col])))
-for t in wrap:
-    k75 = dict(kpts[t])[75.0]
-    assert k75 == wrap[t]["kOop75"], (t, k75, wrap[t]["kOop75"])
-maxF = knauf["max_temp"]["faced_F"]
-perm = 0.02
-assert "0.02 perms or less" in knauf["facings"][0]["quote"]
-
-# elastomeric sheet (AP ArmaFlex)
-el = D["elastomeric_duct_sheet"]["products"][0]
-facts = {f["field"]: f for f in el["facts"]}
-el_thick = facts["thicknesses_sheet"]["value"]
-def frac(s):
-    return sum(float(a) / float(b) if b else float(a) for a, _, b in (p.partition("/") for p in s.split("-")))
-el_k = [(75.0, facts["k_75F"]["value"]["AP ArmaFlex through 1in (NBR/PVC)"]), (100.0, facts["k_100F"]["value"]["AP through 1in"])]
-el_R = {frac(k): v for k, v in facts["R_values"]["value"].items()}
-el_perm_in = facts["water_vapor_permeability"]["value"]["AP"]
-el_max = facts["temperature_range"]["value"]["AP max"]
-el_duct_max = facts["upper_limit_full_adhesion_on_ducts"]["value"]
-el_plenum = facts["E84_25_50_thickness_limit"]["value"]["AP ArmaFlex"]
-assert el_plenum == "up to 1 in"
+        kshape[t].append((T, float(row["printed"][col])))
 
 # ASHRAE 90.1-2019 Table 6.8.2
 t682 = C["duct_insulation_tables"]["ashrae_90_1_2019_table_6_8_2"]
@@ -82,25 +67,73 @@ fn = {f["mark"]: f["quote"] for f in t682["footnotes"]}
 def num(x):
     return "null" if x is None else f"{x:g}"
 
+def board_lines(b):
+    """Rigid board for rectangular duct (800 Series Spin-Glas 814) and its round-duct
+    counterpart (Micro-Flex), as research/duct-board-verified.json records them."""
+    out = [
+        "export interface BoardFacing { perm: number | null; src: string[]; note?: string }",
+        "export interface BoardProduct {",
+        "  product: string",
+        "  src: string[]",
+        "  densityPcf: number",
+        "  maxF: number",
+        "  /** The facing's own limit (ASTM C1136). */",
+        "  facingMaxF: number",
+        "  /** Labeled thickness and R at 75°F mean; `calc` = thickness ÷ k at 75°F (no R printed). */",
+        "  thicknesses: { nominalIn: number; R: number; calc?: boolean }[]",
+        "  k: { meanF: number; k: number }[]",
+        "  kNote: string",
+        "  facings: Record<'fsk' | 'asj', BoardFacing>",
+        "}",
+        "",
+        "/** Rigid insulation for duct, FSK or ASJ (JM \"AP\") faced: board on rectangular duct, Micro-Flex on round [U64, U65]. */",
+        "export const DUCT_BOARD: Record<'rect' | 'round', BoardProduct> = {",
+    ]
+    for key, shape in (("board", "rect"), ("round", "round")):
+        bd = b[key]
+        k75 = next(r["k"] for r in bd["k_vs_mean"] if r["meanF"] == 75)
+        th = [(r["in"], r["R"], False) if "R" in r else (r["in"], round(r["in"] / k75 + 1e-9, 1), True) for r in bd["thicknesses"]]
+        out += [
+            f"  {shape}: {{",
+            f"    product: {json.dumps(bd['product_short'])},",
+            f"    src: {json.dumps(bd['src'])},",
+            f"    densityPcf: {bd['density_pcf']:g},",
+            f"    maxF: {bd['max_F']:g},",
+            f"    facingMaxF: {bd['facing_max_F']:g},",
+            "    thicknesses: [" + ", ".join(f"{{ nominalIn: {t:g}, R: {R:g}{', calc: true' if c else ''} }}" for t, R, c in th) + "],",
+            "    k: [" + ", ".join(f"{{ meanF: {r['meanF']:g}, k: {r['k']:g} }}" for r in bd["k_vs_mean"]) + "],",
+            f"    kNote: {json.dumps(bd['k_note'])},",
+            "    facings: {",
+            *[f"      {fid}: {{ perm: {f['perm']:g}, src: {json.dumps(f['src'])}, note: {json.dumps(f['note'])} }}," for fid, f in bd["facings"].items()],
+            "    },",
+            "  },",
+        ]
+    out.append("}")
+    return out
+
 o = [
-    "// GENERATED by tools/build_ducts.py from research/duct-verified.json and research/code-requirements-verified.json — do not edit.",
+    "// GENERATED by tools/build_ducts.py from research/duct-verified.json, research/duct-board-verified.json and research/code-requirements-verified.json — do not edit.",
     "",
     "export interface WrapType {",
-    "  /** Knauf labels by density; the trade calls these Type 75 / 100 / 150. */",
+    "  /** JM's name for the density: Type 75 / 100 / 150. */",
     "  label: string",
     "  densityPcf: number",
-    "  /** Nominal (out-of-package) thickness, printed out-of-package R and installed R (25 % compression), at 75°F mean. */",
+    "  /** Labeled (nominal) thickness, printed out-of-package R and installed R (25 % compression), at 75°F mean. */",
     "  thicknesses: { nominalIn: number; oopR: number; installedR: number }[]",
-    "  /** Out-of-package apparent k vs mean temperature (ASTM C177) and the installed k printed at 75°F. */",
-    "  kOop: { meanF: number; k: number }[]",
+    "  /** k at 75°F mean (ASTM C518), compressed 25 % (installed) and at labeled thickness. */",
     "  kInstalled75: number",
+    "  kLabeled75: number",
+    "  /** Shape of k vs mean temperature: Knauf's out-of-package curve for the same density (U28); JM prints 75°F only. */",
+    "  kShape: { meanF: number; k: number }[]",
     "}",
     "",
-    "/** Knauf Performance+ Duct Wrap, FSK faced [U28]. */",
+    "/** Johns Manville Microlite® FSK Formaldehyde-free™ duct wrap [U23]. */",
     "export const DUCT_WRAP = {",
-    "  product: 'Knauf Performance+ Duct Wrap (FSK)',",
-    "  src: ['U28'],",
-    "  /** Installed thickness = 75 % of nominal (25 % compression) [U28; IMC 604.7, C6]. */",
+    "  product: 'JM Microlite® FSK duct wrap',",
+    "  src: ['U23'],",
+    "  /** The temperature shape of k [U28]. */",
+    "  shapeSrc: ['U28'],",
+    "  /** Installed thickness = 75 % of nominal (25 % compression) [U23; IMC 604.7, C6]. */",
     "  installedFraction: 0.75,",
     f"  maxF: {maxF},",
     f"  facingPerm: {perm},",
@@ -109,30 +142,18 @@ o = [
 dens = {"75": 0.75, "100": 1.0, "150": 1.5}
 for t, w in wrap.items():
     o.append(f"    '{t}': {{")
-    o.append(f"      label: '{dens[t]:g} pcf (Type {t})',")
+    o.append(f"      label: 'Type {t} ({dens[t]:g} pcf)',")
     o.append(f"      densityPcf: {dens[t]},")
     o.append("      thicknesses: [" + ", ".join(f"{{ nominalIn: {n:g}, oopR: {a:g}, installedR: {b:g} }}" for n, a, b in w["thick"]) + "],")
-    o.append("      kOop: [" + ", ".join(f"{{ meanF: {T:g}, k: {k:g} }}" for T, k in kpts[t]) + "],")
     o.append(f"      kInstalled75: {w['kInst']:g},")
+    o.append(f"      kLabeled75: {w['kLabeled']:g},")
+    o.append("      kShape: [" + ", ".join(f"{{ meanF: {T:g}, k: {k:g} }}" for T, k in kshape[t]) + "],")
     o.append("    },")
 o += [
     "  } as Record<'75' | '100' | '150', WrapType>,",
     "}",
     "",
-    "/** AP ArmaFlex sheet [U44]; duct surfaces with full adhesive coverage to 180°F [U46]. */",
-    "export const ELASTOMERIC_SHEET = {",
-    "  product: 'AP ArmaFlex sheet',",
-    "  src: ['U44', 'U46'],",
-    "  thicknessesIn: [" + ", ".join(f"{frac(x):g}" for x in el_thick) + "],",
-    "  k: [" + ", ".join(f"{{ meanF: {T:g}, k: {k:g} }}" for T, k in el_k) + "],",
-    "  /** Printed R by thickness. */",
-    "  R: {" + ", ".join(f" {k:g}: {v:g}" for k, v in el_R.items()) + " } as Record<number, number>,",
-    f"  permIn: {el_perm_in:g},",
-    f"  maxF: {el_max},",
-    f"  ductMaxF: {el_duct_max},",
-    "  /** 25/50 (plenum-rated) through this thickness. */",
-    "  plenumMaxIn: 1,",
-    "}",
+    *board_lines(B),
     "",
     "export type DuctService = 'both' | 'heating' | 'cooling'",
     "export type DuctLocation = 'exterior' | 'unconditioned' | 'indirect'",

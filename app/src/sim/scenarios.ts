@@ -1,3 +1,4 @@
+import { ductOutdoors, ductThicknesses } from './duct'
 import { initialState } from './presets'
 import type { SimMode, SimState } from './types'
 
@@ -51,7 +52,8 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
   const oneOf = <K extends keyof SimState>(k: K, ok: readonly SimState[K][]) => { if (!ok.includes(out[k])) (out as SimState)[k] = base[k] }
   oneOf('system', ['pipe', 'duct'])
   oneOf('ductShape', ['rect', 'round'])
-  oneOf('ductIns', ['wrap75', 'wrap100', 'wrap150', 'elastomeric'])
+  oneOf('ductIns', ['wrap75', 'wrap100', 'wrap150', 'board'])
+  oneOf('ductFacing', ['fsk', 'asj'])
   oneOf('ductFinish', ['new', 'dull'])
   oneOf('ductLocation', ['conditioned', 'indirect', 'unconditioned', 'attic', 'crawl', 'garage', 'exterior', 'buried'])
   oneOf('ductService', ['both', 'heating', 'cooling'])
@@ -61,6 +63,12 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
   oneOf('ductDamper', ['upstream', 'downstream'])
   // the Ductwork tab is always ductwork; the pipe tabs always pipe
   out.system = mode === 'duct' ? 'duct' : 'pipe'
+  // outdoors a duct is in rigid board under a metal jacket (older files may say otherwise)
+  if (out.system === 'duct' && ductOutdoors(out) && out.ductIns !== 'board') {
+    const list = ductThicknesses('board', out.ductShape)
+    out.ductIns = 'board'
+    out.thicknessIn = list.reduce((b, x) => (Math.abs(x - out.thicknessIn) < Math.abs(b - out.thicknessIn) ? x : b), list[0])
+  }
   return out
 }
 

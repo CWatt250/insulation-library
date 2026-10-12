@@ -2,7 +2,7 @@ import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
 import type { Component } from '../geo/assembly'
 import type { PipeMaterial } from '../data/pipe'
 import type { PipeCodeBasis } from './code'
-import type { DuctCodeBasis, DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
+import type { DuctCodeBasis, DuctFacing, DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
 import type { DuctService } from '../data/ductData'
 
 /** Pipe modes, plus Ductwork, which is driven by duct type and location rather than hot/cold. */
@@ -28,6 +28,8 @@ export interface SimState {
   ductH: number
   ductD: number
   ductIns: DuctInsulation
+  /** Rigid board's factory facing (duct wrap is always FSK). */
+  ductFacing: DuctFacing
   /** Bare galvanized surface condition. */
   ductFinish: DuctFinish
   /** For the ASHRAE 90.1 duct table. */

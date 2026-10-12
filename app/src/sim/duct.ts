@@ -1,11 +1,11 @@
-import { DUCT_WRAP, ELASTOMERIC_SHEET, TABLE_6_8_2, type DuctLocation, type DuctService } from '../data/ductData'
+import { DUCT_BOARD, DUCT_WRAP, TABLE_6_8_2, type DuctLocation, type DuctService } from '../data/ductData'
 import { WSEC_DUCT_R } from '../data/wsecData'
 import { kCurve, kMean, solveIntegral, type KCurve } from './conductivity'
 import { solveCase, LEWIS, type CaseInput, type CaseResult, type Moisture } from './engine'
 import { flatCoeffs, surfaceCoeffs, type FlatFace } from './surface'
 import { dewPointF, pSat, vaporDensity } from './psychro'
 import { fToC, fToK, IN_M, kToF, wPerMToBtuHrFt } from './units'
-import type { SurfaceRef } from './emittance'
+import { SURFACES, type SurfaceRef } from './emittance'
 import type { KPoint, ProductSpec } from '../data/specs'
 import type { SimMode, SimState } from './types'
 
@@ -45,68 +45,126 @@ export const DUCT_TYPES: { id: DuctType; label: string; short: string }[] = [
  * loses heat; air colder gains heat and can make the outside sweat.
  */
 export const ductBehavior = (s: { processF: number; ambientF: number }): 'hot' | 'cold' => (s.processF >= s.ambientF ? 'hot' : 'cold')
-export type DuctInsulation = 'wrap75' | 'wrap100' | 'wrap150' | 'elastomeric'
+export type DuctInsulation = 'wrap75' | 'wrap100' | 'wrap150' | 'board'
+export type DuctFacing = 'fsk' | 'asj'
 export type DuctFinish = 'new' | 'dull'
 
+/** Johns Manville throughout: Microlite® FSK duct wrap in three densities, and rigid board. */
 export const DUCT_INSULATIONS: { id: DuctInsulation; label: string; short: string }[] = [
   { id: 'wrap75', label: 'Duct wrap, 0.75 pcf', short: 'Duct wrap' },
   { id: 'wrap100', label: 'Duct wrap, 1 pcf', short: 'Duct wrap 1 pcf' },
   { id: 'wrap150', label: 'Duct wrap, 1.5 pcf', short: 'Duct wrap 1.5 pcf' },
-  { id: 'elastomeric', label: 'Elastomeric sheet', short: 'Elastomeric sheet' },
+  { id: 'board', label: 'Rigid board', short: 'Rigid board' },
 ]
 
+export const isWrap = (id: DuctInsulation) => id !== 'board'
+/** The rigid choice by duct shape: 814 board on rectangular duct, Micro-Flex on round [U64, U65]. */
+export const boardFor = (shape: DuctShape = 'rect') => DUCT_BOARD[shape]
+/** "Rigid board" on rectangular duct; on round duct it is Micro-Flex. */
+export const ductInsLabel = (id: DuctInsulation, shape: DuctShape = 'rect') => (id === 'board' && shape === 'round' ? 'Micro-Flex' : DUCT_INSULATIONS.find((m) => m.id === id)?.label ?? id)
 const wrapType = (id: DuctInsulation) => DUCT_WRAP.types[id === 'wrap100' ? '100' : id === 'wrap150' ? '150' : '75']
 
-/** Nominal thicknesses offered for a duct insulation, inches. */
-export function ductThicknesses(id: DuctInsulation): number[] {
-  return id === 'elastomeric' ? ELASTOMERIC_SHEET.thicknessesIn : wrapType(id).thicknesses.map((t) => t.nominalIn)
+/** Outdoors: the duct runs outside the building, in the weather. */
+export const ductOutdoors = (s: Pick<SimState, 'ductLocation'>) => s.ductLocation === 'exterior'
+
+/**
+ * What covers the insulation: wrap comes FSK-faced; board FSK or ASJ; and
+ * outdoors the board goes under an aluminum jacket (FSK isn't weatherproof).
+ */
+export function ductCover(s: Pick<SimState, 'ductIns' | 'ductFacing' | 'ductLocation'>): { facing: DuctFacing; jacket: 'none' | 'alu' } {
+  const board = s.ductIns === 'board'
+  return { facing: board ? s.ductFacing : 'fsk', jacket: board && ductOutdoors(s) ? 'alu' : 'none' }
 }
 
-/** Installed thickness: duct wrap is rated at 25 % compression (75 % of nominal) [U28; IMC 604.7]. */
+/** The 3D stage for a duct: the yard outdoors, a mechanical room indoors. */
+export const ductStage = (s: Pick<SimState, 'ductLocation'>): 'plant' | 'room' => (ductOutdoors(s) ? 'plant' : 'room')
+
+const nearest = (list: number[], v: number) => list.reduce((b, x) => (Math.abs(x - v) < Math.abs(b - v) ? x : b), list[0])
+
+/**
+ * A change of location that takes the duct outdoors puts it in rigid board under
+ * an aluminum jacket; bringing it back in puts it in FSK duct wrap (0.75 pcf).
+ * Other patches pass through unchanged.
+ */
+export function placeDuct(s: SimState, patch: Partial<SimState>): Partial<SimState> {
+  const shape = patch.ductShape ?? s.ductShape
+  if (patch.ductLocation !== undefined && patch.ductIns === undefined) {
+    const now = ductOutdoors({ ductLocation: patch.ductLocation })
+    const id: DuctInsulation = now ? 'board' : 'wrap75'
+    if (now !== ductOutdoors(s) && s.ductIns !== id) return { ...patch, ductIns: id, ductFacing: 'fsk', thicknessIn: nearest(ductThicknesses(id, shape), s.thicknessIn) }
+  }
+  // board and Micro-Flex come in different thicknesses: a new shape keeps the nearest
+  if (patch.ductShape !== undefined && patch.thicknessIn === undefined && s.ductIns === 'board') {
+    const list = ductThicknesses('board', shape)
+    if (!list.includes(s.thicknessIn)) return { ...patch, thicknessIn: nearest(list, s.thicknessIn) }
+  }
+  return patch
+}
+
+/** Nominal thicknesses offered for a duct insulation, inches. */
+export function ductThicknesses(id: DuctInsulation, shape: DuctShape = 'rect'): number[] {
+  return id === 'board' ? boardFor(shape).thicknesses.map((t) => t.nominalIn) : wrapType(id).thicknesses.map((t) => t.nominalIn)
+}
+
+/** Installed thickness: duct wrap is rated at 25 % compression (75 % of nominal) [U23; IMC 604.7]; board as labeled. */
 export function installedIn(id: DuctInsulation, nominalIn: number) {
-  return id === 'elastomeric' ? nominalIn : nominalIn * DUCT_WRAP.installedFraction
+  return id === 'board' ? nominalIn : nominalIn * DUCT_WRAP.installedFraction
 }
 
 /**
- * Installed k vs mean temperature. Duct wrap: Knauf's out-of-package curve
- * (ASTM C177, 50–200°F) scaled by the installed ÷ out-of-package ratio printed
- * at 75°F — this app's assumption, which reproduces the printed installed R at
- * 75°F. Elastomeric sheet: as published (75 and 100°F).
+ * Installed k vs mean temperature. Duct wrap: JM prints k at 75°F only, so the
+ * curve takes the shape of Knauf's published out-of-package curve for the same
+ * density (U28), scaled to JM's installed k at 75°F (U23) — this app's
+ * assumption, which reproduces JM's printed installed R. Board: as published.
  */
-export function ductKPoints(id: DuctInsulation): KPoint[] {
-  if (id === 'elastomeric') return ELASTOMERIC_SHEET.k
+export function ductKPoints(id: DuctInsulation, shape: DuctShape = 'rect'): KPoint[] {
+  if (id === 'board') return boardFor(shape).k
   const w = wrapType(id)
-  const k75 = w.kOop.find((p) => p.meanF === 75)!.k
-  return w.kOop.map((p) => ({ meanF: p.meanF, k: Math.round((p.k * w.kInstalled75) / k75 * 10000) / 10000 }))
+  const k75 = w.kShape.find((p) => p.meanF === 75)!.k
+  return w.kShape.map((p) => ({ meanF: p.meanF, k: Math.round((p.k * w.kInstalled75) / k75 * 10000) / 10000 }))
 }
 
-/** The rating codes check: installed R as printed at 75°F mean. */
-export function ratedR(id: DuctInsulation, nominalIn: number): number {
-  if (id === 'elastomeric') return ELASTOMERIC_SHEET.R[nominalIn] ?? nominalIn / ELASTOMERIC_SHEET.k[0].k
+/** The rating codes check: installed R at 75°F mean, as printed (Micro-Flex: thickness ÷ printed k). */
+export function ratedR(id: DuctInsulation, nominalIn: number, shape: DuctShape = 'rect'): number {
+  if (id === 'board') {
+    const b = boardFor(shape)
+    const row = b.thicknesses.find((t) => Math.abs(t.nominalIn - nominalIn) < 1e-6)
+    return row ? row.R : Math.round((nominalIn / b.k.find((p) => p.meanF === 75)!.k) * 10) / 10
+  }
   const row = wrapType(id).thicknesses.find((t) => Math.abs(t.nominalIn - nominalIn) < 1e-6)
   return row ? row.installedR : (nominalIn * DUCT_WRAP.installedFraction) / wrapType(id).kInstalled75
 }
 
-export function ductProduct(id: DuctInsulation): ProductSpec {
-  if (id === 'elastomeric') {
-    return { name: ELASTOMERIC_SHEET.product, tempF: { min: null, max: ELASTOMERIC_SHEET.ductMaxF, note: `${ELASTOMERIC_SHEET.maxF}°F material; ${ELASTOMERIC_SHEET.ductMaxF}°F on ducts with full adhesive` }, k: ELASTOMERIC_SHEET.k, sources: ELASTOMERIC_SHEET.src }
+/** In words for tags and reports: "FSK duct wrap", "ASJ board", "board + aluminum jacket". */
+export function ductInsWords(s: Pick<SimState, 'ductIns' | 'ductFacing' | 'ductLocation' | 'ductShape'>) {
+  const c = ductCover(s)
+  if (isWrap(s.ductIns)) return 'FSK duct wrap'
+  const what = s.ductShape === 'round' ? 'Micro-Flex' : 'board'
+  return c.jacket === 'alu' ? `${what} + aluminum jacket` : `${c.facing.toUpperCase()} ${what}`
+}
+
+export function ductProduct(id: DuctInsulation, facing: DuctFacing = 'fsk', shape: DuctShape = 'rect'): ProductSpec {
+  if (id === 'board') {
+    const b = boardFor(shape)
+    return { name: `${b.product}, ${facing === 'asj' ? 'ASJ (JM AP)' : 'FSK'} faced`, tempF: { min: null, max: b.maxF }, k: b.k, kNote: b.kNote, density: `${b.densityPcf} pcf`, sources: b.src }
   }
   const w = wrapType(id)
-  return { name: `${DUCT_WRAP.product}, ${w.label}`, tempF: { min: null, max: DUCT_WRAP.maxF }, k: ductKPoints(id), kNote: 'installed (25 % compressed)', density: `${w.densityPcf} pcf`, sources: DUCT_WRAP.src }
+  return { name: `${DUCT_WRAP.product}, ${w.label}`, tempF: { min: null, max: DUCT_WRAP.maxF }, k: ductKPoints(id), kNote: 'installed (25 % compressed)', density: `${w.densityPcf} pcf`, sources: [...DUCT_WRAP.src, ...DUCT_WRAP.shapeSrc] }
 }
 
 /** Outer-surface emittance on ducts. */
 export const DUCT_SURFACES: Record<string, SurfaceRef> = {
   // ASHRAE: "The first chart (for emittance = 0.1) should be used for foil-faced insulation products"
   fsk: { key: 'fsk', label: 'FSK facing (foil)', value: 0.1, src: ['U10'], note: 'ASHRAE uses ε = 0.1 for foil-faced duct insulation; new FSK lists 0.05 (Lamtec, J25)', maxSurfaceF: 150, limitSrc: ['J24'] },
-  elastomeric: { key: 'elastomeric', label: 'Elastomeric sheet skin', value: 0.9, src: ['E2'], note: 'ASHRAE "elastomeric or polyisobutylene"' },
   'galv-new': { key: 'galv-new', label: 'Bare galvanized duct (new, bright)', value: 0.1, src: ['E1'], note: '3E Plus "Galvanized steel, new, bright"' },
   'galv-dull': { key: 'galv-dull', label: 'Bare galvanized duct (dipped or dull)', value: 0.28, src: ['E1'], note: '3E Plus "Galvanized steel, dipped or dull"' },
 }
 
 export function ductSurface(s: SimState, insulated: boolean): SurfaceRef {
   if (!insulated) return DUCT_SURFACES[s.ductFinish === 'dull' ? 'galv-dull' : 'galv-new']
-  return s.ductIns === 'elastomeric' ? DUCT_SURFACES.elastomeric : DUCT_SURFACES.fsk
+  const c = ductCover(s)
+  if (c.jacket === 'alu') return SURFACES[`alu-${s.metalFinish}`]
+  return c.facing === 'asj' ? SURFACES.asj : DUCT_SURFACES.fsk
 }
 
 /** Inside air film, W/(m²·K): ASHRAE T8.17a for air in ducts (Re > 10,000), D = hydraulic diameter. */
@@ -203,7 +261,7 @@ export function solveDuct(s: SimState, mode: SimMode, nominalIn: number | null):
   const insulated = nominalIn !== null && nominalIn > 0
   const tIn = insulated ? installedIn(s.ductIns, nominalIn!) : 0
   const t = tIn * IN_M
-  const k = insulated ? kCurve(ductKPoints(s.ductIns)) : null
+  const k = insulated ? kCurve(ductKPoints(s.ductIns, s.ductShape)) : null
   const surf = ductSurface(s, insulated)
   const eps = s.emittanceOverride ?? surf.value
   const hi = s.insideFilm ? insideFilm(s.processF, s.airFpm, hydraulicDiameterIn(s)) : 0

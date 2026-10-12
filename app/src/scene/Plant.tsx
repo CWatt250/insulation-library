@@ -611,3 +611,54 @@ export function PlantSupports({ stations, rPipe, rOut, service, bare, floorY }: 
     </group>
   )
 }
+
+/**
+ * Outdoor duct supports: a 1-5/8" strut cross-member under the jacketed duct on
+ * two strut posts, each standing on a concrete block on the yard slab. In the
+ * duct's local frame (run along z, across x), like the display stands they replace.
+ */
+export function PlantDuctSupports({ halfW, bottomY, stations, floorY }: { halfW: number; bottomY: number; stations: number[]; floorY: number }) {
+  const at = stations.join()
+  const geo = useMemo(() => {
+    const concrete: THREE.BufferGeometry[] = []
+    const galv: THREE.BufferGeometry[] = []
+    const S = 0.041
+    const postX = halfW + 0.07
+    const crossY = bottomY - S / 2
+    const blockH = Math.min(0.1, Math.max(0.04, (crossY - S / 2 - floorY) * 0.4))
+    for (const z of at ? at.split(',').map(Number) : []) {
+      galv.push(box(2 * postX + 0.1, S, S, 0, crossY, z))
+      for (const sx of [-1, 1]) {
+        const x = sx * postX
+        concrete.push(metricUV(box(0.2, blockH, 0.2, x, floorY + blockH / 2, z), 0.2, blockH, 0.2))
+        const postH = crossY - S / 2 - (floorY + blockH)
+        if (postH > 0.01) galv.push(box(S, postH, S, x, floorY + blockH + postH / 2, z))
+        // base plate on the block
+        galv.push(box(0.11, 0.006, 0.11, x, floorY + blockH + 0.003, z))
+      }
+    }
+    // boxes are indexed; the merge wants plain triangles
+    const flat = (gs: THREE.BufferGeometry[]) => gs.map((g) => {
+      const n = g.toNonIndexed()
+      g.dispose()
+      return n
+    })
+    const c = flat(concrete)
+    const g = flat(galv)
+    const out = { concrete: mergeSimple(c), galv: mergeSimple(g) }
+    ;[...c, ...g].forEach((x) => x.dispose())
+    return out
+  }, [halfW, bottomY, at, floorY])
+  const mats = useMemo(() => ({
+    concrete: pbr('concrete-floor', { roughness: 1, color: new THREE.Color(1.3, 1.29, 1.25) }),
+    galv: pbr('galvanized', { metalness: 0.55, roughness: 1.6, color: '#b4b9bd' }),
+  }), [])
+  useEffect(() => () => { geo.concrete.dispose(); geo.galv.dispose() }, [geo])
+  useEffect(() => () => Object.values(mats).forEach((m) => m.dispose()), [mats])
+  return (
+    <group name="duct-supports">
+      <mesh geometry={geo.concrete} material={mats.concrete} castShadow receiveShadow />
+      <mesh geometry={geo.galv} material={mats.galv} castShadow receiveShadow />
+    </group>
+  )
+}

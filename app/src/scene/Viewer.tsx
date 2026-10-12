@@ -8,8 +8,8 @@ import { buildAssembly, buildCradle, splitByMaterial, type Assembly, type Assemb
 import type { LayerId } from '../data/catalog'
 import { PhotoMode, type PhotoProgress } from './PhotoMode'
 import { Callouts } from './Callouts'
-import { MechRoom, ROOM } from './MechRoom'
-import { PlantLights, PlantProps, PlantSupports } from './Plant'
+import { DuctRoom, MechRoom, ROOM } from './MechRoom'
+import { PlantDuctSupports, PlantLights, PlantProps, PlantSupports } from './Plant'
 import { STUDIO_HDRI } from './hdri'
 import { PhysicalCamera } from 'three-gpu-pathtracer'
 import { buildSlots, cradleMat, padMat, pbr, setMaxAnisotropy } from '../materials/library'
@@ -132,6 +132,9 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
     onSelect?.(props.selected === layer ? null : layer)
   }
   const callouts = useMemo(() => asm.callouts.filter((c) => !c.layer || !hidden.includes(c.layer)), [asm, hidden.join()]) // eslint-disable-line react-hooks/exhaustive-deps
+  // drips and frost land on the floor the scene shows
+  const floorY = props.stage === 'room' ? ROOM.floorY : asm.floorY ?? FLOOR_Y
+  const mid = (asm.zMin + asm.zMax) / 2
   return (
     <>
     <group ref={groupRef} rotation={[0, Math.PI / 2, 0]} position={[-(asm.zMin + asm.zMax) / 2, 0, 0]}>
@@ -159,7 +162,8 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
       {props.stage === 'plant' && !asm.stands && (
         <PlantSupports stations={asm.cradles} rPipe={rPipe} rOut={asm.outerRadius} service={props.service ?? 'hot'} bare={!!sim?.bare} floorY={asm.floorY ?? FLOOR_Y} />
       )}
-      {props.stage !== 'room' && asm.stands && <DuctStands {...asm.stands} floorY={asm.floorY ?? FLOOR_Y} />}
+      {props.stage === 'studio' && asm.stands && <DuctStands {...asm.stands} floorY={asm.floorY ?? FLOOR_Y} />}
+      {props.stage === 'plant' && asm.stands && <PlantDuctSupports {...asm.stands} floorY={asm.floorY ?? FLOOR_Y} />}
       {sim && !props.photo && (asm.zones ?? []).filter((z) => !(sim.bare && (z.kind === 'stub' || z.bareZ === null))).map((z) => {
         const state = z.kind === 'stub' ? sim.stub ?? sim : z.kind === 'fitting' ? sim.fitting ?? sim : sim
         const bareFit = z.kind === 'fitting' && (sim.bare || sim.fittingBare)
@@ -169,21 +173,24 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           radius: sim.bare || bareFit ? z.rBare : z.radius,
           z0: span[0], z1: span[1],
           wedge: sim.bare ? null : z.wedge ?? null, zWedge: z.zWedge ?? Infinity,
-          floorY: asm.floorY ?? FLOOR_Y, vertical: z.vertical,
+          floorY, vertical: z.vertical,
           box: sim.bare ? z.boxBare : z.box,
         }
         const fx = <ZoneEffects key={z.key} extent={extent} mode={sim.mode} zone={state} />
         return z.matrix ? <group key={z.key} matrix={z.matrix} matrixAutoUpdate={false}>{fx}</group> : fx
       })}
       {sim?.stubTag && !sim.bare && !props.photo && <StubTag zones={asm.zones ?? []} tag={sim.stubTag} />}
+      {sim?.insTag && !sim.bare && !props.photo && <InsTag zones={asm.zones ?? []} tag={sim.insTag} />}
     </group>
-    {props.stage === 'room' && (
+    {props.stage === 'room' && (asm.stands ? (
+      <DuctRoom stations={asm.stands.stations.map((z) => z - mid)} halfW={asm.stands.halfW} bottomY={asm.stands.bottomY} topY={asm.yMax} />
+    ) : (
       <MechRoom
-        stations={asm.cradles.map((z) => z - (asm.zMin + asm.zMax) / 2)}
+        stations={asm.cradles.map((z) => z - mid)}
         radius={asm.outerRadius}
         pipeRadius={asm.outerRadius}
       />
-    )}
+    ))}
     <Callouts items={callouts} parent={groupRef} insetRight={props.insetRight ?? 0} extent={asm.extent} />
     </>
   )
@@ -238,18 +245,19 @@ function Cradles({ radius, stations }: { radius: number; stations: number[] }) {
  */
 const tagPos = new THREE.Vector3()
 
-function StubTag({ zones, tag }: { zones: SimZone[]; tag: NonNullable<SimVisual['stubTag']> }) {
+/** A pill over a point on the model, kept wholly on screen; its leader still points at the spot. */
+function Tag({ pos, className, children }: { pos: [number, number, number]; className: string; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
-  const stub = zones.filter((z) => z.kind === 'stub').sort((a, b) => b.z1 - b.z0 - (a.z1 - a.z0) || b.z1 - a.z1)[0]
-  if (!stub) return null
-  // the top of a horizontal stub, or the open end of a vertical one (its frame's +z is up)
-  const pos: [number, number, number] = stub.vertical ? [0, 0, stub.z1] : [0, stub.box ? stub.box[1] : stub.radius, (stub.z0 + stub.z1) / 2]
-  const el = (
+  // Html mounts into the element the canvas's events attach to. Mounted before they
+  // attach (a scene with nothing to load, like the mech room), it moves there and
+  // the move loses the tag's content.
+  const connected = useThree((st) => !!st.events.connected)
+  if (!connected) return null
+  return (
     <Html
       position={pos}
       zIndexRange={[6, 0]}
       style={{ pointerEvents: 'none' }}
-      // keep the whole tag on screen; its leader still points at the stub
       calculatePosition={(obj, camera, size) => {
         const p = tagPos.setFromMatrixPosition(obj.matrixWorld).project(camera)
         const x = ((p.x + 1) / 2) * size.width
@@ -263,10 +271,26 @@ function StubTag({ zones, tag }: { zones: SimZone[]; tag: NonNullable<SimVisual[
         return [x, ((1 - p.y) / 2) * size.height]
       }}
     >
-      <div ref={ref} className={`stub-tag ${tag.tone}`}>{tag.text}</div>
+      <div ref={ref} className={className}>{children}</div>
     </Html>
   )
+}
+
+function StubTag({ zones, tag }: { zones: SimZone[]; tag: NonNullable<SimVisual['stubTag']> }) {
+  const stub = zones.filter((z) => z.kind === 'stub').sort((a, b) => b.z1 - b.z0 - (a.z1 - a.z0) || b.z1 - a.z1)[0]
+  if (!stub) return null
+  // the top of a horizontal stub, or the open end of a vertical one (its frame's +z is up)
+  const pos: [number, number, number] = stub.vertical ? [0, 0, stub.z1] : [0, stub.box ? stub.box[1] : stub.radius, (stub.z0 + stub.z1) / 2]
+  const el = <Tag pos={pos} className={`stub-tag ${tag.tone}`}>{tag.text}</Tag>
   return stub.matrix ? <group matrix={stub.matrix} matrixAutoUpdate={false}>{el}</group> : el
+}
+
+/** The insulation's R-value and thickness, on the far end of the insulated run (the stub tag has the near end). */
+function InsTag({ zones, tag }: { zones: SimZone[]; tag: NonNullable<SimVisual['insTag']> }) {
+  const run = zones.find((z) => z.kind === 'run' && !z.matrix)
+  if (!run) return null
+  const pos: [number, number, number] = [0, run.box ? run.box[1] : run.radius, run.z0 + (run.z1 - run.z0) * 0.22]
+  return <Tag pos={pos} className="ins-tag"><b>{tag.r}</b> {tag.text}</Tag>
 }
 
 const LAYER_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
@@ -297,6 +321,9 @@ const PLANT_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, n
   tee: { cam: [1.95, 0.55, 2.25], target: [0.08, 0.22, 0] },
   flange: { cam: [1.25, 0.22, 1.5], target: [0, 0.0, 0] },
 }
+
+/** Ductwork in the mech room: from a lift beside the duct, a little below it, so the deck and lights show behind. */
+const ROOM_DUCT_VIEW = { cam: [1.72, -0.12, 1.64] as [number, number, number], target: [0.16, -0.06, 0] as [number, number, number] }
 
 const VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
   straight: { cam: [1.72, 0.66, 1.64], target: [0.16, -0.08, 0] },
@@ -480,7 +507,7 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     pc.userData.baseFov = 30
     pc.aspect = size.width / size.height
     applyFov(pc)
-    const v = (stage === 'plant' ? PLANT_VIEWS : VIEWS).straight
+    const v = stage === 'plant' ? PLANT_VIEWS.straight : stage === 'room' ? ROOM_DUCT_VIEW : VIEWS.straight
     const dir = new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target)).normalize()
     const half = (asm.zMax - asm.zMin) / 2
     const R = asm.outerRadius
@@ -691,11 +718,14 @@ export function Viewer(props: ViewerProps) {
       {props.sync && <SyncCamera group={props.sync.group} id={props.sync.id} />}
       <color attach="background" args={['#3a3b3e']} />
       <Suspense fallback={null}>
-        {props.stage === 'studio' ? (
-          <StudioLights />
-        ) : props.stage === 'room' ? null : (
-          <PlantLights mobile={!!props.mobile} photo={!!props.photo} />
-        )}
+        {/* the lighting loads on its own: a new stage's HDRI mustn't hide the model and its tags while it loads */}
+        <Suspense fallback={null}>
+          {props.stage === 'studio' ? (
+            <StudioLights />
+          ) : props.stage === 'room' ? null : (
+            <PlantLights mobile={!!props.mobile} photo={!!props.photo} />
+          )}
+        </Suspense>
         <Run {...props} asm={asm} />
         {props.stage === 'studio' ? <Cyc floorY={asm.floorY ?? FLOOR_Y} /> : props.stage === 'plant' ? <ConcreteFloor floorY={asm.floorY ?? FLOOR_Y} /> : null}
         {props.stage === 'plant' && <PlantProps floorY={asm.floorY ?? FLOOR_Y} />}

@@ -7,7 +7,7 @@ import { rayIntensity, systemFor } from '../../sim/model'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { StatusChip } from './Status'
 import { pipeSpec } from '../../data/pipes'
-import { installedIn } from '../../sim/duct'
+import { ductCover, ductInsWords, installedIn, isWrap } from '../../sim/duct'
 import { noun } from '../../sim/system'
 
 export interface PanelSpec {
@@ -26,7 +26,7 @@ export interface StageOpts {
   autoRotate?: boolean
   view: 'installed' | 'cutaway'
   thermal: boolean
-  stage: 'studio' | 'plant'
+  stage: 'studio' | 'plant' | 'room'
   mobile: boolean
   units: UnitSystem
   /** Bump to frame the model again (Reset view). */
@@ -101,22 +101,26 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   const fittingBare = (s.component === 'valve' || s.component === 'flange') && s.fittingCover === 'none'
   const duct = s.system === 'duct'
   const thermal = opts.thermal && !duct && s.component !== 'elbow' && s.component !== 'tee'
+  const cover = duct ? ductCover(s) : null
   const ductProps = duct
     ? {
       shape: s.ductShape, w: s.ductW * 0.0254, h: s.ductH * 0.0254, d: s.ductD * 0.0254,
-      t: installedIn(s.ductIns, thickness) * 0.0254, insulation: s.ductIns === 'elastomeric' ? 'elastomeric' as const : 'wrap' as const,
+      t: installedIn(s.ductIns, thickness) * 0.0254, insulation: isWrap(s.ductIns) ? 'wrap' as const : 'board' as const,
+      facing: cover!.facing, jacket: cover!.jacket,
     }
     : undefined
-  // side-by-side panes carry their own labels; a single view tags the stub
-  const tag = frameRadius === undefined ? stubTag(s, bare, mode, opts.units) : undefined
-  const sim = useMemo(() => ({ ...visualFor(panel.side, bare, mode, thermal, fittingBare), stubTag: tag }), [panel.side, bare, mode, thermal, fittingBare, tag?.text, tag?.tone]) // eslint-disable-line react-hooks/exhaustive-deps
+  // side-by-side panes carry their own labels; a single view tags the stub, and a duct its R-value
+  const single = frameRadius === undefined
+  const tag = single ? stubTag(s, bare, mode, opts.units) : undefined
+  const insTag = single && duct && !panel.bare ? { r: `R-${(panel.side.ratedR ?? 0).toFixed(1)}`, text: `${inchLabel(panel.modelThickness)} ${ductInsWords(s)}` } : undefined
+  const sim = useMemo(() => ({ ...visualFor(panel.side, bare, mode, thermal, fittingBare), stubTag: tag, insTag }), [panel.side, bare, mode, thermal, fittingBare, tag?.text, tag?.tone, insTag?.r, insTag?.text]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Viewer
       duct={ductProps}
-      insulation={duct ? (s.ductIns === 'elastomeric' ? 'elastomeric' : 'fiberglass') : s.insulation}
+      insulation={duct ? 'fiberglass' : s.insulation}
       npsIndex={nps}
       thicknessIn={thickness}
-      jacket={duct ? (s.ductIns === 'elastomeric' ? 'none' : 'fsk') : sys.jacketId}
+      jacket={duct ? (cover!.jacket === 'alu' ? 'alu-stucco' : cover!.facing) : sys.jacketId}
       facing={sys.facing}
       service={sys.service}
       view={opts.view}

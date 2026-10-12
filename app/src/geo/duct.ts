@@ -8,11 +8,15 @@ import type { Assembly, Callout, Part, SimZone, ViewMode } from './assembly'
  *  - duct wrap: blanket at its installed (25 % compressed) thickness, rounding
  *    over the corners, FSK facing, 3" foil tape on the 2" stapling-flange seam
  *    along the top and on the butt joints between 48" rolls (Knauf, OC, JM)
- *  - ducts 24" and wider: pins with square speed clips on the underside at
- *    18" on center (OC, JM, Knauf, CertainTeed)
- *  - elastomeric sheet: black closed-cell sheet, fully adhered, no facing
- * Cutaway: the insulation stops short of the end to show the bare duct, with
- * the facing peeled back a little so the blanket edge shows.
+ *  - rigid board: square-cut and butted at the corners, FSK or ASJ facing,
+ *    3" tape on the corners and the joints between 48" boards
+ *  - ducts 24" and wider: pins on the underside at 18" on center, with square
+ *    speed clips on wrap and the washers taped over on board (JM Microlite)
+ *  - outdoors: 0.016" stucco-embossed aluminum jacket over the board, 36" sheets
+ *    lapped 3", screwed on rectangular duct and banded on round (UFGS 23 07 00)
+ * Installed: the insulation stops short of the end to show the bare duct, with
+ * the facing peeled back a little so the edge shows. Cutaway: stripped in steps
+ * along the run — jacket, facing, insulation — so every layer shows.
  * Local frame as the pipe assemblies: run along +z, y up.
  */
 
@@ -24,7 +28,12 @@ export interface DuctParams {
   d: number
   /** Installed insulation thickness, m (0 = bare). */
   t: number
-  insulation: 'wrap' | 'elastomeric'
+  /** Duct wrap (compressed blanket) or rigid board (square-cut, pinned). */
+  insulation: 'wrap' | 'board'
+  /** Factory facing: FSK foil, or white ASJ (board). */
+  facing: 'fsk' | 'asj'
+  /** Outdoors: an aluminum jacket over the facing. */
+  jacket: 'none' | 'alu'
   view: ViewMode
 }
 
@@ -68,6 +77,30 @@ function withArc(p: [number, number][], n: [number, number][]): Outline {
     const b = p[i % p.length]
     s.push(s[i - 1] + Math.hypot(b[0] - a[0], b[1] - a[1]))
   }
+  return { p, n, s }
+}
+
+/**
+ * An open strip over one corner of a rounded rectangle (0 = +x+y, then
+ * counter-clockwise), running `reach` along each face: tape over a board corner.
+ */
+function cornerStrip(hw: number, hh: number, r: number, corner: 0 | 1 | 2 | 3, reach: number, nArc = 6): Outline {
+  const [sx, sy, deg] = ([[1, 1, 0], [-1, 1, 90], [-1, -1, 180], [1, -1, 270]] as const)[corner]
+  const cx = sx * (hw - r)
+  const cy = sy * (hh - r)
+  const a0 = (deg * Math.PI) / 180
+  const a1 = a0 + Math.PI / 2
+  const p: [number, number][] = [[cx + r * Math.cos(a0) + Math.sin(a0) * reach, cy + r * Math.sin(a0) - Math.cos(a0) * reach]]
+  const n: [number, number][] = [[Math.cos(a0), Math.sin(a0)]]
+  for (let j = 0; j <= nArc; j++) {
+    const a = a0 + ((a1 - a0) * j) / nArc
+    p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)])
+    n.push([Math.cos(a), Math.sin(a)])
+  }
+  p.push([cx + r * Math.cos(a1) - Math.sin(a1) * reach, cy + r * Math.sin(a1) + Math.cos(a1) * reach])
+  n.push([Math.cos(a1), Math.sin(a1)])
+  const s = [0]
+  for (let i = 1; i < p.length; i++) s.push(s[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]))
   return { p, n, s }
 }
 
@@ -208,6 +241,18 @@ class Builder {
     this.groups[this.groups.length - 1].count += P.count
     g.dispose()
   }
+  /** Any small solid (a screw head), in place. */
+  solid(g: THREE.BufferGeometry, mat: number) {
+    const n = g.index ? g.toNonIndexed() : g
+    const P = n.getAttribute('position')
+    const N = n.getAttribute('normal')
+    const U = n.getAttribute('uv')
+    this.begin(mat)
+    for (let i = 0; i < P.count; i++) this.add([P.getX(i), P.getY(i), P.getZ(i)], [N.getX(i), N.getY(i), N.getZ(i)], [U.getX(i), U.getY(i)])
+    this.groups[this.groups.length - 1].count += P.count
+    if (n !== g) n.dispose()
+    g.dispose()
+  }
   geometry() {
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3))
@@ -216,6 +261,37 @@ class Builder {
     g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(this.pos.length).fill(1), 3))
     for (const gr of this.groups) g.addGroup(gr.start, gr.count, gr.mat)
     return g
+  }
+}
+
+/**
+ * Hex-washer-head screws along a jacket lap at z, `pitch` apart round the
+ * outline, kept `clear` of the corners (0 = none to keep clear of: round duct).
+ */
+function screwsAround(b: Builder, o: Outline, z: number, pitch: number, clear: number) {
+  const total = o.s[o.s.length - 1]
+  const m = o.p.length
+  for (let at = pitch / 2; at < total; at += pitch) {
+    let i = 0
+    while (i < m - 1 && o.s[i + 1] < at) i++
+    const j = (i + 1) % m
+    const f = (at - o.s[i]) / Math.max(1e-9, o.s[i + 1] - o.s[i])
+    const x = o.p[i][0] + (o.p[j][0] - o.p[i][0]) * f
+    const y = o.p[i][1] + (o.p[j][1] - o.p[i][1]) * f
+    const nx = o.n[i][0] + (o.n[j][0] - o.n[i][0]) * f
+    const ny = o.n[i][1] + (o.n[j][1] - o.n[i][1]) * f
+    if (clear > 0) {
+      // skip screws on (or near) a corner arc: corners on a rect outline sit where both |x| and |y| are near the edge
+      const hx = Math.max(...o.p.map((q) => q[0]))
+      const hy = Math.max(...o.p.map((q) => q[1]))
+      if (Math.abs(x) > hx - clear && Math.abs(y) > hy - clear) continue
+    }
+    const a = Math.atan2(ny, nx)
+    const head = new THREE.CylinderGeometry(0.0052, 0.0056, 0.0026, 6)
+    // cylinder axis (y) → the outline normal, sitting on the surface
+    head.rotateZ(a - Math.PI / 2)
+    head.translate(x + Math.cos(a) * 0.0013, y + Math.sin(a) * 0.0013, z)
+    b.solid(head, Slot.Screw)
   }
 }
 
@@ -245,6 +321,7 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   const zIns = len - stub
   // cutaway: along the far part of the run the top and near side are stripped in steps —
   // facing first, then the blanket — so facing, blanket and sheet metal each show
+  const zJacket = len * (d.jacket === 'alu' && d.t > 0 ? 0.3 : 0.24)
   const zFacing = len * 0.42
   const zBlanket = len * 0.6
   const parts: Part[] = []
@@ -285,10 +362,16 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
   const callouts: Callout[] = [{ title: round ? 'Spiral duct' : 'Galvanized duct', detail: round ? `${(d.d / IN).toFixed(0)}" round, galvanized` : `${(d.w / IN).toFixed(0)}" × ${(d.h / IN).toFixed(0)}", 24 ga galvanized`, pos: [hw * 0.7, hh, len - stub * 0.5], layer: 'pipe' }]
 
   if (insulated) {
-    // ---- insulation: hugs the sheet, rounds over the corners (radius ≈ its thickness)
+    const wrap = d.insulation === 'wrap'
+    const asj = d.facing === 'asj'
+    const alu = d.jacket === 'alu'
+    // ---- insulation: wrap is compressed over the corners (radius ≈ its thickness);
+    // board is cut square and butted at the corners
     const insIn = round ? circle(hw + 0.0004) : roundedRect(hw + 0.0004, hh + 0.0004, 0.0015, nArc)
-    const rCorner = d.insulation === 'wrap' ? t * 0.9 : t * 0.5
-    const insOut = round ? circle(outW) : roundedRect(outW, outH, rCorner, nArc)
+    const rCorner = wrap ? t * 0.9 : 0.003
+    /** The insulation's outline grown by `o` (facing, tape and jacket sit on it). */
+    const over = (o: number) => (round ? circle(outW + o) : roundedRect(outW + o, outH + o, rCorner + o, nArc))
+    const insOut = over(0)
     // what the cutaway keeps: the far side and underside (rect: corner 2 → corner 0; round: 180° → 90°)
     const nC = nArc + 1
     const kept = round
@@ -303,54 +386,110 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     } else ins.shell(insIn, insOut, 0.002, zIns, insMats)
     parts.push({ key: 'insulation', geometry: ins.geometry(), layer: 'insulation' })
     callouts.push({
-      title: d.insulation === 'wrap' ? 'Fiberglass duct wrap' : 'Elastomeric sheet',
-      detail: d.insulation === 'wrap' ? `${(t / IN).toFixed(2)}" installed (25% compressed)` : `${(t / IN).toFixed(2)}", fully adhered`,
+      title: wrap ? 'Fiberglass duct wrap' : 'Rigid fiberglass board',
+      detail: wrap ? `${(t / IN).toFixed(2)}" installed (25% compressed)` : `${(t / IN).toFixed(2)}" board`,
       pos: [outW * 0.6, outH * 0.6, zIns], layer: 'insulation',
     })
 
-    if (d.insulation === 'wrap') {
-      // ---- FSK facing: a thin skin over the blanket (cutaway: peeled off the top and near side first)
-      const fz1 = cut ? zIns : zIns - 0.035
-      const tapeEnd = cut ? zFacing : fz1
-      const fIn = round ? circle(outW + 0.0002) : roundedRect(outW + 0.0002, outH + 0.0002, rCorner + 0.0002, nArc)
-      const fOut = round ? circle(outW + 0.0007) : roundedRect(outW + 0.0007, outH + 0.0007, rCorner + 0.0007, nArc)
-      const fac = new Builder()
-      const facMats = { outer: Slot.DuctFacing, inner: Slot.FacingInner, end: Slot.FacingEdge }
-      if (cut) {
-        fac.shell(fIn, fOut, 0.002, zFacing, facMats)
-        fac.partial(fIn, fOut, kept, zFacing, fz1, facMats)
-      } else fac.shell(fIn, fOut, 0.002, fz1, facMats)
-      // ---- 3" foil tape: butt joints between 48" rolls, and the longitudinal flange seam on top
-      const tIn = fOut
-      const tOut = round ? circle(outW + 0.0011) : roundedRect(outW + 0.0011, outH + 0.0011, rCorner + 0.0011, nArc)
-      for (let z = 48 * IN * 0.62; z < tapeEnd - 2 * IN; z += 48 * IN) fac.shell(tIn, tOut, z - 1.5 * IN, z + 1.5 * IN, { outer: Slot.Tape, inner: Slot.Tape, end: Slot.Tape })
-      if (round) {
-        fac.box(-outW * 0.55, outH * 0.84, tapeEnd / 2, 3 * IN, 0.0012, tapeEnd - 0.01, Slot.Tape)
-      } else {
-        const x = outW - rCorner - 2.2 * IN
-        fac.box(x, outH + 0.0012, (0.002 + tapeEnd) / 2, 3 * IN, 0.0012, tapeEnd - 0.004, Slot.Tape)
-        // ---- pins and speed clips under ducts 24" and wider, 18" on center
-        if (d.w >= 24 * IN - 1e-6) {
-          const across = Math.max(1, Math.round(d.w / (18 * IN)))
-          for (let z = 9 * IN; z < fz1 - 3 * IN; z += 18 * IN) {
-            for (let k = 0; k < across; k++) {
-              const x2 = -d.w / 2 + ((k + 0.5) / across) * d.w
-              fac.box(x2, -outH - 0.0012, z, 1.5 * IN, 0.0012, 1.5 * IN, Slot.Hardware)
-              fac.box(x2, -outH - 0.004, z, 0.12 * IN, 0.006, 0.12 * IN, Slot.Hardware)
-            }
+    // ---- factory facing: FSK foil or white ASJ, a thin skin over the insulation
+    // (cutaway: peeled off the top and near side first)
+    const fz1 = cut ? zIns : zIns - 0.035
+    const tapeEnd = cut ? zFacing : fz1
+    const fIn = over(0.0002)
+    const fOut = over(0.0007)
+    const fac = new Builder()
+    const facMats = { outer: asj ? Slot.Facing : Slot.DuctFacing, inner: Slot.FacingInner, end: Slot.FacingEdge }
+    const tape = asj ? Slot.FacingTape : Slot.FoilTape
+    if (cut) {
+      fac.shell(fIn, fOut, 0.002, zFacing, facMats)
+      fac.partial(fIn, fOut, kept, zFacing, fz1, facMats)
+    } else fac.shell(fIn, fOut, 0.002, fz1, facMats)
+    // ---- 3" tape: butt joints between 48" rolls or boards, then the long seams —
+    // the wrap's stapling-flange seam on top, the board's four corners
+    const tIn = fOut
+    const tOut = over(0.0011)
+    const tapeMats = { outer: tape, inner: tape, end: tape }
+    for (let z = 48 * IN * 0.62; z < tapeEnd - 2 * IN; z += 48 * IN) fac.shell(tIn, tOut, z - 1.5 * IN, z + 1.5 * IN, tapeMats)
+    if (round) {
+      fac.box(-outW * 0.55, outH * 0.84, tapeEnd / 2, 3 * IN, 0.0012, tapeEnd - 0.01, tape)
+    } else if (wrap) {
+      const x = outW - rCorner - 2.2 * IN
+      fac.box(x, outH + 0.0012, (0.002 + tapeEnd) / 2, 3 * IN, 0.0012, tapeEnd - 0.004, tape)
+    } else {
+      for (const c of [0, 1, 2, 3] as const) {
+        const a = cornerStrip(outW + 0.0007, outH + 0.0007, rCorner + 0.0007, c, 1.5 * IN)
+        const b = cornerStrip(outW + 0.0011, outH + 0.0011, rCorner + 0.0011, c, 1.5 * IN)
+        fac.partial(a, b, a.p.map((_, i) => i), 0.002, tapeEnd - 0.004, tapeMats)
+      }
+    }
+    // ---- ducts 24" and wider: pins on the underside, 18" on center — square speed
+    // clips on wrap; on board the washers are taped over (under a metal jacket, unseen)
+    if (!round && !alu && d.w >= 24 * IN - 1e-6) {
+      const across = Math.max(1, Math.round(d.w / (18 * IN)))
+      for (let z = 9 * IN; z < fz1 - 3 * IN; z += 18 * IN) {
+        for (let k = 0; k < across; k++) {
+          const x2 = -d.w / 2 + ((k + 0.5) / across) * d.w
+          if (wrap) {
+            fac.box(x2, -outH - 0.0012, z, 1.5 * IN, 0.0012, 1.5 * IN, Slot.Hardware)
+            fac.box(x2, -outH - 0.004, z, 0.12 * IN, 0.006, 0.12 * IN, Slot.Hardware)
+          } else {
+            fac.box(x2, -outH - 0.0012, z, 3 * IN, 0.0012, 3 * IN, tape)
+            fac.box(x2, -outH - 0.0019, z, 1.5 * IN, 0.0012, 1.5 * IN, tape)
           }
         }
       }
-      parts.push({ key: 'facing', geometry: fac.geometry(), layer: 'facing' })
-      callouts.push({ title: 'FSK facing', detail: 'Foil-scrim-kraft vapor retarder, seams taped', pos: [-outW * 0.4, outH + 0.001, zIns * 0.6], layer: 'facing' })
+    }
+    parts.push({ key: 'facing', geometry: fac.geometry(), layer: 'facing' })
+    callouts.push({ title: asj ? 'ASJ facing' : 'FSK facing', detail: asj ? 'All-service jacket, seams taped' : 'Foil-scrim-kraft vapor retarder, seams taped', pos: [-outW * 0.4, outH + 0.001, zIns * 0.6], layer: 'facing' })
+
+    // ---- outdoors: 0.016" stucco-embossed aluminum over the board, in 36" sheets
+    // lapped 2" with screws along each lap (cutaway: taken off the top and near side first)
+    if (alu) {
+      const j0 = 0.0013
+      const jt = 0.016 * IN
+      const jIn = over(j0)
+      const jOut = over(j0 + jt)
+      const jMats = { outer: Slot.JacketOuter, inner: Slot.JacketInner, end: Slot.JacketEdge }
+      const jz1 = cut ? zIns : zIns - 0.012
+      const jac = new Builder()
+      if (cut) {
+        jac.shell(jIn, jOut, 0.002, zJacket, jMats)
+        jac.partial(jIn, jOut, kept, zJacket, jz1, jMats)
+      } else jac.shell(jIn, jOut, 0.002, jz1, jMats)
+      // 36" sheets lapped 3" (UFGS 23 07 00): screwed on rectangular duct; on round duct
+      // banded at each lap and no more than 12" apart
+      const lapOut = over(j0 + 2 * jt + 0.0011)
+      const bandIn = over(j0 + jt + 0.0001)
+      const bandOut = over(j0 + jt + 0.0009)
+      const lapEnd = cut ? zJacket : jz1
+      const laps: number[] = []
+      for (let z = 36 * IN * 0.55; z < lapEnd - 2 * IN; z += 36 * IN) {
+        laps.push(z)
+        jac.shell(jOut, lapOut, z - 1.5 * IN, z + 1.5 * IN, jMats)
+        if (!round) screwsAround(jac, lapOut, z + 1 * IN, 6 * IN, rCorner + 1.5 * IN)
+      }
+      if (round) {
+        const bandMats = { outer: Slot.Band, inner: Slot.Band, end: Slot.Band }
+        const lapBand = over(j0 + 2 * jt + 0.0012)
+        const lapBandOut = over(j0 + 2 * jt + 0.002)
+        for (const z of laps) jac.shell(lapBand, lapBandOut, z - 0.25 * IN, z + 0.25 * IN, bandMats)
+        const step = 12 * IN
+        for (let z = 6 * IN; z < lapEnd - 1 * IN; z += step) {
+          if (laps.some((l) => Math.abs(l - z) < 3 * IN)) continue
+          jac.shell(bandIn, bandOut, z - 0.25 * IN, z + 0.25 * IN, bandMats)
+        }
+      }
+      parts.push({ key: 'jacket', geometry: jac.geometry(), layer: 'jacket' })
+      callouts.push({ title: 'Aluminum jacket', detail: round ? '0.016", 3" laps, banded' : '0.016" stucco embossed, 3" laps, screwed', pos: [-outW * 0.3, outH + 0.003, zJacket * 0.5], layer: 'jacket' })
     }
   }
-
+  // the exposed surface: facing and tape, or the jacket and its laps
+  const skin = d.jacket === 'alu' && insulated ? 0.0025 : 0.001
   const minHalf = Math.min(outW, outH)
   const zones: SimZone[] = [
     round
-      ? { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: outW + 0.001, rBare: hw, bareZ: [0, len], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) }
-      : { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: minHalf, rBare: Math.min(hw, hh), bareZ: [0, len], box: [outW + 0.001, outH + 0.001], boxBare: [hw, hh], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) },
+      ? { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: outW + skin, rBare: hw, bareZ: [0, len], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) }
+      : { key: 'run', kind: 'run', z0: 0.012, z1: zIns - 0.012, radius: minHalf, rBare: Math.min(hw, hh), bareZ: [0, len], box: [outW + skin, outH + skin], boxBare: [hw, hh], ...(cut && cutWedge ? { wedge: cutWedge, zWedge: zBlanket } : {}) },
     round
       ? { key: 'stub', kind: 'stub', z0: zIns + 0.004, z1: len, radius: hw, rBare: hw }
       : { key: 'stub', kind: 'stub', z0: zIns + 0.004, z1: len, radius: Math.min(hw, hh), rBare: Math.min(hw, hh), box: [hw, hh], boxBare: [hw, hh] },

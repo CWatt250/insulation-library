@@ -11,7 +11,7 @@ import { Disclosure, Icon, Segmented, Slider } from '../controls'
 import { DuctCodeInputs, DuctInsulationSection, DuctSize } from './DuctSetup'
 import { PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
 import { CodeChips } from './CodeChips'
-import { ductSurface } from '../../sim/duct'
+import { ductCover, ductSurface, isWrap } from '../../sim/duct'
 
 const PIPE_HINT: Record<PipeMaterial, string> = { steel: 'Steel pipe, Sch 40', copper: 'Copper tube, Type L', pvc: 'PVC pipe, Sch 40' }
 
@@ -235,7 +235,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
               ]}
             />
             <p className="field-note">
-              {duct ? (s.ductIns === 'elastomeric' ? 'Closed-cell sheet is its own retarder — glue every seam with full adhesive coverage.' : 'The FSK facing is the retarder — tape every seam, staple and pin.') : sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
+              {duct ? (isWrap(s.ductIns) ? 'The FSK facing is the retarder — tape every seam, staple and pin.' : `The ${ductCover(s).facing.toUpperCase()} facing is the retarder — tape every joint, corner and pin washer${ductCover(s).jacket === 'alu' ? '; the metal jacket keeps the weather off but is not a retarder' : ''}.`) : sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
                 : sys.vaporBy === 'facing' ? 'The ASJ facing is the retarder — seal every lap and butt strip.'
                 : sys.vaporBy === 'membrane' ? 'A separate sealed membrane is the retarder.'
                 : 'No vapor retarder in this build-up.'}
@@ -270,7 +270,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
           </>
         )}
         <h4 className="adv-h">Surface</h4>
-        {!duct && metal && (
+        {(duct ? ductCover(s).jacket === 'alu' : metal) && (
           <div className="field">
             <span className="field-label">Metal jacket surface</span>
             <Segmented<MetalFinish>

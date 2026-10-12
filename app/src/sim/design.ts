@@ -3,7 +3,7 @@ import { THICKNESSES } from '../data/pipe'
 import { codeMinimum } from './code'
 import { availability, physicsMode, caseFor, evaluateSide, kProducts, meets, recommend, thicknessOptions, type Goal, type Recommendation, type Side } from './model'
 import { WA_COUNTIES } from '../data/wsecData'
-import { DUCT_CODES, DUCT_INSULATIONS, ductProduct, ductRequirement, type WsecDuctOptions, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
+import { DUCT_CODES, DUCT_INSULATIONS, ductOutdoors, ductProduct, isWrap, ductRequirement, type WsecDuctOptions, ductSurface, ductThicknesses, type DuctCodeResult, type DuctInsulation } from './duct'
 import type { SimMode, SimState } from './types'
 import { IN_M } from './units'
 
@@ -170,9 +170,10 @@ function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
 
 /** The current duct re-done in another duct insulation, or why it can't be. */
 export function stateForDuctMaterial(s: SimState, id: DuctInsulation): { state: SimState } | { reason: string } {
-  const p = ductProduct(id)
+  if (ductOutdoors(s) && isWrap(id)) return { reason: 'Outdoors the duct gets rigid board under a metal jacket; FSK duct wrap is for indoors' }
+  const p = ductProduct(id, s.ductFacing, s.ductShape)
   if (p.tempF.max !== null && s.processF > p.tempF.max) return { reason: `${s.processF}°F is above its ${p.tempF.max}°F limit` }
-  const list = ductThicknesses(id)
+  const list = ductThicknesses(id, s.ductShape)
   const t = list.reduce((b, x) => (Math.abs(x - s.thicknessIn) < Math.abs(b - s.thicknessIn) ? x : b), list[0])
   return { state: { ...s, ductIns: id, thicknessIn: t } }
 }
