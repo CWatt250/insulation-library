@@ -1,10 +1,10 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
-import { Environment, Lightformer, OrbitControls } from '@react-three/drei'
+import { Environment, Html, Lightformer, OrbitControls } from '@react-three/drei'
 import { Bloom, EffectComposer, N8AO, Outline, SMAA, Select, Selection, ToneMapping, Vignette } from '@react-three/postprocessing'
 import { ToneMappingMode } from 'postprocessing'
-import { buildAssembly, buildCradle, splitByMaterial, type Assembly, type AssemblyParams } from '../geo/assembly'
+import { buildAssembly, buildCradle, splitByMaterial, type Assembly, type AssemblyParams, type SimZone } from '../geo/assembly'
 import type { LayerId } from '../data/catalog'
 import { PhotoMode, type PhotoProgress } from './PhotoMode'
 import { Callouts } from './Callouts'
@@ -40,6 +40,13 @@ export interface ViewerProps extends AssemblyParams {
   /** Pixels covered by side panels, so framing and labels stay in the open area. */
   insetLeft?: number
   insetRight?: number
+  /** Pixels covered by bars above and controls below (phones), so the model is framed between them. */
+  insetTop?: number
+  insetBottom?: number
+  /** Bump to frame the model again (Reset view). */
+  resetKey?: number
+  /** The viewer started dragging, zooming or panning the camera. */
+  onUserMove?: () => void
   /** Simulation overlays (Hot / Cold / Condensate modes). */
   sim?: SimVisual
   /** Compare mode: cameras move together. */
@@ -107,7 +114,7 @@ function LayerGroup({ lift, animate, visible, selected, children }: { lift: numb
 
 function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
   const slots = useMemo(() => buildSlots(props.insulation, props.jacket, props.duct ? 'galvanized' : props.pipe), [props.insulation, props.jacket, props.pipe, !!props.duct])
-  useEffect(() => () => slots.forEach((m) => m.dispose()), [slots])
+  useEffect(() => () => slots.dispose(), [slots])
   const thermal = useMemo(() => thermalMaterial(), [])
   useEffect(() => () => thermal.dispose(), [thermal])
   const groupRef = useRef<THREE.Group>(null)
@@ -135,7 +142,7 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
                 <mesh
                   key={m.mat}
                   geometry={m.geometry}
-                  material={sim?.thermal ? thermal : slots[m.mat]}
+                  material={sim?.thermal ? thermal : slots.get(m.mat)}
                   castShadow
                   receiveShadow
                   onClick={click(g.layer)}
@@ -163,6 +170,7 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
         const fx = <ZoneEffects key={z.key} extent={extent} mode={sim.mode} zone={state} />
         return z.matrix ? <group key={z.key} matrix={z.matrix} matrixAutoUpdate={false}>{fx}</group> : fx
       })}
+      {sim?.stubTag && !sim.bare && !props.photo && <StubTag zones={asm.zones ?? []} tag={sim.stubTag} />}
     </group>
     {props.stage === 'room' && (
       <MechRoom
@@ -219,6 +227,43 @@ function Cradles({ radius, stations }: { radius: number; stations: number[] }) {
   )
 }
 
+/**
+ * A tag on the longest bare stub ("Bare pipe – sweating"): the status pill
+ * describes the insulated run, so the stub's own state is spelled out where it is.
+ */
+const tagPos = new THREE.Vector3()
+
+function StubTag({ zones, tag }: { zones: SimZone[]; tag: NonNullable<SimVisual['stubTag']> }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const stub = zones.filter((z) => z.kind === 'stub').sort((a, b) => b.z1 - b.z0 - (a.z1 - a.z0) || b.z1 - a.z1)[0]
+  if (!stub) return null
+  // the top of a horizontal stub, or the open end of a vertical one (its frame's +z is up)
+  const pos: [number, number, number] = stub.vertical ? [0, 0, stub.z1] : [0, stub.box ? stub.box[1] : stub.radius, (stub.z0 + stub.z1) / 2]
+  const el = (
+    <Html
+      position={pos}
+      zIndexRange={[6, 0]}
+      style={{ pointerEvents: 'none' }}
+      // keep the whole tag on screen; its leader still points at the stub
+      calculatePosition={(obj, camera, size) => {
+        const p = tagPos.setFromMatrixPosition(obj.matrixWorld).project(camera)
+        const x = ((p.x + 1) / 2) * size.width
+        const t = ref.current
+        if (t) {
+          const w = t.offsetWidth
+          const dx = Math.min(Math.max(-w / 2, 8 - x), size.width - 8 - w - x)
+          t.style.setProperty('--dx', `${dx}px`)
+          t.style.setProperty('--ax', `${-dx}px`)
+        }
+        return [x, ((1 - p.y) / 2) * size.height]
+      }}
+    >
+      <div ref={ref} className={`stub-tag ${tag.tone}`}>{tag.text}</div>
+    </Html>
+  )
+  return stub.matrix ? <group matrix={stub.matrix} matrixAutoUpdate={false}>{el}</group> : el
+}
+
 const LAYER_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
   straight: { cam: [1.32, 0.42, 1.36], target: [0.42, -0.04, 0] },
   elbow: { cam: [1.6, 1.0, 1.9], target: [0.12, 0.42, 0] },
@@ -269,12 +314,15 @@ function applyFov(camera: THREE.PerspectiveCamera) {
 
 type Preset = { cam: [number, number, number]; target: [number, number, number] }
 
+/** Phones: straight runs are viewed more along the run (from the cut end) than the landscape presets. */
+const PHONE_RUN_DIR = new THREE.Vector3(1.9, 0.8, 1.05)
+
 /**
  * Exploded and section views are framed from the model's size: the lifted
  * stack grows with pipe size, and the section face should fill the frame
  * with room on the right for its ring labels.
  */
-function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.PerspectiveCamera, screen: { w: number; h: number; left: number; right: number }): Preset | null {
+function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.PerspectiveCamera, screen: { w: number; h: number; left: number; right: number; top: number; bottom: number }): Preset | null {
   const R = asm.outerRadius
   const half = (asm.zMax - asm.zMin) / 2 + 0.1 // + pipe stub
   let dir: THREE.Vector3
@@ -299,7 +347,9 @@ function fitPreset(view: AssemblyParams['view'], asm: Assembly, camera: THREE.Pe
   const openL = (screen.left / screen.w) * 2 - 1
   const openR = 1 - (screen.right / screen.w) * 2
   const modelR = openR - (openR - openL) * labelRoom
-  return fitBox(camera, box, dir, { l: openL, r: modelR, b: -0.82, t: 0.8 }, fill)
+  const b = Math.max(-0.82, (2 * screen.bottom) / screen.h - 1)
+  const t = Math.min(0.8, 1 - (2 * screen.top) / screen.h)
+  return fitBox(camera, box, dir, { l: openL, r: modelR, b, t }, fill)
 }
 
 /** Camera along `dir` that just fits `box` inside the NDC rectangle `want` (× fill). */
@@ -369,12 +419,31 @@ function fitCompare(component: AssemblyParams['component'], asm: Assembly, camer
 }
 
 /** Frames the assembly when the component or view changes (URL cam/tgt override for screenshots). */
-function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0, zoom = 1, frameRadius }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight' | 'frameRadius'> & { asm: Assembly; zoom?: number }) {
+function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, insetRight = 0, insetTop = 0, insetBottom = 0, zoom = 1, frameRadius, mobile, story, resetKey = 0 }: Pick<ViewerProps, 'component' | 'view' | 'stage' | 'cam' | 'target' | 'insetLeft' | 'insetRight' | 'insetTop' | 'insetBottom' | 'frameRadius' | 'mobile' | 'resetKey'> & {
+  asm: Assembly
+  zoom?: number
+  /** Simulator: frame the cut end and bare stub, where the effects tell the story. */
+  story?: boolean
+}) {
   const camera = useThree((s) => s.camera)
   const size = useThree((s) => s.size)
   const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null
   const fit = view === 'exploded' || view === 'section'
   const compare = frameRadius !== undefined && !cam && (view === 'cutaway' || view === 'installed')
+  /** The open area in NDC: the given rectangle, kept clear of panels, bars and controls. */
+  const open = (l: number, r: number, b: number, t: number) => ({
+    l: Math.max(l, (insetLeft / size.width) * 2 - 1),
+    r: Math.min(r, 1 - (insetRight / size.width) * 2),
+    b: Math.max(b, (2 * insetBottom) / size.height - 1),
+    t: Math.min(t, 1 - (2 * insetTop) / size.height),
+  })
+  const aimAt = (p: Preset) => {
+    camera.position.set(...p.cam)
+    if (controls) {
+      controls.target.set(...p.target)
+      controls.update()
+    }
+  }
   useEffect(() => {
     if (!compare) return
     const pc = camera as THREE.PerspectiveCamera
@@ -382,13 +451,8 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     pc.userData.baseFov = 30
     pc.aspect = size.width / size.height
     applyFov(pc)
-    const v = fitCompare(component, asm, pc, frameRadius!)
-    camera.position.set(...v.cam)
-    if (controls) {
-      controls.target.set(...v.target)
-      controls.update()
-    }
-  }, [compare, component, view, camera, controls, size.width, size.height, frameRadius, asm.zMin, asm.zMax, asm.yMax]) // eslint-disable-line react-hooks/exhaustive-deps
+    aimAt(fitCompare(component, asm, pc, frameRadius!))
+  }, [compare, component, view, camera, controls, size.width, size.height, frameRadius, asm.zMin, asm.zMax, asm.yMax, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
   // ducts span a wide range of sizes: frame the whole run into the open area
   const duct = !!asm.stands && !compare && !cam
   useEffect(() => {
@@ -403,23 +467,42 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     const half = (asm.zMax - asm.zMin) / 2
     const R = asm.outerRadius
     const box = new THREE.Box3(new THREE.Vector3(-half, asm.stands!.bottomY, -R), new THREE.Vector3(half, asm.yMax + Math.max(0.05, 0.5 * R), R))
-    const openL = (insetLeft / size.width) * 2 - 1
-    const openR = 1 - (insetRight / size.width) * 2
-    const p = fitBox(pc, box, dir, { l: openL, r: openR, b: -0.72, t: 0.7 }, 0.9)
-    camera.position.set(...p.cam)
-    if (controls) {
-      controls.target.set(...p.target)
-      controls.update()
-    }
-  }, [duct, camera, controls, size.width, size.height, insetLeft, insetRight, asm.zMax, asm.yMax, asm.outerRadius, view]) // eslint-disable-line react-hooks/exhaustive-deps
+    aimAt(fitBox(pc, box, dir, open(-1, 1, -0.72, 0.7), 0.9))
+  }, [duct, camera, controls, size.width, size.height, insetLeft, insetRight, insetTop, insetBottom, asm.zMax, asm.yMax, asm.outerRadius, view, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Phones: no side panels, but bars above and controls below, and a tall
+  // narrow view. Fit the model into the open band between them.
+  const phone = !!mobile && !compare && !duct && !cam && stage !== 'room' && (view === 'cutaway' || view === 'installed')
   useEffect(() => {
-    if (compare || duct) return
+    if (!phone) return
+    const pc = camera as THREE.PerspectiveCamera
+    pc.userData.fit = true
+    pc.userData.baseFov = 30
+    pc.aspect = size.width / size.height
+    applyFov(pc)
+    const v = VIEWS[component]
+    // a tall narrow screen fits a straight run better seen more along its length, from the cut end
+    const dir = (component === 'straight' ? PHONE_RUN_DIR.clone() : new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target))).normalize()
+    const R = asm.outerRadius
+    const half = (asm.zMax - asm.zMin) / 2
+    const rise = story ? Math.max(0.05, 0.5 * R) : 0 // heat waves and arrows above the pipe
+    // a straight run in the simulator: its last stretch, the cut end and the bare stub;
+    // in the library, the whole run with both stubs
+    const box = component === 'straight'
+      ? new THREE.Box3(
+        new THREE.Vector3(story ? half - Math.min(2 * half, Math.max(0.55, 10 * R)) : -half - 5 * IN, -R, -R),
+        new THREE.Vector3(half + 7 * IN, R + rise, R),
+      )
+      : new THREE.Box3(new THREE.Vector3(-half, -R, -R), new THREE.Vector3(half, Math.max(asm.yMax, R) + rise, R))
+    aimAt(fitBox(pc, box, dir, open(-0.92, 0.92, -0.9, 0.9), 0.94))
+  }, [phone, story, component, view, camera, controls, size.width, size.height, insetTop, insetBottom, asm.zMin, asm.zMax, asm.yMax, asm.outerRadius, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (compare || duct || phone) return
     const room = stage === 'room' && view !== 'layers' && !fit
     const pc = camera as THREE.PerspectiveCamera
     pc.userData.fit = false
     pc.userData.baseFov = room ? 52 : 30
     applyFov(pc)
-    const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight })
+    const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight, top: insetTop, bottom: insetBottom })
       ?? (room ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
     camera.position.set(...(cam ?? v.cam))
     let aim = target ?? v.target
@@ -434,7 +517,7 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
       controls.target.set(...aim)
       controls.update()
     }
-  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '', zoom]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '', zoom, phone, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
 
@@ -581,7 +664,8 @@ export function Viewer(props: ViewerProps) {
       <RendererSetup mobile={props.mobile} coverage={props.coverage} />
       <CameraRig
         component={props.component} view={props.view} stage={props.stage} cam={props.cam} target={props.target} asm={asm}
-        insetLeft={props.insetLeft} insetRight={props.insetRight} frameRadius={props.frameRadius}
+        insetLeft={props.insetLeft} insetRight={props.insetRight} insetTop={props.insetTop} insetBottom={props.insetBottom}
+        frameRadius={props.frameRadius} mobile={props.mobile} story={!!props.sim} resetKey={props.resetKey}
         zoom={props.sim ? Math.round(Math.min(Math.max((asm.outerRadius + 0.07) / 0.18, 0.62), 1.1) * 100) / 100 + 0.001 : 1}
       />
       {props.sync && <SyncCamera group={props.sync.group} id={props.sync.id} />}
@@ -642,6 +726,7 @@ export function Viewer(props: ViewerProps) {
         minDistance={0.2}
         maxDistance={4.5}
         maxPolarAngle={props.stage === 'room' ? Math.PI * 0.95 : Math.PI * 0.53}
+        onStart={props.onUserMove}
       />
       <PhotoMode
         active={!!props.photo}

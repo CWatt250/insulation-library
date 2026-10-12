@@ -294,7 +294,9 @@ button.primary:disabled { opacity: 0.45; cursor: default; }
 .disclaimer-strong { padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); color: #fde68a !important; }
 
 /* ------------------------------------------------------------------ mobile */
-.sim.is-mobile { position: fixed; inset: 0; --sheet-collapsed: 196px; }
+/* collapsed, the sheet is just its tabs; presets show once it is opened */
+.sim.is-mobile { position: fixed; inset: 0; --sheet-collapsed: calc(72px + env(safe-area-inset-bottom)); }
+.sim-sheet:not(.open) .sheet-presets { display: none; }
 .sim-mobile-stage { position: absolute; left: 0; right: 0; top: 0; height: calc(100dvh - var(--sheet-collapsed) + 14px); }
 .sim.is-mobile .status-pill { top: 64px; font-size: 11.5px; max-width: calc(100% - 24px); overflow: hidden; }
 .sim.is-mobile .sim-toolbar-wrap { bottom: 20px; left: 8px; right: 8px; transform: none; display: flex; justify-content: center; }
@@ -577,3 +579,50 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 .code-chips button { font-weight: 600; }
 .code-chips button.on { background: color-mix(in srgb, var(--acc) 22%, transparent); border-color: var(--acc); color: var(--ink); }
 .big-select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--chip-line); background: var(--chip); color: var(--ink); font: inherit; font-size: 16px; }
+
+/* ------------------------------------------------------------ More menu */
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute; right: 0; bottom: calc(100% + 10px); z-index: 40; min-width: 240px;
+  display: flex; flex-direction: column; padding: 6px; border-radius: 14px;
+  background: rgba(24, 25, 28, 0.97); border: 1px solid var(--line); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+}
+.menu button {
+  display: flex; align-items: center; gap: 11px; padding: 11px 10px; border: 0; border-radius: 9px;
+  background: none; color: var(--ink); font: inherit; font-size: 14px; font-weight: 550; text-align: left; cursor: pointer;
+}
+.menu button:hover, .menu button:active { background: rgba(255, 255, 255, 0.07); }
+.menu button:disabled { opacity: 0.45; cursor: not-allowed; }
+.menu button svg { flex: none; color: var(--ink-2); }
+.menu .menu-label { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.menu small { font-size: 11px; font-weight: 500; color: var(--ink-3); line-height: 1.3; }
+.menu .menu-check { flex: none; width: 18px; display: grid; place-items: center; color: var(--acc); }
+.menu .menu-check svg { color: var(--acc); }
+
+/* ------------------------------------------------------------ Reset view */
+.reset-view {
+  position: absolute; top: 66px; right: 12px; z-index: 5;
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: rgba(20, 21, 23, 0.85); backdrop-filter: blur(10px);
+  color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.sim-app.subnav .sim-overlay .reset-view { top: 108px; }
+.sim.is-mobile .reset-view { top: 107px; right: 54px; }
+.sim-app.subnav .sim.is-mobile .reset-view { top: 143px; }
+.reset-view.library { right: calc(372px + 14px); top: 14px; }
+.is-mobile .reset-view.library { right: 12px; top: 70px; }
+
+/* ------------------------------------------------- bare stub tag (in 3D) */
+.stub-tag {
+  position: relative; transform: translate(var(--dx, -50%), calc(-100% - 12px));
+  padding: 4px 9px; border-radius: 999px; white-space: nowrap;
+  font-size: 11.5px; font-weight: 650; line-height: 1.2; color: var(--ink);
+  background: rgba(18, 19, 21, 0.84); border: 1px solid rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px);
+}
+.stub-tag::after {
+  content: ''; position: absolute; left: var(--ax, 50%); top: 100%; width: 1px; height: 11px; background: rgba(255, 255, 255, 0.45);
+}
+.stub-tag.wet { border-color: #2dd4bf; color: #a7f3e9; }
+.stub-tag.frost { border-color: #bae6fd; color: #e0f2fe; }
+.stub-tag.hot { border-color: #ff8a3d; color: #ffd2ad; }
+.stub-tag.dry { color: var(--ink-2); }

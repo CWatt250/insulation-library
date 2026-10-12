@@ -127,6 +127,9 @@ def lin_to_srgb(c):
     return np.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - 0.055)
 
 
+WRITTEN = []  # sets saved this run; half_textures.py makes their phone copies
+
+
 def save(name, albedo_lin, normal, rough, tile_mm, scales):
     """Write WebP maps (albedo sRGB, OpenGL normal, roughness) and record the tile size."""
     d = OUT / name
@@ -135,6 +138,7 @@ def save(name, albedo_lin, normal, rough, tile_mm, scales):
     Image.fromarray(((normal * 0.5 + 0.5) * 255 + 0.5).astype(np.uint8)).save(d / "normal.webp", "WEBP", quality=92, method=6)
     Image.fromarray((np.clip(rough, 0, 1) * 255 + 0.5).astype(np.uint8)).save(d / "rough.webp", "WEBP", quality=85, method=6)
     scales[name] = tile_mm
+    WRITTEN.append(name)
     print(f"  {name}: {tile_mm} mm tile")
 
 
@@ -890,3 +894,5 @@ if __name__ == "__main__":
         ALL[w](scales)
     SCALES.parent.mkdir(parents=True, exist_ok=True)
     SCALES.write_text(json.dumps(scales, indent=2, sort_keys=True) + "\n")
+    from half_textures import run as half
+    half(WRITTEN)

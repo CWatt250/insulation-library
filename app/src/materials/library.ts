@@ -13,6 +13,13 @@ export type { InsulationId, JacketId }
 
 const loader = new THREE.TextureLoader()
 const cache = new Map<string, THREE.Texture>()
+
+/**
+ * Phones (App's MOBILE_QUERY breakpoint) load the half-resolution copies in
+ * tex-half/ (tools/half_textures.py): the same look at phone screen sizes for a
+ * quarter of the download.
+ */
+export const TEXTURE_DIR = typeof matchMedia === 'function' && matchMedia('(max-width: 860px)').matches ? 'tex-half' : 'tex'
 let maxAniso = 8
 
 export function setMaxAnisotropy(n: number) {
@@ -27,7 +34,7 @@ function tex(name: string, map: 'albedo.webp' | 'normal.webp' | 'rough.webp') {
   const key = `${name}/${map}`
   let t = cache.get(key)
   if (!t) {
-    t = loader.load(`${import.meta.env.BASE_URL}tex/${key}`)
+    t = loader.load(`${import.meta.env.BASE_URL}${TEXTURE_DIR}/${key}`)
     t.wrapS = t.wrapT = THREE.RepeatWrapping
     t.anisotropy = maxAniso
     if (map === 'albedo.webp') t.colorSpace = THREE.SRGBColorSpace
@@ -119,15 +126,6 @@ const steelBore = () => plain({ color: '#2a2622', roughness: 0.85, metalness: 0.
 const steelEnd = () => pbr('steel-millscale', { metalness: 0.6, color: '#c3c6c9', roughness: 0.5 })
 const pvc = () => pbr('pvc-white', { clearcoat: 0.3, clearcoatRoughness: 0.25 })
 
-function insulation(id: InsulationId) {
-  const v = INSULATION[id]
-  return {
-    skin: pbr(v.skin.tex, v.skin.params),
-    cut: pbr(v.cut.tex, v.cut.params),
-    bore: v.bore ? pbr(v.bore.tex, v.bore.params) : null,
-  }
-}
-
 function jacket(id: JacketId) {
   // Polyfilm moisture barrier shows light blue at cut edges of metal jacketing.
   const polyfilm = plain({ color: '#a9cfe6', roughness: 0.5 })
@@ -172,54 +170,81 @@ function jacket(id: JacketId) {
 const bandMat = () =>
   pbr('ss-2b', { metalness: 1, roughness: 0.85, color: new THREE.Color(1.15, 1.15, 1.15) })
 
-export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial | 'galvanized' = 'steel'): THREE.Material[] {
-  const i = insulation(ins)
-  const j = jacket(jac)
-  const slots: THREE.Material[] = new Array(SLOT_COUNT)
-  slots[Slot.PipeOuter] = pipe === 'galvanized' ? galvOuter() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()
-  slots[Slot.PipeEnd] = pipe === 'galvanized' ? galvEdge() : pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()
-  slots[Slot.PipeBore] = pipe === 'galvanized' ? galvInner() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()
-  slots[Slot.DuctFacing] = pbr('foil-scrim', { metalness: 0.65, normalStrength: 1.2, roughness: 1.15, color: '#e6e8ea' })
-  slots[Slot.InsSkin] = i.skin
-  slots[Slot.InsCut] = i.cut
-  slots[Slot.InsBore] = i.bore ?? i.skin
-  slots[Slot.JacketOuter] = j.outer
-  slots[Slot.JacketInner] = j.inner
-  slots[Slot.JacketEdge] = j.edge
-  slots[Slot.Band] = bandMat()
-  slots[Slot.Cover] = pvc()
-  slots[Slot.Pressed] =
-    jac === 'ss'
-      ? pbr('ss-2b', { metalness: 1, roughness: 0.8 })
-      : pbr('alu-smooth', { metalness: 1, roughness: 0.75, clearcoat: 0.6, clearcoatRoughness: 0.12, color: '#f4f2ec' })
-  slots[Slot.Barrier] = new THREE.MeshPhysicalMaterial({ color: '#8fbfe0', roughness: 0.35, clearcoat: 0.4, vertexColors: true })
-  slots[Slot.ValveBody] = pbr('valve-paint', { metalness: 0.25 })
-  slots[Slot.Handwheel] = pbr('valve-paint', { metalness: 0.2, color: '#5d8f6a', roughness: 0.9 })
-  slots[Slot.Bolt] = pbr('steel-millscale', { metalness: 0.8, color: '#6c6f73', roughness: 0.8 })
-  slots[Slot.Stem] = pbr('ss-2b', { metalness: 1, roughness: 0.45 })
-  slots[Slot.Fabric] = pbr('blanket-fabric', { color: '#9a9ea1', sheen: 0.15, sheenColor: '#b9bdc0', sheenRoughness: 0.7 })
-  slots[Slot.FabricInner] = pbr('blanket-fabric', { color: '#d8cfb8', roughness: 1.2 })
-  slots[Slot.BlanketCore] = pbr('blanket-mat', { sheen: 0.2, sheenColor: '#ffffff' })
-  slots[Slot.Hardware] = pbr('ss-2b', { metalness: 0.9, roughness: 1.6, color: '#c9ccd0' })
-  slots[Slot.Screw] = pbr('ss-2b', { metalness: 1, roughness: 1.5, color: '#8c9095' })
-  slots[Slot.Tape] = jac === 'fsk' ? pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }) : j.outer
-  const f = jacket('asj')
-  slots[Slot.Facing] = f.outer
-  slots[Slot.FacingInner] = f.inner
-  slots[Slot.FacingEdge] = f.edge
-  slots[Slot.FacingTape] = pbr('asj', { normalStrength: 0.7 })
+/** The materials for one assembly, made (and their textures fetched) only when a part first uses one. */
+export interface Slots {
+  get(slot: number): THREE.Material
+  dispose(): void
+}
+
+const once = <T,>(make: () => T) => {
+  let v: T | undefined
+  return () => (v ??= make())
+}
+const SLOT_NAME = Object.fromEntries(Object.entries(Slot).map(([name, i]) => [i, name])) as Record<number, string>
+
+export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial | 'galvanized' = 'steel'): Slots {
+  const v = INSULATION[ins]
+  const skin = once(() => pbr(v.skin.tex, v.skin.params))
+  const cut = once(() => pbr(v.cut.tex, v.cut.params))
+  const bore = once(() => (v.bore ? pbr(v.bore.tex, v.bore.params) : skin()))
+  const j = once(() => jacket(jac))
+  const f = once(() => jacket('asj'))
+  const pvcCover = once(pvc)
   // the vapor-retarder membrane as made: white (Insulrap 30-NG), silver foil (PITTWRAP IW50 AL) or black coating
-  const look = INSULATION[ins].vapor.membrane?.look ?? 'black'
-  slots[Slot.Vapor] = look === 'foil'
-    ? pbr('foil-scrim', { metalness: 1, normalStrength: 1.2, roughness: 0.9 })
-    : look === 'white'
-      ? pbr('pvc-white', { color: '#e9e8e3', roughness: 0.85, clearcoat: 0.1, normalStrength: 0.8 })
-      : pbr('pvc-white', { color: '#2c2e30', roughness: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.35, normalStrength: 0.6 })
-  slots[Slot.VaporEdge] = plain({ color: look === 'white' ? '#d8d6cf' : look === 'foil' ? '#2a2a28' : '#242527', roughness: 0.6 })
-  Object.entries(Slot).forEach(([name, i]) => {
-    if (!slots[i].name) slots[i].name = name
-  })
-  return slots
+  const look = v.vapor.membrane?.look ?? 'black'
+  const make: Record<number, () => THREE.Material> = {
+    [Slot.PipeOuter]: () => (pipe === 'galvanized' ? galvOuter() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()),
+    [Slot.PipeEnd]: () => (pipe === 'galvanized' ? galvEdge() : pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()),
+    [Slot.PipeBore]: () => (pipe === 'galvanized' ? galvInner() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()),
+    [Slot.DuctFacing]: () => pbr('foil-scrim', { metalness: 0.65, normalStrength: 1.2, roughness: 1.15, color: '#e6e8ea' }),
+    [Slot.InsSkin]: skin,
+    [Slot.InsCut]: cut,
+    [Slot.InsBore]: bore,
+    [Slot.JacketOuter]: () => j().outer,
+    [Slot.JacketInner]: () => j().inner,
+    [Slot.JacketEdge]: () => j().edge,
+    [Slot.Band]: bandMat,
+    [Slot.Cover]: pvcCover,
+    [Slot.Pressed]: () => (jac === 'ss'
+      ? pbr('ss-2b', { metalness: 1, roughness: 0.8 })
+      : pbr('alu-smooth', { metalness: 1, roughness: 0.75, clearcoat: 0.6, clearcoatRoughness: 0.12, color: '#f4f2ec' })),
+    [Slot.Barrier]: () => new THREE.MeshPhysicalMaterial({ color: '#8fbfe0', roughness: 0.35, clearcoat: 0.4, vertexColors: true }),
+    [Slot.ValveBody]: () => pbr('valve-paint', { metalness: 0.25 }),
+    [Slot.Handwheel]: () => pbr('valve-paint', { metalness: 0.2, color: '#5d8f6a', roughness: 0.9 }),
+    [Slot.Bolt]: () => pbr('steel-millscale', { metalness: 0.8, color: '#6c6f73', roughness: 0.8 }),
+    [Slot.Stem]: () => pbr('ss-2b', { metalness: 1, roughness: 0.45 }),
+    [Slot.Fabric]: () => pbr('blanket-fabric', { color: '#9a9ea1', sheen: 0.15, sheenColor: '#b9bdc0', sheenRoughness: 0.7 }),
+    [Slot.FabricInner]: () => pbr('blanket-fabric', { color: '#d8cfb8', roughness: 1.2 }),
+    [Slot.BlanketCore]: () => pbr('blanket-mat', { sheen: 0.2, sheenColor: '#ffffff' }),
+    [Slot.Hardware]: () => pbr('ss-2b', { metalness: 0.9, roughness: 1.6, color: '#c9ccd0' }),
+    [Slot.Screw]: () => pbr('ss-2b', { metalness: 1, roughness: 1.5, color: '#8c9095' }),
+    [Slot.Tape]: () => (jac === 'fsk' ? pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }) : j().outer),
+    [Slot.Facing]: () => f().outer,
+    [Slot.FacingInner]: () => f().inner,
+    [Slot.FacingEdge]: () => f().edge,
+    [Slot.FacingTape]: () => pbr('asj', { normalStrength: 0.7 }),
+    [Slot.Vapor]: () => (look === 'foil'
+      ? pbr('foil-scrim', { metalness: 1, normalStrength: 1.2, roughness: 0.9 })
+      : look === 'white'
+        ? pbr('pvc-white', { color: '#e9e8e3', roughness: 0.85, clearcoat: 0.1, normalStrength: 0.8 })
+        : pbr('pvc-white', { color: '#2c2e30', roughness: 0.7, clearcoat: 0.25, clearcoatRoughness: 0.35, normalStrength: 0.6 })),
+    [Slot.VaporEdge]: () => plain({ color: look === 'white' ? '#d8d6cf' : look === 'foil' ? '#2a2a28' : '#242527', roughness: 0.6 }),
+  }
+  const made = new Map<number, THREE.Material>()
+  return {
+    get(slot) {
+      let m = made.get(slot)
+      if (!m) {
+        m = make[slot]()
+        if (!m.name) m.name = SLOT_NAME[slot]
+        made.set(slot, m)
+      }
+      return m
+    },
+    dispose() {
+      new Set(made.values()).forEach((m) => m.dispose())
+    },
+  }
 }
 
 /** Matte black powder-coated steel for the display cradles. */

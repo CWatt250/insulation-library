@@ -44,6 +44,8 @@ export interface SimVisual extends ZoneState {
   fitting: ZoneState | null
   /** The fitting is left uncovered. */
   fittingBare: boolean
+  /** On-screen tag on the bare stub, so its state reads apart from the insulated run's. */
+  stubTag?: { text: string; tone: 'hot' | 'wet' | 'frost' | 'dry' }
 }
 
 export interface RunExtent {

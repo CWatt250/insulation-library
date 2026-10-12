@@ -1,1 +1,10 @@
 html, body, #root { margin: 0; height: 100%; background: #1a1b1d; overflow: hidden; }
+
+/* one-off notices (offline.ts) */
+.toast {
+  position: fixed; left: 50%; bottom: calc(150px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 100;
+  padding: 10px 16px; border-radius: 999px; background: rgba(24, 25, 28, 0.95); border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e8eaed; font: 600 13px/1.2 system-ui, sans-serif; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.4s;
+}
+.toast.out { opacity: 0; }

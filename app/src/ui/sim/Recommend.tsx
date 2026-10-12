@@ -21,6 +21,7 @@ import { DuctGuide } from './DuctGuide'
 import { DuctSize, WsecInputs } from './DuctSetup'
 import { ReportButton } from './ReportButton'
 import { CodeChips } from './CodeChips'
+import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
 
 /**
  * Recommendations: answer a few questions — pipe or duct, what kind, the
@@ -31,10 +32,21 @@ import { CodeChips } from './CodeChips'
  */
 
 export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: UnitSystem; onOpen: (mode: SimMode, state: SimState) => void }) {
-  const [a, setA] = useState<Answers>(START)
+  // open on the energy code and county last picked (Washington's until then)
+  const [a, setA] = useState<Answers>(() => {
+    const c = loadCodes()
+    return { ...START, pipeCode: c.pipeCodeBasis, duct: { ...START.duct, ductCodeBasis: c.ductCodeBasis, waCounty: c.waCounty } }
+  })
   const [guide, setGuide] = useState(false)
-  const set = (p: Partial<Answers>) => setA((prev) => ({ ...prev, ...p }))
-  const setDuct = (p: Partial<SimState>) => setA((prev) => ({ ...prev, duct: { ...prev.duct, ...(p as Partial<Answers['duct']>) } }))
+  const set = (p: Partial<Answers>) => {
+    if (p.pipeCode) saveCodes({ pipeCodeBasis: p.pipeCode })
+    setA((prev) => ({ ...prev, ...p }))
+  }
+  const setDuct = (p: Partial<SimState>) => {
+    const codes = codesIn(p)
+    if (codes) saveCodes(codes)
+    setA((prev) => ({ ...prev, duct: { ...prev.duct, ...(p as Partial<Answers['duct']>) } }))
+  }
   const sync = useMemo(() => new CamSync(), [])
   const mode = modeFor(a)
   const T = (f: number) => fmt.temp(f, units)

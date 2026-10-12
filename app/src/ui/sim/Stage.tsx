@@ -8,6 +8,7 @@ import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { StatusChip } from './Status'
 import { pipeSpec } from '../../data/pipes'
 import { installedIn } from '../../sim/duct'
+import { noun } from '../../sim/system'
 
 export interface PanelSpec {
   key: string
@@ -28,6 +29,22 @@ export interface StageOpts {
   stage: 'studio' | 'plant'
   mobile: boolean
   units: UnitSystem
+  /** Bump to frame the model again (Reset view). */
+  resetKey?: number
+  /** The viewer moved the camera (shows Reset view). */
+  onUserMove?: () => void
+}
+
+/** Pixels of the stage covered by panels (desktop) or by bars and controls (phone). */
+export type StageInset = { left: number; right: number; top?: number; bottom?: number }
+
+/** What the bare stub is doing, in words: the status pill speaks for the insulated run. */
+function stubTag(s: SimState, bare: Side, mode: SimMode, units: UnitSystem): SimVisual['stubTag'] {
+  const what = `Bare ${noun(s)}`
+  if (mode === 'hot') return { text: `${what} · ${fmt.temp(bare.result.surfaceF, units)}`, tone: 'hot' }
+  const m = bare.moisture
+  if (!m.condensing) return { text: `${what} – dry`, tone: 'dry' }
+  return m.frost ? { text: `${what} – frosting`, tone: 'frost' } : { text: `${what} – sweating`, tone: 'wet' }
 }
 
 /** What one side of the calculation looks like on screen. */
@@ -72,7 +89,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   bare: Side
   opts: StageOpts
   sync?: { group: CamSync; id: number }
-  inset: { left: number; right: number }
+  inset: StageInset
   coverage?: number
   frameRadius?: number
 }) {
@@ -90,7 +107,9 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
       t: installedIn(s.ductIns, thickness) * 0.0254, insulation: s.ductIns === 'elastomeric' ? 'elastomeric' as const : 'wrap' as const,
     }
     : undefined
-  const sim = useMemo(() => visualFor(panel.side, bare, mode, thermal, fittingBare), [panel.side, bare, mode, thermal, fittingBare])
+  // side-by-side panes carry their own labels; a single view tags the stub
+  const tag = frameRadius === undefined ? stubTag(s, bare, mode, opts.units) : undefined
+  const sim = useMemo(() => ({ ...visualFor(panel.side, bare, mode, thermal, fittingBare), stubTag: tag }), [panel.side, bare, mode, thermal, fittingBare, tag?.text, tag?.tone]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Viewer
       duct={ductProps}
@@ -109,6 +128,10 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
       sync={sync}
       insetLeft={inset.left}
       insetRight={inset.right}
+      insetTop={inset.top}
+      insetBottom={inset.bottom}
+      resetKey={opts.resetKey}
+      onUserMove={opts.onUserMove}
       coverage={coverage}
       frameRadius={frameRadius}
       autoRotate={opts.autoRotate}
@@ -123,7 +146,7 @@ export function Stage({ s, mode, panels, bare, opts, inset, sync }: {
   /** The bare-pipe case, for the pipe stubs past the insulation. */
   bare: Side
   opts: StageOpts
-  inset: { left: number; right: number }
+  inset: StageInset
   sync: CamSync
 }) {
   if (panels.length === 1) {

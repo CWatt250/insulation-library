@@ -117,7 +117,7 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Save as report (PDF):** Prepared by, Prepared for and Project fields; the report leads with the recommendation, its basis, the inputs, notes and alternatives, and reads on a phone.
 - **Code:** `app/src/sim/recommend.ts`, tested in `recommend.test.ts`.
 
-**Pipe energy codes:** choose the code in Setup, in Results (next to the code minimum) or in Recommend.
+**Pipe energy codes:** choose the code in Setup, in Results (next to the code minimum) or in Recommend. The app opens on the Washington State Energy Code (King County) and then on whichever code and county were picked last on that device; every tab follows the latest pick (`app/src/sim/codePrefs.ts`). Engine defaults stay ASHRAE, so tests and shared files are unaffected.
 - **ASHRAE 90.1-2019:** Tables 6.8.3-1 and 6.8.3-2.
 - **IECC commercial:** 2021 Table C403.12.3; the same thicknesses as 90.1, except the 105–140°F conductivity range is 0.21–0.28.
 - **IECC residential:** R403.4 requires R-3 above 105°F or below 55°F. The pipe R-value is ro·ln(ro/ri)/k, the IECC 2024 Table C403.13.3(1) definition.
@@ -160,6 +160,14 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - `app/src/sim/data.test.ts` fails if one doesn't.
 - It is an educational / preliminary design tool, labelled as such in the app.
 
+## Phone and offline
+
+- **Framing:** on phones each tab fits its model between the bars at the top and the controls at the bottom (`useCovered` measures them), and refits when the bottom panel opens. Straight runs are seen more along the run, from the cut end. **Reset view** appears once the camera has been moved.
+- **Controls:** one row (Insulated/Bare, Installed/Cutaway, or Location guide on Ductwork) and a labelled **More** menu for Compare, Thermal, Present and Reset view. Preset cards show once the panel is opened.
+- **Bare stub tag:** the single view labels the bare stub ("Bare pipe – sweating", "Bare pipe · 250°F") from the engine's bare-pipe result, since the status pill describes the insulated run.
+- **Download:** materials are created, and their textures fetched, only when a part uses them. Phones load half-resolution copies from `app/public/tex-half/`.
+- **Install and offline:** a web app manifest and icons (`tools/gen_icons.py`) let it be added to the home screen. The service worker (`app/sw/sw.js`; `vite.config.ts` writes `dist/sw.js` with every built file and a content hash) saves the app on install; after the first view loads it saves every texture and lighting file the device uses, then says "Saved for offline use" once. Pages load from the network when it answers within 4 s, so a deploy shows straight away; a deploy re-downloads only files whose hash changed.
+
 ## Layout
 
 | Path | What |
@@ -172,6 +180,9 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 | `app/src/sim/` | Calculation engine, model/solvers, presets, emittance, sources, learn copy, tests |
 | `app/src/ui/sim/` | Simulator panels: setup, results, stage/compare, assumptions |
 | `tools/gen_textures.py` | Generates every procedural PBR texture into `app/public/tex/` |
+| `tools/half_textures.py` | Half-resolution phone copies into `app/public/tex-half/` (run by `gen_textures.py`) |
+| `tools/gen_icons.py` | Home-screen icons into `app/public/icons/` |
+| `app/sw/sw.js` | Offline service worker source (built into `dist/sw.js`) |
 | `tools/shot.mjs`, `tools/matrix.mjs` | Headless screenshots and a smoke test of every combination |
 | `tools/sim_shots.mjs` | Screenshots of each simulator mode (insulated, bare, thermal, compare); pass `390x844` for phone |
 | `tools/bing_images.mjs` | Finds reference photos |
@@ -185,6 +196,7 @@ cd app && npm install && npm run dev -- --port 5179
 python3 -m venv tools/.venv && tools/.venv/bin/pip install numpy scipy pillow
 tools/.venv/bin/python tools/gen_textures.py            # all
 tools/.venv/bin/python tools/gen_textures.py aluminum   # one group
+tools/.venv/bin/python tools/half_textures.py            # phone copies only (gen_textures.py runs this itself)
 ```
 
 `npm run build` produces a static site in `app/dist/`; `npm test` runs the engine and validation tests. Deep links: `?mode=hot|cold|condensate`, `&units=si`.

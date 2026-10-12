@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { CamSync } from '../../scene/Viewer'
 import { currentMaterial, materialLabel, materials, maxThickness, noun, stateForAny, type MaterialId } from '../../sim/system'
 import { evaluate, evaluateSide, physicsMode, recommend, thicknessOptions, type Goal } from '../../sim/model'
@@ -7,7 +7,7 @@ import { applyPreset, initialState, PRESETS, type Preset } from '../../sim/prese
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { refsFor } from '../../sim/sources'
-import { Icon, Segmented } from '../controls'
+import { Icon, MenuButton, Segmented, type MenuItem } from '../controls'
 import { ACCENT, PresetGrid, SetupPanel } from './SetupPanel'
 import { Learn, ResultsPanel, type Recs } from './ResultsPanel'
 import { Stage, thicknessTitle, type PanelSpec } from './Stage'
@@ -17,6 +17,10 @@ import { Presentation, type PresentStep } from './Presentation'
 import { CodeChip, SafetyChip, StatusChip } from './Status'
 import { DuctGuide } from './DuctGuide'
 import { QuickStart, useQuickStart } from './QuickStart'
+import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
+import { useCovered } from '../useCovered'
+
+const SIM_MODES: SimMode[] = ['hot', 'cold', 'condensate', 'duct']
 
 type Slot = 'bare' | 'current' | 'recommended' | number | `mat:${MaterialId}`
 
@@ -58,7 +62,9 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   onMode: (m: SimMode) => void
 }) {
   const [states, setStates] = useState<Record<SimMode, SimState>>(() => {
-    const st = { hot: initialState('hot'), cold: initialState('cold'), condensate: initialState('condensate'), duct: initialState('duct') }
+    // open on the energy code last picked (Washington's until then); a shared scenario keeps its own
+    const codes = loadCodes()
+    const st = Object.fromEntries(SIM_MODES.map((m) => [m, { ...initialState(m), ...codes }])) as Record<SimMode, SimState>
     if (share) st[share.mode] = share.state
     return st
   })
@@ -79,9 +85,28 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const help = useQuickStart(mode)
   const [guide, setGuide] = useState(() => mode === 'duct' && new URLSearchParams(location.search).get('guide') === '1')
   const sync = useMemo(() => new CamSync(), [])
+  // Reset view: shown once the camera has been moved, until the model is framed
+  // again (by the button, or by switching tab or view)
+  const [resetKey, setResetKey] = useState(0)
+  const framing = `${mode}-${view}-${compare}-${present}-${resetKey}`
+  const [movedIn, setMovedIn] = useState<string | null>(null)
+  const moved = movedIn === framing
+  const resetView = () => setResetKey((k) => k + 1)
+  // phones: frame the 3D between the bars above and the controls below
+  const stageRef = useRef<HTMLDivElement>(null)
+  const covered = useCovered(stageRef, '.modebar, .status-pill', '.sim-toolbar-wrap, .sim-sheet', `${mode}-${compare}`, mobile && !present)
 
   const s = states[mode]
-  const set = (patch: Partial<SimState>) => setStates((prev) => ({ ...prev, [mode]: { ...prev[mode], ...patch } }))
+  const set = (patch: Partial<SimState>) => {
+    // a code or county picked anywhere is remembered, and every tab follows it
+    const codes = codesIn(patch)
+    if (codes) saveCodes(codes)
+    setStates((prev) => {
+      const next = { ...prev, [mode]: { ...prev[mode], ...patch } }
+      if (codes) for (const m of SIM_MODES) if (m !== mode) next[m] = { ...next[m], ...codes }
+      return next
+    })
+  }
   const guideEl = guide && mode === 'duct' ? <DuctGuide s={s} set={set} onClose={() => setGuide(false)} /> : null
   const pickPreset = (p: Preset) => {
     setStates((prev) => ({ ...prev, [mode]: applyPreset(prev[mode], p) }))
@@ -154,23 +179,59 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     ...materials(s).filter((m) => m.id !== currentMaterial(s)).map((m) => ({ id: `mat:${m.id}`, label: `${m.label} (design)` })),
   ]
 
-  const toolbar = (
+  const thermalOff = s.system === 'duct' || s.component === 'elbow' || s.component === 'tee'
+  const thermalWhy = s.system === 'duct' ? 'Thermal view covers pipe; the duct faces are listed in Results' : s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined
+  const insBare = !compare && (
+    <Segmented<'ins' | 'bare'>
+      size="sm"
+      label="Insulated or bare"
+      value={bare ? 'bare' : 'ins'}
+      onChange={(v) => setBare(v === 'bare')}
+      options={[{ id: 'ins', label: 'Insulated' }, { id: 'bare', label: 'Bare' }]}
+    />
+  )
+  const guideBtn = mode === 'duct' && (
+    <button className="tool guide-tool" onClick={() => setGuide(true)} title="See where duct locations sit in a building and what each requires">
+      <Icon name="map" size={16} /> <span>Location guide</span>
+    </button>
+  )
+  const viewSeg = (
+    <Segmented<'installed' | 'cutaway'>
+      size="sm"
+      label="View"
+      value={view}
+      onChange={setView}
+      options={[{ id: 'installed', label: 'Installed' }, { id: 'cutaway', label: 'Cutaway' }]}
+    />
+  )
+  const startPresent = () => { setStep(0); setPresent(true) }
+
+  const toolbar = mobile ? (
+    // phones: one row; the rest is a tap away under More (Location guide stays out on Ductwork)
     <div className="sim-toolbar" role="toolbar" aria-label="View">
-      {!compare && (
-        <Segmented<'ins' | 'bare'>
-          size="sm"
-          label="Insulated or bare"
-          value={bare ? 'bare' : 'ins'}
-          onChange={(v) => setBare(v === 'bare')}
-          options={[{ id: 'ins', label: 'Insulated' }, { id: 'bare', label: 'Bare' }]}
-        />
-      )}
-      {mode === 'duct' && (
-        <button className="tool guide-tool" onClick={() => setGuide(true)} title="See where duct locations sit in a building and what each requires">
-          <Icon name="map" size={16} /> <span>Location guide</span>
-        </button>
-      )}
-      <button className="tool present-btn" onClick={() => { setStep(0); setPresent(true) }} title="Full-screen walkthrough for a customer: bare, insulated, side by side">
+      {insBare}
+      {mode === 'duct' ? guideBtn : viewSeg}
+      <MenuButton
+        label="More"
+        items={[
+          ...(mode === 'duct'
+            ? [
+              { id: 'cutaway', label: 'Cutaway view', icon: 'cut', kind: 'radio', checked: view === 'cutaway', onSelect: () => setView('cutaway') },
+              { id: 'installed', label: 'Installed view', icon: 'pipe', kind: 'radio', checked: view === 'installed', onSelect: () => setView('installed') },
+            ] satisfies MenuItem[]
+            : []),
+          { id: 'compare', label: 'Compare side by side', icon: 'compare', kind: 'check', checked: compare, onSelect: () => setCompare(!compare) },
+          ...(mode === 'duct' ? [] : [{ id: 'thermal', label: 'Thermal view', icon: 'thermo', kind: 'check', checked: thermal, disabled: thermalOff, hint: thermalOff ? thermalWhy : undefined, onSelect: () => setThermal(!thermal) } satisfies MenuItem]),
+          { id: 'present', label: 'Present to a customer', icon: 'spark', onSelect: startPresent },
+          { id: 'reset', label: 'Reset view', icon: 'reset', onSelect: resetView },
+        ]}
+      />
+    </div>
+  ) : (
+    <div className="sim-toolbar" role="toolbar" aria-label="View">
+      {insBare}
+      {guideBtn}
+      <button className="tool present-btn" onClick={startPresent} title="Full-screen walkthrough for a customer: bare, insulated, side by side">
         <Icon name="spark" size={16} /> <span>Present</span>
       </button>
       <button className={`tool ${compare ? 'on' : ''}`} aria-pressed={compare} onClick={() => setCompare(!compare)} title="Show two or three versions side by side">
@@ -178,19 +239,19 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       </button>
       {mode !== 'duct' && <button
         className={`tool ${thermal ? 'on' : ''}`} aria-pressed={thermal} onClick={() => setThermal(!thermal)}
-        disabled={s.system === 'duct' || s.component === 'elbow' || s.component === 'tee'}
-        title={s.system === 'duct' ? 'Thermal view covers pipe; the duct faces are listed in Results' : s.component === 'elbow' || s.component === 'tee' ? 'Thermal view covers straight runs, valves and flanges' : undefined}
+        disabled={thermalOff}
+        title={thermalWhy}
       >
         <Icon name="thermo" size={16} /> <span>Thermal</span>
       </button>}
-      <Segmented<'installed' | 'cutaway'>
-        size="sm"
-        label="View"
-        value={view}
-        onChange={setView}
-        options={[{ id: 'installed', label: 'Installed' }, { id: 'cutaway', label: 'Cutaway' }]}
-      />
+      {viewSeg}
     </div>
+  )
+
+  const resetBtn = moved && !present && (
+    <button className="reset-view" onClick={resetView}>
+      <Icon name="reset" size={15} /> <span>Reset view</span>
+    </button>
   )
 
   const compareBar = compare && (
@@ -253,9 +314,9 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       s={s}
       mode={beh}
       panels={panels}
-      opts={{ view, thermal: thermal && !present, stage: stages[mode], mobile, units, autoRotate: present }}
+      opts={{ view, thermal: thermal && !present, stage: stages[mode], mobile, units, autoRotate: present, resetKey, onUserMove: () => setMovedIn(framing) }}
       bare={ev.bare}
-      inset={{ left: insetLeft, right: insetRight }}
+      inset={{ left: insetLeft, right: insetRight, top: mobile && !present ? covered.top + 6 : 0, bottom: mobile && !present ? covered.bottom + 6 : 0 }}
       sync={sync}
     />
   )
@@ -287,9 +348,10 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   if (mobile) {
     return (
       <div className="sim is-mobile" style={{ '--acc': acc } as React.CSSProperties}>
-        <div className="sim-mobile-stage">
+        <div className="sim-mobile-stage" ref={stageRef}>
           {stage}
           {statusPill}
+          {resetBtn}
           {help.isOpen && <QuickStart mode={mode} mobile onClose={help.close} />}
           {!help.isOpen && <button className="help-fab" aria-label="How it works" onClick={help.show}><Icon name="help" size={18} /></button>}
           {legend}
@@ -324,6 +386,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       {stage}
       <div className="sim-overlay" style={{ left: insetLeft, right: insetRight }}>
         {statusPill}
+        {resetBtn}
         {help.isOpen && !present && <QuickStart mode={mode} mobile={false} onClose={help.close} />}
         {compareBar}
         {legend}

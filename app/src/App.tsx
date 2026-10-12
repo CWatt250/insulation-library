@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Viewer } from './scene/Viewer'
 import { NPS, THICKNESSES } from './data/pipe'
 import {
@@ -15,6 +15,7 @@ import { Icon } from './ui/controls'
 import type { AppMode } from './sim/types'
 import type { UnitSystem } from './sim/units'
 import { readShareHash } from './sim/scenarios'
+import { useCovered } from './ui/useCovered'
 import './App.css'
 import './sim.css'
 
@@ -162,6 +163,15 @@ export default function App() {
   const mobile = useIsMobile()
   const [sheetOpen, setSheetOpen] = useState(false)
   const [tab, setTab] = useState<'configure' | 'specs'>('configure')
+  // Reset view: shown once the camera has been moved, until the model is framed
+  // again (by the button, or by a new view, component or stage)
+  const [resetKey, setResetKey] = useState(0)
+  const framing = `${view}-${component}-${stage}-${resetKey}`
+  const [movedIn, setMovedIn] = useState<string | null>(null)
+  const moved = movedIn === framing
+  // phones: frame the 3D between the section bar and the bottom sheet
+  const stageRef = useRef<HTMLDivElement>(null)
+  const covered = useCovered(stageRef, '.modebar', '.sheet', mode, mobile && init.ui && mode === 'explore')
 
   const ins = INSULATION[insulation]
   const thicknesses = thicknessesFor(ins, THICKNESSES)
@@ -393,7 +403,7 @@ export default function App() {
   return (
     <div className={`app ${mobile ? 'is-mobile' : ''} ${init.ui ? '' : 'no-ui'}`}>
       {init.ui && <ModeBar mode={mode} onChange={setMode} mobile={mobile} lastPipe={lastPipe} />}
-      <div className="stage">
+      <div className="stage" ref={stageRef}>
         <Viewer
           insulation={insulation}
           npsIndex={npsIndex}
@@ -414,7 +424,16 @@ export default function App() {
           onSelect={pick}
           insetRight={init.ui && !mobile ? 372 : 0}
           insetLeft={init.ui && !mobile ? 312 : 0}
+          insetTop={mobile && init.ui ? covered.top + 6 : 0}
+          insetBottom={mobile && init.ui ? covered.bottom + 6 : 0}
+          resetKey={resetKey}
+          onUserMove={() => setMovedIn(framing)}
         />
+        {init.ui && moved && !photo && (
+          <button className="reset-view library" onClick={() => setResetKey((k) => k + 1)}>
+            <Icon name="reset" size={15} /> <span>Reset view</span>
+          </button>
+        )}
       </div>
       {init.ui && !mobile && (
         <>
