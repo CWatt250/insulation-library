@@ -2,7 +2,7 @@ import { INSULATION, INSULATIONS } from '../data/catalog'
 import type { PipeMaterial } from '../data/pipe'
 import { availability, evaluate, productForTemp } from './model'
 import { design, materialOptions } from './design'
-import { DUCT_INSULATIONS, ductInsLabel, ductOutdoors, ductThicknesses, isWrap, type DuctInsulation } from './duct'
+import { DUCT_INSULATIONS, ductInsLabel, ductOutdoors, ductThicknesses, isWrap, outdoorIns, type DuctInsulation } from './duct'
 import { initialState } from './presets'
 import type { SimMode, SimState } from './types'
 
@@ -44,7 +44,7 @@ export interface Answers {
 export const START: Answers = {
   system: 'pipe', pipe: 'copper', npsIndex: 3, drain: false, outdoors: false,
   processF: 45, ambientF: 85, rh: 70, material: 'auto', pipeCode: 'ashrae',
-  duct: { ductType: 'supply', ductLocation: 'attic', ductService: 'both', climateZone: 4, ductCodeBasis: 'ashrae', ductShape: 'rect', ductW: 24, ductH: 12, ductD: 14, waCounty: 'King', ductDamper: 'downstream', bigUnit: true, erv: false },
+  duct: { ductType: 'supply', ductLocation: 'attic', ductService: 'both', climateZone: 4, ductCodeBasis: 'ashrae', ductShape: 'round', ductW: 24, ductH: 12, ductD: 16, waCounty: 'King', ductDamper: 'downstream', bigUnit: true, erv: false },
 }
 
 /** The simulator mode these answers belong to. */
@@ -75,7 +75,13 @@ export function stateFor(a: Answers, mode: SimMode, material: string): SimState 
 }
 
 export function materialsFor(a: Answers, mode: SimMode): { id: string; label: string; ok: boolean; reason?: string }[] {
-  if (a.system === 'duct') return DUCT_INSULATIONS.map((m) => ({ id: m.id, label: ductInsLabel(m.id, a.duct.ductShape), ok: !(ductOutdoors(a.duct) && isWrap(m.id)), reason: ductOutdoors(a.duct) && isWrap(m.id) ? 'Indoors only — outdoors gets a metal jacket over rigid insulation' : undefined }))
+  if (a.system === 'duct') {
+    const out = ductOutdoors(a.duct)
+    const why = (id: DuctInsulation) => (out && isWrap(id) ? 'Indoors only — outdoors gets a metal jacket over rigid insulation'
+      : id === 'polyiso' && !out ? 'Outdoors only (rooftop duct board)'
+        : id === 'polyiso' && a.duct.ductShape === 'round' ? 'Flat board for rectangular duct' : undefined)
+    return DUCT_INSULATIONS.map((m) => ({ id: m.id, label: ductInsLabel(m.id, a.duct.ductShape), ok: !why(m.id), reason: why(m.id) }))
+  }
   return INSULATIONS.map((m) => {
     const av = availability(m.id, mode === 'condensate' ? 'cold' : mode)
     return { id: m.id, label: m.label, ok: av.ok, reason: av.reason }
@@ -86,10 +92,10 @@ export function materialsFor(a: Answers, mode: SimMode): { id: string; label: st
 /** The recommendation for a set of answers. */
 export function recommendation(a: Answers) {
   const mode = modeFor(a)
-  const options = materialOptions(stateFor(a, mode, a.system === 'duct' ? (ductOutdoors(a.duct) ? 'board' : 'wrap75') : 'fiberglass'), mode)
+  const options = materialOptions(stateFor(a, mode, a.system === 'duct' ? (ductOutdoors(a.duct) ? outdoorIns(a.duct.ductShape) : 'wrap75') : 'fiberglass'), mode)
   const usable = options.filter((o) => o.design && o.design.thicknessIn !== null)
   // ducts: FSK duct wrap (0.75 pcf) indoors and rigid board outdoors, as installed; pipe: the thinnest that works
-  const ductPick = a.system === 'duct' ? (ductOutdoors(a.duct) ? 'board' : 'wrap75') : null
+  const ductPick = a.system === 'duct' ? (ductOutdoors(a.duct) ? outdoorIns(a.duct.ductShape) : 'wrap75') : null
   const pick = a.material === 'auto' ? (ductPick && usable.some((o) => o.id === ductPick) ? ductPick : usable[0]?.id ?? options[0].id) : a.material
   const s0 = stateFor(a, mode, pick)
   const d = design(s0, mode)

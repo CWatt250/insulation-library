@@ -152,7 +152,7 @@ function jacket(id: JacketId) {
       }
     case 'fsk':
       return {
-        outer: pbr('foil-scrim', { metalness: 1, normalStrength: 1.5 }),
+        outer: pbr('fsk', { metalness: 1, normalStrength: 1.2 }),
         inner: plain({ color: '#b08a5a', roughness: 0.9 }),
         edge: plain({ color: '#cfd1d3', metalness: 1, roughness: 0.35 }),
       }
@@ -197,14 +197,15 @@ export function buildSlots(ins: InsulationId, jac: JacketId, pipe: PipeMaterial 
   const j = once(() => jacket(jac))
   const f = once(() => jacket('asj'))
   const pvcCover = once(pvc)
-  const foilTape = once(() => pbr('foil-scrim', { metalness: 1, normalStrength: 2.2, roughness: 1.3 }))
+  const foilTape = once(() => pbr('fsk', { metalness: 1, normalStrength: 1.3, roughness: 0.85, color: '#f4f5f6' }))
   // the vapor-retarder membrane as made: white (Insulrap 30-NG), silver foil (PITTWRAP IW50 AL) or black coating
   const look = v.vapor.membrane?.look ?? 'black'
   const make: Record<number, () => THREE.Material> = {
     [Slot.PipeOuter]: () => (pipe === 'galvanized' ? galvOuter() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcOuter() : steelOuter()),
     [Slot.PipeEnd]: () => (pipe === 'galvanized' ? galvEdge() : pipe === 'copper' ? copperEnd() : pipe === 'pvc' ? pvcOuter() : steelEnd()),
     [Slot.PipeBore]: () => (pipe === 'galvanized' ? galvInner() : pipe === 'copper' ? copperOuter() : pipe === 'pvc' ? pvcBore() : steelBore()),
-    [Slot.DuctFacing]: () => pbr('foil-scrim', { metalness: 0.65, normalStrength: 1.2, roughness: 1.15, color: '#e6e8ea' }),
+    // FSK: foil over a tri-directional glass scrim, crinkled (tex/fsk)
+    [Slot.DuctFacing]: () => pbr('fsk', { metalness: 0.92, roughness: 1, normalStrength: 1.1 }),
     [Slot.InsSkin]: skin,
     [Slot.InsCut]: cut,
     [Slot.InsBore]: bore,

@@ -1,3 +1,4 @@
+import { DUCT_POLYISO } from '../../data/ductData'
 import { boardFor, ductCover, isWrap } from '../../sim/duct'
 import type { Evaluation } from '../../sim/model'
 import { DRIP_RATE } from '../../sim/model'
@@ -101,7 +102,9 @@ function DuctModel({ ev, s, units }: { ev: Evaluation; s: SimState; units: UnitS
         : <li>Round duct solved as a horizontal cylinder (the pipe engine's C680 correlations).</li>}
       <li>{wrap
         ? <>JM Microlite FSK duct wrap at its installed thickness, 75% of nominal (25% compression), as the IMC and JM rate it. JM prints k at 75°F only, so k vs temperature follows Knauf's published curve for the same density, scaled to JM's installed k at 75°F (this app's assumption — it reproduces JM's printed installed R).</>
-        : <>{boardFor(s.ductShape).product} at its labeled thickness (not compressed); k vs temperature {boardFor(s.ductShape).kNote}{s.ductShape === 'round' ? '; JM prints no R-values for Micro-Flex, so its R is thickness ÷ k at 75°F' : ''}.{alu ? ' Outdoors it goes under a 0.016" aluminum jacket (UFGS 23 07 00), which sets the surface emittance and adds no R-value.' : ''}</>}<Ref ids={wrap ? ['U23', 'U28', 'C6'] : [...boardFor(s.ductShape).src, ...(alu ? ['U66'] : [])]} /></li>
+        : s.ductIns === 'polyiso'
+          ? <>{DUCT_POLYISO.product} at its labeled thickness; k {DUCT_POLYISO.kNote}. The code check uses JM's printed aged R. Outdoors under a 0.016" aluminum jacket (UFGS 23 07 00), which sets the surface emittance and adds no R-value.</>
+          : <>{boardFor(s.ductShape).product} at its labeled thickness (not compressed); k vs temperature {boardFor(s.ductShape).kNote}{s.ductShape === 'round' ? '; JM prints no R-values for Micro-Flex, so its R is thickness ÷ k at 75°F' : ''}.{alu ? ' Outdoors it goes under a 0.016" aluminum jacket (UFGS 23 07 00), which sets the surface emittance and adds no R-value.' : ''}</>}<Ref ids={wrap ? ['U23', 'U28', 'C6'] : [...(s.ductIns === 'polyiso' ? DUCT_POLYISO.src : boardFor(s.ductShape).src), ...(alu ? ['U66'] : [])]} /></li>
       <li>Emittance {(s.emittanceOverride ?? surf.value).toFixed(2)} for {s.emittanceOverride !== null ? 'a custom surface' : surf.label.toLowerCase()}{surf.note ? ` (${surf.note})` : ''}; bare duct {ev.bare.surface.value.toFixed(2)} ({ev.bare.surface.label.toLowerCase()}).<Ref ids={[...surf.src, ...ev.bare.surface.src]} /></li>
       <li>Flat-surface correlations checked: they reproduce all 12 bare flat-surface rows of DNV's C680 tables and 3E Plus Example 5 (see the accuracy table).</li>
       <li>Energy code check uses the rated installed R at 75°F mean (ASHRAE 90.1-2019 Table 6.8.2, footnote a), not the calculated in-service value.<Ref ids={['C19']} /></li>

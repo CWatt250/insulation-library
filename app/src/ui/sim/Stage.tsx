@@ -105,7 +105,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   const ductProps = duct
     ? {
       shape: s.ductShape, w: s.ductW * 0.0254, h: s.ductH * 0.0254, d: s.ductD * 0.0254,
-      t: installedIn(s.ductIns, thickness) * 0.0254, insulation: isWrap(s.ductIns) ? 'wrap' as const : 'board' as const,
+      t: installedIn(s.ductIns, thickness) * 0.0254, insulation: isWrap(s.ductIns) ? 'wrap' as const : s.ductIns === 'polyiso' ? 'polyiso' as const : 'board' as const,
       facing: cover!.facing, jacket: cover!.jacket,
     }
     : undefined
@@ -117,7 +117,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   return (
     <Viewer
       duct={ductProps}
-      insulation={duct ? 'fiberglass' : s.insulation}
+      insulation={duct ? (s.ductIns === 'polyiso' ? 'pir' : 'fiberglass') : s.insulation}
       npsIndex={nps}
       thicknessIn={thickness}
       jacket={duct ? (cover!.jacket === 'alu' ? 'alu-stucco' : cover!.facing) : sys.jacketId}

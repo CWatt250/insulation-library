@@ -109,6 +109,24 @@ def board_lines(b):
             "  },",
         ]
     out.append("}")
+    px = b["polyiso"]
+    out += [
+        "",
+        f"/** {px['product']} [{', '.join(px['src'])}]: JM's rooftop duct board — rectangular duct outdoors, under an aluminum jacket. */",
+        "export const DUCT_POLYISO = {",
+        f"  product: {json.dumps(px['product_short'])},",
+        f"  src: {json.dumps(px['src'])},",
+        f"  minF: {px['min_F']:g},",
+        f"  maxF: {px['max_F']:g},",
+        "  /** Labeled thickness and aged R at 75°F (ASTM C1289), as printed; `mto` = made to order. */",
+        "  thicknesses: [" + ", ".join(f"{{ nominalIn: {r['in']:g}, R: {r['R']:g}{', mto: true' if r.get('made_to_order') else ''} }}" for r in px["thicknesses"]) + "] as { nominalIn: number; R: number; mto?: boolean }[],",
+        f"  k75: {px['k_75F']:g},",
+        f"  kNote: {json.dumps(px['k_note'])},",
+        f"  facerPerm: {px['facer_perm']:g},",
+        "  /** Tapered top boards on ducts wider than this, inches. */",
+        f"  taperedOverIn: {px['tapered_over_in']:g},",
+        "}",
+    ]
     return out
 
 o = [

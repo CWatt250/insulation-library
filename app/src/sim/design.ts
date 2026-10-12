@@ -170,7 +170,9 @@ function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
 
 /** The current duct re-done in another duct insulation, or why it can't be. */
 export function stateForDuctMaterial(s: SimState, id: DuctInsulation): { state: SimState } | { reason: string } {
-  if (ductOutdoors(s) && isWrap(id)) return { reason: 'Outdoors the duct gets rigid board under a metal jacket; FSK duct wrap is for indoors' }
+  if (ductOutdoors(s) && isWrap(id)) return { reason: 'Outdoors the duct gets rigid insulation under a metal jacket; FSK duct wrap is for indoors' }
+  if (id === 'polyiso' && !ductOutdoors(s)) return { reason: 'JM XSPECT polyiso is a rooftop duct board (combustible) — outdoors only' }
+  if (id === 'polyiso' && s.ductShape === 'round') return { reason: 'XSPECT polyiso is flat board for rectangular duct' }
   const p = ductProduct(id, s.ductFacing, s.ductShape)
   if (p.tempF.max !== null && s.processF > p.tempF.max) return { reason: `${s.processF}°F is above its ${p.tempF.max}°F limit` }
   const list = ductThicknesses(id, s.ductShape)

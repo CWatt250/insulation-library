@@ -28,8 +28,8 @@ export interface DuctParams {
   d: number
   /** Installed insulation thickness, m (0 = bare). */
   t: number
-  /** Duct wrap (compressed blanket) or rigid board (square-cut, pinned). */
-  insulation: 'wrap' | 'board'
+  /** Duct wrap (compressed blanket), rigid fiberglass board, or foil-faced polyiso board (outdoors). */
+  insulation: 'wrap' | 'board' | 'polyiso'
   /** Factory facing: FSK foil, or white ASJ (board). */
   facing: 'fsk' | 'asj'
   /** Outdoors: an aluminum jacket over the facing. */
@@ -41,22 +41,42 @@ const IN = 0.0254
 const SHEET = 0.024 * IN // 24 ga
 
 /** Closed 2-D outline: rounded rectangle (r may be 0) or circle, with outward normals and arc length. */
-interface Outline { p: [number, number][]; n: [number, number][]; s: number[] }
+interface Outline { p: [number, number][]; n: [number, number][]; s: number[]; corners?: number[] }
 
-function roundedRect(hw: number, hh: number, r: number, nArc = 10): Outline {
+/**
+ * Rounded rectangle, counter-clockwise from the +x+y corner. `flat` adds that
+ * many segments along the top/bottom and the sides (so a wavy surface can bend
+ * between corners); `corners` records where each corner arc starts.
+ */
+function roundedRect(hw: number, hh: number, r: number, nArc = 10, flat: [number, number] = [1, 1], rise = 0): Outline {
   const p: [number, number][] = []
   const n: [number, number][] = []
+  const marks: number[] = []
   const corners: [number, number, number][] = [[1, 1, 0], [-1, 1, 90], [-1, -1, 180], [1, -1, 270]]
-  for (const [sx, sy, a0] of corners) {
+  corners.forEach(([sx, sy, a0], k) => {
     const cx = sx * (hw - r)
-    const cy = sy * (hh - r)
+    // a tapered top: the +x side stands `rise` higher, so water runs off
+    const cy = sy * (hh - r) + (k === 0 ? rise : 0)
+    marks.push(p.length)
     for (let j = 0; j <= nArc; j++) {
       const a = ((a0 + (90 * j) / nArc) * Math.PI) / 180
       p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)])
       n.push([Math.cos(a), Math.sin(a)])
     }
-  }
-  return withArc(p, n)
+    // the flat edge on to the next corner: top, left side, bottom, right side
+    const segs = k % 2 === 0 ? flat[0] : flat[1]
+    const a1 = ((a0 + 90) * Math.PI) / 180
+    const [nx, ny] = [Math.round(Math.cos(a1)), Math.round(Math.sin(a1))]
+    const [qx, qy] = p[p.length - 1]
+    const [ex, ey] = k === 0 ? [-(hw - r), hh] : k === 1 ? [-hw, -(hh - r)] : k === 2 ? [hw - r, -hh] : [hw, hh - r + rise]
+    // the sloped top's normal leans toward the low side
+    const tn = k === 0 && rise ? (() => { const l = Math.hypot(rise, 2 * (hw - r)); return [rise / l, (2 * (hw - r)) / l] as [number, number] })() : [nx, ny] as [number, number]
+    for (let j = 1; j < segs; j++) {
+      p.push([qx + ((ex - qx) * j) / segs, qy + ((ey - qy) * j) / segs])
+      n.push(tn)
+    }
+  })
+  return { ...withArc(p, n), corners: marks }
 }
 
 function circle(r: number, seg = 96): Outline {
@@ -111,6 +131,33 @@ class Builder {
   nor: number[] = []
   uv: number[] = []
   groups: { start: number; count: number; mat: number }[] = []
+  /**
+   * Optional waviness: how far (m) the surface at an outline point (x, y, outward
+   * normal nx, ny) moves out along that normal at z. Walls are then split along
+   * the run every `dz` so the surface can bend.
+   */
+  disp: ((x: number, y: number, z: number, nx: number, ny: number) => number) | null = null
+  dz = 0.035
+  /** An outline point at z, moved by the waviness, with the surface normal there (outward). */
+  private at(x: number, y: number, nx: number, ny: number, z: number): { p: V3; n: V3 } {
+    const d = this.disp
+    if (!d) return { p: [x, y, z], n: [nx, ny, 0] }
+    const h = d(x, y, z, nx, ny)
+    const e = 0.004
+    const tx = -ny, ty = nx
+    const hs = (d(x + tx * e, y + ty * e, z, nx, ny) - d(x - tx * e, y - ty * e, z, nx, ny)) / (2 * e)
+    const hz = (d(x, y, z + e, nx, ny) - d(x, y, z - e, nx, ny)) / (2 * e)
+    const v: V3 = [nx - hs * tx, ny - hs * ty, -hz]
+    const l = Math.hypot(v[0], v[1], v[2]) || 1
+    return { p: [x + nx * h, y + ny * h, z], n: [v[0] / l, v[1] / l, v[2] / l] }
+  }
+  /** Run stations from z0 to z1: just the ends, or every `dz` when the surface is wavy and moves here. */
+  private zs(o: Outline, z0: number, z1: number): number[] {
+    const d = this.disp
+    if (!d || !o.p.some(([x, y], i) => Math.abs(d(x, y, (z0 + z1) / 2, o.n[i][0], o.n[i][1])) > 1e-5)) return [z0, z1]
+    const k = Math.max(1, Math.ceil((z1 - z0) / this.dz))
+    return Array.from({ length: k + 1 }, (_, i) => z0 + ((z1 - z0) * i) / k)
+  }
   private add(v: [number, number, number], nn: [number, number, number], u: [number, number]) {
     this.pos.push(...v)
     this.nor.push(...nn)
@@ -131,28 +178,29 @@ class Builder {
   /** The side wall of an outline swept from z0 to z1; `inward` flips it to face the inside. */
   wall(o: Outline, z0: number, z1: number, mat: number, inward = false) {
     const m = o.p.length
+    const zs = this.zs(o, z0, z1)
+    const f = inward ? -1 : 1
+    const V = (i: number, z: number) => {
+      const r = this.at(o.p[i][0], o.p[i][1], o.n[i][0], o.n[i][1], z)
+      return { p: r.p, n: [r.n[0] * f, r.n[1] * f, r.n[2] * f] as V3 }
+    }
     for (let i = 0; i < m; i++) {
       const j = (i + 1) % m
-      const [ax, ay] = o.p[i]
-      const [bx, by] = o.p[j]
-      if (Math.hypot(bx - ax, by - ay) < 1e-7) continue
-      const f = inward ? -1 : 1
-      const na: [number, number, number] = [o.n[i][0] * f, o.n[i][1] * f, 0]
-      const nb: [number, number, number] = [o.n[j][0] * f, o.n[j][1] * f, 0]
-      const A0: [number, number, number] = [ax, ay, z0]
-      const B0: [number, number, number] = [bx, by, z0]
-      const A1: [number, number, number] = [ax, ay, z1]
-      const B1: [number, number, number] = [bx, by, z1]
-      const ua: [number, number] = [o.s[i], z0]
-      const ub: [number, number] = [o.s[i + 1], z0]
-      const ua1: [number, number] = [o.s[i], z1]
-      const ub1: [number, number] = [o.s[i + 1], z1]
-      if (!inward) {
-        this.tri(A0, B0, B1, na, nb, nb, ua, ub, ub1, mat)
-        this.tri(A0, B1, A1, na, nb, na, ua, ub1, ua1, mat)
-      } else {
-        this.tri(A0, B1, B0, na, nb, nb, ua, ub1, ub, mat)
-        this.tri(A0, A1, B1, na, na, nb, ua, ua1, ub1, mat)
+      if (Math.hypot(o.p[j][0] - o.p[i][0], o.p[j][1] - o.p[i][1]) < 1e-7) continue
+      for (let q = 0; q < zs.length - 1; q++) {
+        const za = zs[q], zb = zs[q + 1]
+        const A0 = V(i, za), B0 = V(j, za), A1 = V(i, zb), B1 = V(j, zb)
+        const ua: [number, number] = [o.s[i], za]
+        const ub: [number, number] = [o.s[i + 1], za]
+        const ua1: [number, number] = [o.s[i], zb]
+        const ub1: [number, number] = [o.s[i + 1], zb]
+        if (!inward) {
+          this.tri(A0.p, B0.p, B1.p, A0.n, B0.n, B1.n, ua, ub, ub1, mat)
+          this.tri(A0.p, B1.p, A1.p, A0.n, B1.n, A1.n, ua, ub1, ua1, mat)
+        } else {
+          this.tri(A0.p, B1.p, B0.p, A0.n, B1.n, B0.n, ua, ub1, ub, mat)
+          this.tri(A0.p, A1.p, B1.p, A0.n, A1.n, B1.n, ua, ua1, ub1, mat)
+        }
       }
     }
   }
@@ -162,10 +210,11 @@ class Builder {
     const nn: [number, number, number] = [0, 0, dir]
     for (let i = 0; i < m; i++) {
       const j = (i + 1) % m
-      const a: [number, number, number] = [inner.p[i][0], inner.p[i][1], z]
-      const b: [number, number, number] = [inner.p[j][0], inner.p[j][1], z]
-      const c: [number, number, number] = [outer.p[j][0], outer.p[j][1], z]
-      const d: [number, number, number] = [outer.p[i][0], outer.p[i][1], z]
+      const P = (o: Outline, k: number) => this.at(o.p[k][0], o.p[k][1], o.n[k][0], o.n[k][1], z).p
+      const a = P(inner, i)
+      const b = P(inner, j)
+      const c = P(outer, j)
+      const d = P(outer, i)
       const uv = (q: [number, number, number]): [number, number] => [q[0], q[1]]
       if (dir > 0) {
         this.tri(a, b, c, nn, nn, nn, uv(a), uv(b), uv(c), mat)
@@ -213,21 +262,35 @@ class Builder {
     const I = sub(inner)
     const O = sub(outer)
     const last = idx.length - 1
+    const at = (o: Outline, k: number, z: number) => this.at(o.p[k][0], o.p[k][1], o.n[k][0], o.n[k][1], z)
+    const zs = this.zs(O, z0, z1)
     for (let k = 0; k < last; k++) {
-      const A = O.p[k], B = O.p[k + 1], a = I.p[k], b = I.p[k + 1]
-      this.quad([A[0], A[1], z0], [B[0], B[1], z0], [B[0], B[1], z1], [A[0], A[1], z1], [(O.n[k][0] + O.n[k + 1][0]) / 2, (O.n[k][1] + O.n[k + 1][1]) / 2, 0], [[O.s[k], z0], [O.s[k + 1], z0], [O.s[k + 1], z1], [O.s[k], z1]], m.outer)
-      this.quad([a[0], a[1], z0], [b[0], b[1], z0], [b[0], b[1], z1], [a[0], a[1], z1], [-(I.n[k][0] + I.n[k + 1][0]) / 2, -(I.n[k][1] + I.n[k + 1][1]) / 2, 0], [[I.s[k], z0], [I.s[k + 1], z0], [I.s[k + 1], z1], [I.s[k], z1]], m.inner)
+      for (let q = 0; q < zs.length - 1; q++) {
+        const za = zs[q], zb = zs[q + 1]
+        // outside face, wound outward; inside face, wound inward
+        const A0 = at(O, k, za), B0 = at(O, k + 1, za), A1 = at(O, k, zb), B1 = at(O, k + 1, zb)
+        this.tri(A0.p, B0.p, B1.p, A0.n, B0.n, B1.n, [O.s[k], za], [O.s[k + 1], za], [O.s[k + 1], zb], m.outer)
+        this.tri(A0.p, B1.p, A1.p, A0.n, B1.n, A1.n, [O.s[k], za], [O.s[k + 1], zb], [O.s[k], zb], m.outer)
+        const a0 = at(I, k, za), b0 = at(I, k + 1, za), a1 = at(I, k, zb), b1 = at(I, k + 1, zb)
+        const neg = (v: V3): V3 => [-v[0], -v[1], -v[2]]
+        this.tri(a0.p, b1.p, b0.p, neg(a0.n), neg(b1.n), neg(b0.n), [I.s[k], za], [I.s[k + 1], zb], [I.s[k + 1], za], m.inner)
+        this.tri(a0.p, a1.p, b1.p, neg(a0.n), neg(a1.n), neg(b1.n), [I.s[k], za], [I.s[k], zb], [I.s[k + 1], zb], m.inner)
+      }
       for (const [z, dir] of [[z0, -1], [z1, 1]] as const) {
-        this.quad([a[0], a[1], z], [b[0], b[1], z], [B[0], B[1], z], [A[0], A[1], z], [0, 0, dir], [[a[0], a[1]], [b[0], b[1]], [B[0], B[1]], [A[0], A[1]]], m.end)
+        const a = at(I, k, z).p, b = at(I, k + 1, z).p, B = at(O, k + 1, z).p, A = at(O, k, z).p
+        this.quad(a, b, B, A, [0, 0, dir], [[a[0], a[1]], [b[0], b[1]], [B[0], B[1]], [A[0], A[1]]], m.end)
       }
     }
     // the two long cut faces: each faces along the path, away from what's kept
     for (const [k, sgn] of [[0, -1], [last, 1]] as const) {
-      const A = O.p[k], a = I.p[k]
       const nn = O.n[k]
       const tang: V3 = [-nn[1] * sgn, nn[0] * sgn, 0]
-      const depth = Math.hypot(A[0] - a[0], A[1] - a[1])
-      this.quad([a[0], a[1], z0], [A[0], A[1], z0], [A[0], A[1], z1], [a[0], a[1], z1], tang, [[0, z0], [depth, z0], [depth, z1], [0, z1]], m.end)
+      for (let q = 0; q < zs.length - 1; q++) {
+        const za = zs[q], zb = zs[q + 1]
+        const a0 = at(I, k, za).p, A0 = at(O, k, za).p, A1 = at(O, k, zb).p, a1 = at(I, k, zb).p
+        const depth = Math.hypot(A0[0] - a0[0], A0[1] - a0[1])
+        this.quad(a0, A0, A1, a1, tang, [[0, za], [depth, za], [depth, zb], [0, zb]], m.end)
+      }
     }
   }
   box(cx: number, cy: number, cz: number, sx: number, sy: number, sz: number, mat: number) {
@@ -363,22 +426,64 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
 
   if (insulated) {
     const wrap = d.insulation === 'wrap'
+    const poly = d.insulation === 'polyiso'
     const asj = d.facing === 'asj'
     const alu = d.jacket === 'alu'
     // ---- insulation: wrap is compressed over the corners (radius ≈ its thickness);
-    // board is cut square and butted at the corners
-    const insIn = round ? circle(hw + 0.0004) : roundedRect(hw + 0.0004, hh + 0.0004, 0.0015, nArc)
+    // board is cut square and butted at the corners. Rectangular outlines carry points
+    // along the flat faces (every ~3 cm) so the wrap can pillow between the corners.
     const rCorner = wrap ? t * 0.9 : 0.003
+    const flat: [number, number] = round ? [1, 1] : [Math.max(1, Math.round((2 * hw) / 0.03)), Math.max(1, Math.round((2 * hh) / 0.03))]
+    // polyiso outdoors: JM puts tapered boards on top of ducts over 32" wide so water runs
+    // off — 1" more thickness over each 4' board (the ¼ slope JM prints, read as ¼" per foot)
+    const rise = poly && !round && d.w > 32 * IN ? (0.25 * IN * (2 * outW)) / 0.3048 : 0
+    const insIn = round ? circle(hw + 0.0004) : roundedRect(hw + 0.0004, hh + 0.0004, 0.0015, nArc, flat)
     /** The insulation's outline grown by `o` (facing, tape and jacket sit on it). */
-    const over = (o: number) => (round ? circle(outW + o) : roundedRect(outW + o, outH + o, rCorner + o, nArc))
+    const over = (o: number) => (round ? circle(outW + o) : roundedRect(outW + o, outH + o, rCorner + o, nArc, flat, rise))
     const insOut = over(0)
     // what the cutaway keeps: the far side and underside (rect: corner 2 → corner 0; round: 180° → 90°)
     const nC = nArc + 1
     const kept = round
       ? [...Array.from({ length: 48 }, (_, i) => 48 + i), ...Array.from({ length: 25 }, (_, i) => i)]
-      : [...Array.from({ length: 2 * nC }, (_, i) => 2 * nC + i), ...Array.from({ length: nC }, (_, i) => i)]
+      : [...Array.from({ length: insOut.p.length - insOut.corners![2] }, (_, i) => insOut.corners![2] + i), ...Array.from({ length: nC }, (_, i) => i)]
     cutWedge = round ? [Math.PI / 2, Math.PI] : [Math.atan2(outH, outW - rCorner), Math.PI + Math.atan2(outH - rCorner, outW)]
+
+    // ---- the wrap is a blanket: it pillows between the compressed corners, pinches in at
+    // the taped butt joints, ripples, and on wide ducts dips at each pin and speed clip
+    const joints: number[] = []
+    for (let z = 48 * IN * 0.62; z < zIns; z += 48 * IN) joints.push(z)
+    const pins: [number, number][] = []
+    if (!round && d.w >= 24 * IN - 1e-6) {
+      const across = Math.max(1, Math.round(d.w / (18 * IN)))
+      for (let z = 9 * IN; z < zIns - 0.035 - 3 * IN; z += 18 * IN) for (let k = 0; k < across; k++) pins.push([-d.w / 2 + ((k + 0.5) / across) * d.w, z])
+    }
+    const A = Math.min(0.0065, 0.2 * t)
+    const smooth = (e0: number, e1: number, x: number) => {
+      const u = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)))
+      return u * u * (3 - 2 * u)
+    }
+    const pinch = (z: number) => joints.reduce((m, zj) => Math.min(m, 1 - 0.8 * Math.exp(-(((z - zj) / 0.07) ** 2))), 1) * smooth(0, 0.06, z)
+    const wave = (x: number, y: number, z: number, nx: number, ny: number) => {
+      if (round) {
+        const depth = Math.hypot(x, y) - hw
+        const a = Math.atan2(y, x)
+        const ripple = 0.55 + 0.3 * Math.sin(3 * a + 7 * z + 1.3) + 0.15 * Math.sin(7 * a - 13 * z + 0.4)
+        return 0.6 * A * ripple * pinch(z) * smooth(0.002, 0.6 * t, depth)
+      }
+      const top = Math.abs(ny) >= Math.abs(nx)
+      const c = top ? x : y
+      const half = (top ? outW : outH) - rCorner
+      if (Math.abs(c) >= half) return 0
+      const depth = top ? Math.abs(y) - hh : Math.abs(x) - hw
+      const face = top ? (ny > 0 ? 0 : 1) : nx > 0 ? 2 : 3
+      const across = Math.cos((Math.PI / 2) * (c / half)) ** 0.7
+      const ripple = 0.7 + 0.2 * Math.sin(c * 11 + z * 6.3 + face * 1.7) + 0.12 * Math.sin(c * 23 - z * 14 + face * 3.4)
+      let h = A * across * ripple * pinch(z)
+      if (face === 1) for (const [px, pz] of pins) h -= 1.3 * A * Math.exp(-((x - px) ** 2 + (z - pz) ** 2) / 0.05 ** 2)
+      return h * smooth(0.002, 0.6 * t, depth)
+    }
     const ins = new Builder()
+    if (wrap) ins.disp = wave
     const insMats = { outer: Slot.InsSkin, inner: Slot.InsBore, end: Slot.InsCut }
     if (cut) {
       ins.shell(insIn, insOut, 0.002, zBlanket, insMats)
@@ -386,8 +491,8 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     } else ins.shell(insIn, insOut, 0.002, zIns, insMats)
     parts.push({ key: 'insulation', geometry: ins.geometry(), layer: 'insulation' })
     callouts.push({
-      title: wrap ? 'Fiberglass duct wrap' : 'Rigid fiberglass board',
-      detail: wrap ? `${(t / IN).toFixed(2)}" installed (25% compressed)` : `${(t / IN).toFixed(2)}" board`,
+      title: wrap ? 'Fiberglass duct wrap' : poly ? 'Polyiso board' : 'Rigid fiberglass board',
+      detail: wrap ? `${(t / IN).toFixed(2)}" installed (25% compressed)` : `${(t / IN).toFixed(2)}" board${rise ? ', tapered top' : ''}`,
       pos: [outW * 0.6, outH * 0.6, zIns], layer: 'insulation',
     })
 
@@ -398,6 +503,7 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     const fIn = over(0.0002)
     const fOut = over(0.0007)
     const fac = new Builder()
+    if (wrap) fac.disp = wave
     const facMats = { outer: asj ? Slot.Facing : Slot.DuctFacing, inner: Slot.FacingInner, end: Slot.FacingEdge }
     const tape = asj ? Slot.FacingTape : Slot.FoilTape
     if (cut) {
@@ -411,31 +517,46 @@ export function ductAssembly(d: DuctParams): DuctAssembly {
     const tapeMats = { outer: tape, inner: tape, end: tape }
     for (let z = 48 * IN * 0.62; z < tapeEnd - 2 * IN; z += 48 * IN) fac.shell(tIn, tOut, z - 1.5 * IN, z + 1.5 * IN, tapeMats)
     if (round) {
-      fac.box(-outW * 0.55, outH * 0.84, tapeEnd / 2, 3 * IN, 0.0012, tapeEnd - 0.01, tape)
+      // the stapled lap along the top, 3" of tape over it
+      const a0 = 2.15, da = (3 * IN) / outW
+      const arc = (r: number): Outline => {
+        const pts: [number, number][] = [], nrm: [number, number][] = []
+        for (let i = 0; i <= 6; i++) {
+          const a = a0 - da / 2 + (da * i) / 6
+          pts.push([r * Math.cos(a), r * Math.sin(a)])
+          nrm.push([Math.cos(a), Math.sin(a)])
+        }
+        return withArc(pts, nrm)
+      }
+      const a = arc(outW + 0.0007), b = arc(outW + 0.0011)
+      fac.partial(a, b, a.p.map((_, i) => i), 0.004, tapeEnd - 0.004, tapeMats)
     } else if (wrap) {
+      // the stapling-flange seam along the top, 3" of tape over it
       const x = outW - rCorner - 2.2 * IN
-      fac.box(x, outH + 0.0012, (0.002 + tapeEnd) / 2, 3 * IN, 0.0012, tapeEnd - 0.004, tape)
+      const strip = (y: number): Outline => withArc(Array.from({ length: 7 }, (_, i) => [x + 1.5 * IN - (3 * IN * i) / 6, y] as [number, number]), Array.from({ length: 7 }, () => [0, 1] as [number, number]))
+      const a = strip(outH + 0.0007), b = strip(outH + 0.0011)
+      fac.partial(a, b, a.p.map((_, i) => i), 0.004, tapeEnd - 0.004, tapeMats)
     } else {
       for (const c of [0, 1, 2, 3] as const) {
         const a = cornerStrip(outW + 0.0007, outH + 0.0007, rCorner + 0.0007, c, 1.5 * IN)
         const b = cornerStrip(outW + 0.0011, outH + 0.0011, rCorner + 0.0011, c, 1.5 * IN)
+        // the tapered top's high corner
+        if (c === 0 && rise) for (const o of [a, b]) o.p.forEach((q) => { q[1] += rise })
         fac.partial(a, b, a.p.map((_, i) => i), 0.002, tapeEnd - 0.004, tapeMats)
       }
     }
     // ---- ducts 24" and wider: pins on the underside, 18" on center — square speed
     // clips on wrap; on board the washers are taped over (under a metal jacket, unseen)
-    if (!round && !alu && d.w >= 24 * IN - 1e-6) {
-      const across = Math.max(1, Math.round(d.w / (18 * IN)))
-      for (let z = 9 * IN; z < fz1 - 3 * IN; z += 18 * IN) {
-        for (let k = 0; k < across; k++) {
-          const x2 = -d.w / 2 + ((k + 0.5) / across) * d.w
-          if (wrap) {
-            fac.box(x2, -outH - 0.0012, z, 1.5 * IN, 0.0012, 1.5 * IN, Slot.Hardware)
-            fac.box(x2, -outH - 0.004, z, 0.12 * IN, 0.006, 0.12 * IN, Slot.Hardware)
-          } else {
-            fac.box(x2, -outH - 0.0012, z, 3 * IN, 0.0012, 3 * IN, tape)
-            fac.box(x2, -outH - 0.0019, z, 1.5 * IN, 0.0012, 1.5 * IN, tape)
-          }
+    if (!alu) {
+      for (const [x2, z] of pins) {
+        if (z >= fz1 - 3 * IN) continue
+        if (wrap) {
+          const y = -outH - wave(x2, -outH, z, 0, -1)
+          fac.box(x2, y - 0.0012, z, 1.5 * IN, 0.0012, 1.5 * IN, Slot.Hardware)
+          fac.box(x2, y - 0.004, z, 0.12 * IN, 0.006, 0.12 * IN, Slot.Hardware)
+        } else {
+          fac.box(x2, -outH - 0.0012, z, 3 * IN, 0.0012, 3 * IN, tape)
+          fac.box(x2, -outH - 0.0019, z, 1.5 * IN, 0.0012, 1.5 * IN, tape)
         }
       }
     }

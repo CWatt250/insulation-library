@@ -1,5 +1,5 @@
 import { INSULATION } from '../data/catalog'
-import { DUCT_WRAP } from '../data/ductData'
+import { DUCT_POLYISO, DUCT_WRAP } from '../data/ductData'
 import { boardFor, isWrap } from './duct'
 import { fToC } from './units'
 import { pSat } from './psychro'
@@ -45,6 +45,7 @@ const OZ_PER_LB = 453.59237 / 29.5735 // water, ~1 g/mL
 
 function retarderFor(s: SimState, mode: SimMode): RetarderInfo {
   if (s.system === 'duct') {
+    if (s.ductIns === 'polyiso') return { label: 'Foil facers on the XSPECT polyiso board', perm: DUCT_POLYISO.facerPerm, src: DUCT_POLYISO.src, note: '0.05 perms (ASTM E96); JM: seal board seams with UL 181A tape or mastic' }
     if (!isWrap(s.ductIns)) {
       const f = boardFor(s.ductShape).facings[s.ductFacing]
       return { label: `${s.ductFacing.toUpperCase()} facing on the ${s.ductShape === 'round' ? 'Micro-Flex' : 'board'}`, perm: f.perm, upper: s.ductShape !== 'round', src: f.src, note: f.note }

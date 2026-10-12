@@ -28,8 +28,10 @@ const fToK = (f: number) => ((f - 32) * 5) / 9 + 273.15
 const K_FLOOR = 0.005
 
 export function kCurve(points: KPoint[]): KCurve {
-  if (points.length < 2) throw new Error('k curve needs at least two published points')
+  if (points.length < 1) throw new Error('k curve needs a published point')
   const pts = [...points].sort((a, b) => a.meanF - b.meanF).map((p) => ({ T: fToK(p.meanF), k: kIpToSi(p.k) }))
+  // one published point (JM XSPECT polyiso: 75°F only): k held constant, flagged as extended either side
+  if (pts.length === 1) return { pts: [pts[0], { T: pts[0].T + 1, k: pts[0].k }], min: pts[0].T, max: pts[0].T }
   return { pts, min: pts[0].T, max: pts[pts.length - 1].T }
 }
 

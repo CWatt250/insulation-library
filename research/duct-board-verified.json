@@ -30,6 +30,24 @@
       "accessed": "2026-10-12",
       "retrieval": "curl+pdftotext",
       "note": "§2.4.7.2.1 Aluminum Jackets: \"ASTM B209, Temper H14, minimum thickness of 27 gauge (0.41 mm 0.016 inch)\"; §3.3.7.2 round duct outdoors: aluminum jacket \"lapped no less than 75 mm 3 inches and secured with bands located at circumferential laps and at no more than 300 mm 12 inch intervals\"; §3.3.7.4 Rectangular Ducts: \"exterior is a metal jacketing applied for mechanical abuse and weather protection, and secure with screws\" (or a >3-ply membrane)"
+    },
+    {
+      "id": "U67",
+      "title": "JM XSPECT® ISOfoam APF Board – Flat and Tapered Polyiso Foam Board Insulation – Data Sheet",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/board-and-blanket/xspect-isofoam-apf/JM_MECH_XSPECT_ISOFOAM_Data_Sheet_EN.pdf",
+      "pub_no_or_date": "MECH-270 06/30/23 (Replaces 04/26/19)",
+      "accessed": "2026-10-12",
+      "retrieval": "curl+pdftotext"
+    },
+    {
+      "id": "U68",
+      "title": "JM XSPECT® ISOfoam APF Board – Rooftop External Duct Installation Instructions",
+      "publisher": "Johns Manville",
+      "url": "https://www.jm.com/content/dam/jm/global/en/mechanical-insulation/board-and-blanket/xspect-isofoam-apf/JM_MECH_XSPECT_INSTALLATION_GUIDE.pdf",
+      "pub_no_or_date": "MECH 07/21/23 (Replaces 01/23/23)",
+      "accessed": "2026-10-12",
+      "retrieval": "curl+pdftotext"
     }
   ],
   "board": {
@@ -258,7 +276,7 @@
     ]
   },
   "outdoor_jacket": {
-    "summary": "Outdoors the board goes under an aluminum jacket: UFGS 23 07 00 calls for ASTM B209 H14 aluminum, 0.016 in minimum; round duct outdoors lapped at least 3 in with bands at the laps and at most 12 in apart; rectangular duct outdoors a metal jacket secured with screws. Micro-Flex outdoors needs weather-barrier cladding such as aluminum (U65). JM's own rooftop-duct board is XSPECT ISOfoam APF (polyiso) under Cross-Flo jacketing; not used here.",
+    "summary": "Outdoors the board goes under an aluminum jacket: UFGS 23 07 00 calls for ASTM B209 H14 aluminum, 0.016 in minimum; round duct outdoors lapped at least 3 in with bands at the laps and at most 12 in apart; rectangular duct outdoors a metal jacket secured with screws. Micro-Flex outdoors needs weather-barrier cladding such as aluminum (U65). Rectangular duct outdoors defaults to JM's rooftop-duct board, XSPECT ISOfoam APF polyiso (U67, U68), tapered on top over 32 in wide; round duct outdoors stays Micro-Flex.",
     "src": [
       "U66",
       "U65"
@@ -266,6 +284,112 @@
     "unverified": [
       "JM statement approving 800 Series Spin-Glas for outdoor use (none found)",
       "Sloped / crowned top on rectangular outdoor duct (SMACNA HVAC-DCS 3.4 per a 3M guide; JM XSPECT tapers the top board on ducts over 32 in)"
+    ]
+  },
+  "polyiso": {
+    "product": "JM XSPECT® ISOfoam APF polyiso board (foil faced both sides), flat; tapered top boards",
+    "product_short": "JM XSPECT® polyiso board",
+    "src": [
+      "U67",
+      "U68"
+    ],
+    "min_F": -100,
+    "max_F": 250,
+    "thicknesses": [
+      {
+        "in": 1,
+        "R": 6.0
+      },
+      {
+        "in": 1.5,
+        "R": 9.3
+      },
+      {
+        "in": 2,
+        "R": 13
+      },
+      {
+        "in": 2.5,
+        "R": 16,
+        "made_to_order": true
+      },
+      {
+        "in": 3,
+        "R": 19
+      },
+      {
+        "in": 3.5,
+        "R": 22,
+        "made_to_order": true
+      },
+      {
+        "in": 4,
+        "R": 26,
+        "made_to_order": true
+      }
+    ],
+    "k_75F": 0.16,
+    "k_note": "0.16 at 75°F (ASTM C518; R-6.0 per inch, aged per ASTM C1289); JM prints no other mean temperature, so k is held at 0.16",
+    "facer_perm": 0.05,
+    "tapered_over_in": 32,
+    "taper": "Tapered boards ¼ slope: 1→2 in, 2→3 in, 3→4 in over 4 ft boards (read as ¼ in per foot)",
+    "evidence": [
+      {
+        "quote": "Johns Manville’s XSPECTTM ISOfoam APF board consists of a uniform closed-cell polyisocyanurate foam core bonded on each side with a foil facer.",
+        "location": "U67 p1 Description"
+      },
+      {
+        "quote": "When properly installed, JM XSPECT ISOfoam APF functions as a moisture-resistant, vapor barrier that can be used to insulate roof-top ducts.",
+        "location": "U67 p1 Applications"
+      },
+      {
+        "quote": "Thermal Resistance                        6.0 °F • ft2 • hr/BTU           ASTM C518*",
+        "location": "U67 p1 Physical Properties"
+      },
+      {
+        "quote": "0.16 BTU • in ... Thermal Conductivity ... ASTM C518",
+        "location": "U67 p1 Physical Properties"
+      },
+      {
+        "quote": "Water Vapor Permeance                     0.05 Perms                      ASTM E96",
+        "location": "U67 p1 Physical Properties"
+      },
+      {
+        "quote": "Service Temperature Range                 -100°F to 250°F",
+        "location": "U67 p1 Physical Properties"
+      },
+      {
+        "quote": "Smoke Developed † < 450 Index ... † Foam core tested at 4 inches.",
+        "location": "U67 p1 Surface Burning Characteristics"
+      },
+      {
+        "quote": "JM XSPECT ISOfoam APF is combustible and shall be used only as specified by the local building code with respect to flame spread and smoke development classification.",
+        "location": "U67 p1 Warning"
+      },
+      {
+        "quote": "1.00 6.0 | 1.50 9.3 | 2.00 13 | 2.50* 16 | 3.00 19 | 3.50* 22 | 4.00* 26 ... * Made to Order; Aged R-value at 75°F in accordance with ASTM C1289",
+        "location": "U67 p2 Thermal Performance – Flat Boards"
+      },
+      {
+        "quote": "1/4 1 2 9.3 8.6 32 | 1/4 2 3 16.0 14.4 18 | 1/4 3 4 22.0 20.5 12",
+        "location": "U67 p2 Thermal Performance – Tapered Boards (slope, thin, thick, R, LTTR, pieces)"
+      },
+      {
+        "quote": "It is recommended for ductwork over 32” wide that the top surface of the duct work use JM XSPECT Tapered Boards to allow for moisture to naturally run off the duct system and prevent pooling.",
+        "location": "U68 step 5"
+      },
+      {
+        "quote": "The underside of duct work 24” (610 mm) or more wide shall be secured with mechanical fasteners spaced approximately 18” (460 mm) on center.",
+        "location": "U68 step 3"
+      },
+      {
+        "quote": "Use a UL 181A compliant tape or vapor retardant mastic to close all board seams and penetrations to create the additional vapor retarder closure.",
+        "location": "U68 step 6"
+      },
+      {
+        "quote": "Cover insulation with a metal jacket cladding system or weather barrier cladding with a self-stick closure system. For metal cladding systems, follow common industry accepted practices like those described in the MICA Insulation Standards.",
+        "location": "U68 step 7"
+      }
     ]
   }
 }

@@ -1,4 +1,4 @@
-import { DUCT_BOARD, DUCT_WRAP, TABLE_6_8_2, type DuctLocation, type DuctService } from '../data/ductData'
+import { DUCT_BOARD, DUCT_POLYISO, DUCT_WRAP, TABLE_6_8_2, type DuctLocation, type DuctService } from '../data/ductData'
 import { WSEC_DUCT_R } from '../data/wsecData'
 import { kCurve, kMean, solveIntegral, type KCurve } from './conductivity'
 import { solveCase, LEWIS, type CaseInput, type CaseResult, type Moisture } from './engine'
@@ -45,7 +45,7 @@ export const DUCT_TYPES: { id: DuctType; label: string; short: string }[] = [
  * loses heat; air colder gains heat and can make the outside sweat.
  */
 export const ductBehavior = (s: { processF: number; ambientF: number }): 'hot' | 'cold' => (s.processF >= s.ambientF ? 'hot' : 'cold')
-export type DuctInsulation = 'wrap75' | 'wrap100' | 'wrap150' | 'board'
+export type DuctInsulation = 'wrap75' | 'wrap100' | 'wrap150' | 'board' | 'polyiso'
 export type DuctFacing = 'fsk' | 'asj'
 export type DuctFinish = 'new' | 'dull'
 
@@ -55,9 +55,10 @@ export const DUCT_INSULATIONS: { id: DuctInsulation; label: string; short: strin
   { id: 'wrap100', label: 'Duct wrap, 1 pcf', short: 'Duct wrap 1 pcf' },
   { id: 'wrap150', label: 'Duct wrap, 1.5 pcf', short: 'Duct wrap 1.5 pcf' },
   { id: 'board', label: 'Rigid board', short: 'Rigid board' },
+  { id: 'polyiso', label: 'Polyiso board (outdoors)', short: 'Polyiso' },
 ]
 
-export const isWrap = (id: DuctInsulation) => id !== 'board'
+export const isWrap = (id: DuctInsulation) => id.startsWith('wrap')
 /** The rigid choice by duct shape: 814 board on rectangular duct, Micro-Flex on round [U64, U65]. */
 export const boardFor = (shape: DuctShape = 'rect') => DUCT_BOARD[shape]
 /** "Rigid board" on rectangular duct; on round duct it is Micro-Flex. */
@@ -72,9 +73,13 @@ export const ductOutdoors = (s: Pick<SimState, 'ductLocation'>) => s.ductLocatio
  * outdoors the board goes under an aluminum jacket (FSK isn't weatherproof).
  */
 export function ductCover(s: Pick<SimState, 'ductIns' | 'ductFacing' | 'ductLocation'>): { facing: DuctFacing; jacket: 'none' | 'alu' } {
-  const board = s.ductIns === 'board'
-  return { facing: board ? s.ductFacing : 'fsk', jacket: board && ductOutdoors(s) ? 'alu' : 'none' }
+  const rigid = !isWrap(s.ductIns)
+  // polyiso is foil faced both sides (shown as foil)
+  return { facing: s.ductIns === 'board' ? s.ductFacing : 'fsk', jacket: rigid && ductOutdoors(s) ? 'alu' : 'none' }
 }
+
+/** Outdoors, by shape: JM XSPECT polyiso on rectangular duct (JM's rooftop duct board), Micro-Flex on round. */
+export const outdoorIns = (shape: DuctShape): DuctInsulation => (shape === 'round' ? 'board' : 'polyiso')
 
 /** The 3D stage for a duct: the yard outdoors, a mechanical room indoors. */
 export const ductStage = (s: Pick<SimState, 'ductLocation'>): 'plant' | 'room' => (ductOutdoors(s) ? 'plant' : 'room')
@@ -87,15 +92,18 @@ const nearest = (list: number[], v: number) => list.reduce((b, x) => (Math.abs(x
  * Other patches pass through unchanged.
  */
 export function placeDuct(s: SimState, patch: Partial<SimState>): Partial<SimState> {
+  if (patch.ductIns !== undefined) return patch
   const shape = patch.ductShape ?? s.ductShape
-  if (patch.ductLocation !== undefined && patch.ductIns === undefined) {
-    const now = ductOutdoors({ ductLocation: patch.ductLocation })
-    const id: DuctInsulation = now ? 'board' : 'wrap75'
-    if (now !== ductOutdoors(s) && s.ductIns !== id) return { ...patch, ductIns: id, ductFacing: 'fsk', thicknessIn: nearest(ductThicknesses(id, shape), s.thicknessIn) }
-  }
+  const was = ductOutdoors(s)
+  const now = patch.ductLocation !== undefined ? ductOutdoors({ ductLocation: patch.ductLocation }) : was
+  // in from outdoors: FSK wrap; out of doors (or a new shape while outdoors): that shape's outdoor board
+  const id: DuctInsulation | null = now !== was
+    ? (now ? outdoorIns(shape) : 'wrap75')
+    : now && patch.ductShape !== undefined && patch.ductShape !== s.ductShape ? outdoorIns(shape) : null
+  if (id && id !== s.ductIns) return { ...patch, ductIns: id, ductFacing: 'fsk', thicknessIn: nearest(ductThicknesses(id, shape), s.thicknessIn) }
   // board and Micro-Flex come in different thicknesses: a new shape keeps the nearest
-  if (patch.ductShape !== undefined && patch.thicknessIn === undefined && s.ductIns === 'board') {
-    const list = ductThicknesses('board', shape)
+  if (patch.ductShape !== undefined && patch.thicknessIn === undefined) {
+    const list = ductThicknesses(s.ductIns, shape)
     if (!list.includes(s.thicknessIn)) return { ...patch, thicknessIn: nearest(list, s.thicknessIn) }
   }
   return patch
@@ -103,12 +111,13 @@ export function placeDuct(s: SimState, patch: Partial<SimState>): Partial<SimSta
 
 /** Nominal thicknesses offered for a duct insulation, inches. */
 export function ductThicknesses(id: DuctInsulation, shape: DuctShape = 'rect'): number[] {
+  if (id === 'polyiso') return DUCT_POLYISO.thicknesses.map((t) => t.nominalIn)
   return id === 'board' ? boardFor(shape).thicknesses.map((t) => t.nominalIn) : wrapType(id).thicknesses.map((t) => t.nominalIn)
 }
 
 /** Installed thickness: duct wrap is rated at 25 % compression (75 % of nominal) [U23; IMC 604.7]; board as labeled. */
 export function installedIn(id: DuctInsulation, nominalIn: number) {
-  return id === 'board' ? nominalIn : nominalIn * DUCT_WRAP.installedFraction
+  return isWrap(id) ? nominalIn * DUCT_WRAP.installedFraction : nominalIn
 }
 
 /**
@@ -118,6 +127,7 @@ export function installedIn(id: DuctInsulation, nominalIn: number) {
  * assumption, which reproduces JM's printed installed R. Board: as published.
  */
 export function ductKPoints(id: DuctInsulation, shape: DuctShape = 'rect'): KPoint[] {
+  if (id === 'polyiso') return [{ meanF: 75, k: DUCT_POLYISO.k75 }]
   if (id === 'board') return boardFor(shape).k
   const w = wrapType(id)
   const k75 = w.kShape.find((p) => p.meanF === 75)!.k
@@ -126,6 +136,10 @@ export function ductKPoints(id: DuctInsulation, shape: DuctShape = 'rect'): KPoi
 
 /** The rating codes check: installed R at 75°F mean, as printed (Micro-Flex: thickness ÷ printed k). */
 export function ratedR(id: DuctInsulation, nominalIn: number, shape: DuctShape = 'rect'): number {
+  if (id === 'polyiso') {
+    const row = DUCT_POLYISO.thicknesses.find((t) => Math.abs(t.nominalIn - nominalIn) < 1e-6)
+    return row ? row.R : Math.round((nominalIn / DUCT_POLYISO.k75) * 10) / 10
+  }
   if (id === 'board') {
     const b = boardFor(shape)
     const row = b.thicknesses.find((t) => Math.abs(t.nominalIn - nominalIn) < 1e-6)
@@ -139,11 +153,14 @@ export function ratedR(id: DuctInsulation, nominalIn: number, shape: DuctShape =
 export function ductInsWords(s: Pick<SimState, 'ductIns' | 'ductFacing' | 'ductLocation' | 'ductShape'>) {
   const c = ductCover(s)
   if (isWrap(s.ductIns)) return 'FSK duct wrap'
-  const what = s.ductShape === 'round' ? 'Micro-Flex' : 'board'
+  const what = s.ductIns === 'polyiso' ? 'polyiso' : s.ductShape === 'round' ? 'Micro-Flex' : 'board'
   return c.jacket === 'alu' ? `${what} + aluminum jacket` : `${c.facing.toUpperCase()} ${what}`
 }
 
 export function ductProduct(id: DuctInsulation, facing: DuctFacing = 'fsk', shape: DuctShape = 'rect'): ProductSpec {
+  if (id === 'polyiso') {
+    return { name: `${DUCT_POLYISO.product}, foil faced`, tempF: { min: DUCT_POLYISO.minF, max: DUCT_POLYISO.maxF }, k: ductKPoints(id), kNote: DUCT_POLYISO.kNote, sources: DUCT_POLYISO.src }
+  }
   if (id === 'board') {
     const b = boardFor(shape)
     return { name: `${b.product}, ${facing === 'asj' ? 'ASJ (JM AP)' : 'FSK'} faced`, tempF: { min: null, max: b.maxF }, k: b.k, kNote: b.kNote, density: `${b.densityPcf} pcf`, sources: b.src }

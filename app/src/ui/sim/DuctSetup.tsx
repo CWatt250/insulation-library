@@ -1,4 +1,4 @@
-import { DUCT_WRAP } from '../../data/ductData'
+import { DUCT_POLYISO, DUCT_WRAP } from '../../data/ductData'
 import { DUCT_CODES, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, boardFor, ductOutdoors, ductThicknesses, installedIn, isWrap, ratedR, type DuctCodeBasis, type DuctFacing, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { physicsMode } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
@@ -56,12 +56,20 @@ export function DuctInsulationSection({ s, set, mode, units, acc }: { s: SimStat
   const R = ratedR(s.ductIns, s.thicknessIn, s.ductShape)
   const board = boardFor(s.ductShape)
   const round = s.ductShape === 'round'
+  const poly = s.ductIns === 'polyiso'
   const type = s.ductIns === 'wrap100' ? '100' : s.ductIns === 'wrap150' ? '150' : '75'
   return (
     <section>
       <h2>Insulation</h2>
       {outdoors && !wrap ? (
-        <p className="field-note">Outdoors: {round ? 'Micro-Flex' : 'rigid board'} under a 0.016" aluminum jacket, set by the location — FSK duct wrap isn't made for the weather. Pick an indoor location for duct wrap.</p>
+        round ? (
+          <p className="field-note">Outdoors: Micro-Flex under a 0.016" aluminum jacket, set by the location. JM's XSPECT polyiso is flat board for rectangular duct; pick an indoor location for duct wrap.</p>
+        ) : (
+          <div className="field">
+            <span className="field-label">Insulation <small className="muted">under a 0.016" aluminum jacket</small></span>
+            <Segmented<DuctInsulation> size="sm" label="Outdoor insulation" value={s.ductIns} onChange={pick} options={[{ id: 'polyiso', label: 'Polyiso (XSPECT)' }, { id: 'board', label: 'Fiberglass board' }]} />
+          </div>
+        )
       ) : (
         <>
           <div className="field">
@@ -82,17 +90,19 @@ export function DuctInsulationSection({ s, set, mode, units, acc }: { s: SimStat
         </>
       )}
       <Slider
-        label={wrap ? 'Wrap thickness (labeled)' : round ? 'Micro-Flex thickness' : 'Board thickness'}
+        label={wrap ? 'Wrap thickness (labeled)' : round ? 'Micro-Flex thickness' : poly ? 'Polyiso thickness' : 'Board thickness'}
         value={s.thicknessIn}
         values={list}
         onChange={(v) => set({ thicknessIn: v })}
         format={(v) => (units === 'ip' ? inchLabel(v) : fmt.inches(v, units))}
         hint={wrap
           ? <span><b>R-{R.toFixed(1)} installed</b> · {fmt.inches(+inst.toFixed(3), units)} thick at 25% compression ({DUCT_WRAP.product}, {DUCT_WRAP.types[type].label})</span>
-          : <span><b>R-{R.toFixed(1)}</b>{round ? ' (thickness ÷ k at 75°F)' : ''} · {board.product}, {board.densityPcf} pcf</span>}
+          : poly
+            ? <span><b>R-{R.toFixed(1)}</b> · {DUCT_POLYISO.product}{DUCT_POLYISO.thicknesses.find((x) => x.nominalIn === s.thicknessIn)?.mto ? ' (made to order)' : ''}{s.ductW > DUCT_POLYISO.taperedOverIn ? ` · tapered top board (JM: ducts over ${DUCT_POLYISO.taperedOverIn}" wide)` : ''}</span>
+            : <span><b>R-{R.toFixed(1)}</b>{round ? ' (thickness ÷ k at 75°F)' : ''} · {board.product}, {board.densityPcf} pcf</span>}
         accent={acc}
       />
-      {wrap && outdoors && <p className="field-note">FSK duct wrap outdoors needs a weatherproof jacket over it; pick the location again to switch to board.</p>}
+      {wrap && outdoors && <p className="field-note">FSK duct wrap outdoors needs a weatherproof jacket over it; pick the location again to switch to jacketed board.</p>}
       {physicsMode(s, mode) === 'hot' && s.processF > 120 && <p className="field-note">IMC 604.2: ducts above 120°F need enough insulation to hold the exposed surface at or below 120°F.</p>}
     </section>
   )

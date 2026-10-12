@@ -98,6 +98,21 @@ export const DUCT_BOARD: Record<'rect' | 'round', BoardProduct> = {
   },
 }
 
+/** JM XSPECT® ISOfoam APF polyiso board (foil faced both sides), flat; tapered top boards [U67, U68]: JM's rooftop duct board — rectangular duct outdoors, under an aluminum jacket. */
+export const DUCT_POLYISO = {
+  product: "JM XSPECT\u00ae polyiso board",
+  src: ["U67", "U68"],
+  minF: -100,
+  maxF: 250,
+  /** Labeled thickness and aged R at 75°F (ASTM C1289), as printed; `mto` = made to order. */
+  thicknesses: [{ nominalIn: 1, R: 6 }, { nominalIn: 1.5, R: 9.3 }, { nominalIn: 2, R: 13 }, { nominalIn: 2.5, R: 16, mto: true }, { nominalIn: 3, R: 19 }, { nominalIn: 3.5, R: 22, mto: true }, { nominalIn: 4, R: 26, mto: true }] as { nominalIn: number; R: number; mto?: boolean }[],
+  k75: 0.16,
+  kNote: "0.16 at 75\u00b0F (ASTM C518; R-6.0 per inch, aged per ASTM C1289); JM prints no other mean temperature, so k is held at 0.16",
+  facerPerm: 0.05,
+  /** Tapered top boards on ducts wider than this, inches. */
+  taperedOverIn: 32,
+}
+
 export type DuctService = 'both' | 'heating' | 'cooling'
 export type DuctLocation = 'exterior' | 'unconditioned' | 'indirect'
 

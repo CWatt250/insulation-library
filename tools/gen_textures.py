@@ -880,11 +880,50 @@ def galvanized(scales):
     save("galvanized", alb, normal_from_height(h, 1.0), np.clip(rough, 0.2, 1), tile, scales)
 
 
+def fsk(scales):
+    # ---- FSK facing and FSK tape (duct wrap, duct board): aluminum foil over a
+    # tri-directional glass scrim, as in FSK tape photos — threads along the roll
+    # plus two diagonal sets at about ±60°, ~22 mm apart, crossing at common
+    # points so the foil shows triangles and diamonds. The yarn embosses the foil
+    # as bright ridges. Over that, crinkles from handling and slow waves where the
+    # foil lies over the blanket, so reflections ripple instead of mirroring.
+    # Texture U runs along the roll (around the duct), V across it (along the run).
+    tile = 180.0
+    n = N
+    px = n / tile
+    yy, xx = np.mgrid[0:n, 0:n].astype(float)
+    wx, wy = warp_field(n, 801, 0.25 * px, beta=2.4, fmin=2)
+    X = (xx + wx) / n
+    Y = (yy + wy) / n
+    # line families as (a, b): lines where a*X + b*Y is an integer (tile-periodic).
+    # (0, 8): threads along U every 22.5 mm; (7, ±4): diagonals at ±60.3°, 22.3 mm apart
+    fams = [(0, 8), (7, 4), (7, -4)]
+    thread = np.zeros((n, n))
+    for i, (a, b) in enumerate(fams):
+        f = a * X + b * Y
+        d = np.abs(f - np.round(f)) * tile / np.hypot(a, b)  # mm to the nearest line
+        w = 0.6 + 0.08 * spectral(n, 810 + i, beta=2.0, fmin=3)  # yarn width wanders a little
+        thread = np.maximum(thread, np.exp(-(d / w) ** 2))
+    # crinkles: ridged noise -> sharp creases, larger ones mostly across the roll
+    r1 = 1 - np.abs(spectral(n, 803, beta=2.2, fmin=6, stretch=(0.45, 1.0)))
+    r2 = 1 - np.abs(spectral(n, 804, beta=2.0, fmin=16))
+    r3 = 1 - np.abs(spectral(n, 805, beta=1.8, fmin=40))
+    crease = np.clip((r1 ** 6) * 1.1 + (r2 ** 8) * 0.6, 0, 1)
+    swell = spectral(n, 806, beta=3.2, fmin=1, fmax=4)  # slow waves, a few per tile
+    h = (0.09 * slope(r1 ** 3) + 0.045 * slope(r2 ** 3) + 0.02 * slope(r3 ** 2)
+         + 0.07 * slope(swell) + thread * 0.12 * px)
+    nrm = normal_from_height(h, 1.0)
+    pan = spectral(n, 807, beta=2.6, fmin=2)
+    alb = tint("#D2D5D8", 1 + 0.03 * pan - 0.05 * crease + 0.24 * thread)
+    rough = 0.22 + 0.04 * pan + 0.08 * crease + 0.16 * thread
+    save("fsk", alb, nrm, rough, tile, scales)
+
+
 ALL = {"room": mech_room, "valve": valve_and_blanket, "calsil": calsil, "aluminum": aluminum, "stainless": stainless, "steel": carbon_steel,
        "fiberglass": fiberglass, "mineralwool": mineralwool, "cellglass": cellglass,
        "elastomeric": elastomeric, "phenolic": phenolic, "jackets_soft": jackets_soft,
        "pir": pir, "aerogel": aerogel, "perlite": perlite, "polyolefin": polyolefin,
-       "pipes": pipe_materials, "galvanized": galvanized}
+       "pipes": pipe_materials, "galvanized": galvanized, "fsk": fsk}
 
 if __name__ == "__main__":
     which = sys.argv[1:] or list(ALL)

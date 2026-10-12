@@ -101,16 +101,17 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Model:** rectangular ducts are solved face by face with the C680 flat-surface correlations. Sides are treated as vertical faces; the top and underside as horizontal faces, with the stable and unstable correlations swapped between warm and cold ducts. Round ducts are solved as cylinders.
 - **Checks in `npm test`:** the correlations reproduce DNV's 12 C680 flat-surface rows and 3E Plus Example 5.
 - **Insulation (Johns Manville throughout):**
-  - **Indoors (default):** JM Microlite FSK duct wrap, 0.75 pcf unless 1 or 1.5 pcf is picked, at 25% compression (IMC 604.7), FSK facing ε 0.1 per ASHRAE. JM prints k at 75°F only, so k vs temperature takes the shape of Knauf's published curve for the same density, scaled to JM's installed k (stated in the app).
+  - **Indoors (default, round duct):** JM Microlite FSK duct wrap, 0.75 pcf unless 1 or 1.5 pcf is picked, at 25% compression (IMC 604.7), FSK facing ε 0.1 per ASHRAE. JM prints k at 75°F only, so k vs temperature takes the shape of Knauf's published curve for the same density, scaled to JM's installed k (stated in the app).
   - **Indoors, rigid:** JM 800 Series Spin-Glas 814 board (3 pcf) on rectangular duct, Micro-Flex on round, FSK or ASJ (JM "AP") faced.
-  - **Outdoors:** picking "Outdoors" switches to the rigid insulation under a 0.016" aluminum jacket (UFGS 23 07 00) and the yard scene; back indoors it returns to FSK wrap in the mech room.
+  - **Outdoors:** picking "Outdoors" switches to rigid insulation under a 0.016" aluminum jacket (UFGS 23 07 00) and the yard scene: JM XSPECT polyiso on rectangular duct by default (JM's rooftop duct board; tapered top over 32" wide; fiberglass board on offer), Micro-Flex on round. Back indoors it returns to FSK wrap in the mech room.
   - The rated installed R and thickness show on the model and in Setup. Wrap and board R are JM's printed values; Micro-Flex has no printed R, so its R is thickness ÷ k at 75°F.
 - **Inside air film:** optional (ASHRAE simplified equation for air in ducts); off by default, as in 3E Plus.
 - **3D model:** galvanized rectangular or spiral duct.
-  - Indoors it hangs on strut trapezes in the mech room: compressed wrap with foil-taped seams and pins under ducts 24" and wider, or square-cut board with taped corners and taped pin washers.
+  - Indoors it hangs on strut trapezes in the mech room: compressed wrap that pillows and ripples between its corners and taped joints, dimpled at the pins under ducts 24" and wider, or square-cut board with taped corners and taped pin washers.
+  - FSK (facing and tape) is crinkled foil over a tri-directional glass scrim (`tex/fsk`, from `tools/gen_textures.py fsk`), so it shows the triangle-and-diamond pattern of real FSK.
   - Outdoors it sits on strut supports in the yard: aluminum jacket in 36" sheets with 3" laps, screwed on rectangular duct and banded 12" apart on round.
   - The effects run on the flat faces too.
-- **Data:** `tools/build_ducts.py` generates `app/src/data/ductData.ts` from `research/duct-verified.json` (U-ids), `research/duct-board-verified.json` (U64–U66) and `research/code-requirements-verified.json` (C-ids).
+- **Data:** `tools/build_ducts.py` generates `app/src/data/ductData.ts` from `research/duct-verified.json` (U-ids), `research/duct-board-verified.json` (U64–U68) and `research/code-requirements-verified.json` (C-ids).
 
 **Recommend (Phase 6): answer a few questions, get a thickness.**
 - **Pipe:** pick steel, copper or PVC and the size. Optional "what does it carry?" quick fills set typical temperatures from the presets. Choose indoors or outdoors, and mark condensate drains.

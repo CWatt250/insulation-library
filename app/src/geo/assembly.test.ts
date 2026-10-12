@@ -50,10 +50,10 @@ describe('copper and PVC pipe', () => {
 
 describe('ductwork assembly', () => {
   for (const shape of ['rect', 'round'] as const) {
-    for (const [insulation, facing, jacket] of [['wrap', 'fsk', 'none'], ['board', 'fsk', 'none'], ['board', 'asj', 'none'], ['board', 'fsk', 'alu']] as const) {
+    for (const [insulation, facing, jacket] of [['wrap', 'fsk', 'none'], ['board', 'fsk', 'none'], ['board', 'asj', 'none'], ['board', 'fsk', 'alu'], ['polyiso', 'fsk', 'alu']] as const) {
       it(`builds a ${shape} duct in ${facing} ${insulation}${jacket === 'alu' ? ' under aluminum' : ''}, installed and cut away`, () => {
         for (const view of ['installed', 'cutaway'] as const) {
-          const a = buildAssembly({ component: 'straight', npsIndex: 0, thicknessIn: 1, insulation: 'fiberglass', jacket: 'none', view, duct: { shape, w: 0.61, h: 0.3, d: 0.36, t: 0.038, insulation, facing, jacket } })
+          const a = buildAssembly({ component: 'straight', npsIndex: 0, thicknessIn: 1, insulation: 'fiberglass', jacket: 'none', view, duct: { shape, w: insulation === 'polyiso' ? 0.91 : 0.61, h: 0.3, d: 0.36, t: 0.038, insulation, facing, jacket } })
           expect(a.parts.length).toBeGreaterThan(1)
           expect(a.parts.some((p) => p.layer === 'jacket')).toBe(jacket === 'alu')
           for (const p of a.parts) {

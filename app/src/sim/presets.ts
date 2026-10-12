@@ -90,7 +90,7 @@ export const PRESETS: Preset[] = [
   {
     id: 'duct-cool', mode: 'duct', label: 'Supply duct, attic', blurb: 'Cooling supply air through a vented attic above an insulated ceiling',
     range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
-    set: { system: 'duct', ductType: 'supply', ductLocation: 'attic', ductService: 'both', ductShape: 'rect', ductW: 24, ductH: 12, ductIns: 'wrap75', thicknessIn: 3, processF: 55, ambientF: 95, rh: 60, npsIndex: NPS_4, windMph: 0 },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'attic', ductService: 'both', ductShape: 'round', ductD: 16, ductIns: 'wrap75', thicknessIn: 3, processF: 55, ambientF: 95, rh: 60, npsIndex: NPS_4, windMph: 0 },
   },
   {
     id: 'duct-cond', mode: 'duct', label: 'Supply duct, conditioned', blurb: 'Cooling supply air through an occupied, air-conditioned space',
@@ -121,7 +121,7 @@ export const PRESETS: Preset[] = [
   {
     id: 'duct-roof', mode: 'duct', label: 'Rooftop supply duct', blurb: 'Cooling supply duct run outdoors on a roof',
     range: { text: '55°F duct air: basis of the NAIMA duct-wrap condensation chart', src: ['U53'] },
-    set: { system: 'duct', ductType: 'supply', ductLocation: 'exterior', ductService: 'both', ductShape: 'rect', ductW: 30, ductH: 16, ductIns: 'board', ductFacing: 'fsk', thicknessIn: 2, processF: 55, ambientF: 95, rh: 55, npsIndex: NPS_4, windMph: 0 },
+    set: { system: 'duct', ductType: 'supply', ductLocation: 'exterior', ductService: 'both', ductShape: 'rect', ductW: 36, ductH: 18, ductIns: 'polyiso', ductFacing: 'fsk', thicknessIn: 1.5, processF: 55, ambientF: 95, rh: 55, npsIndex: NPS_4, windMph: 0 },
     stage: 'plant',
   },
   // ----------------------------------------------------------- condensate
@@ -154,7 +154,7 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   presetId: null,
   system: 'pipe',
   ductType: 'supply',
-  ductShape: 'rect',
+  ductShape: 'round',
   ductW: 24,
   ductH: 12,
   ductD: 14,

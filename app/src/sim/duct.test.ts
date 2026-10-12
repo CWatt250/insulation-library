@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { flatCoeffs } from './surface'
 import { ductCodeR, ductCover, ductKPoints, ductRequirement, ductStage, installedIn, placeDuct, ratedR, solveDuct } from './duct'
-import { DUCT_BOARD, DUCT_WRAP } from '../data/ductData'
+import { DUCT_BOARD, DUCT_POLYISO, DUCT_WRAP } from '../data/ductData'
 import { normalize } from './scenarios'
 import { kCurve, kMean } from './conductivity'
 import { initialState } from './presets'
@@ -89,20 +89,32 @@ describe('indoors and outdoors', () => {
     expect(ductCover(s)).toEqual({ facing: 'fsk', jacket: 'none' })
     expect(ductStage(s)).toBe('room')
   })
-  it('goes into board under an aluminum jacket outdoors, and back into wrap indoors', () => {
+  it('goes outdoors in XSPECT polyiso (rectangular) or Micro-Flex (round) under aluminum, and back into wrap indoors', () => {
+    expect(s.ductShape).toBe('round')
     const out = { ...s, ...placeDuct(s, { ductLocation: 'exterior' }) }
-    expect(out.ductIns).toBe('board')
+    expect(out.ductIns).toBe('board') // round: Micro-Flex
     expect(ductCover(out)).toEqual({ facing: 'fsk', jacket: 'alu' })
     expect(ductStage(out)).toBe('plant')
-    expect(DUCT_BOARD.rect.thicknesses.map((t) => t.nominalIn)).toContain(out.thicknessIn)
-    const back = { ...out, ...placeDuct(out, { ductLocation: 'attic' }) }
+    expect(DUCT_BOARD.round.thicknesses.map((t) => t.nominalIn)).toContain(out.thicknessIn)
+    // rectangular outdoors: JM's rooftop duct board
+    const rect = { ...out, ...placeDuct(out, { ductShape: 'rect' }) }
+    expect(rect.ductIns).toBe('polyiso')
+    expect(ductCover(rect).jacket).toBe('alu')
+    expect(DUCT_POLYISO.thicknesses.map((t) => t.nominalIn)).toContain(rect.thicknessIn)
+    const rectOut = { ...s, ductShape: 'rect' as const, ...placeDuct({ ...s, ductShape: 'rect' }, { ductLocation: 'exterior' }) }
+    expect(rectOut.ductIns).toBe('polyiso')
+    const back = { ...rect, ...placeDuct(rect, { ductLocation: 'attic' }) }
     expect(back.ductIns).toBe('wrap75')
     expect(ductCover(back).jacket).toBe('none')
+    expect(ductStage(back)).toBe('room')
     // indoor to indoor changes nothing else
     expect(placeDuct(s, { ductLocation: 'crawl' })).toEqual({ ductLocation: 'crawl' })
-    // round outdoor duct: Micro-Flex, whose thicknesses start at 1-1/2"
-    const roundOut = { ...out, thicknessIn: 1, ...placeDuct({ ...out, thicknessIn: 1 }, { ductShape: 'round' }) }
-    expect(DUCT_BOARD.round.thicknesses.map((t) => t.nominalIn)).toContain(roundOut.thicknessIn)
+  })
+  it('rates XSPECT polyiso at JM\'s printed aged R, k 0.16 held constant [U67]', () => {
+    for (const t of DUCT_POLYISO.thicknesses) expect(ratedR('polyiso', t.nominalIn)).toBe(t.R)
+    expect(ratedR('polyiso', 1.5)).toBe(9.3)
+    const k = kCurve(ductKPoints('polyiso'))
+    expect(kMean(k, fToK(40), fToK(120)) / 0.144227888).toBeCloseTo(0.16, 4)
   })
   it('opens an older outdoor file with wrap in board', () => {
     const n = normalize('duct', { ...s, ductLocation: 'exterior', ductIns: 'elastomeric' as never, thicknessIn: 2 })
@@ -167,7 +179,7 @@ describe('IECC 2021/2024 commercial (C403.12.1 / C403.13.1) and duct types outsi
 })
 
 describe('duct solver', () => {
-  const cold = { ...initialState('cold'), system: 'duct' as const, processF: 55, ambientF: 85, rh: 70, ductW: 24, ductH: 12 }
+  const cold = { ...initialState('cold'), system: 'duct' as const, processF: 55, ambientF: 85, rh: 70, ductShape: 'rect' as const, ductW: 24, ductH: 12 }
   it('bare: the sheet sits at the air temperature (no inside film)', () => {
     const r = solveDuct(cold, 'cold', null)
     for (const f of r.faces) expect(f.surfaceF).toBeCloseTo(55, 6)
@@ -207,7 +219,7 @@ describe('duct sources', () => {
     const { PRESETS } = await import('./presets')
     const ids = [
       ...Object.values(DUCT_SURFACES).flatMap((x) => [...x.src, ...(x.limitSrc ?? [])]),
-      ...DUCT_WRAP.src, ...DUCT_WRAP.shapeSrc, ...Object.values(DUCT_BOARD).flatMap((b) => [...b.src, ...Object.values(b.facings).flatMap((f) => f.src)]), 'U66', 'C19', 'C1', 'C3', 'C6', 'D_C1', 'D_C27', 'U1', 'U9', 'U14', 'U15',
+      ...DUCT_WRAP.src, ...DUCT_WRAP.shapeSrc, ...Object.values(DUCT_BOARD).flatMap((b) => [...b.src, ...Object.values(b.facings).flatMap((f) => f.src)]), ...DUCT_POLYISO.src, 'U66', 'C19', 'C1', 'C3', 'C6', 'D_C1', 'D_C27', 'U1', 'U9', 'U14', 'U15',
       ...PRESETS.filter((p) => p.set.system === 'duct').flatMap((p) => p.range?.src ?? []),
     ]
     for (const id of ids) expect(CALC_REFS[id], id).toBeTruthy()
