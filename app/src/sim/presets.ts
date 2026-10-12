@@ -163,6 +163,7 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   ductLocation: 'unconditioned',
   ductService: 'both',
   ductCodeBasis: 'ashrae',
+  pipeCodeBasis: 'ashrae',
   climateZone: 4,
   insideFilm: false,
   airFpm: 1000,
@@ -196,7 +197,7 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
 
 export function applyPreset(base: SimState | null, p: Preset): SimState {
   const keep = base
-    ? { lengthFt: base.lengthFt, hours: base.hours, climateZone: base.climateZone, ductCodeBasis: base.ductCodeBasis, insideFilm: base.insideFilm, airFpm: base.airFpm, ductFinish: base.ductFinish, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
+    ? { lengthFt: base.lengthFt, hours: base.hours, climateZone: base.climateZone, ductCodeBasis: base.ductCodeBasis, pipeCodeBasis: base.pipeCodeBasis, insideFilm: base.insideFilm, airFpm: base.airFpm, ductFinish: base.ductFinish, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
     : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5 }
   return { ...BASE, ...keep, ...p.set, presetId: p.id, kProduct: 0, emittanceOverride: null }
 }

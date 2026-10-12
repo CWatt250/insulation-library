@@ -1,6 +1,7 @@
 import type { FacingId, InsulationId, OuterJacketId } from '../data/catalog'
 import type { Component } from '../geo/assembly'
 import type { PipeMaterial } from '../data/pipe'
+import type { PipeCodeBasis } from './code'
 import type { DuctCodeBasis, DuctFinish, DuctInsulation, DuctPlace, DuctShape, DuctType } from './duct'
 import type { DuctService } from '../data/ductData'
 
@@ -32,6 +33,8 @@ export interface SimState {
   /** For the ASHRAE 90.1 duct table. */
   ductLocation: DuctPlace
   ductService: DuctService
+  /** Which energy code sets the pipe minimum. */
+  pipeCodeBasis: PipeCodeBasis
   /** Which energy code sets the duct minimum. */
   ductCodeBasis: DuctCodeBasis
   climateZone: number

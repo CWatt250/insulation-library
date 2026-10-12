@@ -33,7 +33,7 @@ export function constraintsFor(s: SimState, mode: SimMode): Constraint[] {
   }
   if (s.applyCode) {
     const c = codeMinimum(s, mode)
-    if ('minIn' in c) out.push({ id: 'code', label: `Energy code: ${c.edition} ≥ ${c.minIn.toFixed(2)}"`, goal: { kind: 'minThickness', in: c.minIn }, src: c.src })
+    if ('minIn' in c) out.push({ id: 'code', label: c.minR ? `Energy code: ${c.edition} R-${c.minR} (≥ ${c.minIn.toFixed(2)}")` : `Energy code: ${c.edition} ≥ ${c.minIn.toFixed(2)}"`, goal: { kind: 'minThickness', in: c.minIn }, src: c.src })
   }
   return out
 }

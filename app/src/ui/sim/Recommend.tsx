@@ -8,7 +8,7 @@ import { PIPE_LIMITS } from '../../data/pipeWalls'
 import { physicsMode } from '../../sim/model'
 import { ductCode } from '../../sim/design'
 import { vaporCheck } from '../../sim/vapor'
-import { codeMinimum } from '../../sim/code'
+import { codeMinimum, PIPE_CODES } from '../../sim/code'
 import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_TYPES, type DuctType } from '../../sim/duct'
 import { dewPointF } from '../../sim/psychro'
 import { initialState, PRESETS } from '../../sim/presets'
@@ -19,6 +19,7 @@ import { Icon, Segmented, Slider } from '../controls'
 import { Stage } from './Stage'
 import { DuctGuide } from './DuctGuide'
 import { DuctSize } from './DuctSetup'
+import { ReportButton } from './ReportButton'
 
 /**
  * Recommendations: answer a few questions — pipe or duct, what kind, the
@@ -105,6 +106,11 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
             </div>
             <Segmented<'in' | 'out'> size="sm" label="Indoors or outdoors" value={a.outdoors ? 'out' : 'in'} onChange={(v) => set({ outdoors: v === 'out' })} options={[{ id: 'in', label: 'Indoors' }, { id: 'out', label: 'Outdoors' }]} />
             <label className="check-row"><input type="checkbox" checked={a.drain} onChange={(e) => set({ drain: e.target.checked })} /><span>It's a condensate drain line <small className="muted">sized for sweating only</small></span></label>
+            <div className="field">
+              <span className="field-label">Energy code</span>
+              <Segmented<SimState['pipeCodeBasis']> size="sm" label="Energy code" value={a.pipeCode} onChange={(v) => set({ pipeCode: v })} options={PIPE_CODES.map((x) => ({ id: x.id, label: x.label, title: x.hint }))} />
+              <p className="field-note">{PIPE_CODES.find((x) => x.id === a.pipeCode)!.hint}</p>
+            </div>
           </>
         )) : step(2, 'What kind of duct, and where?', (
           <>
@@ -278,7 +284,21 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
           </tbody>
         </table>
       </section>
-      <button className="primary rec-open" onClick={() => onOpen(mode, s)}>
+      <ReportButton
+        inline
+        label="Save as report (PDF)"
+        make={() => ({
+          mode, s, ev, design: d, others: [], units,
+          recommendation: {
+            answer: d.thicknessIn === null ? `Over ${inchLabel(d.maxIn)} of ${label}` : `${inchLabel(d.thicknessIn)} ${label}`,
+            basis: d.governing ? `Governed by ${d.governing.label.split(':')[0].toLowerCase()}; every requirement is listed under Thickness design.` : '',
+            inputs: `For: ${what}; ${T(ap.processF)} ${ap.system === 'duct' ? 'air' : 'fluid'} in ${T(ap.ambientF)} air at ${ap.rh}% RH.`,
+            notes,
+            alternatives: options.slice(0, 6).filter((o) => o.id !== pick).map((o) => ({ label: o.label, thickness: o.design && o.design.thicknessIn !== null ? inchLabel(o.design.thicknessIn) : o.reason ?? 'beyond its range' })),
+          },
+        })}
+      />
+      <button className="tool rec-open" onClick={() => onOpen(mode, s)}>
         <Icon name="cube" size={16} /> Open in the simulator
       </button>
       <p className="field-note">Calculated with the simulator's engine (ASTM C680 method) and design rules; an educational / preliminary tool — confirm before specifying.</p>

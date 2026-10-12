@@ -29,6 +29,19 @@ const COOLING: Row[] = [
   { label: 'below 40°F', lo: -Infinity, hi: 39.9999, k: [0.2, 0.26], meanF: 50, t: [0.5, 1, 1, 1, 1.5] },
 ]
 
+/** IECC 2021 Table C403.12.3 (C1): 90.1's thicknesses; the 105–140°F row's conductivity range is 0.21–0.28. */
+const IECC_HEATING: Row[] = HEATING.map((r) => (r.lo === 105 ? { ...r, k: [0.21, 0.28] as [number, number] } : r))
+
+/**
+ * Residential pipe R-value, IECC 2024 Table C403.13.3(1) definition (C3):
+ * R = ro·ln(ro/ri)/k, with k the insulation's at 75°F mean (how product R-values are rated).
+ */
+export function pipeR(pipeOdIn: number, thicknessIn: number, kIp: number) {
+  const ri = pipeOdIn / 2
+  const ro = ri + thicknessIn
+  return (ro * Math.log(ro / ri)) / kIp
+}
+
 const npsValue = (nps: string) => nps.split('-').reduce((sum, part) => {
   const [a, b] = part.split('/').map(Number)
   return sum + (b ? a / b : a)
@@ -36,8 +49,18 @@ const npsValue = (nps: string) => nps.split('-').reduce((sum, part) => {
 
 const column = (nps: number) => (nps < 1 ? 0 : nps < 1.5 ? 1 : nps < 4 ? 2 : nps < 8 ? 3 : 4)
 
+export type PipeCodeBasis = 'ashrae' | 'iecc' | 'iecc-res'
+
+export const PIPE_CODES: { id: PipeCodeBasis; label: string; hint: string }[] = [
+  { id: 'ashrae', label: 'ASHRAE 90.1', hint: 'ASHRAE 90.1-2019 Tables 6.8.3-1/-2 (commercial)' },
+  { id: 'iecc', label: 'IECC commercial', hint: 'IECC 2021 Table C403.12.3' },
+  { id: 'iecc-res', label: 'IECC residential', hint: 'IECC 2021 R403.4: R-3 above 105°F or below 55°F' },
+]
+
 export interface CodeMinimum {
   edition: string
+  /** Residential: the rule is an R-value, not a table thickness. */
+  minR?: number
   table: string
   row: string
   /** Table thickness for this size and temperature, in. */
@@ -53,11 +76,30 @@ export interface CodeMinimum {
 }
 
 export function codeMinimum(s: SimState, mode: SimMode): CodeMinimum | { none: string } {
-  if (mode === 'condensate') return { none: 'ASHRAE 90.1 tables cover heating, hot-water, chilled-water, brine and refrigerant piping — not condensate drains.' }
+  const basis = s.pipeCodeBasis ?? 'ashrae'
+  const name = basis === 'ashrae' ? 'ASHRAE 90.1' : 'IECC'
+  if (mode === 'condensate') return { none: `${name} pipe insulation rules cover heating, hot-water, chilled-water, brine and refrigerant piping — not condensate drains.` }
   const T = s.processF
-  const rows = mode === 'hot' ? HEATING : COOLING
-  if (mode === 'hot' && T < 105) return { none: 'Below the 105°F bottom of the 90.1 heating table.' }
-  if (mode === 'cold' && T > 60) return { none: 'Above the 60°F top of the 90.1 cooling table.' }
+  const p0 = pipeSpec(s.pipe, s.npsIndex)
+  if (basis === 'iecc-res') {
+    // R403.4: "greater than 105°F (41°C) or less than 55°F (13°C) shall be insulated to an R-value of not less than R-3"
+    if (T <= 105 && T >= 55) return { none: 'IECC residential R403.4 covers piping above 105°F or below 55°F.' }
+    const K = kAt(curveFrom(productFor(s).k), ((75 - 32) * 5) / 9 + 273.15) / 0.144227888
+    let lo = 0
+    let hi = 6
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2
+      if (pipeR(p0.od, mid, K) >= 3) hi = mid
+      else lo = mid
+    }
+    return {
+      edition: 'IECC 2021 residential', minR: 3, table: 'R403.4', row: T > 105 ? 'above 105°F' : 'below 55°F',
+      tableIn: hi, K, kRange: [K, K], meanF: 75, minIn: hi, corrected: false, src: ['C2', 'C3'],
+    }
+  }
+  const rows = mode === 'hot' ? (basis === 'iecc' ? IECC_HEATING : HEATING) : COOLING
+  if (mode === 'hot' && T < 105) return { none: `Below the 105°F bottom of the ${name} heating table.` }
+  if (mode === 'cold' && T > 60) return { none: `Above the 60°F top of the ${name} cooling table.` }
   const row = rows.find((r) => T >= r.lo && T <= r.hi)
   if (!row) return { none: 'Outside the 90.1 table ranges.' }
   const p = pipeSpec(s.pipe, s.npsIndex)
@@ -67,6 +109,9 @@ export function codeMinimum(s: SimState, mode: SimMode): CodeMinimum | { none: s
   const r = p.od / 2
   const outside = K > row.k[1] || K < row.k[0]
   const minIn = outside ? r * ((1 + tableIn / r) ** (K / row.k[1]) - 1) : tableIn
+  if (basis === 'iecc') {
+    return { edition: 'IECC 2021 commercial', table: 'Table C403.12.3', row: row.label, tableIn, K, kRange: row.k, meanF: row.meanF, minIn, corrected: outside, src: ['C1'] }
+  }
   return {
     edition: 'ASHRAE 90.1-2019',
     table: mode === 'hot' ? 'Table 6.8.3-1' : 'Table 6.8.3-2',

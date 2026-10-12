@@ -114,7 +114,13 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Alternatives:** the other insulations, compared side by side.
 - **Recommend button:** nothing is calculated until you press **Recommend**. The answer lists the inputs it used; if you change an input afterwards, the answer greys out with an "inputs changed" notice until you press **Update recommendation**.
 - **Open in the simulator:** hands the result to the matching tab.
+- **Save as report (PDF):** Prepared by, Prepared for and Project fields; the report leads with the recommendation, its basis, the inputs, notes and alternatives, and reads on a phone.
 - **Code:** `app/src/sim/recommend.ts`, tested in `recommend.test.ts`.
+
+**Pipe energy codes:** choose the code in Setup, in Results (next to the code minimum) or in Recommend.
+- **ASHRAE 90.1-2019:** Tables 6.8.3-1 and 6.8.3-2.
+- **IECC commercial:** 2021 Table C403.12.3; the same thicknesses as 90.1, except the 105–140°F conductivity range is 0.21–0.28.
+- **IECC residential:** R403.4 requires R-3 above 105°F or below 55°F. The pipe R-value is ro·ln(ro/ri)/k, the IECC 2024 Table C403.13.3(1) definition.
 
 **Engine** (`app/src/sim/`): steady-state ASTM C680 approach.
 - Conduction uses temperature-dependent k, integrated through the layer, from the manufacturer's published k-vs-mean points.

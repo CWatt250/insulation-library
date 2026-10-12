@@ -41,3 +41,20 @@ describe('recommendations', () => {
     expect(r.s.insulation).toBe('elastomeric')
   })
 })
+
+describe('pipe energy codes', () => {
+  it('IECC commercial matches 90.1 thickness on the same row; residential asks R-3', () => {
+    const base = { ...START, ...use('chws'), pipe: 'steel' as const }
+    const ashrae = recommendation({ ...base, pipeCode: 'ashrae' }).d.rows.find((r) => r.c.id === 'code')!
+    const iecc = recommendation({ ...base, pipeCode: 'iecc' }).d.rows.find((r) => r.c.id === 'code')!
+    expect(iecc.c.label).toContain('IECC 2021 commercial')
+    expect((iecc.c.goal as { in: number }).in).toBeCloseTo((ashrae.c.goal as { in: number }).in, 6)
+    const res = recommendation({ ...base, pipeCode: 'iecc-res' }).d.rows.find((r) => r.c.id === 'code')!
+    expect(res.c.label).toContain('R-3')
+  })
+  it('residential R-3 by the IECC pipe R-value, R = ro·ln(ro/ri)/k', async () => {
+    const { pipeR } = await import('./code')
+    // 1" copper (1.125" OD), 1/2" at k 0.25: ro = 1.0625, ri = 0.5625 → R ≈ 2.70
+    expect(pipeR(1.125, 0.5, 0.25)).toBeCloseTo((1.0625 * Math.log(1.0625 / 0.5625)) / 0.25, 9)
+  })
+})

@@ -18,10 +18,10 @@ WANT = {
     "fittings-verified.json": ["F1", "F6", "F12", "F13"],
     "pipe-materials-verified.json": ["G1", "G3", "G5", "G6", "G8"],
     "duct-verified.json": ["U1", "U9", "U10", "U14", "U15", "U28", "U44", "U46", "U53"],
-    "code-requirements-verified.json": ["C1", "C3", "C6", "C7", "C19"],
+    "code-requirements-verified.json": ["C1", "C2", "C3", "C6", "C7", "C19"],
     "duct-code-verified.json": ["D_C1", "D_C27"],
 }
-KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard", "C1": "standard", "C3": "standard", "C7": "standard", "C6": "standard", "C19": "standard", "D_C1": "standard", "U15": "tool"}
+KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard", "C1": "standard", "C2": "standard", "C3": "standard", "C7": "standard", "C6": "standard", "C19": "standard", "D_C1": "standard", "U15": "tool"}
 NOTES = {
     "M1": "Method this engine follows (store page; full text paywalled)",
     "M3": "Public copy of the C680 surface equations used here",
@@ -55,6 +55,7 @@ NOTES = {
     "C19": "ASHRAE 90.1-2019 Table 6.8.2 minimum duct insulation R-value",
     "C3": "IECC 2024 C403.13.1 duct insulation (same values as 2021)",
     "C7": "IMC 2021 307: condensate disposal (no drain insulation requirement)",
+    "C2": "IECC 2021 residential R403.4: R-3 for piping above 105°F or below 55°F",
     "D_C1": "IECC 2021 definitions (conditioned space)",
     "D_C27": "DOE/PNNL code note: duct locations (Figure 1), 2009/2012 editions",
 }

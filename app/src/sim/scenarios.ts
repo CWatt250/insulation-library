@@ -57,6 +57,7 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
   oneOf('ductService', ['both', 'heating', 'cooling'])
   oneOf('ductType', ['supply', 'return', 'outdoor', 'exhaust'])
   oneOf('ductCodeBasis', ['ashrae', 'iecc'])
+  oneOf('pipeCodeBasis', ['ashrae', 'iecc', 'iecc-res'])
   // the Ductwork tab is always ductwork; the pipe tabs always pipe
   out.system = mode === 'duct' ? 'duct' : 'pipe'
   return out

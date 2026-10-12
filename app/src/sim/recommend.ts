@@ -36,12 +36,14 @@ export interface Answers {
   rh: number
   /** Chosen insulation, or 'auto' = the thinnest that meets everything. */
   material: string
+  /** Pipes: which energy code sets the minimum. */
+  pipeCode: SimState['pipeCodeBasis']
   duct: Pick<SimState, 'ductType' | 'ductLocation' | 'ductService' | 'climateZone' | 'ductCodeBasis' | 'ductShape' | 'ductW' | 'ductH' | 'ductD'>
 }
 
 export const START: Answers = {
   system: 'pipe', pipe: 'copper', npsIndex: 3, drain: false, outdoors: false,
-  processF: 45, ambientF: 85, rh: 70, material: 'auto',
+  processF: 45, ambientF: 85, rh: 70, material: 'auto', pipeCode: 'ashrae',
   duct: { ductType: 'supply', ductLocation: 'attic', ductService: 'both', climateZone: 4, ductCodeBasis: 'ashrae', ductShape: 'rect', ductW: 24, ductH: 12, ductD: 14 },
 }
 
@@ -68,7 +70,7 @@ export function stateFor(a: Answers, mode: SimMode, material: string): SimState 
     processF: a.processF, ambientF: a.ambientF, rh: a.rh, windMph: 0,
     insulation: ins.id, kProduct: productForTemp(ins.id, a.processF),
     jacket: a.outdoors ? outdoorJacket : ins.jackets[0], facing: ins.facings[0], thicknessIn: 1,
-    applyCode: true,
+    applyCode: true, pipeCodeBasis: a.pipeCode,
   }
 }
 

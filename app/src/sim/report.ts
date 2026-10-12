@@ -34,6 +34,16 @@ export interface ReportInput {
   preparedFor: string
   project: string
   appUrl: string
+  /** Who the report is from (company or estimator). */
+  preparedBy?: string
+  /** From the Recommend tab: the answer, what it was based on, notes and alternatives, shown first. */
+  recommendation?: {
+    answer: string
+    basis: string
+    inputs: string
+    notes: { text: string; src: string[] }[]
+    alternatives: { label: string; thickness: string }[]
+  }
 }
 
 const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
@@ -117,6 +127,13 @@ export function buildReport(r: ReportInput): string {
   .src li { font-size: 11.5px; }
   .src a { color: var(--ink2); word-break: break-word; }
   .note { color: var(--ink2); }
+  .rec .rec-answer { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 12px; border: 2px solid var(--acc); margin-bottom: 8px; }
+  .rec .rec-answer b { font-size: 28px; letter-spacing: -0.02em; }
+  .rec .rec-answer span { color: var(--ink2); }
+  .rec ul { margin-top: 8px; }
+  .rec small { color: var(--ink3); }
+  .alts { margin-top: 10px; }
+  @media (max-width: 640px) { header { flex-direction: column; align-items: flex-start; } .meta { text-align: left; } .big, .two { grid-template-columns: 1fr; } }
   footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink3); font-size: 11px; }
   @media print { main { padding: 0; } .shots img { break-inside: avoid; } h2 { break-after: avoid; } @page { margin: 14mm; } }
 </style></head>
@@ -127,8 +144,15 @@ export function buildReport(r: ReportInput): string {
     <div class="note">${duct ? `${esc(ductSize)} galvanized duct · ${esc(materialLabel(s))} ${esc(inchLabel(s.thicknessIn))}` : `${esc(COMPONENT[s.component])} · ${esc(pipeLabel(s.pipe, p))}${s.pipe === 'copper' ? '' : ` ${esc(PIPE_LABEL[s.pipe].toLowerCase())}`} · ${esc(INSULATION[s.insulation].label)} ${esc(inchLabel(s.thicknessIn))}`}</div>
     <span class="tag">Preliminary estimate — educational tool</span>
   </div>
-  <div class="meta">${r.preparedFor ? `Prepared for <b>${esc(r.preparedFor)}</b><br>` : ''}${r.project ? `${esc(r.project)}<br>` : ''}${esc(date)}</div>
+  <div class="meta">${r.preparedBy ? `Prepared by <b>${esc(r.preparedBy)}</b><br>` : ''}${r.preparedFor ? `Prepared for <b>${esc(r.preparedFor)}</b><br>` : ''}${r.project ? `${esc(r.project)}<br>` : ''}${esc(date)}</div>
 </header>
+${r.recommendation ? `<section class="rec">
+  <h2>Recommendation</h2>
+  <div class="rec-answer"><b>${esc(r.recommendation.answer)}</b><span>${esc(r.recommendation.basis)}</span></div>
+  <p class="note">${esc(r.recommendation.inputs)}</p>
+  ${r.recommendation.notes.length ? `<ul>${r.recommendation.notes.map((n) => `<li>${esc(n.text)}${n.src.length ? ` <small>[${esc(n.src.join(', '))}]</small>` : ''}</li>`).join('')}</ul>` : ''}
+  ${r.recommendation.alternatives.length ? `<table class="alts"><tbody>${r.recommendation.alternatives.map((a) => `<tr><th>${esc(a.label)}</th><td>${esc(a.thickness)}</td></tr>`).join('')}</tbody></table><p class="note">Other insulations, each at its own design thickness for the same conditions.</p>` : ''}
+</section>` : ''}
 ${images}
 <div class="big">${headline.map(([v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>
 
@@ -136,7 +160,7 @@ ${images}
 <section>
 <h2>System</h2>
 <table>
-${duct ? row('Duct', esc(`${DUCT_TYPES.find((t) => t.id === s.ductType)!.label}, ${ductSize} galvanized, horizontal`), esc(`${DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.label} · climate zone ${s.climateZone}`)) : row('Pipe', esc(`${PIPE_LABEL[s.pipe]}, ${pipeLabel(s.pipe, p)}, ${p.od}" OD`), PIPE_LIMITS[s.pipe] && s.processF > PIPE_LIMITS[s.pipe]!.maxF ? esc(`Above the ${PIPE_LIMITS[s.pipe]!.maxF}°F rating published for ${PIPE_LIMITS[s.pipe]!.label}`) : undefined)}
+${duct ? row('Duct', esc(`${DUCT_TYPES.find((t) => t.id === s.ductType)!.label}, ${ductSize} galvanized, horizontal`), esc(`${DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.label} · climate zone ${s.climateZone}`)) : row('Pipe', esc(s.pipe === 'copper' ? `Copper tube, ${p.nps}" nominal, ${p.od}" OD` : `${PIPE_LABEL[s.pipe]}, ${pipeLabel(s.pipe, p)}, ${p.od}" OD`), PIPE_LIMITS[s.pipe] && s.processF > PIPE_LIMITS[s.pipe]!.maxF ? esc(`Above the ${PIPE_LIMITS[s.pipe]!.maxF}°F rating published for ${PIPE_LIMITS[s.pipe]!.label}`) : undefined)}
 ${row(duct ? 'Air in the duct' : mode === 'hot' ? 'Process temperature' : 'Pipe / fluid temperature', esc(T(s.processF)), duct && s.insideFilm ? esc(`inside air film at ${s.airFpm} fpm`) : '')}
 ${row('Ambient air', esc(`${T(s.ambientF)}${mode !== 'hot' ? `, ${s.rh}% RH` : ''}${s.windMph ? `, ${s.windMph} mph wind` : ', still air'}`))}
 ${duct
