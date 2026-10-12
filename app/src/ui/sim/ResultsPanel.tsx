@@ -5,6 +5,7 @@ import { codeMinimum, PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
 import { vaporCheck } from '../../sim/vapor'
 import { fittingResult } from '../../sim/fittings'
 import { annualCost, money, paybackWords, priceBasis, runBasis } from '../../sim/cost'
+import { ductEnergy } from '../../sim/ductEnergy'
 import { SPECS } from '../../data/specs'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
 import { refsFor } from '../../sim/sources'
@@ -42,13 +43,25 @@ function Card({ label, value, unit, sub, tone, wide }: { label: string; value: R
 /** The yearly saving in one line, and the way into the Savings tab. */
 function SavingsLine({ mode, s, ev, onOpen }: { mode: SimMode; s: SimState; ev: Evaluation; onOpen?: () => void }) {
   const c = annualCost(s, mode, ev)
-  if (!c) return null
+  if (!c) {
+    // ducts inside the space they serve, outside air and exhaust: say why there is no figure
+    const de = s.system === 'duct' ? ductEnergy(s) : null
+    if (de?.kind !== 'none') return null
+    const why = (
+      <>
+        <span className="svl-k">Energy savings vs. bare</span>
+        <span className="svl-basis">{de.title}. Insulation here is for condensation.</span>
+        {onOpen && <span className="svl-go">Why? →</span>}
+      </>
+    )
+    return onOpen ? <button className="svl muted-line" onClick={onOpen}>{why}</button> : <div className="svl muted-line">{why}</div>
+  }
   const body = (
     <>
       <span className="svl-k">Energy savings vs. bare</span>
       <span className="svl-v"><b>{money(c.saved)}</b> / yr <span className="svl-m">· {money(c.saved / 12)} / month</span></span>
       {c.paybackYr !== null && <span className="svl-pay">Pays for itself in {paybackWords(c.paybackYr)}</span>}
-      <span className="svl-basis">{runBasis(s)} · {priceBasis(s, mode)}</span>
+      <span className="svl-basis">{s.system === 'duct' ? c.basis : `${runBasis(s)} · ${priceBasis(s, mode)}`}</span>
       {onOpen && <span className="svl-go">Open the savings calculator →</span>}
     </>
   )

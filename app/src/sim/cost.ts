@@ -1,4 +1,5 @@
 import { physicsMode } from './model'
+import { ductEnergy, monthSpan } from './ductEnergy'
 import type { Evaluation } from './model'
 import type { Fuel, SimMode, SimState } from './types'
 
@@ -24,6 +25,8 @@ export const BTU_PER_TON_H = 12000
 export const GAS_DEFAULT = 14
 export const POWER_DEFAULT = 0.12
 export const KW_PER_TON_DEFAULT = 0.9
+/** Rooftop or split (DX) units: LBNL puts packaged units at 1.1–1.4 kW/ton [P7]; ducts open on the middle. */
+export const KW_PER_TON_DX = 1.25
 export const BOILER_DEFAULT = 80
 export const HEAT_PUMP_COP_DEFAULT = 2.5
 
@@ -65,6 +68,9 @@ export interface CostResult {
   bare: number
   ins: number
   saved: number
+  /** Heat that costs energy over the year, Btu, bare and insulated. */
+  btuBare: number
+  btuIns: number
   /** Simple payback, years; null without an installed cost. */
   paybackYr: number | null
   basis: string
@@ -80,7 +86,7 @@ export function dollarsPerBtu(s: SimState, mode: SimMode): number {
 
 /** What is being paid for, in words: "natural gas at $14.00/MMBtu, 80% boiler efficiency". */
 export function priceBasis(s: SimState, mode: SimMode): string {
-  if (mode !== 'hot') return `electricity at $${s.coolPrice.toFixed(3)}/kWh, chiller plant ${s.kwPerTon.toFixed(2)} kW/ton`
+  if (mode !== 'hot') return `electricity at $${s.coolPrice.toFixed(3)}/kWh, cooling equipment ${s.kwPerTon.toFixed(2)} kW/ton`
   if (s.fuel === 'electric') return `electric heat at $${s.fuelPrice.toFixed(3)}/kWh, ${s.efficiencyPct}% efficient`
   if (s.fuel === 'heatpump') return `heat pump at $${s.fuelPrice.toFixed(3)}/kWh, COP ${(s.efficiencyPct / 100).toFixed(1)}`
   return s.fuel === 'gas'
@@ -95,6 +101,7 @@ export function runBasis(s: SimState): string {
 }
 
 export function annualCost(s: SimState, mode: SimMode, ev: Evaluation): CostResult | null {
+  if (s.system === 'duct') return ductCost(s)
   mode = physicsMode(s, mode)
   if (!ev.annual || mode === 'condensate') return null
   const k = dollarsPerBtu(s, mode)
@@ -102,7 +109,28 @@ export function annualCost(s: SimState, mode: SimMode, ev: Evaluation): CostResu
   const ins = ev.annual.ins * k
   const saved = bare - ins
   const cost = s.installedPerFt * s.lengthFt
-  return { bare, ins, saved, paybackYr: cost > 0 && saved > 0 ? cost / saved : null, basis: `${runBasis(s)} · ${priceBasis(s, mode)}` }
+  return { bare, ins, saved, btuBare: ev.annual.bare, btuIns: ev.annual.ins, paybackYr: cost > 0 && saved > 0 ? cost / saved : null, basis: `${runBasis(s)} · ${priceBasis(s, mode)}` }
+}
+
+/** Ducts: each season at Washington's normal weather (sim/ductEnergy.ts); null where nothing is lost. */
+export function ductCost(s: SimState): CostResult | null {
+  const de = ductEnergy(s)
+  if (de.kind === 'none' || s.lengthFt <= 0 || s.hoursPerDay <= 0 || s.daysPerWeek <= 0) return null
+  let bare = 0, ins = 0, btuBare = 0, btuIns = 0
+  for (const p of de.parts) {
+    const k = dollarsPerBtu(s, p.mode)
+    const b = p.qBare * s.lengthFt * p.hours
+    const i = p.qIns * s.lengthFt * p.hours
+    btuBare += b
+    btuIns += i
+    bare += b * k
+    ins += i * k
+  }
+  const saved = bare - ins
+  const cost = s.installedPerFt * s.lengthFt
+  const seasons = de.parts.map((p) => `${p.season} season ${monthSpan(p.months)}`).join(' + ')
+  const prices = [...new Set(de.parts.map((p) => p.mode))].map((m) => priceBasis(s, m)).join('; ')
+  return { bare, ins, saved, btuBare, btuIns, paybackYr: cost > 0 && saved > 0 ? cost / saved : null, basis: `${Math.round(s.lengthFt).toLocaleString('en-US')} LF, ${seasons}, ${de.station.name} weather · ${prices}` }
 }
 
 /** One side's yearly cost, step by step, for "Show the math". */
@@ -118,10 +146,10 @@ export interface CostSteps {
   cost: number
 }
 
-export function costSteps(s: SimState, mode: SimMode, qBtuHrFt: number): CostSteps {
-  mode = physicsMode(s, mode)
+export function costSteps(s: SimState, mode: SimMode, qBtuHrFt: number, hours = s.hours): CostSteps {
+  if (s.system !== 'duct') mode = physicsMode(s, mode)
   const q = Math.abs(qBtuHrFt)
-  const btuYr = q * s.lengthFt * s.hours
+  const btuYr = q * s.lengthFt * hours
   if (mode === 'hot') {
     const eff = Math.max(s.efficiencyPct, 1) / 100
     const amount = perKwh(s.fuel) ? btuYr / BTU_PER_KWH / eff : btuYr / 1e6 / eff

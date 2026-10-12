@@ -763,3 +763,12 @@ button.svl:hover { border-color: var(--chip-line); }
 .sv-payback small { flex-basis: 100%; font-size: 11px; color: var(--ink-3); }
 .field-label small { font-size: 11px; }
 .svl-pay { font-size: 12.5px; font-weight: 650; color: var(--ink); }
+.sv-none p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+.sv-none h3 { gap: 8px; }
+.sv-season { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: #1b1c1f; border: 1px solid var(--chip-line); }
+.sv-season-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.sv-season-h b { font-size: 13px; font-weight: 650; }
+.sv-season-h small { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.sv-sub { margin: 4px 0 -2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 650; }
+.sv-math-part { display: flex; flex-direction: column; gap: 12px; }
+.svl.muted-line { box-shadow: inset 2px 0 0 var(--ink-3); }

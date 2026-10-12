@@ -56,7 +56,7 @@ describe('energy cost', () => {
     expect(runBasis(s)).toBe('250 LF, running 24/7')
     expect(runBasis({ ...s, hours: 4380 })).toBe('250 LF, 4,380 h/yr')
     expect(priceBasis(s, 'hot')).toBe('natural gas at $14.00/MMBtu, 80% boiler efficiency')
-    expect(priceBasis(s, 'cold')).toBe('electricity at $0.120/kWh, chiller plant 0.90 kW/ton')
+    expect(priceBasis(s, 'cold')).toBe('electricity at $0.120/kWh, cooling equipment 0.90 kW/ton')
   })
 
   it('each heat source opens on its own efficiency and a price in its unit', () => {

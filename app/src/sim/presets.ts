@@ -2,7 +2,7 @@ import type { SimMode, SimState } from './types'
 import type { PipeMaterial } from '../data/pipe'
 import { pipeSizes } from '../data/pipes'
 import { DEW_MARGIN_DEFAULT_F, PP_DEFAULT_F } from './model'
-import { BOILER_DEFAULT, GAS_DEFAULT, KW_PER_TON_DEFAULT, POWER_DEFAULT } from './cost'
+import { BOILER_DEFAULT, GAS_DEFAULT, KW_PER_TON_DEFAULT, KW_PER_TON_DX, POWER_DEFAULT } from './cost'
 
 /**
  * Starting points for each mode. These are example operating conditions to
@@ -208,7 +208,8 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
 export function applyPreset(base: SimState | null, p: Preset): SimState {
   const keep = base
     ? { lengthFt: base.lengthFt, hours: base.hours, hoursPerDay: base.hoursPerDay, daysPerWeek: base.daysPerWeek, monthsPerYear: base.monthsPerYear, climateZone: base.climateZone, ductCodeBasis: base.ductCodeBasis, pipeCodeBasis: base.pipeCodeBasis, waCounty: base.waCounty, insideFilm: base.insideFilm, airFpm: base.airFpm, ductFinish: base.ductFinish, ppF: base.ppF, targetSurfaceF: base.targetSurfaceF, targetQ: base.targetQ, dewMarginF: base.dewMarginF, vr: base.vr, metalFinish: base.metalFinish, applyCode: base.applyCode, fuel: base.fuel, fuelPrice: base.fuelPrice, efficiencyPct: base.efficiencyPct, coolPrice: base.coolPrice, kwPerTon: base.kwPerTon, installedPerFt: base.installedPerFt, component: base.component, fittingCover: base.fittingCover }
-    : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5 }
+    // ducts are mostly cooled by rooftop or split units, pipes by a chiller plant
+    : { targetSurfaceF: p.mode === 'hot' ? 120 : 75, targetQ: p.mode === 'hot' ? 30 : 5, ...(p.mode === 'duct' ? { kwPerTon: KW_PER_TON_DX } : {}) }
   return { ...BASE, ...keep, ...p.set, presetId: p.id, kProduct: 0, emittanceOverride: null }
 }
 

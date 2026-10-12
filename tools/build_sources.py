@@ -22,6 +22,7 @@ WANT = {
     "duct-code-verified.json": ["D_C1", "D_C27"],
     "wsec-verified.json": ["W3", "W5", "W12"],
     "energy-prices-verified.json": ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"],
+    "wa-climate-verified.json": ["N1", "N2", "N3", "N4"],
 }
 KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard", "C1": "standard", "C2": "standard", "W3": "standard", "W5": "standard", "W12": "standard", "C3": "standard", "C7": "standard", "C6": "standard", "C19": "standard", "D_C1": "standard", "U15": "tool"}
 NOTES = {
@@ -71,6 +72,10 @@ NOTES = {
     "P6": "Washington commercial electricity 11.78¢/kWh (July 2026)",
     "P7": "Whole chiller plant 0.8–1.0 kW/ton typical; packaged units 1.1–1.4",
     "P8": "Heat pump water heaters: two to three times as efficient as electric resistance",
+    "N1": "NOAA hourly temperature normals: outdoor temperature by month and hour",
+    "N2": "NOAA monthly heating degree days (base 65°F) and mean temperatures",
+    "N3": "ASHRAE 152P defaults: cooling Jun–Sep, heating months >150 HDD, attic/crawl/ground temperatures",
+    "N4": "Standard 152: well-vented attic +13°F over outdoor for seasonal cooling",
 }
 DATASHEET = re.compile(r"^(J|D|G[1-6]$|U28$|U44$|U46$|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
 

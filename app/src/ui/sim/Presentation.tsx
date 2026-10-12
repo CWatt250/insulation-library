@@ -30,7 +30,7 @@ function stats(mode: SimMode, s: SimState, ev: Evaluation, units: UnitSystem, st
       return [
         { value: Q(bare.result.qBtuHrFt), label: `heat lost from every foot of bare ${n}`, tone: 'bad' },
         { value: T(bare.result.surfaceF), label: bare.result.surfaceF > s.ppF ? `surface — far above the ${T(s.ppF)} safe-touch limit` : 'surface temperature', tone: bare.result.surfaceF > s.ppF ? 'bad' : undefined },
-        ...(ev.annual ? [{ value: fmt.energy(ev.annual.bare, units), label: `wasted a year over ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'bad' as const }] : []),
+        ...(cost ? [{ value: fmt.energy(cost.btuBare, units), label: `wasted a year over ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'bad' as const }] : []),
       ]
     }
     if (codeStat) {
@@ -44,7 +44,7 @@ function stats(mode: SimMode, s: SimState, ev: Evaluation, units: UnitSystem, st
       { value: `${Math.round(ev.reductionPct)}%`, label: `less heat loss with ${what}`, tone: 'good' },
       { value: T(ins.result.surfaceF), label: ins.result.surfaceF <= s.ppF ? 'surface — safe to touch' : `surface — above the ${T(s.ppF)} limit`, tone: ins.result.surfaceF <= s.ppF ? 'good' : 'bad' },
       cost ? { value: money(cost.saved), label: `saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF${cost.paybackYr !== null ? ` · pays back in ${paybackWords(cost.paybackYr)}` : ''}`, tone: 'good' }
-        : ev.annual ? { value: fmt.energy(ev.annual.saved, units), label: `energy saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'good' } : { value: Q(bare.result.qBtuHrFt - ins.result.qBtuHrFt), label: 'less heat lost per foot', tone: 'good' },
+        : { value: Q(bare.result.qBtuHrFt - ins.result.qBtuHrFt), label: 'less heat lost per foot', tone: 'good' },
     ]
   }
   const wet = (x: typeof bare) => x.moisture.condensing
