@@ -13,6 +13,7 @@ import type { SimMode, SimState } from '../../sim/types'
 import { currentMaterial, noun, type MaterialId } from '../../sim/system'
 import { ductCode } from '../../sim/design'
 import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES } from '../../sim/duct'
+import { shortfall } from './answerText'
 import type { DuctFaceResult } from '../../sim/duct'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { DUCT_LEARN, INTRO, LEARN, TOPICS } from '../../sim/learn'
@@ -91,19 +92,21 @@ function explain(ev: Evaluation, s: SimState, units: UnitSystem): string {
   const T = (f: number) => fmt.temp(f, units)
   if (ev.mode === 'hot') {
     const safe = ins.result.surfaceF <= s.ppF
-    return `The bare ${noun(s)} would give off ${fmt.flow(ev.bare.result.qBtuHrFt, units)} ${fmt.flowUnit(units)}. With ${inchLabel(s.thicknessIn)} of insulation that drops to ${fmt.flow(ins.result.qBtuHrFt, units)} — ${Math.round(ev.reductionPct)}% less — and the outside surface sits at ${T(ins.result.surfaceF)}, ${safe ? 'within' : 'above'} the ${T(s.ppF)} safe-touch limit.`
+    return `The bare ${noun(s)} would give off ${fmt.flow(ev.bare.result.qBtuHrFt, units)} ${fmt.flowUnit(units)}. With ${fmt.thick(s.thicknessIn, units)} of insulation that drops to ${fmt.flow(ins.result.qBtuHrFt, units)} — ${Math.round(ev.reductionPct)}% less — and the outside surface sits at ${T(ins.result.surfaceF)}, ${safe ? 'within' : 'above'} the ${T(s.ppF)} safe-touch limit.`
   }
   const bareM = ev.bare.moisture
-  const lead = bareM.condensing
+  const lead = bareM.condensing && bareM.marginF > -0.5
+    ? `A bare ${noun(s)} ${s.system === 'duct' ? 'carrying' : 'at'} ${T(s.processF)}${s.system === 'duct' ? ' air' : ''} would sit right at the room's ${T(m.dewF)} dew point, so it can start to sweat.`
+    : bareM.condensing
     ? `A bare ${noun(s)} ${s.system === 'duct' ? 'carrying' : 'at'} ${T(s.processF)}${s.system === 'duct' ? ' air' : ''} would sit ${fmt.tempDelta(-bareM.marginF, units).replace('+', '')} below the room's ${T(m.dewF)} dew point, so it sweats.`
     : `Even bare, this ${noun(s)} stays above the room's ${T(m.dewF)} dew point.`
   if (m.condensing) {
-    return `${lead} With ${inchLabel(s.thicknessIn)} of insulation the outside surface is still ${T(ins.result.surfaceF)} — below the dew point — so moisture condenses on it. More insulation, or a higher-emittance finish, warms the surface.`
+    return `${lead} With ${fmt.thick(s.thicknessIn, units)} of insulation the outside surface is still ${T(ins.result.surfaceF)} — below the dew point — so moisture condenses on it. More insulation, or a higher-emittance finish, warms the surface.`
   }
   if (ins.status === 'borderline') {
-    return `${lead} With ${inchLabel(s.thicknessIn)} of insulation the surface is ${T(ins.result.surfaceF)}, just ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point — less than your ${fmt.margin(s.dewMarginF, units)} margin. A small change in humidity could start it sweating.`
+    return `${lead} With ${fmt.thick(s.thicknessIn, units)} of insulation the surface is ${T(ins.result.surfaceF)}, just ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point — less than your ${fmt.margin(s.dewMarginF, units)} margin. A small change in humidity could start it sweating.`
   }
-  return `${lead} With ${inchLabel(s.thicknessIn)} of insulation the surface stays at ${T(ins.result.surfaceF)}, ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point, so it stays dry — as long as the vapor retarder is sealed.`
+  return `${lead} With ${fmt.thick(s.thicknessIn, units)} of insulation the surface stays at ${T(ins.result.surfaceF)}, ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point, so it stays dry — as long as the vapor retarder is sealed.`
 }
 
 function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Partial<SimState>) => void }) {
@@ -179,7 +182,7 @@ function VaporCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Eva
     ? SPECS[s.insulation].sources.filter((x) => r.src.includes(x.id)).map((x) => ({ id: x.id, url: x.url, title: x.label }))
     : refsFor(r.src)
   const req = refsFor(v.requiredSrc)
-  const tone = v.meets === null ? 'warn' : v.meets ? 'good' : 'bad'
+  const tone = v.tone
   const permTxt = r.perm === null ? 'not published' : `${r.upper ? '≤ ' : ''}${r.perm < 0.001 ? r.perm.toFixed(4) : r.perm.toFixed(3)} perm`
   return (
     <section className={`vapor-card ${tone}`}>
@@ -195,7 +198,7 @@ function VaporCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Eva
         <small>{r.label}{r.note ? ` — ${r.note}` : ''}{links.map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</small>
       </div>
       <p className="vc-verdict">
-        {v.meets === null ? 'No published permeance to check against.' : v.meets ? 'Meets the guidance at its published permeance.' : 'Above the guidance — add or upgrade the vapor retarder.'}
+        {v.verdict}
         {v.ozPerYearPer100ft !== null && (
           <> With every joint sealed, about <b>{units === 'si' ? `${(v.ozPerYearPer100ft * 29.5735 * 0.984).toFixed(v.ozPerYearPer100ft < 1 ? 1 : 0)} mL` : `${v.ozPerYearPer100ft < 1 ? v.ozPerYearPer100ft.toFixed(2) : v.ozPerYearPer100ft.toFixed(1)} fl oz`}</b> of water vapor a year gets through per {units === 'si' ? '30 m' : '100 ft'} of {noun(s)}.</>
         )}
@@ -253,13 +256,14 @@ function CodeLine({ s, mode, ev, units, onSet }: { s: SimState; mode: SimMode; e
   if (s.system === 'duct') {
     const c = ductCode(s)
     const ref = refsFor(c.src)[0]
-    const code = DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label
+    const code = DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.short
     const R = ev.ins.ratedR ?? 0
     const link = ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>
-    if (c.R === null) return <p className="answer-code">Energy code ({code}): {c.notStated ? 'no R-value set' : 'no minimum'} for this duct{link}.</p>
+    // one span, so the source tag and the full stop stay with the sentence
+    if (c.R === null) return <p className="answer-code"><span>{code} energy code: {c.notStated ? 'no R-value set' : 'no minimum'} for this duct.{link}</span></p>
     return (
       <p className={`answer-code ${R + 1e-9 >= c.R ? 'ok' : 'short'}`}>
-        <Icon name={R + 1e-9 >= c.R ? 'check' : 'alert'} size={13} /> Energy code ({code}) needs R-{c.R} installed — yours is R-{R.toFixed(1)}{link}
+        <Icon name={R + 1e-9 >= c.R ? 'check' : 'alert'} size={13} /> <span>{code} energy code needs R-{c.R} installed — yours is R-{R.toFixed(1)}.{link}</span>
       </p>
     )
   }
@@ -272,7 +276,7 @@ function CodeLine({ s, mode, ev, units, onSet }: { s: SimState; mode: SimMode; e
       <input type="checkbox" checked={s.applyCode} onChange={(e) => onSet({ applyCode: e.target.checked })} />
       <span>
         Include the {c.edition} minimum ({c.minR ? `R-${c.minR} → ` : ''}{fmt.inches(+c.minIn.toFixed(2), units)})
-        <small className="muted">{met ? `Your ${inchLabel(s.thicknessIn)} meets it` : `Your ${inchLabel(s.thicknessIn)} is below it`}</small>
+        <small className="muted">{met ? `Your ${fmt.thick(s.thicknessIn, units)} meets it` : `Your ${fmt.thick(s.thicknessIn, units)} is below it`}</small>
       </span>
     </label>
   )
@@ -288,7 +292,7 @@ function Answer({ mode, s, ev, d, units, onApply, onSet, onGuide }: { mode: SimM
   const safe = r.surfaceF <= s.ppF
   const tone = mode === 'hot' ? (safe ? 'good' : 'bad') : STATUS_TONE[ins.status]
   const vapor = mode !== 'hot' ? vaporCheck(s, mode, ins) : null
-  const yours = `Your ${inchLabel(s.thicknessIn)}`
+  const yours = `Your ${fmt.thick(s.thicknessIn, units)}`
   return (
     <div className={`hero answer ${tone}`}>
       <div className="hero-top">
@@ -296,15 +300,17 @@ function Answer({ mode, s, ev, d, units, onApply, onSet, onGuide }: { mode: SimM
         <span className="hero-tag">Preliminary estimate</span>
       </div>
       <div className="answer-main">
-        <div className="hero-big">{t === null ? `> ${inchLabel(d.maxIn)}` : inchLabel(t)}{t !== null && d.layers > 1 && <small>{d.layers} layers</small>}</div>
-        {t !== null && (t === s.thicknessIn
+        <div className="hero-big">{d.noneNeeded ? 'Not required' : t === null ? `> ${fmt.thick(d.maxIn, units)}` : fmt.thick(t, units)}{!d.noneNeeded && t !== null && d.layers > 1 && <small>{d.layers} layers</small>}</div>
+        {!d.noneNeeded && t !== null && (t === s.thicknessIn
           ? <span className="answer-inuse"><Icon name="check" size={14} /> In use</span>
-          : <button className="primary answer-use" onClick={() => onApply(t)}>Use {inchLabel(t)}</button>)}
+          : <button className="primary answer-use" onClick={() => onApply(t)}>Use {fmt.thick(t, units)}</button>)}
       </div>
       <p className="hero-sub">
-        {t === null
-          ? `${s.system === 'duct' ? 'This insulation' : 'This material'} can't get there within ${inchLabel(d.maxIn)} — compare materials under More details.`
-          : d.governing ? setBy(d.governing, s, units) : 'Every requirement is met even bare.'}
+        {d.noneNeeded
+          ? `Bare, the ${noun(s)} already meets every requirement here — insulate only for energy savings, noise or protection.`
+          : t === null
+            ? `${shortfall(s, mode, d, units)} Compare materials under More details.`
+            : d.governing ? setBy(d.governing, s, units) : 'Every requirement is met even bare.'}
       </p>
       <CodeLine s={s} mode={mode} ev={ev} units={units} onSet={onSet} />
       <div className="answer-now">
@@ -321,7 +327,7 @@ function Answer({ mode, s, ev, d, units, onApply, onSet, onGuide }: { mode: SimM
           {mode === 'condensate' && m.rateGm2h >= DRIP_RATE ? ' — enough to drip' : ''}
         </p>
       )}
-      {vapor?.meets === false && <p className="answer-code short"><Icon name="alert" size={13} /> The vapor retarder is above the guidance — see More details.</p>}
+      {vapor?.tone === 'bad' && <p className="answer-code short"><Icon name="alert" size={13} /> The vapor retarder is above the code limit — see More details.</p>}
       {onGuide && <button className="linkish" onClick={onGuide}><Icon name="map" size={13} /> Where is "{DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.short.toLowerCase()}"? Show it on the building</button>}
     </div>
   )

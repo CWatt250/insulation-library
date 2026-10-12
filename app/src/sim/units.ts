@@ -58,6 +58,8 @@ export const fmt = {
   },
   flowUnit: (u: UnitSystem) => (u === 'ip' ? 'Btu/hr·ft' : 'W/m'),
   length: (ft: number, u: UnitSystem) => (u === 'ip' ? `${Math.round(ft).toLocaleString('en-US')} ft` : `${Math.round(ft * FT_M).toLocaleString('en-US')} m`),
+  /** An insulation thickness: 1-1/2" in inches, 38 mm in metric. */
+  thick: (inch: number, u: UnitSystem) => (u === 'ip' ? inchLabel(inch) : `${Math.round(inch * 25.4)} mm`),
   inches: (inch: number, u: UnitSystem) => (u === 'ip' ? `${inch.toLocaleString('en-US', { maximumFractionDigits: 2 })}"` : `${Math.round(inch * 25.4)} mm`),
   /** Annual energy; input in Btu/yr. */
   energy: (btu: number, u: UnitSystem) => {

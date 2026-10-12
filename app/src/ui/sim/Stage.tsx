@@ -44,6 +44,7 @@ function stubTag(s: SimState, bare: Side, mode: SimMode, units: UnitSystem): Sim
   if (mode === 'hot') return { text: `${what} · ${fmt.temp(bare.result.surfaceF, units)}`, tone: 'hot' }
   const m = bare.moisture
   if (!m.condensing) return { text: `${what} – dry`, tone: 'dry' }
+  if (m.marginF > -0.5) return { text: `${what} – at the dew point`, tone: 'wet' }
   return m.frost ? { text: `${what} – frosting`, tone: 'frost' } : { text: `${what} – sweating`, tone: 'wet' }
 }
 
@@ -112,7 +113,7 @@ function SimViewer({ s, mode, panel, bare, opts, sync, inset, coverage, frameRad
   // side-by-side panes carry their own labels; a single view tags the stub, and a duct its R-value
   const single = frameRadius === undefined
   const tag = single ? stubTag(s, bare, mode, opts.units) : undefined
-  const insTag = single && duct && !panel.bare ? { r: `R-${(panel.side.ratedR ?? 0).toFixed(1)}`, text: `${inchLabel(panel.modelThickness)} ${ductInsWords(s)}` } : undefined
+  const insTag = single && duct && !panel.bare ? { r: `R-${(panel.side.ratedR ?? 0).toFixed(1)}`, text: `${fmt.thick(panel.modelThickness, opts.units)} ${ductInsWords(s)}` } : undefined
   const sim = useMemo(() => ({ ...visualFor(panel.side, bare, mode, thermal, fittingBare), stubTag: tag, insTag }), [panel.side, bare, mode, thermal, fittingBare, tag?.text, tag?.tone, insTag?.r, insTag?.text]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Viewer

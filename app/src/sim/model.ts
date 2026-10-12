@@ -273,8 +273,7 @@ function ductWarnings(s: SimState, mode: SimMode, ins: Side, product: ProductSpe
   const out: Warning[] = []
   const max = product.tempF.max
   if (max !== null && s.processF > max) out.push({ level: 'warn', text: `${s.processF}°F is above ${product.name}'s ${product.tempF.note ?? `published maximum of ${max}°F`}.` })
-  if (mode === 'hot' && s.processF <= s.ambientF) out.push({ level: 'info', text: 'The air in the duct is at or below the room — this is a cooling duct. Try Cold mode.' })
-  if (mode !== 'hot' && s.processF >= s.ambientF) out.push({ level: 'info', text: 'The air in the duct is at or above the room, so the duct cannot sweat. Try Hot mode.' })
+  if (s.processF === s.ambientF) out.push({ level: 'info', text: 'The air in the duct is at room temperature, so no heat flows either way and it cannot sweat.' })
   const lim = ins.surface.maxSurfaceF
   if (lim !== undefined && ins.result.surfaceF > lim) out.push({ level: 'warn', text: `Surface ${Math.round(ins.result.surfaceF)}°F exceeds the ${ins.surface.label.toLowerCase()} limit of ${lim}°F.` })
   if (s.ductShape === 'rect' && s.ductW >= 24) out.push({ level: 'info', text: 'Ducts 24" and wider need mechanical fasteners (pins) on the underside at no more than 18" on center to keep the wrap from sagging (OC, JM, Knauf, CertainTeed).' })

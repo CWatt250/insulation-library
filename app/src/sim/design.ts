@@ -50,6 +50,8 @@ export interface Design {
   /** Insulation layers at the design thickness (catalog single-layer limit). */
   layers: number
   maxIn: number
+  /** Every requirement is met with no insulation at all. */
+  noneNeeded: boolean
 }
 
 /** Smallest thickness (continuous, nominal OD) that meets a goal; bisection, since every goal is monotonic in thickness. */
@@ -84,6 +86,7 @@ export function design(s: SimState, mode: SimMode): Design {
     exactIn: governing ? exactThickness(s, mode, governing.c.goal, maxIn) : null,
     layers: t !== null && s.system !== 'duct' ? layerCount(ins, t) : 1,
     maxIn,
+    noneNeeded: rows.length > 0 && rows.every((r) => r.rec.alreadyMet),
   }
 }
 
@@ -164,7 +167,7 @@ function ductConstraints(s: SimState, mode: SimMode): Constraint[] {
   }
   // ductwork is designed to the energy code first: its minimum is always a requirement
   const c = ductCode(s)
-  if (c.R !== null) out.push({ id: 'code', label: `Energy code (${DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}): installed ≥ R-${c.R}`, goal: { kind: 'minR', R: c.R }, src: c.src })
+  if (c.R !== null) out.push({ id: 'code', label: `Energy code, ${DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.short}: installed ≥ R-${c.R}`, goal: { kind: 'minR', R: c.R }, src: c.src })
   return out
 }
 

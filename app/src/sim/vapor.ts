@@ -34,6 +34,11 @@ export interface VaporCheck {
   requiredSrc: string[]
   retarder: RetarderInfo
   meets: boolean | null
+  /** The limit is code (ducts: IMC 604.11) or guidance (pipes: ASHRAE). */
+  code: boolean
+  /** One line on where this leaves the system, and how worried to be. */
+  verdict: string
+  tone: 'good' | 'warn' | 'bad'
   /** Water vapor through the retarder, fl oz per year per 100 ft (sealed joints). */
   ozPerYearPer100ft: number | null
   /** Lines worth showing next to the check. */
@@ -45,7 +50,7 @@ const OZ_PER_LB = 453.59237 / 29.5735 // water, ~1 g/mL
 
 function retarderFor(s: SimState, mode: SimMode): RetarderInfo {
   if (s.system === 'duct') {
-    if (s.ductIns === 'polyiso') return { label: 'Foil facers on the XSPECT polyiso board', perm: DUCT_POLYISO.facerPerm, src: DUCT_POLYISO.src, note: '0.05 perms (ASTM E96); JM: seal board seams with UL 181A tape or mastic' }
+    if (s.ductIns === 'polyiso') return { label: 'XSPECT polyiso foil facer', perm: DUCT_POLYISO.facerPerm, src: DUCT_POLYISO.src, note: '0.05 perms (ASTM E96); JM: seal board seams with UL 181A tape or mastic' }
     if (!isWrap(s.ductIns)) {
       const f = boardFor(s.ductShape).facings[s.ductFacing]
       return { label: `${s.ductFacing.toUpperCase()} facing on the ${s.ductShape === 'round' ? 'Micro-Flex' : 'board'}`, perm: f.perm, upper: s.ductShape !== 'round', src: f.src, note: f.note }
@@ -86,7 +91,9 @@ export function vaporCheck(s: SimState, mode: SimMode, side: Side): VaporCheck |
   mode = physicsMode(s, mode)
   if (mode === 'hot' || side.thicknessIn === null || s.processF >= s.ambientF) return null
   const cold = s.processF < 0
-  const required = cold ? 0.01 : 0.02
+  // ducts: the mechanical code's limit (IMC 604.11, 0.05 perm); pipes: ASHRAE's guidance
+  const duct = s.system === 'duct'
+  const required = duct ? 0.05 : cold ? 0.01 : 0.02
   const retarder = retarderFor(s, mode)
   const notes: string[] = []
   if (s.system === 'duct') {
@@ -105,12 +112,23 @@ export function vaporCheck(s: SimState, mode: SimMode, side: Side): VaporCheck |
     const grainsYr = retarder.perm * areaFt2 * dpInHg * 8760
     oz = (grainsYr / 7000) * OZ_PER_LB
   }
+  const meets = retarder.perm === null ? null : retarder.perm <= required + 1e-9
+  // closed-cell foam is its own retarder: above the 0.02 guidance it is still the usual choice when glued
+  const closedCell = !duct && sys.vaporBy === 'integral'
+  const verdict = meets === null ? 'No published permeance to check against.'
+    : meets ? (duct ? 'Meets IMC 604.11 at its published permeance.' : 'Meets the guidance at its published permeance.')
+      : duct ? 'Above the IMC 604.11 limit — add a vapor retarder rated 0.05 perm or less.'
+        : closedCell ? 'Above ASHRAE\'s 0.02 guidance. ASHRAE accepts sealed closed-cell foam without a separate retarder, typically in chilled-water service — glue every seam; on refrigeration lines add an outer retarder.'
+          : 'Above ASHRAE\'s guidance (not a code limit) — a better-sealed or lower-perm retarder keeps the insulation drier.'
   return {
     required,
-    requiredNote: cold ? '≤0.01 perm strongly considered below 0°F' : '≤0.02 perm for below-ambient insulation',
-    requiredSrc: s.system === 'duct' ? ['R1', 'R2', 'C6'] : ['R1', 'R2'],
+    requiredNote: duct ? 'IMC 604.11: cooling ducts, 0.05 perm or less' : cold ? '≤0.01 perm strongly considered below 0°F (guidance)' : '≤0.02 perm for below-ambient insulation (ASHRAE guidance, not code)',
+    requiredSrc: duct ? ['C6'] : ['R1', 'R2'],
     retarder,
-    meets: retarder.perm === null ? null : retarder.perm <= required + 1e-9,
+    meets,
+    code: duct,
+    verdict,
+    tone: meets === null ? 'warn' : meets ? 'good' : duct ? 'bad' : 'warn',
     ozPerYearPer100ft: oz,
     notes,
   }

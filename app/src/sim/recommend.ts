@@ -2,7 +2,7 @@ import { INSULATION, INSULATIONS } from '../data/catalog'
 import type { PipeMaterial } from '../data/pipe'
 import { availability, evaluate, productForTemp } from './model'
 import { design, materialOptions } from './design'
-import { DUCT_INSULATIONS, ductInsLabel, ductOutdoors, ductThicknesses, isWrap, outdoorIns, type DuctInsulation } from './duct'
+import { DUCT_INSULATIONS, ductInsLabel, ductOutdoors, ductThicknesses, isWrap, outdoorIns, type DuctInsulation, type DuctPlace } from './duct'
 import { initialState } from './presets'
 import type { SimMode, SimState } from './types'
 
@@ -89,17 +89,50 @@ export function materialsFor(a: Answers, mode: SimMode): { id: string; label: st
 }
 
 
+/**
+ * Typical summer air around a cooling supply duct in each location, filled in
+ * when a location is picked (examples to adjust, matching the Ductwork presets
+ * where one exists — not design data).
+ */
+export const DUCT_AIR: Record<DuctPlace, { ambientF: number; rh: number }> = {
+  conditioned: { ambientF: 75, rh: 55 },
+  indirect: { ambientF: 78, rh: 50 },
+  unconditioned: { ambientF: 85, rh: 50 },
+  attic: { ambientF: 95, rh: 60 },
+  crawl: { ambientF: 80, rh: 70 },
+  garage: { ambientF: 90, rh: 50 },
+  exterior: { ambientF: 95, rh: 55 },
+  buried: { ambientF: 65, rh: 90 },
+}
+
+/**
+ * What an insulator usually puts on this, in order of preference: FSK duct wrap
+ * indoors and the outdoor board outside; elastomeric on condensate drains,
+ * copper refrigerant-temperature lines and below-freezing lines; fiberglass on
+ * hot and chilled piping, then mineral wool and calcium silicate when it's too
+ * hot or too thick for fiberglass. The first one that works is the answer; the
+ * thinnest is still listed under Other insulations.
+ */
+export function commonPicks(a: Answers, mode: SimMode): string[] {
+  if (a.system === 'duct') return [ductOutdoors(a.duct) ? outdoorIns(a.duct.ductShape) : 'wrap75']
+  if (mode === 'condensate') return ['elastomeric', 'fiberglass']
+  if (mode === 'cold') return a.processF < 35 || (a.pipe === 'copper' && a.processF <= 45) ? ['elastomeric', 'cellular-glass', 'fiberglass'] : ['fiberglass', 'elastomeric', 'cellular-glass']
+  return ['fiberglass', 'mineral-wool', 'calsil']
+}
+
 /** The recommendation for a set of answers. */
 export function recommendation(a: Answers) {
   const mode = modeFor(a)
   const options = materialOptions(stateFor(a, mode, a.system === 'duct' ? (ductOutdoors(a.duct) ? outdoorIns(a.duct.ductShape) : 'wrap75') : 'fiberglass'), mode)
   const usable = options.filter((o) => o.design && o.design.thicknessIn !== null)
-  // ducts: FSK duct wrap (0.75 pcf) indoors and rigid board outdoors, as installed; pipe: the thinnest that works
-  const ductPick = a.system === 'duct' ? (ductOutdoors(a.duct) ? outdoorIns(a.duct.ductShape) : 'wrap75') : null
-  const pick = a.material === 'auto' ? (ductPick && usable.some((o) => o.id === ductPick) ? ductPick : usable[0]?.id ?? options[0].id) : a.material
+  // the usual material first; if none of those works, the thinnest that does
+  const common = commonPicks(a, mode).find((id) => usable.some((o) => o.id === id))
+  const pick = a.material === 'auto' ? common ?? usable[0]?.id ?? options[0].id : a.material
   const s0 = stateFor(a, mode, pick)
   const d = design(s0, mode)
   const s = d.thicknessIn !== null ? { ...s0, thicknessIn: d.thicknessIn } : s0
   const ev = evaluate(s, mode)
-  return { mode, options, pick, s, d, ev }
+  // the answer first, then the rest thinnest first
+  const picked = options.find((o) => o.id === pick)
+  return { mode, options: picked ? [picked, ...options.filter((o) => o.id !== pick)] : options, pick, s, d, ev }
 }

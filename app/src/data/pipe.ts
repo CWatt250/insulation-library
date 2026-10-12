@@ -24,7 +24,7 @@ export const NPS: { nps: string; od: number; wall40: number }[] = [
 ]
 
 /** Nominal insulation thicknesses offered in the UI, inches. */
-export const THICKNESSES = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]
+export const THICKNESSES = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
 
 /**
  * Metal jacket thickness per JM Metal Jacketing Install Guide (inches).

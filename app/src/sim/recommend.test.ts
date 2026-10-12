@@ -2,6 +2,8 @@
 import { describe, expect, it } from 'vitest'
 import { recommendation, START, PIPE_USES, type Answers } from './recommend'
 import { PRESETS } from './presets'
+import { pipeSizes } from '../data/pipes'
+import { vaporCheck } from './vapor'
 
 const use = (id: string): Partial<Answers> => {
   const p = PRESETS.find((x) => x.id === id)!
@@ -56,5 +58,37 @@ describe('pipe energy codes', () => {
     const { pipeR } = await import('./code')
     // 1" copper (1.125" OD), 1/2" at k 0.25: ro = 1.0625, ri = 0.5625 → R ≈ 2.70
     expect(pipeR(1.125, 0.5, 0.25)).toBeCloseTo((1.0625 * Math.log(1.0625 / 0.5625)) / 0.25, 9)
+  })
+})
+
+describe('the answer is what an insulator would use', () => {
+  const idx = (p: 'steel' | 'copper' | 'pvc', n: string) => pipeSizes(p).findIndex((x) => x.nps === n)
+  it('400°F steel, 4", Washington: fiberglass 5" in two layers, not aerogel', () => {
+    const r = recommendation({ ...START, system: 'pipe', pipe: 'steel', npsIndex: idx('steel', '4'), processF: 400, ambientF: 80, rh: 50, pipeCode: 'wsec' })
+    expect(r.pick).toBe('fiberglass')
+    expect(r.d.thicknessIn).toBe(5)
+    expect(r.d.layers).toBe(2)
+    expect(r.options[0].id).toBe('fiberglass')
+  })
+  it('chilled water and domestic hot water: fiberglass; drains and refrigerant: elastomeric', () => {
+    expect(recommendation({ ...START, system: 'pipe', pipe: 'steel', npsIndex: idx('steel', '4'), processF: 42, ambientF: 80, rh: 70, pipeCode: 'wsec' }).pick).toBe('fiberglass')
+    expect(recommendation({ ...START, system: 'pipe', pipe: 'copper', npsIndex: idx('copper', '1'), processF: 140, ambientF: 75, rh: 50, pipeCode: 'wsec' }).pick).toBe('fiberglass')
+    expect(recommendation({ ...START, system: 'pipe', pipe: 'pvc', npsIndex: idx('pvc', '3/4'), drain: true, processF: 55, ambientF: 78, rh: 60 }).pick).toBe('elastomeric')
+    expect(recommendation({ ...START, system: 'pipe', pipe: 'copper', npsIndex: idx('copper', '3/4'), processF: 40, ambientF: 85, rh: 60 }).pick).toBe('elastomeric')
+  })
+  it('a return duct in conditioned space needs nothing', () => {
+    const r = recommendation({ ...START, system: 'duct', processF: 75, ambientF: 75, rh: 50, duct: { ...START.duct, ductType: 'return', ductCodeBasis: 'wsec', ductLocation: 'conditioned' } })
+    expect(r.d.noneNeeded).toBe(true)
+  })
+  it('vapor: ducts are held to IMC 604.11 (0.05 perm), pipes to ASHRAE guidance', () => {
+    const roof = recommendation({ ...START, system: 'duct', processF: 55, ambientF: 95, rh: 55, duct: { ...START.duct, ductCodeBasis: 'wsec', ductLocation: 'exterior', ductShape: 'rect', ductW: 36, ductH: 18 } })
+    expect(roof.pick).toBe('polyiso')
+    const v = vaporCheck(roof.s, roof.mode, roof.ev.ins)!
+    expect(v.required).toBe(0.05)
+    expect(v.tone).toBe('good')
+    const drain = recommendation({ ...START, system: 'pipe', pipe: 'pvc', npsIndex: idx('pvc', '3/4'), drain: true, processF: 55, ambientF: 78, rh: 60 })
+    const d = vaporCheck(drain.s, drain.mode, drain.ev.ins)!
+    expect(d.code).toBe(false)
+    expect(d.tone).toBe('warn')
   })
 })

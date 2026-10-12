@@ -361,8 +361,8 @@ export function solveDuct(s: SimState, mode: SimMode, nominalIn: number | null):
 export type DuctPlace = 'conditioned' | 'indirect' | 'unconditioned' | 'attic' | 'crawl' | 'garage' | 'exterior' | 'buried'
 
 export const DUCT_LOCATIONS: { id: DuctPlace; label: string; short: string; column: DuctLocation | null; why: string }[] = [
-  { id: 'conditioned', label: 'Conditioned space (heated, semiheated or cooled)', short: 'Conditioned', column: null, why: '90.1-2019 6.4.4.1.2 exception 2: "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces."' },
-  { id: 'indirect', label: 'Indirectly conditioned — return air plenum', short: 'Return plenum', column: 'indirect', why: 'Table 6.8.2 note c: Indirectly Conditioned Space "Includes return air plenums with or without exposed roofs above."' },
+  { id: 'conditioned', label: 'Conditioned space — exposed, or concealed above a ceiling (not a return plenum)', short: 'Conditioned', column: null, why: '90.1-2019 6.4.4.1.2 exception 2: "Ducts or plenums located in heated spaces, semiheated spaces, or cooled spaces."' },
+  { id: 'indirect', label: 'Return air plenum — concealed above a ceiling used for return air', short: 'Return plenum', column: 'indirect', why: 'Table 6.8.2 note c: Indirectly Conditioned Space "Includes return air plenums with or without exposed roofs above."' },
   { id: 'unconditioned', label: 'Unconditioned space (e.g. an unconditioned shaft)', short: 'Unconditioned', column: 'unconditioned', why: 'Table 6.8.2 column "Unconditioned Space and Buried Ducts".' },
   { id: 'attic', label: 'Attic above an insulated ceiling', short: 'Attic', column: 'exterior', why: 'Table 6.8.2 note b: the Exterior column "Includes attics above insulated ceilings, parking garages and crawl spaces."' },
   { id: 'crawl', label: 'Crawl space', short: 'Crawl space', column: 'exterior', why: 'Table 6.8.2 note b: crawl spaces count as Exterior.' },

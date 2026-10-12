@@ -659,3 +659,6 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 /* setup: Advanced groups */
 .adv-h { margin: 4px 0 -4px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 650; }
 .setup > .disclosure > .disclosure-head small { display: block; font-weight: 500; font-size: 11.5px; margin-top: 1px; }
+
+/* a thickness never breaks across lines (1-1/2" stays whole) */
+.rec-sticky b, .design-rows li > b, .mat-compare b { white-space: nowrap; }

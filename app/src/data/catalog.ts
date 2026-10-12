@@ -77,7 +77,8 @@ export const INSULATIONS: InsulationVisual[] = [
     facings: ['none'],
     jackets: ['alu-smooth', 'alu-stucco', 'ss', 'none'],
     vapor: { kind: 'membrane' },
-    maxThicknessIn: 4,
+    // JM Thermo-1200: single layer to 3", factory-nested double layer 3–6" (research/materials-verified.json)
+    maxThicknessIn: 6,
     maxSingleLayerIn: 3,
     edge: 0.0006,
   },
@@ -96,7 +97,8 @@ export const INSULATIONS: InsulationVisual[] = [
     facings: ['asj', 'none'],
     jackets: ['none', 'pvc', 'alu-smooth', 'alu-stucco', 'ss'],
     vapor: { kind: 'facing' },
-    maxThicknessIn: 4,
+    // OC SSL II and JM Micro-Lok HP: up to 5" walls (research/materials-verified.json)
+    maxThicknessIn: 5,
     maxSingleLayerIn: 3,
     edge: 0.0012,
   },
@@ -114,7 +116,8 @@ export const INSULATIONS: InsulationVisual[] = [
     facings: ['none'],
     jackets: ['alu-smooth', 'alu-stucco', 'ss', 'pvc', 'none'],
     vapor: { kind: 'membrane' },
-    maxThicknessIn: 4,
+    // JM MinWool-1200: 1–6" in ½" steps (research/materials-verified.json)
+    maxThicknessIn: 6,
     maxSingleLayerIn: 3,
     edge: 0.0012,
   },

@@ -285,12 +285,14 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     </div>
   )
 
-  const r = ev.ins.result
-  const m = ev.ins.moisture
+  // the pill speaks for what's on screen: the bare pipe or duct in Bare view
+  const shown = bare && !compare ? ev.bare : ev.ins
+  const r = shown.result
+  const m = shown.moisture
   const statusPill = (
     <div className="status-pill" style={{ '--acc': acc } as React.CSSProperties}>
-      {mode === 'duct' ? <CodeChip s={s} ev={ev} /> : null}
-      {beh === 'hot' ? (mode === 'duct' ? null : <SafetyChip safe={r.surfaceF <= s.ppF} small />) : <StatusChip status={ev.ins.status} mode={mode} small />}
+      {mode === 'duct' ? <CodeChip s={s} ev={{ ...ev, ins: shown }} /> : null}
+      {beh === 'hot' ? (mode === 'duct' ? null : <SafetyChip safe={r.surfaceF <= s.ppF} small />) : <StatusChip status={shown.status} mode={mode} small />}
       <span>
         Surface <b>{fmt.temp(r.surfaceF, units)}</b>
         {beh !== 'hot' && <> · Dew point <b>{fmt.temp(m.dewF, units)}</b></>}
@@ -378,7 +380,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <div className="sheet-presets"><PresetGrid mode={mode} active={s.presetId} onPick={pickPreset} /></div>
           <div className="sheet-body">
             {compareBar}
-            {tab === 'results' ? results : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} /> : <Learn mode={mode} system={s.system} />}
+            {tab === 'results' ? <>{results}<ReportButton inline label="Save as report (PDF)" make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} /></> : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} /> : <Learn mode={mode} system={s.system} />}
           </div>
         </section>
         {guideEl}

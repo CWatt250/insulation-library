@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { materialsFor, modeFor, PIPE_USES, recommendation, START, type Answers, type System } from '../../sim/recommend'
+import { DUCT_AIR, materialsFor, modeFor, PIPE_USES, recommendation, START, type Answers, type System } from '../../sim/recommend'
 import { CamSync } from '../../scene/Viewer'
 import { INSULATION } from '../../data/catalog'
 import { PIPE_LABEL, type PipeMaterial } from '../../data/pipe'
@@ -20,6 +20,8 @@ import { Stage } from './Stage'
 import { DuctGuide } from './DuctGuide'
 import { DuctSize, WsecInputs } from './DuctSetup'
 import { ReportButton } from './ReportButton'
+import { governedBy, shortfall } from './answerText'
+import { WA_COUNTIES } from '../../data/wsecData'
 import { CodeChips } from './CodeChips'
 import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
 
@@ -129,7 +131,11 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
           <>
             <Segmented<DuctType> size="sm" label="Duct type" value={a.duct.ductType} onChange={(v) => setDuct({ ductType: v })} options={DUCT_TYPES.map((t) => ({ id: t.id, label: t.short }))} />
             <div className="chips loc-chips">
-              {DUCT_LOCATIONS.map((l) => <button key={l.id} className={l.id === a.duct.ductLocation ? 'on' : ''} onClick={() => setDuct({ ductLocation: l.id })}>{l.label}</button>)}
+              {DUCT_LOCATIONS.map((l) => <button key={l.id} className={l.id === a.duct.ductLocation ? 'on' : ''} onClick={() => {
+                // a cooling duct's surroundings follow the location (adjust below)
+                if (a.processF < 70) set(DUCT_AIR[l.id])
+                setDuct({ ductLocation: l.id })
+              }}>{l.label}</button>)}
             </div>
             <button className="tool guide-open" onClick={() => setGuide(true)}><Icon name="layers" size={15} /> Not sure? Location guide</button>
             <div className="field">
@@ -151,7 +157,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
         ))}
         {step(4, 'Insulation', (
           <div className="materials sim-materials">
-            <button className={`mat ${a.material === 'auto' ? 'on' : ''}`} onClick={() => set({ material: 'auto' })}><Icon name="spark" size={14} /> Best fit (thinnest)</button>
+            <button className={`mat ${a.material === 'auto' ? 'on' : ''}`} onClick={() => set({ material: 'auto' })}><Icon name="spark" size={14} /> Most common</button>
             {mats.map((m) => (
               <button key={m.id} className={`mat ${a.material === m.id ? 'on' : ''}`} disabled={!m.ok} title={m.reason} onClick={() => set({ material: m.id })}>
                 {m.label}
@@ -182,7 +188,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
       {mobile && (
         <button className={`rec-sticky ${stale || !applied ? 'pulse' : ''}`} onClick={run}>
           {result && !stale ? (
-            <><b>{result.d.thicknessIn === null ? `Over ${inchLabel(result.d.maxIn)}` : inchLabel(result.d.thicknessIn)}</b> {matLabel(result.s, result.pick)}<span>Recommend again <Icon name="target" size={14} /></span></>
+            <><b>{result.d.noneNeeded ? 'Not required' : result.d.thicknessIn === null ? `Over ${fmt.thick(result.d.maxIn, units)}` : fmt.thick(result.d.thicknessIn, units)}</b> {matLabel(result.s, result.pick)}<span>Recommend again <Icon name="target" size={14} /></span></>
           ) : (
             <><Icon name="target" size={17} /> <b className="plain">{applied ? 'Update recommendation' : 'Recommend'}</b></>
           )}
@@ -218,7 +224,7 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
   const label = matLabel(s, pick)
   const Q = (b: number) => `${fmt.flow(Math.abs(b), units)} ${fmt.flowUnit(units)}`
   const what = ap.system === 'duct'
-    ? `${DUCT_TYPES.find((t) => t.id === ap.duct.ductType)!.label} duct, ${ap.duct.ductShape === 'round' ? `${ap.duct.ductD}" round` : `${ap.duct.ductW}" × ${ap.duct.ductH}"`}, ${DUCT_LOCATIONS.find((l) => l.id === ap.duct.ductLocation)!.short.toLowerCase()}, zone ${ap.duct.climateZone}`
+    ? `${DUCT_TYPES.find((t) => t.id === ap.duct.ductType)!.label} duct, ${ap.duct.ductShape === 'round' ? `${ap.duct.ductD}" round` : `${ap.duct.ductW}" × ${ap.duct.ductH}"`}, ${DUCT_LOCATIONS.find((l) => l.id === ap.duct.ductLocation)!.short.toLowerCase()}, zone ${ap.duct.ductCodeBasis === 'wsec' ? `${WA_COUNTIES.find((c) => c.county === ap.duct.waCounty)?.zone ?? '4C'} (${ap.duct.waCounty} County)` : ap.duct.climateZone}`
     : `${ap.pipe === 'steel' ? 'Steel' : ap.pipe === 'copper' ? 'Copper' : 'PVC'} ${pipeSizes(ap.pipe)[Math.min(ap.npsIndex, pipeSizes(ap.pipe).length - 1)].nps}" pipe${ap.drain ? ' (condensate drain)' : ''}, ${ap.outdoors ? 'outdoors' : 'indoors'}`
 
   // notes worth acting on, each with its source
@@ -238,15 +244,20 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
       {stale && <p className="rec-stale"><Icon name="alert" size={14} /> You've changed the inputs — press <b>Update recommendation</b> to recalculate.</p>}
       <div className={`hero ${d.thicknessIn === null ? 'bad' : 'good'}`}>
         <div className="hero-top"><span className="hero-tag">Preliminary estimate</span></div>
-        {d.thicknessIn === null ? (
+        {d.noneNeeded ? (
           <>
-            <div className="hero-big">Over {inchLabel(d.maxIn)}<small>{label}</small></div>
-            <p className="hero-sub">This material can't meet every requirement within its range — pick another below.</p>
+            <div className="hero-big">Not required</div>
+            <p className="hero-sub">Bare, it already meets every requirement here — insulate only for energy savings, noise or protection.</p>
+          </>
+        ) : d.thicknessIn === null ? (
+          <>
+            <div className="hero-big">Over {fmt.thick(d.maxIn, units)}<small>{label}</small></div>
+            <p className="hero-sub">{shortfall(s, mode, d, units)} Pick another material below.</p>
           </>
         ) : (
           <>
-            <div className="hero-big">{inchLabel(d.thicknessIn)}<small>{label}</small></div>
-            <p className="hero-sub">{d.governing ? <>Governed by <b>{d.governing.label.split(':')[0].toLowerCase()}</b>.</> : null}</p>
+            <div className="hero-big">{fmt.thick(d.thicknessIn, units)}<small>{label}{s.system === 'duct' && ev.ins.ratedR ? ` · R-${ev.ins.ratedR.toFixed(1)}` : ''}</small></div>
+            <p className="hero-sub">{d.governing ? <>Governed by <b>{governedBy(d.governing.label)}</b>.</> : null}{d.layers > 1 ? ` Goes on in ${d.layers} layers.` : ''}</p>
           </>
         )}
         <p className="rec-for">For: {what}; {T(ap.processF)} {ap.system === 'duct' ? 'air' : 'fluid'} in {T(ap.ambientF)} air at {ap.rh}% RH.</p>
@@ -267,17 +278,17 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
           {d.rows.map(({ c, rec }) => (
             <li key={c.id} className={d.governing?.id === c.id ? 'gov' : ''}>
               <span>{c.label}{refsFor(c.src).map((x) => <a key={x.id} href={x.url} target="_blank" rel="noreferrer" title={x.title}> [{x.id}]</a>)}</span>
-              <b>{rec.thicknessIn === null ? `> ${inchLabel(rec.maxIn)}` : rec.alreadyMet ? 'Met bare' : inchLabel(rec.thicknessIn)}</b>
+              <b>{rec.thicknessIn === null ? `> ${fmt.thick(rec.maxIn, units)}` : rec.alreadyMet ? 'Met bare' : fmt.thick(rec.thicknessIn, units)}</b>
             </li>
           ))}
         </ul>
         {ap.system === 'duct' && (() => {
           const c = ductCode(s)
-          return <p className="field-note">Energy code ({DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}): {c.label}{c.derived ? ' (derived)' : ''}.</p>
+          return <p className="field-note">{DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.short} energy code: {c.label}{c.derived ? ' (derived)' : ''}.</p>
         })()}
         {vap && (
           <p className="field-note">
-            Vapor retarder: needs ≤ {vap.required} perm; {vap.retarder.label} is {vap.retarder.perm === null ? 'not published' : `${vap.retarder.upper ? '≤ ' : ''}${vap.retarder.perm.toFixed(3)} perm`} — {vap.meets === null ? 'check with the maker' : vap.meets ? 'meets it' : 'add or upgrade the retarder'}.
+            Vapor retarder ({vap.code ? 'IMC 604.11' : 'ASHRAE guidance'}: ≤ {vap.required} perm): {vap.retarder.label}, {vap.retarder.perm === null ? 'not published' : `${vap.retarder.upper ? '≤ ' : ''}${vap.retarder.perm.toFixed(3)} perm`}. {vap.verdict}
           </p>
         )}
       </section>
@@ -295,7 +306,7 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
             {options.slice(0, 6).map((o) => (
               <tr key={o.id} className={o.id === pick ? 'on' : ''}>
                 <td>{o.label}</td>
-                <td>{o.design && o.design.thicknessIn !== null ? <b>{inchLabel(o.design.thicknessIn)}</b> : <span className="muted">{o.reason ?? 'beyond its range'}</span>}</td>
+                <td>{o.design && o.design.thicknessIn !== null ? <b>{fmt.thick(o.design.thicknessIn, units)}</b> : <span className="muted">{o.reason ?? `over ${fmt.thick(o.design?.maxIn ?? 4, units)}`}</span>}</td>
                 <td className="mc-act">{o.id !== pick && o.design?.thicknessIn != null && <button className="apply sm" onClick={() => onPick(o.id)}>Pick</button>}</td>
               </tr>
             ))}
