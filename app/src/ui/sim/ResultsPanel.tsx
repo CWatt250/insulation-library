@@ -4,7 +4,7 @@ import { dewZone, materialOptions, type Design } from '../../sim/design'
 import { codeMinimum, PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
 import { vaporCheck } from '../../sim/vapor'
 import { fittingResult } from '../../sim/fittings'
-import { annualCost, money } from '../../sim/cost'
+import { annualCost, money, priceBasis, runBasis } from '../../sim/cost'
 import { SPECS } from '../../data/specs'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
 import { refsFor } from '../../sim/sources'
@@ -37,6 +37,21 @@ function Card({ label, value, unit, sub, tone, wide }: { label: string; value: R
       {sub && <span className="rcard-sub">{sub}</span>}
     </div>
   )
+}
+
+/** The yearly saving in one line, and the way into the Savings tab. */
+function SavingsLine({ mode, s, ev, onOpen }: { mode: SimMode; s: SimState; ev: Evaluation; onOpen?: () => void }) {
+  const c = annualCost(s, mode, ev)
+  if (!c) return null
+  const body = (
+    <>
+      <span className="svl-k">Energy savings vs. bare</span>
+      <span className="svl-v"><b>{money(c.saved)}</b> / yr <span className="svl-m">· {money(c.saved / 12)} / month</span></span>
+      <span className="svl-basis">{runBasis(s)} · {priceBasis(s, mode)}</span>
+      {onOpen && <span className="svl-go">Open the savings calculator →</span>}
+    </>
+  )
+  return onOpen ? <button className="svl" onClick={onOpen}>{body}</button> : <div className="svl">{body}</div>
 }
 
 /** Two bars, bare vs insulated, on one scale. */
@@ -366,9 +381,11 @@ function MaterialCompare({ s, mode, units, onUse, on3d }: { s: SimState; mode: S
   )
 }
 
-export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, onCompareMaterial, compact, accent, onGuide }: {
+export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial, onSet, onCompareMaterial, accent, onGuide, onSavings }: {
   /** Ductwork: open the location guide. */
   onGuide?: () => void
+  /** Open the Savings tab. */
+  onSavings?: () => void
   mode: SimMode
   /** Panel accent; defaults to the mode's. */
   accent?: string
@@ -380,7 +397,6 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
   onUseMaterial: (next: SimState) => void
   onSet: (p: Partial<SimState>) => void
   onCompareMaterial: (id: MaterialId) => void
-  compact?: boolean
 }) {
   const ins = ev.ins
   const r = ins.result
@@ -399,8 +415,10 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
 
       <p className="explain-line">{explain(ev, s, units)}</p>
 
+      <SavingsLine mode={mode} s={s} ev={ev} onOpen={onSavings} />
+
       {/* everything else, one tap away */}
-      <Disclosure title={<>More details <small className="muted">heat flow, cost, every requirement, sources</small></>}>
+      <Disclosure title={<>More details <small className="muted">heat flow, every requirement, sources</small></>}>
         {tips.length > 0 && <Warnings list={tips} />}
         <FlowBars ev={ev} units={units} />
         <div className="rcards">
@@ -424,30 +442,6 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
                 <Card label="Mean k used" value={ev.ins.result.layerKIp[0]?.toFixed(3) ?? '—'} sub={`at ${T(ev.ins.result.layerMeanF[0] ?? 0)} mean · Btu·in/hr·ft²·°F`} />
               )}
             </>
-          )}
-          {(() => {
-            const c = annualCost(s, mode, ev)
-            if (!c) return null
-            return (
-              <Card
-                wide
-                label={`Annual ${mode === 'hot' ? 'fuel' : 'cooling'} cost · ${c.basis}`}
-                value={money(c.saved)}
-                unit=" saved / yr"
-                sub={<>Bare {money(c.bare)} → insulated {money(c.ins)}{c.paybackYr !== null ? ` · payback ${c.paybackYr < 1 ? `${Math.max(1, Math.round(c.paybackYr * 12))} months` : `${c.paybackYr.toFixed(1)} years`}` : ''}</>}
-                tone="good"
-              />
-            )
-          })()}
-          {ev.annual && mode !== 'condensate' && (
-            <Card
-              wide
-              label={`Annual energy · ${fmt.length(s.lengthFt, units)}, ${s.hours.toLocaleString('en-US')} h/yr`}
-              value={fmt.energy(ev.annual.saved, units)}
-              unit=" saved"
-              sub={`Bare ${fmt.energy(ev.annual.bare, units)} → insulated ${fmt.energy(ev.annual.ins, units)}`}
-              tone="good"
-            />
           )}
         </div>
 
@@ -484,7 +478,7 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
         <p className="muted explain-intro">{INTRO[mode]}</p>
       </Disclosure>
 
-      {!compact && <Learn mode={mode} system={s.system} />}
+      <Learn mode={mode} system={s.system} />
       <Assumptions ev={ev} s={s} units={units} />
     </div>
   )

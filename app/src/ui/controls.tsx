@@ -50,6 +50,58 @@ export function Slider({
   )
 }
 
+const plain = (v: number, digits: number) => v.toLocaleString('en-US', { maximumFractionDigits: digits })
+
+/**
+ * A typed number with its unit beside it ("$ 14.00 /MMBtu"). The phone keypad
+ * opens; commas and $ are ignored; out-of-range entries are held to min/max.
+ */
+export function NumberField({
+  label, value, onChange, min = 0, max = Infinity, digits = 2, fixed, prefix, unit, hint, big,
+}: {
+  label: ReactNode
+  value: number
+  onChange: (v: number) => void
+  min?: number
+  max?: number
+  /** Most decimals kept. */
+  digits?: number
+  /** Always show this many decimals when not editing (prices). */
+  fixed?: number
+  prefix?: string
+  unit?: string
+  hint?: ReactNode
+  big?: boolean
+}) {
+  const id = useId()
+  const [text, setText] = useState<string | null>(null)
+  const shown = text ?? (fixed !== undefined ? value.toLocaleString('en-US', { minimumFractionDigits: fixed, maximumFractionDigits: fixed }) : plain(value, digits))
+  return (
+    <div className={`numfield ${big ? 'big' : ''}`}>
+      <label htmlFor={id}>{label}</label>
+      <div className="nf-box">
+        {prefix && <span className="nf-affix">{prefix}</span>}
+        <input
+          id={id}
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          value={shown}
+          onFocus={(e) => { setText(String(+value.toFixed(digits))); requestAnimationFrame(() => e.target.select()) }}
+          onBlur={() => setText(null)}
+          onChange={(e) => {
+            setText(e.target.value)
+            const v = parseFloat(e.target.value.replace(/[,$\s]/g, ''))
+            if (Number.isFinite(v)) onChange(Math.min(max, Math.max(min, v)))
+          }}
+        />
+        {unit && <span className="nf-affix">{unit}</span>}
+      </div>
+      {hint && <div className="nf-hint">{hint}</div>}
+    </div>
+  )
+}
+
 export function Segmented<T extends string>({ options, value, onChange, label, size }: {
   options: { id: T; label: ReactNode; disabled?: boolean; title?: string }[]
   value: T

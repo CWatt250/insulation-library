@@ -21,6 +21,7 @@ WANT = {
     "code-requirements-verified.json": ["C1", "C2", "C3", "C6", "C7", "C19"],
     "duct-code-verified.json": ["D_C1", "D_C27"],
     "wsec-verified.json": ["W3", "W5", "W12"],
+    "energy-prices-verified.json": ["P1", "P2", "P3", "P4", "P5", "P6", "P7"],
 }
 KIND = {"M1": "standard", "M13": "standard", "M24": "tool", "M4": "tool", "R30": "standard", "R32": "standard", "C1": "standard", "C2": "standard", "W3": "standard", "W5": "standard", "W12": "standard", "C3": "standard", "C7": "standard", "C6": "standard", "C19": "standard", "D_C1": "standard", "U15": "tool"}
 NOTES = {
@@ -62,6 +63,13 @@ NOTES = {
     "W3": "2021 WSEC-C Table C301.1: Washington counties → climate zone 4C or 5B",
     "W5": "2021 WSEC-C C403.10: duct (C403.10.1) and pipe (Table C403.10.3) insulation",
     "W12": "2021 WSEC-R R403.4: R-6 mechanical piping above 105°F or below 55°F",
+    "P1": "Washington commercial gas price by year ($/Mcf; ÷ 1.036 = $/MMBtu)",
+    "P2": "Washington commercial gas price by month",
+    "P3": "Washington industrial gas price by month",
+    "P4": "Heat content of delivered gas: 1,036 Btu per cubic foot",
+    "P5": "PSE average rates: gas Schedule 31 $1.47/therm; commercial power $0.16–0.21/kWh",
+    "P6": "Washington commercial electricity 11.78¢/kWh (July 2026)",
+    "P7": "Whole chiller plant 0.8–1.0 kW/ton typical; packaged units 1.1–1.4",
 }
 DATASHEET = re.compile(r"^(J|D|G[1-6]$|U28$|U44$|U46$|F1$|E5|E8|E9|E10|E13|E15|E16|E19|V1|V3|R16|R18|R21|R22|R23)")
 

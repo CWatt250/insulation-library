@@ -10,10 +10,11 @@ import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { refsFor } from '../../sim/sources'
 import { Icon, MenuButton, Segmented, type MenuItem } from '../controls'
 import { ACCENT, PresetGrid, SetupPanel } from './SetupPanel'
-import { Learn, ResultsPanel, type Recs } from './ResultsPanel'
+import { ResultsPanel, type Recs } from './ResultsPanel'
 import { Stage, thicknessTitle, type PanelSpec } from './Stage'
 import { Scenarios } from './Scenarios'
 import { ReportButton } from './ReportButton'
+import { Savings } from './Savings'
 import { Presentation, type PresentStep } from './Presentation'
 import { CodeChip, SafetyChip, StatusChip } from './Status'
 import { DuctGuide } from './DuctGuide'
@@ -86,7 +87,9 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [present, setPresent] = useState(false)
   const [step, setStep] = useState<PresentStep>(0)
-  const [tab, setTab] = useState<'setup' | 'results' | 'learn'>('results')
+  const [tab, setTab] = useState<'setup' | 'results' | 'savings'>('results')
+  // desktop: the right-hand panel shows Results or Savings
+  const [side, setSide] = useState<'results' | 'savings'>('results')
   const help = useQuickStart(mode)
   const [guide, setGuide] = useState(() => mode === 'duct' && new URLSearchParams(location.search).get('guide') === '1')
   const sync = useMemo(() => new CamSync(), [])
@@ -342,9 +345,22 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     />
   )
 
+  // energy cost has nothing to price on a condensate drain
+  const hasSavings = mode !== 'condensate'
+  const openSavings = hasSavings ? () => (mobile ? setTab('savings') : setSide('savings')) : undefined
+  const savings = hasSavings && (
+    <Savings mode={beh} s={s} set={set} ev={ev} units={units} accent={acc} onEditPipe={mobile ? () => setTab('setup') : undefined} />
+  )
+  // phones: Learn sits at the foot of Results, as on desktop, so three labelled tabs fit
+  const mobileTabs = hasSavings ? (['results', 'savings', 'setup'] as const) : (['results', 'setup'] as const)
+  const tabShown = tab === 'savings' && !hasSavings ? 'results' : tab
+  const sideShown = hasSavings ? side : 'results'
+  const TAB_LABEL = { results: 'Results', savings: 'Savings', setup: 'Setup' } as const
+
   const results = (
     <ResultsPanel
-      mode={beh} accent={acc} s={s} onGuide={mode === 'duct' ? () => setGuide(true) : undefined} ev={ev} recs={recs} units={units} compact={mobile}
+      mode={beh} accent={acc} s={s} onGuide={mode === 'duct' ? () => setGuide(true) : undefined} ev={ev} recs={recs} units={units}
+      onSavings={openSavings}
       onApply={(t) => set({ thicknessIn: t })}
       onSet={set}
       onCompareMaterial={(id) => {
@@ -382,9 +398,9 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <button className="sheet-handle" onClick={() => setSheetOpen(!sheetOpen)} aria-label={sheetOpen ? 'Collapse panel' : 'Expand panel'}><i /></button>
           <div className="sheet-head">
             <div className="tabs" role="tablist">
-              {(['results', 'setup', 'learn'] as const).map((t) => (
-                <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'on' : ''} onClick={() => { setTab(t); setSheetOpen(true) }}>
-                  {t === 'results' ? 'Results' : t === 'setup' ? 'Setup' : 'Learn'}
+              {mobileTabs.map((t) => (
+                <button key={t} role="tab" aria-selected={tabShown === t} className={tabShown === t ? 'on' : ''} onClick={() => { setTab(t); setSheetOpen(true) }}>
+                  {TAB_LABEL[t]}
                 </button>
               ))}
             </div>
@@ -394,7 +410,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
           <div className="sheet-presets"><PresetGrid mode={mode} active={s.presetId} onPick={pickPreset} /></div>
           <div className="sheet-body">
             {compareBar}
-            {tab === 'results' ? <>{results}<ReportButton inline label="Save as report (PDF)" make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} /></> : tab === 'setup' ? <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} /> : <Learn mode={mode} system={s.system} />}
+            {tabShown === 'results' ? <>{results}<ReportButton inline label="Save as report (PDF)" make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} /></> : tabShown === 'savings' ? savings : <SetupPanel mode={mode} s={s} set={set} units={units} onGuide={() => setGuide(true)} />}
             <BrandFooter />
           </div>
         </section>
@@ -435,7 +451,8 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
       </aside>
       <aside className="panel sim-results">
         <header>
-          <h2 className="title">Results</h2>
+          {/* with Results / Energy savings tabs below, they name the panel */}
+          {!hasSavings && <h2 className="title">Results</h2>}
           <div className="hdr-right">
             <button className="tool" aria-label="How it works" title="How it works" onClick={help.show}><Icon name="help" size={15} /></button>
             <ReportButton make={() => ({ mode, s, ev, design: recs.primary, others: recs.others, units })} />
@@ -443,7 +460,16 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
             {unitToggle}
           </div>
         </header>
-        <div className="scroll">{results}</div>
+        {hasSavings && (
+          <div className="tabs side-tabs" role="tablist" aria-label="Panel">
+            {(['results', 'savings'] as const).map((t) => (
+              <button key={t} role="tab" aria-selected={sideShown === t} className={sideShown === t ? 'on' : ''} onClick={() => setSide(t)}>
+                {t === 'results' ? 'Results' : 'Energy savings'}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="scroll">{sideShown === 'savings' ? savings : results}</div>
       </aside>
       {guideEl}
     </div>

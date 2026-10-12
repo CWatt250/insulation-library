@@ -1,0 +1,56 @@
+{
+  "dataset": "Washington energy prices and chiller-plant efficiency behind the Savings tab defaults: natural gas ($/MMBtu) for heating, electricity ($/kWh) and whole-plant kW/ton for cooling. Every figure is copied from the source page as served on the access date; conversions are shown.",
+  "generated": "2026-10-12",
+  "conventions": {
+    "gas_conversion": "EIA prices gas in $ per thousand cubic feet (Mcf). $/MMBtu = $/Mcf ÷ (heat content Btu/cf ÷ 1000). 2025 U.S. heat content of gas delivered to consumers = 1,036 Btu/cf (P4), so $/MMBtu = $/Mcf ÷ 1.036.",
+    "therm": "1 therm = 100,000 Btu = 0.1 MMBtu, so $/MMBtu = $/therm × 10.",
+    "kw_per_ton": "1 ton of refrigeration = 12,000 Btu/hr; kWh = Btu ÷ 12,000 × kW/ton."
+  },
+  "sources": [
+    { "id": "P1", "title": "Washington Price of Natural Gas Sold to Commercial Consumers (Dollars per Thousand Cubic Feet), annual", "publisher": "U.S. Energy Information Administration", "url": "https://www.eia.gov/dnav/ng/hist/n3020wa3A.htm", "pub_no_or_date": "release 9/30/2026", "accessed": "2026-10-12", "retrieval": "WebFetch" },
+    { "id": "P2", "title": "Washington Price of Natural Gas Sold to Commercial Consumers (Dollars per Thousand Cubic Feet), monthly", "publisher": "U.S. Energy Information Administration", "url": "https://www.eia.gov/dnav/ng/hist/n3020wa3m.htm", "pub_no_or_date": "release 9/30/2026", "accessed": "2026-10-12", "retrieval": "WebFetch" },
+    { "id": "P3", "title": "Washington Natural Gas Industrial Price (Dollars per Thousand Cubic Feet), monthly", "publisher": "U.S. Energy Information Administration", "url": "https://www.eia.gov/dnav/ng/hist/n3035wa3m.htm", "pub_no_or_date": "release 9/30/2026", "accessed": "2026-10-12", "retrieval": "WebFetch" },
+    { "id": "P4", "title": "U.S. Heat Content of Natural Gas Delivered to Consumers (BTU per Cubic Foot), annual", "publisher": "U.S. Energy Information Administration", "url": "https://www.eia.gov/dnav/ng/hist/nga_epg0_vgth_nus_btucfa.htm", "pub_no_or_date": "release 9/30/2026", "accessed": "2026-10-12", "retrieval": "WebFetch" },
+    { "id": "P5", "title": "Important Notice for Puget Sound Energy Customers about Changes to Electric and Natural Gas Rates (proposed effective May 1, 2026)", "publisher": "Puget Sound Energy", "url": "https://www.pse.com/-/media/Project/PSE/Portal/Rate-documents/News-and-Filings/032604_MarchRateNoticeAd_SeattleTimes_52x13.pdf", "pub_no_or_date": "March 2026 rate notice (Seattle Times ad)", "accessed": "2026-10-12", "retrieval": "WebFetch + pdftotext -layout" },
+    { "id": "P6", "title": "Electric Power Monthly, Table 5.6.A. Average Price of Electricity to Ultimate Customers by End-Use Sector, by State", "publisher": "U.S. Energy Information Administration", "url": "https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a", "pub_no_or_date": "July 2026 data, released 9/24/2026 (preliminary)", "accessed": "2026-10-12", "retrieval": "WebFetch" },
+    { "id": "P7", "title": "Chiller Plant Efficiency (Design Brief)", "publisher": "Lawrence Berkeley National Laboratory, Center of Expertise for Energy Efficiency in Data Centers", "url": "https://datacenters.lbl.gov/sites/default/files/Design%20Brief_Chiller%20Efficiency.pdf", "pub_no_or_date": "undated design brief", "accessed": "2026-10-12", "retrieval": "WebFetch + pdftotext" }
+  ],
+  "gas": {
+    "wa_commercial_annual_usd_per_mcf": { "2020": 8.76, "2021": 9.42, "2022": 10.63, "2023": 12.79, "2024": 10.38, "2025": 14.30, "src": "P1" },
+    "wa_commercial_monthly_2026_usd_per_mcf": { "Jan": 14.02, "Feb": 13.68, "Mar": "NA", "Apr": 14.72, "May": 15.55, "Jun": 14.62, "Jul": 17.92, "src": "P2" },
+    "wa_industrial_monthly_2026_usd_per_mcf": { "Jan": 14.20, "Feb": 14.23, "Mar": "NA", "Apr": 13.98, "May": 10.92, "Jun": "NA", "Jul": 14.67, "src": "P3" },
+    "heat_content_btu_per_cf": { "2022": 1036, "2023": 1036, "2024": 1037, "2025": 1036, "src": "P4" },
+    "pse_average_rate_per_therm_eff_2026_05_01": {
+      "Commercial & Industrial—Schedule 31": 1.47219,
+      "Large Volume—Schedule 41": 1.02645,
+      "Interruptible—Schedule 85": 0.72967,
+      "Limited Interruptible—Schedule 86": 0.84524,
+      "quote": "Commercial & Industrial—Schedule 31   $1.46156   $1.47219 0.73% increase",
+      "src": "P5"
+    },
+    "derived_usd_per_mmbtu": {
+      "wa_commercial_2025": 13.80,
+      "wa_commercial_2026_jan_jul_mean": 14.56,
+      "wa_industrial_2026_reported_mean": 13.13,
+      "pse_schedule_31": 14.72,
+      "pse_schedule_41": 10.26,
+      "pse_interruptible_85_86": [7.30, 8.45]
+    },
+    "default_chosen": { "usd_per_mmbtu": 14, "why": "Rounded Washington commercial average (EIA 2025 $13.80, 2026 Jan–Jul $14.56); PSE Schedule 31 averages $14.72. The former $8 default matched only interruptible service." }
+  },
+  "electricity": {
+    "wa_cents_per_kwh": { "commercial": { "Jul 2026": 11.78, "Jul 2025": 11.24 }, "industrial": { "Jul 2026": 7.51, "Jul 2025": 7.21 }, "all_sectors": { "Jul 2026": 12.05, "Jul 2025": 11.25 }, "src": "P6" },
+    "pse_average_rate_per_kwh_eff_2026_05_01": {
+      "Secondary Voltage (50 kW or less)—Schedules 8, 24": 0.206915,
+      "Secondary Voltage (over 50 kW to 350 kW)—Schedules 7A, 11, 25": 0.190499,
+      "Secondary Voltage (over 350 kW)—Schedules 12, 26P, 26": 0.159599,
+      "src": "P5"
+    },
+    "default_chosen": { "usd_per_kwh": 0.12, "why": "Washington commercial average 11.78¢ (EIA, July 2026). PSE commercial schedules average $0.16–0.21/kWh; the statewide figure is lowered by public hydro utilities." }
+  },
+  "chiller_plant": {
+    "quote": "Whereas a typical packaged cooling unit has an efficiency of 1.1 to 1.4 kW/ton, a chiller-based system can have a full load efficiency that is far lower—values of 0.8 to 1.0 kW/ton for the entire chiller plant are typical.",
+    "src": "P7",
+    "default_chosen": { "kw_per_ton": 0.9, "why": "Middle of the 0.8–1.0 kW/ton whole-plant range (chillers, pumps, cooling tower). The former 0.75 sat near chiller-only ratings." }
+  }
+}

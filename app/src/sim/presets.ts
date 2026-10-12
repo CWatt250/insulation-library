@@ -2,6 +2,7 @@ import type { SimMode, SimState } from './types'
 import type { PipeMaterial } from '../data/pipe'
 import { pipeSizes } from '../data/pipes'
 import { DEW_MARGIN_DEFAULT_F, PP_DEFAULT_F } from './model'
+import { BOILER_DEFAULT, GAS_DEFAULT, KW_PER_TON_DEFAULT, POWER_DEFAULT } from './cost'
 
 /**
  * Starting points for each mode. These are example operating conditions to
@@ -193,10 +194,11 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   dewMarginF: DEW_MARGIN_DEFAULT_F,
   applyCode: false,
   fuel: 'gas',
-  fuelPrice: 8,
-  efficiencyPct: 80,
-  coolPrice: 0.12,
-  kwPerTon: 0.75,
+  // Washington averages and a whole chiller plant (sim/cost.ts, research/energy-prices-verified.json)
+  fuelPrice: GAS_DEFAULT,
+  efficiencyPct: BOILER_DEFAULT,
+  coolPrice: POWER_DEFAULT,
+  kwPerTon: KW_PER_TON_DEFAULT,
   installedPerFt: 0,
 }
 

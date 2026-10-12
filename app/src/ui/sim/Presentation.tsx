@@ -30,21 +30,21 @@ function stats(mode: SimMode, s: SimState, ev: Evaluation, units: UnitSystem, st
       return [
         { value: Q(bare.result.qBtuHrFt), label: `heat lost from every foot of bare ${n}`, tone: 'bad' },
         { value: T(bare.result.surfaceF), label: bare.result.surfaceF > s.ppF ? `surface — far above the ${T(s.ppF)} safe-touch limit` : 'surface temperature', tone: bare.result.surfaceF > s.ppF ? 'bad' : undefined },
-        ...(ev.annual ? [{ value: fmt.energy(ev.annual.bare, units), label: `wasted over ${s.lengthFt} ft`, tone: 'bad' as const }] : []),
+        ...(ev.annual ? [{ value: fmt.energy(ev.annual.bare, units), label: `wasted a year over ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'bad' as const }] : []),
       ]
     }
     if (codeStat) {
       return [
         codeStat,
         { value: `${Math.round(ev.reductionPct)}%`, label: `less heat loss with ${what}`, tone: 'good' },
-        cost ? { value: money(cost.saved), label: 'saved every year', tone: 'good' } : { value: T(ins.result.surfaceF), label: 'surface temperature' },
+        cost ? { value: money(cost.saved), label: `saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'good' } : { value: T(ins.result.surfaceF), label: 'surface temperature' },
       ]
     }
     return [
       { value: `${Math.round(ev.reductionPct)}%`, label: `less heat loss with ${what}`, tone: 'good' },
       { value: T(ins.result.surfaceF), label: ins.result.surfaceF <= s.ppF ? 'surface — safe to touch' : `surface — above the ${T(s.ppF)} limit`, tone: ins.result.surfaceF <= s.ppF ? 'good' : 'bad' },
-      cost ? { value: money(cost.saved), label: `saved every year${cost.paybackYr !== null ? ` · pays back in ${cost.paybackYr < 1 ? `${Math.max(1, Math.round(cost.paybackYr * 12))} months` : `${cost.paybackYr.toFixed(1)} years`}` : ''}`, tone: 'good' }
-        : ev.annual ? { value: fmt.energy(ev.annual.saved, units), label: 'energy saved every year', tone: 'good' } : { value: Q(bare.result.qBtuHrFt - ins.result.qBtuHrFt), label: 'less heat lost per foot', tone: 'good' },
+      cost ? { value: money(cost.saved), label: `saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF${cost.paybackYr !== null ? ` · pays back in ${cost.paybackYr < 1 ? `${Math.max(1, Math.round(cost.paybackYr * 12))} months` : `${cost.paybackYr.toFixed(1)} years`}` : ''}`, tone: 'good' }
+        : ev.annual ? { value: fmt.energy(ev.annual.saved, units), label: `energy saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'good' } : { value: Q(bare.result.qBtuHrFt - ins.result.qBtuHrFt), label: 'less heat lost per foot', tone: 'good' },
     ]
   }
   const wet = (x: typeof bare) => x.moisture.condensing
@@ -59,7 +59,7 @@ function stats(mode: SimMode, s: SimState, ev: Evaluation, units: UnitSystem, st
   return [
     { value: dry ? (ins.status === 'borderline' ? 'Borderline' : 'Dry') : 'Sweating', label: dry ? `surface ${T(ins.result.surfaceF)} stays above the ${T(ins.moisture.dewF)} dew point` : `surface ${T(ins.result.surfaceF)} is still below the dew point`, tone: dry && ins.status !== 'borderline' ? 'good' : 'bad' },
     codeStat ?? { value: `${Math.round(ev.reductionPct)}%`, label: `less heat gain with ${what}`, tone: 'good' },
-    cost ? { value: money(cost.saved), label: 'cooling cost saved every year', tone: 'good' } : { value: fmt.tempDelta(ins.moisture.marginF, units, 1), label: 'margin to the dew point', tone: dry ? 'good' : 'bad' },
+    cost ? { value: money(cost.saved), label: `cooling cost saved a year on ${Math.round(s.lengthFt).toLocaleString('en-US')} LF`, tone: 'good' } : { value: fmt.tempDelta(ins.moisture.marginF, units, 1), label: 'margin to the dew point', tone: dry ? 'good' : 'bad' },
   ]
 }
 
