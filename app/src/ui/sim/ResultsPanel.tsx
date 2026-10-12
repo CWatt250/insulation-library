@@ -12,14 +12,13 @@ import { DRIP_RATE } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { currentMaterial, noun, type MaterialId } from '../../sim/system'
 import { ductCode } from '../../sim/design'
-import { recommend } from '../../sim/model'
 import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPES } from '../../sim/duct'
 import type { DuctFaceResult } from '../../sim/duct'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
 import { DUCT_LEARN, INTRO, LEARN, TOPICS } from '../../sim/learn'
 import { Disclosure, Icon } from '../controls'
 import { CodeChips } from './CodeChips'
-import { CodeChip, SafetyChip, StatusChip, STATUS_TONE } from './Status'
+import { SafetyChip, StatusChip, STATUS_TONE } from './Status'
 import { ACCENT } from './SetupPanel'
 import { Assumptions } from './Assumptions'
 
@@ -107,21 +106,8 @@ function explain(ev: Evaluation, s: SimState, units: UnitSystem): string {
   return `${lead} With ${inchLabel(s.thicknessIn)} of insulation the surface stays at ${T(ins.result.surfaceF)}, ${fmt.tempDelta(m.marginF, units, 1).replace('+', '')} above the dew point, so it stays dry — as long as the vapor retarder is sealed.`
 }
 
-function DuctCodeRow({ s }: { s: SimState }) {
-  const c = ductCode(s)
-  const ref = refsFor(c.src)[0]
-  const code = DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label
-  if (c.R === null) return <p className="field-note">Energy code ({code}): {c.label}{ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}.</p>
-  return (
-    <p className="field-note">
-      Energy code ({code}): {c.label}; installed R at 75°F mean, duct wrap at 25% compression
-      {ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>}. Always part of the duct design.
-    </p>
-  )
-}
-
 function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Partial<SimState>) => void }) {
-  if (s.system === 'duct') return <DuctCodeRow s={s} />
+  if (s.system === 'duct') return null
   const c = codeMinimum(s, mode)
   const picker = (
     <div className="code-pick">
@@ -134,18 +120,18 @@ function CodeRow({ s, mode, onSet }: { s: SimState; mode: SimMode; onSet: (p: Pa
   return (
     <>
       {picker}
-      <label className="code-row">
-        <input type="checkbox" checked={s.applyCode} onChange={(e) => onSet({ applyCode: e.target.checked })} />
+      <div className="code-row">
         <span>
           <b>{c.edition} minimum: {c.minR ? `R-${c.minR} → ${c.minIn.toFixed(2)}"` : `${c.minIn.toFixed(2)}"`}</b>
           <small>
             {c.minR
               ? `R403.4: piping ${c.row} needs R-${c.minR}; this insulation reaches it at ${c.minIn.toFixed(2)}" (R = ro·ln(ro/ri)/k with k ${c.K.toFixed(3)} at 75°F, the IECC's pipe R-value)${s.pipeCodeBasis === 'wsec-res' ? '. Service hot water pipe needs R-3 instead (R403.5.3); up to 200 ft of hydronic pipe inside conditioned space may use 1/2" at k 0.28' : ''}`
               : <>{c.table}, {c.row}: {c.tableIn}" in the table{c.corrected ? `, corrected for k ${c.K.toFixed(3)} at ${c.meanF}°F (table range ${c.kRange[0]}–${c.kRange[1]})` : ` (k ${c.K.toFixed(3)} at ${c.meanF}°F is within ${c.kRange[0]}–${c.kRange[1]})`}</>}
-            {refs.map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}. Include as a requirement.
+            {refs.map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}.{' '}
+            {s.applyCode ? 'Included in the recommended thickness.' : 'Not included — tick it on the answer above to include it.'}
           </small>
         </span>
-      </label>
+      </div>
     </>
   )
 }
@@ -220,23 +206,26 @@ function VaporCard({ s, mode, ev, units }: { s: SimState; mode: SimMode; ev: Eva
   )
 }
 
-function DesignBlock({ d, s, mode, units, onApply, onSet }: { d: Design; s: SimState; mode: SimMode; units: UnitSystem; onApply: (t: number) => void; onSet: (p: Partial<SimState>) => void }) {
+function Warnings({ list }: { list: Evaluation['warnings'] }) {
+  return (
+    <ul className="warnings">
+      {list.map((w) => (
+        <li key={w.text} className={w.level}><Icon name={w.level === 'warn' ? 'alert' : 'info'} size={14} />{w.text}</li>
+      ))}
+    </ul>
+  )
+}
+
+/** Each requirement and the thickness it needs; the largest sets the answer. */
+function Requirements({ d, s, mode, units, onSet }: { d: Design; s: SimState; mode: SimMode; units: UnitSystem; onSet: (p: Partial<SimState>) => void }) {
   const T = (f: number) => fmt.temp(f, units)
   const t = d.thicknessIn
   return (
     <div className="design">
-      <div className="design-head">
-        <div>
-          <span>Design thickness</span>
-          <strong>{t === null ? `More than ${inchLabel(d.maxIn)}` : inchLabel(t)}{t !== null && d.layers > 1 ? <small> · {d.layers} layers</small> : null}</strong>
-          {d.governing && <em>Governed by {d.governing.label.split(':')[0].toLowerCase()}</em>}
-        </div>
-        {t !== null && <button className="apply" disabled={t === s.thicknessIn} onClick={() => onApply(t)}>{t === s.thicknessIn ? 'Current' : 'Apply'}</button>}
-      </div>
       <ul className="design-rows">
         {d.rows.map(({ c, rec }) => (
           <li key={c.id} className={d.governing?.id === c.id ? 'gov' : ''}>
-            <span>{c.label.replace(/°F/g, '°F')}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}</span>
+            <span>{c.label}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}</span>
             <b>{rec.thicknessIn === null ? `> ${inchLabel(rec.maxIn)}` : rec.alreadyMet ? 'Met bare' : inchLabel(rec.thicknessIn)}</b>
           </li>
         ))}
@@ -244,6 +233,96 @@ function DesignBlock({ d, s, mode, units, onApply, onSet }: { d: Design; s: SimS
       {d.side && <p className="field-note">At {inchLabel(t!)}: surface {T(d.side.result.surfaceF)}, {fmt.flow(Math.abs(d.side.result.qBtuHrFt), units)} {fmt.flowUnit(units)}.{d.exactIn !== null && d.exactIn > 0 ? (s.system === 'duct' ? ` Calculated minimum ≈ ${d.exactIn.toFixed(2)}" nominal; rounded up to the next size the product comes in.` : ` Calculated minimum ≈ ${d.exactIn.toFixed(2)}" (nominal OD); rounded up to a standard ½" size.`) : ''}</p>}
       {t === null && <p className="field-note bad">This material can't meet it within {inchLabel(d.maxIn)} — try a higher-emittance finish or compare materials below.</p>}
       <CodeRow s={s} mode={mode} onSet={onSet} />
+    </div>
+  )
+}
+
+/** Why the answer is what it is, in plain words. */
+function setBy(c: Design['governing'] & object, s: SimState, units: UnitSystem): string {
+  switch (c.id) {
+    case 'pp': return `Set by safe-touch: the outside stays at or below ${fmt.temp(s.ppF, units)}.`
+    case 'dew': return 'Set by keeping it dry: the outside stays above the dew point.'
+    case 'code': return 'Set by the energy code minimum.'
+    case 'imc': return `Set by IMC 604.2: duct surface at or below ${fmt.temp(120, units)}.`
+    default: return `Set by ${c.label.split(':')[0]}${c.label.includes(':') ? ` (${c.label.split(':').slice(1).join(':').trim()})` : ''}.`
+  }
+}
+
+/** The energy-code line on the answer card: ducts always carry the code; pipes can include it. */
+function CodeLine({ s, mode, ev, units, onSet }: { s: SimState; mode: SimMode; ev: Evaluation; units: UnitSystem; onSet: (p: Partial<SimState>) => void }) {
+  if (s.system === 'duct') {
+    const c = ductCode(s)
+    const ref = refsFor(c.src)[0]
+    const code = DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label
+    const R = ev.ins.ratedR ?? 0
+    const link = ref && <a href={ref.url} target="_blank" rel="noreferrer" title={ref.title}> [{ref.id}]</a>
+    if (c.R === null) return <p className="answer-code">Energy code ({code}): {c.notStated ? 'no R-value set' : 'no minimum'} for this duct{link}.</p>
+    return (
+      <p className={`answer-code ${R + 1e-9 >= c.R ? 'ok' : 'short'}`}>
+        <Icon name={R + 1e-9 >= c.R ? 'check' : 'alert'} size={13} /> Energy code ({code}) needs R-{c.R} installed — yours is R-{R.toFixed(1)}{link}
+      </p>
+    )
+  }
+  if (mode === 'condensate') return null
+  const c = codeMinimum(s, mode)
+  if ('none' in c) return <p className="answer-code muted">Energy code: {c.none}</p>
+  const met = s.thicknessIn + 1e-9 >= c.minIn
+  return (
+    <label className="check-row answer-code">
+      <input type="checkbox" checked={s.applyCode} onChange={(e) => onSet({ applyCode: e.target.checked })} />
+      <span>
+        Include the {c.edition} minimum ({c.minR ? `R-${c.minR} → ` : ''}{fmt.inches(+c.minIn.toFixed(2), units)})
+        <small className="muted">{met ? `Your ${inchLabel(s.thicknessIn)} meets it` : `Your ${inchLabel(s.thicknessIn)} is below it`}</small>
+      </span>
+    </label>
+  )
+}
+
+/** The answer, first: the thickness to use, why, and how the current one does. */
+function Answer({ mode, s, ev, d, units, onApply, onSet, onGuide }: { mode: SimMode; s: SimState; ev: Evaluation; d: Design; units: UnitSystem; onApply: (t: number) => void; onSet: (p: Partial<SimState>) => void; onGuide?: () => void }) {
+  const T = (f: number) => fmt.temp(f, units)
+  const ins = ev.ins
+  const r = ins.result
+  const m = ins.moisture
+  const t = d.thicknessIn
+  const safe = r.surfaceF <= s.ppF
+  const tone = mode === 'hot' ? (safe ? 'good' : 'bad') : STATUS_TONE[ins.status]
+  const vapor = mode !== 'hot' ? vaporCheck(s, mode, ins) : null
+  const yours = `Your ${inchLabel(s.thicknessIn)}`
+  return (
+    <div className={`hero answer ${tone}`}>
+      <div className="hero-top">
+        <span className="answer-label">Recommended thickness</span>
+        <span className="hero-tag">Preliminary estimate</span>
+      </div>
+      <div className="answer-main">
+        <div className="hero-big">{t === null ? `> ${inchLabel(d.maxIn)}` : inchLabel(t)}{t !== null && d.layers > 1 && <small>{d.layers} layers</small>}</div>
+        {t !== null && (t === s.thicknessIn
+          ? <span className="answer-inuse"><Icon name="check" size={14} /> In use</span>
+          : <button className="primary answer-use" onClick={() => onApply(t)}>Use {inchLabel(t)}</button>)}
+      </div>
+      <p className="hero-sub">
+        {t === null
+          ? `${s.system === 'duct' ? 'This insulation' : 'This material'} can't get there within ${inchLabel(d.maxIn)} — compare materials under More details.`
+          : d.governing ? setBy(d.governing, s, units) : 'Every requirement is met even bare.'}
+      </p>
+      <CodeLine s={s} mode={mode} ev={ev} units={units} onSet={onSet} />
+      <div className="answer-now">
+        {mode === 'hot' ? <SafetyChip safe={safe} small /> : <StatusChip status={ins.status} mode={mode} small />}
+        <span>
+          {mode === 'hot'
+            ? <>{yours}: <b>{Math.round(ev.reductionPct)}% less heat loss</b> · surface {T(r.surfaceF)} (safe-touch ≤ {T(s.ppF)})</>
+            : <>{yours}: surface {T(r.surfaceF)} · dew point {T(m.dewF)} (<b>{fmt.tempDelta(m.marginF, units, 1)}</b>){m.frost ? ' · frost' : ''}</>}
+        </span>
+      </div>
+      {mode !== 'hot' && m.condensing && (
+        <p className="hero-sub strong">
+          ≈ {(m.ozPerDayPerFt * 10).toFixed(m.ozPerDayPerFt * 10 >= 10 ? 0 : 1)} fl oz of water per day for every 10 ft
+          {mode === 'condensate' && m.rateGm2h >= DRIP_RATE ? ' — enough to drip' : ''}
+        </p>
+      )}
+      {vapor?.meets === false && <p className="answer-code short"><Icon name="alert" size={13} /> The vapor retarder is above the guidance — see More details.</p>}
+      {onGuide && <button className="linkish" onClick={onGuide}><Icon name="map" size={13} /> Where is "{DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.short.toLowerCase()}"? Show it on the building</button>}
     </div>
   )
 }
@@ -302,148 +381,102 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
   const m = ins.moisture
   const word = mode === 'hot' ? 'Heat loss' : 'Heat gain'
   const T = (f: number) => fmt.temp(f, units)
-  const safe = r.surfaceF <= s.ppF
-  const tone = mode === 'hot' ? (safe ? 'good' : 'bad') : STATUS_TONE[ins.status]
+  const tone = mode === 'hot' ? (r.surfaceF <= s.ppF ? 'good' : 'bad') : STATUS_TONE[ins.status]
+  // real warnings stay in view; installation tips go with the details
+  const warns = ev.warnings.filter((w) => w.level === 'warn')
+  const tips = ev.warnings.filter((w) => w.level !== 'warn')
   return (
     <div className="results" style={{ '--acc': accent ?? ACCENT[mode] } as React.CSSProperties}>
-      {s.system === 'duct' && <DuctCodeHero s={s} ev={ev} mode={mode} onApply={onApply} onGuide={onGuide} />}
-      {/* ---------------------------------------------------------------- hero */}
-      <div className={`hero ${tone}`}>
-        <div className="hero-top">
-          {mode === 'hot' ? <SafetyChip safe={safe} /> : <StatusChip status={ins.status} mode={mode} />}
-          <span className="hero-tag">Preliminary estimate</span>
-        </div>
-        {mode === 'hot' ? (
-          <>
-            <div className="hero-big">{Math.round(ev.reductionPct)}<small>% less heat loss</small></div>
-            <p className="hero-sub">Surface {T(r.surfaceF)} with {inchLabel(s.thicknessIn)} of insulation · safe-touch limit {T(s.ppF)}</p>
-          </>
-        ) : (
-          <>
-            <div className="hero-big">{fmt.tempDelta(m.marginF, units, 1)}<small>margin to dew point</small></div>
-            <p className="hero-sub">Surface {T(r.surfaceF)} · dew point {T(m.dewF)}{m.frost ? ' · below freezing: frost' : ''}</p>
-            {m.condensing && (
-              <p className="hero-sub strong">
-                ≈ {(m.ozPerDayPerFt * 10).toFixed(m.ozPerDayPerFt * 10 >= 10 ? 0 : 1)} fl oz of water per day for every 10 ft
-                {mode === 'condensate' && m.rateGm2h >= DRIP_RATE ? ' — enough to drip' : ''}
-              </p>
-            )}
-          </>
-        )}
-      </div>
+      <Answer mode={mode} s={s} ev={ev} d={recs.primary} units={units} onApply={onApply} onSet={onSet} onGuide={s.system === 'duct' ? onGuide : undefined} />
 
-      {mode === 'condensate' && (
-        <div className="autosize">
-          <div>
-            <span>Minimum to prevent sweating</span>
-            <strong>{recs.primary.thicknessIn === null ? `> ${inchLabel(recs.primary.maxIn)}` : recs.primary.thicknessIn === s.thicknessIn ? `${inchLabel(recs.primary.thicknessIn)} (current)` : inchLabel(recs.primary.thicknessIn)}</strong>
-            {recs.primary.exactIn !== null && recs.primary.exactIn > 0 && <span>calculated ≈ {recs.primary.exactIn.toFixed(2)}"</span>}
-          </div>
-          <button
-            className="primary"
-            disabled={recs.primary.thicknessIn === null || recs.primary.thicknessIn === s.thicknessIn}
-            onClick={() => recs.primary.thicknessIn !== null && onApply(recs.primary.thicknessIn)}
-          >
-            <Icon name="spark" size={16} /> Auto-size insulation
-          </button>
-        </div>
-      )}
+      {warns.length > 0 && <Warnings list={warns} />}
 
-      {/* --------------------------------------------------------------- cards */}
-      <FlowBars ev={ev} units={units} />
-      <div className="rcards">
-        {mode === 'condensate' ? (
-          <>
-            <Card label={s.system === 'duct' ? 'Air in the duct' : 'Pipe temperature'} value={T(s.processF)} />
-            <Card label="Room air" value={T(s.ambientF)} sub={`${s.rh}% RH`} />
-            <Card label="Dew point" value={T(m.dewF)} />
-            <Card label="Outer surface" value={T(r.surfaceF)} tone={tone} sub={`${fmt.tempDelta(m.marginF, units, 1)} vs dew point`} />
-          </>
-        ) : (
-          <>
-            <Card label={`${word} · bare`} value={fmt.flow(Math.abs(ev.bare.result.qBtuHrFt), units)} unit={fmt.flowUnit(units)} />
-            <Card label={`${word} · insulated`} value={fmt.flow(Math.abs(r.qBtuHrFt), units)} unit={fmt.flowUnit(units)} sub={`${Math.round(ev.reductionPct)}% reduction`} tone="good" />
-            <Card label="Outer surface" value={T(r.surfaceF)} tone={mode === 'hot' ? tone : STATUS_TONE[ins.status]} sub={mode === 'hot' ? `Safe-touch ≤ ${T(s.ppF)}` : `${fmt.tempDelta(m.marginF, units, 1)} vs dew point`} />
-            {mode === 'cold' ? (
-              <Card label="Dew point" value={T(m.dewF)} sub={`${T(s.ambientF)} at ${s.rh}% RH`} />
-            ) : s.system === 'duct' ? (
-              <Card label="Installed R" value={`R-${(ev.ins.ratedR ?? 0).toFixed(1)}`} sub={s.ductIns === 'elastomeric' ? 'as printed, 75°F mean' : 'at 25% compression, 75°F mean'} />
-            ) : (
-              <Card label="Mean k used" value={ev.ins.result.layerKIp[0]?.toFixed(3) ?? '—'} sub={`at ${T(ev.ins.result.layerMeanF[0] ?? 0)} mean · Btu·in/hr·ft²·°F`} />
-            )}
-          </>
-        )}
-        {(() => {
-          const c = annualCost(s, mode, ev)
-          if (!c) return null
-          return (
+      <p className="explain-line">{explain(ev, s, units)}</p>
+
+      {/* everything else, one tap away */}
+      <Disclosure title={<>More details <small className="muted">heat flow, cost, every requirement, sources</small></>}>
+        {tips.length > 0 && <Warnings list={tips} />}
+        <FlowBars ev={ev} units={units} />
+        <div className="rcards">
+          {mode === 'condensate' ? (
+            <>
+              <Card label={s.system === 'duct' ? 'Air in the duct' : 'Pipe temperature'} value={T(s.processF)} />
+              <Card label="Room air" value={T(s.ambientF)} sub={`${s.rh}% RH`} />
+              <Card label="Dew point" value={T(m.dewF)} />
+              <Card label="Outer surface" value={T(r.surfaceF)} tone={tone} sub={`${fmt.tempDelta(m.marginF, units, 1)} vs dew point`} />
+            </>
+          ) : (
+            <>
+              <Card label={`${word} · bare`} value={fmt.flow(Math.abs(ev.bare.result.qBtuHrFt), units)} unit={fmt.flowUnit(units)} />
+              <Card label={`${word} · insulated`} value={fmt.flow(Math.abs(r.qBtuHrFt), units)} unit={fmt.flowUnit(units)} sub={`${Math.round(ev.reductionPct)}% reduction`} tone="good" />
+              <Card label="Outer surface" value={T(r.surfaceF)} tone={tone} sub={mode === 'hot' ? `Safe-touch ≤ ${T(s.ppF)}` : `${fmt.tempDelta(m.marginF, units, 1)} vs dew point`} />
+              {mode === 'cold' ? (
+                <Card label="Dew point" value={T(m.dewF)} sub={`${T(s.ambientF)} at ${s.rh}% RH`} />
+              ) : s.system === 'duct' ? (
+                <Card label="Installed R" value={`R-${(ev.ins.ratedR ?? 0).toFixed(1)}`} sub={s.ductIns === 'elastomeric' ? 'as printed, 75°F mean' : 'at 25% compression, 75°F mean'} />
+              ) : (
+                <Card label="Mean k used" value={ev.ins.result.layerKIp[0]?.toFixed(3) ?? '—'} sub={`at ${T(ev.ins.result.layerMeanF[0] ?? 0)} mean · Btu·in/hr·ft²·°F`} />
+              )}
+            </>
+          )}
+          {(() => {
+            const c = annualCost(s, mode, ev)
+            if (!c) return null
+            return (
+              <Card
+                wide
+                label={`Annual ${mode === 'hot' ? 'fuel' : 'cooling'} cost · ${c.basis}`}
+                value={money(c.saved)}
+                unit=" saved / yr"
+                sub={<>Bare {money(c.bare)} → insulated {money(c.ins)}{c.paybackYr !== null ? ` · payback ${c.paybackYr < 1 ? `${Math.max(1, Math.round(c.paybackYr * 12))} months` : `${c.paybackYr.toFixed(1)} years`}` : ''}</>}
+                tone="good"
+              />
+            )
+          })()}
+          {ev.annual && mode !== 'condensate' && (
             <Card
               wide
-              label={`Annual ${mode === 'hot' ? 'fuel' : 'cooling'} cost · ${c.basis}`}
-              value={money(c.saved)}
-              unit=" saved / yr"
-              sub={<>Bare {money(c.bare)} → insulated {money(c.ins)}{c.paybackYr !== null ? ` · payback ${c.paybackYr < 1 ? `${Math.max(1, Math.round(c.paybackYr * 12))} months` : `${c.paybackYr.toFixed(1)} years`}` : ''}</>}
+              label={`Annual energy · ${fmt.length(s.lengthFt, units)}, ${s.hours.toLocaleString('en-US')} h/yr`}
+              value={fmt.energy(ev.annual.saved, units)}
+              unit=" saved"
+              sub={`Bare ${fmt.energy(ev.annual.bare, units)} → insulated ${fmt.energy(ev.annual.ins, units)}`}
               tone="good"
             />
+          )}
+        </div>
+
+        {mode !== 'hot' && (() => {
+          const z = dewZone(ins)
+          if (!z || z.fraction <= 0) return null
+          return (
+            <div className={`dewzone ${z.fraction >= 1 ? 'bad' : ''}`}>
+              <div className="dz-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, z.fraction * 100)}%` }} /></div>
+              <p>
+                {z.fraction >= 1
+                  ? 'The whole insulation thickness is colder than the dew point — the outside surface condenses.'
+                  : `The inner ${fmt.inches(+z.depthIn.toFixed(2), units)} (${Math.round(z.fraction * 100)}%) of the insulation is colder than the ${T(m.dewF)} dew point. Water vapor that gets past the vapor retarder condenses there — that's why every seam must be sealed.`}
+              </p>
+            </div>
           )
         })()}
-        {ev.annual && mode !== 'condensate' && (
-          <Card
-            wide
-            label={`Annual energy · ${fmt.length(s.lengthFt, units)}, ${s.hours.toLocaleString('en-US')} h/yr`}
-            value={fmt.energy(ev.annual.saved, units)}
-            unit=" saved"
-            sub={`Bare ${fmt.energy(ev.annual.bare, units)} → insulated ${fmt.energy(ev.annual.ins, units)}`}
-            tone="good"
-          />
-        )}
-      </div>
 
-      {ev.warnings.length > 0 && (
-        <ul className="warnings">
-          {ev.warnings.map((w) => (
-            <li key={w.text} className={w.level}><Icon name={w.level === 'warn' ? 'alert' : 'info'} size={14} />{w.text}</li>
-          ))}
-        </ul>
-      )}
+        <section className="recs">
+          <h3><Icon name="target" size={14} /> How the thickness was set</h3>
+          {s.system === 'duct' && <DuctCodeNotes s={s} mode={mode} />}
+          <Requirements d={recs.primary} s={s} mode={mode} units={units} onSet={onSet} />
+          {recs.others.length > 0 && <h4 className="sub-h">Your targets</h4>}
+          {recs.others.map((o) => <RecRow key={o.label} label={o.label} rec={o.rec} current={s.thicknessIn} onApply={onApply} units={units} />)}
+          <Disclosure title={<>Compare materials <small className="muted">same conditions and finish</small></>}>
+            <MaterialCompare s={s} mode={mode} units={units} onUse={onUseMaterial} on3d={onCompareMaterial} />
+            <p className="field-note">Each row is the design thickness for that material (first product whose published range covers {T(s.processF)}), keeping your finish where the material offers it.</p>
+          </Disclosure>
+        </section>
 
-      {mode !== 'hot' && (() => {
-        const z = dewZone(ins)
-        if (!z || z.fraction <= 0) return null
-        return (
-          <div className={`dewzone ${z.fraction >= 1 ? 'bad' : ''}`}>
-            <div className="dz-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, z.fraction * 100)}%` }} /></div>
-            <p>
-              {z.fraction >= 1
-                ? 'The whole insulation thickness is colder than the dew point — the outside surface condenses.'
-                : `The inner ${fmt.inches(+z.depthIn.toFixed(2), units)} (${Math.round(z.fraction * 100)}%) of the insulation is colder than the ${T(m.dewF)} dew point. Water vapor that gets past the vapor retarder condenses there — that's why every seam must be sealed.`}
-            </p>
-          </div>
-        )
-      })()}
-
-      {r.faces && r.faces.length > 1 && <DuctFaces faces={r.faces} mode={mode} units={units} />}
-      <FittingCard s={s} mode={mode} ev={ev} units={units} />
-      <VaporCard s={s} mode={mode} ev={ev} units={units} />
-
-      {/* ------------------------------------------------------------- solvers */}
-      <section className="recs">
-        <h3><Icon name="target" size={14} /> Find the thickness</h3>
-        <DesignBlock d={recs.primary} s={s} mode={mode} units={units} onApply={onApply} onSet={onSet} />
-        {recs.others.length > 0 && <h4 className="sub-h">Your targets</h4>}
-        {recs.others.map((o) => <RecRow key={o.label} label={o.label} rec={o.rec} current={s.thicknessIn} onApply={onApply} units={units} />)}
-        <Disclosure title={<>Compare materials <small className="muted">same conditions and finish</small></>}>
-          <MaterialCompare s={s} mode={mode} units={units} onUse={onUseMaterial} on3d={onCompareMaterial} />
-          <p className="field-note">Each row is the design thickness for that material (first product whose published range covers {T(s.processF)}), keeping your finish where the material offers it.</p>
-        </Disclosure>
-      </section>
-
-      {/* ------------------------------------------------------------- explain */}
-      <section className="explain">
-        <h3><Icon name="info" size={14} /> {mode === 'condensate' ? 'Why it sweats (or doesn\'t)' : 'What this means'}</h3>
-        <p>{explain(ev, s, units)}</p>
-        <p className="muted">{INTRO[mode]}</p>
-      </section>
+        {r.faces && r.faces.length > 1 && <DuctFaces faces={r.faces} mode={mode} units={units} />}
+        <FittingCard s={s} mode={mode} ev={ev} units={units} />
+        <VaporCard s={s} mode={mode} ev={ev} units={units} />
+        <p className="muted explain-intro">{INTRO[mode]}</p>
+      </Disclosure>
 
       {!compact && <Learn mode={mode} system={s.system} />}
       <Assumptions ev={ev} s={s} units={units} />
@@ -451,29 +484,19 @@ export function ResultsPanel({ mode, s, ev, recs, units, onApply, onUseMaterial,
   )
 }
 
-/** Ductwork leads with the energy code: what this duct type, location and climate zone require, and whether the insulation meets it. */
-function DuctCodeHero({ s, ev, mode, onApply, onGuide }: { s: SimState; ev: Evaluation; mode: SimMode; onApply: (t: number) => void; onGuide?: () => void }) {
+/** Ductwork: what the energy-code minimum is based on, and what it leaves to other checks. */
+function DuctCodeNotes({ s, mode }: { s: SimState; mode: SimMode }) {
   const c = ductCode(s)
-  const R = ev.ins.ratedR ?? 0
-  const ok = c.R === null || R + 1e-9 >= c.R
-  const fix = c.R !== null && !ok ? recommend(s, mode, { kind: 'minR', R: c.R }).thicknessIn : null
   const type = DUCT_TYPES.find((t) => t.id === s.ductType)!.label
   return (
-    <div className={`hero code-hero ${c.R === null ? '' : ok ? 'good' : 'bad'}`}>
-      <div className="hero-top">
-        <CodeChip s={s} ev={ev} small={false} />
-        <span className="hero-tag">Energy code</span>
-      </div>
-      <div className="hero-big">{c.R === null ? (c.notStated ? '—' : 'None') : `R-${c.R}`}<small>{c.R === null ? (c.notStated ? 'no R-value set' : 'no minimum') : 'installed, minimum'}</small></div>
-      <p className="hero-sub">
-        <b>{DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}</b> · {type} · {c.label}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}
+    <div className="duct-code-notes">
+      <p className="field-note">
+        <b>{DUCT_CODES.find((x) => x.id === s.ductCodeBasis)!.label}</b> · {type} · {c.label}{refsFor(c.src).map((r) => <a key={r.id} href={r.url} target="_blank" rel="noreferrer" title={r.title}> [{r.id}]</a>)}.
+        {c.R !== null && ' Installed R at 75°F mean, duct wrap at 25% compression. Always part of the duct design.'}
       </p>
-      {c.derived && <p className="hero-sub muted">Derived from the code's definitions rather than stated outright — confirm with your authority having jurisdiction.</p>}
-      {(s.ductType === 'outdoor' || s.ductType === 'exhaust') && <p className="hero-sub muted">The IMC still requires preventing condensation on the exterior of any duct (603.12) — checked below.</p>}
-      <p className="hero-sub">This insulation: <b>R-{R.toFixed(1)} installed</b>{c.R !== null ? (ok ? ' — meets it.' : ' — below the minimum.') : '.'}</p>
-      {fix !== null && fix !== s.thicknessIn && <button className="apply" onClick={() => onApply(fix)}>Use {inchLabel(fix)} to meet code</button>}
-      {mode !== 'hot' && <p className="hero-sub muted">The code minimum is for energy; condensation is checked below.</p>}
-      {onGuide && <button className="linkish" onClick={onGuide}><Icon name="map" size={13} /> Where is "{DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)!.short.toLowerCase()}"? Show it on the building</button>}
+      {c.derived && <p className="field-note">Derived from the code's definitions rather than stated outright — confirm with your authority having jurisdiction.</p>}
+      {(s.ductType === 'outdoor' || s.ductType === 'exhaust') && <p className="field-note">The IMC still requires preventing condensation on the exterior of any duct (603.12) — included below.</p>}
+      {mode !== 'hot' && <p className="field-note">The code minimum is for energy; condensation is a separate requirement below.</p>}
     </div>
   )
 }

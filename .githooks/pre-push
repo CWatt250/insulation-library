@@ -1,0 +1,19 @@
+#!/bin/sh
+# Phone layout check before every push (tools/phone_check.mjs): builds the
+# working tree, opens every tab at iPhone size, and blocks the push on failure.
+# Skip once with SKIP_PHONE_CHECK=1 git push (or git push --no-verify).
+# Enabled per clone with: git config core.hooksPath .githooks
+if [ "$SKIP_PHONE_CHECK" = "1" ]; then
+  echo "phone check skipped (SKIP_PHONE_CHECK=1)"
+  exit 0
+fi
+cd "$(git rev-parse --show-toplevel)" || exit 1
+echo "phone check: building and opening every tab at 390x844 (about a minute)…"
+if PHONE_CHECK_QUIET=1 node tools/phone_check.mjs; then
+  exit 0
+fi
+echo ""
+echo "Push blocked: the phone layout check failed (details above)."
+echo "Screenshots: app/test-results/phone/  ·  rerun: cd app && npm run check:phone"
+echo "To push anyway: SKIP_PHONE_CHECK=1 git push  (or git push --no-verify)"
+exit 1

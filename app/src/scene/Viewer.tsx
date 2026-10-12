@@ -9,6 +9,8 @@ import type { LayerId } from '../data/catalog'
 import { PhotoMode, type PhotoProgress } from './PhotoMode'
 import { Callouts } from './Callouts'
 import { MechRoom, ROOM } from './MechRoom'
+import { PlantLights, PlantProps, PlantSupports } from './Plant'
+import { STUDIO_HDRI } from './hdri'
 import { PhysicalCamera } from 'three-gpu-pathtracer'
 import { buildSlots, cradleMat, padMat, pbr, setMaxAnisotropy } from '../materials/library'
 import { ZoneEffects, type RunExtent, type SimVisual } from './effects'
@@ -153,7 +155,10 @@ function Run({ asm, ...props }: ViewerProps & { asm: Built }) {
           )
         })}
       </group>
-      {props.stage !== 'room' && !asm.stands && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
+      {props.stage === 'studio' && !asm.stands && <Cradles radius={sim?.bare ? rPipe : asm.outerRadius} stations={asm.cradles} />}
+      {props.stage === 'plant' && !asm.stands && (
+        <PlantSupports stations={asm.cradles} rPipe={rPipe} rOut={asm.outerRadius} service={props.service ?? 'hot'} bare={!!sim?.bare} floorY={asm.floorY ?? FLOOR_Y} />
+      )}
       {props.stage !== 'room' && asm.stands && <DuctStands {...asm.stands} floorY={asm.floorY ?? FLOOR_Y} />}
       {sim && !props.photo && (asm.zones ?? []).filter((z) => !(sim.bare && (z.kind === 'stub' || z.bareZ === null))).map((z) => {
         const state = z.kind === 'stub' ? sim.stub ?? sim : z.kind === 'fitting' ? sim.fitting ?? sim : sim
@@ -281,6 +286,18 @@ const ROOM_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, nu
   flange: { cam: [1.5, -0.9, 2.3], target: [0, 0.0, -0.1] },
 }
 
+/**
+ * Plant yard: a lower, field-photo angle (about 8–10° down instead of 17°), so
+ * the yard, the rack and the sky show behind the line and the jacket reflects them.
+ */
+const PLANT_VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
+  straight: { cam: [1.85, 0.3, 1.75], target: [0.14, -0.05, 0] },
+  elbow: { cam: [2.1, 0.62, 2.5], target: [0.0, 0.3, 0] },
+  valve: { cam: [1.3, 0.3, 1.55], target: [0, 0.06, 0] },
+  tee: { cam: [1.95, 0.55, 2.25], target: [0.08, 0.22, 0] },
+  flange: { cam: [1.25, 0.22, 1.5], target: [0, 0.0, 0] },
+}
+
 const VIEWS: Record<AssemblyParams['component'], { cam: [number, number, number]; target: [number, number, number] }> = {
   straight: { cam: [1.72, 0.66, 1.64], target: [0.16, -0.08, 0] },
   elbow: { cam: [1.9, 1.05, 2.3], target: [0.0, 0.24, 0] },
@@ -314,8 +331,9 @@ function applyFov(camera: THREE.PerspectiveCamera) {
 
 type Preset = { cam: [number, number, number]; target: [number, number, number] }
 
-/** Phones: straight runs are viewed more along the run (from the cut end) than the landscape presets. */
+/** Phones: straight runs are viewed more along the run (from the cut end) than the landscape presets; lower in the plant yard. */
 const PHONE_RUN_DIR = new THREE.Vector3(1.9, 0.8, 1.05)
+const PHONE_RUN_DIR_PLANT = new THREE.Vector3(1.9, 0.45, 1.05)
 
 /**
  * Exploded and section views are framed from the model's size: the lifted
@@ -462,13 +480,13 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     pc.userData.baseFov = 30
     pc.aspect = size.width / size.height
     applyFov(pc)
-    const v = VIEWS.straight
+    const v = (stage === 'plant' ? PLANT_VIEWS : VIEWS).straight
     const dir = new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target)).normalize()
     const half = (asm.zMax - asm.zMin) / 2
     const R = asm.outerRadius
     const box = new THREE.Box3(new THREE.Vector3(-half, asm.stands!.bottomY, -R), new THREE.Vector3(half, asm.yMax + Math.max(0.05, 0.5 * R), R))
     aimAt(fitBox(pc, box, dir, open(-1, 1, -0.72, 0.7), 0.9))
-  }, [duct, camera, controls, size.width, size.height, insetLeft, insetRight, insetTop, insetBottom, asm.zMax, asm.yMax, asm.outerRadius, view, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [duct, stage, camera, controls, size.width, size.height, insetLeft, insetRight, insetTop, insetBottom, asm.zMax, asm.yMax, asm.outerRadius, view, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
   // Phones: no side panels, but bars above and controls below, and a tall
   // narrow view. Fit the model into the open band between them.
   const phone = !!mobile && !compare && !duct && !cam && stage !== 'room' && (view === 'cutaway' || view === 'installed')
@@ -479,9 +497,10 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     pc.userData.baseFov = 30
     pc.aspect = size.width / size.height
     applyFov(pc)
-    const v = VIEWS[component]
+    const plant = stage === 'plant'
+    const v = (plant ? PLANT_VIEWS : VIEWS)[component]
     // a tall narrow screen fits a straight run better seen more along its length, from the cut end
-    const dir = (component === 'straight' ? PHONE_RUN_DIR.clone() : new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target))).normalize()
+    const dir = (component === 'straight' ? (plant ? PHONE_RUN_DIR_PLANT : PHONE_RUN_DIR).clone() : new THREE.Vector3(...v.cam).sub(new THREE.Vector3(...v.target))).normalize()
     const R = asm.outerRadius
     const half = (asm.zMax - asm.zMin) / 2
     const rise = story ? Math.max(0.05, 0.5 * R) : 0 // heat waves and arrows above the pipe
@@ -494,7 +513,7 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
       )
       : new THREE.Box3(new THREE.Vector3(-half, -R, -R), new THREE.Vector3(half, Math.max(asm.yMax, R) + rise, R))
     aimAt(fitBox(pc, box, dir, open(-0.92, 0.92, -0.9, 0.9), 0.94))
-  }, [phone, story, component, view, camera, controls, size.width, size.height, insetTop, insetBottom, asm.zMin, asm.zMax, asm.yMax, asm.outerRadius, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phone, story, stage, component, view, camera, controls, size.width, size.height, insetTop, insetBottom, asm.zMin, asm.zMax, asm.yMax, asm.outerRadius, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (compare || duct || phone) return
     const room = stage === 'room' && view !== 'layers' && !fit
@@ -503,7 +522,7 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
     pc.userData.baseFov = room ? 52 : 30
     applyFov(pc)
     const v = fitPreset(view, asm, pc, { w: size.width, h: size.height, left: insetLeft, right: insetRight, top: insetTop, bottom: insetBottom })
-      ?? (room ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : VIEWS)[component]
+      ?? (room ? ROOM_VIEWS : view === 'layers' ? LAYER_VIEWS : stage === 'plant' ? PLANT_VIEWS : VIEWS)[component]
     camera.position.set(...(cam ?? v.cam))
     let aim = target ?? v.target
     // simulation: centre on the cut end and bare stub (where the effects tell the story),
@@ -517,7 +536,7 @@ function CameraRig({ component, view, stage, cam, target, asm, insetLeft = 0, in
       controls.target.set(...aim)
       controls.update()
     }
-  }, [component, view, stage === 'room', camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '', zoom, phone, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [component, view, stage, camera, controls, fit ? `${asm.outerRadius.toFixed(4)}-${asm.yMax.toFixed(4)}` : '', zoom, phone, resetKey]) // eslint-disable-line react-hooks/exhaustive-deps
   return null
 }
 
@@ -608,7 +627,8 @@ function ConcreteFloor({ floorY = FLOOR_Y }: { floorY?: number }) {
     g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(g.getAttribute('position').count * 3).fill(1), 3))
     return g
   }, [])
-  const mat = useMemo(() => pbr('concrete-floor', { roughness: 1 }), [])
+  // sunlit slab: lifted toward the light grey of dry concrete
+  const mat = useMemo(() => pbr('concrete-floor', { roughness: 1, color: new THREE.Color(1.35, 1.33, 1.3) }), [])
   return <mesh geometry={geo} material={mat} position={[0, floorY, 0]} receiveShadow />
 }
 
@@ -621,7 +641,7 @@ function ConcreteFloor({ floorY = FLOOR_Y }: { floorY?: number }) {
 function StudioLights() {
   return (
     <Environment
-      files={`${import.meta.env.BASE_URL}hdri/studio_small_09_1k.hdr`}
+      files={`${import.meta.env.BASE_URL}${STUDIO_HDRI}`}
       environmentIntensity={0.8}
       resolution={1024}
     >
@@ -674,15 +694,11 @@ export function Viewer(props: ViewerProps) {
         {props.stage === 'studio' ? (
           <StudioLights />
         ) : props.stage === 'room' ? null : (
-          <Environment
-            files={`${import.meta.env.BASE_URL}hdri/overcast_industrial_courtyard_2k.hdr`}
-            background
-            backgroundBlurriness={0.03}
-            environmentIntensity={1}
-          />
+          <PlantLights mobile={!!props.mobile} photo={!!props.photo} />
         )}
         <Run {...props} asm={asm} />
         {props.stage === 'studio' ? <Cyc floorY={asm.floorY ?? FLOOR_Y} /> : props.stage === 'plant' ? <ConcreteFloor floorY={asm.floorY ?? FLOOR_Y} /> : null}
+        {props.stage === 'plant' && <PlantProps floorY={asm.floorY ?? FLOOR_Y} />}
         {props.photo ? (props.stage === 'studio' && (
           // Photo mode: a real 2.4 m softbox. Area lights give the path tracer
           // physically soft shadows whose penumbra grows with distance.
@@ -694,7 +710,7 @@ export function Viewer(props: ViewerProps) {
             color="#fff6ec"
             onUpdate={(l) => l.lookAt(0, 0, 0)}
           />
-        )) : (
+        )) : props.stage === 'plant' ? null : (
           // Raster: a key light standing in for the overhead softbox, soft VSM shadows on the cyc.
           <directionalLight
             castShadow

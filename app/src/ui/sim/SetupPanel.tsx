@@ -11,6 +11,7 @@ import { Disclosure, Icon, Segmented, Slider } from '../controls'
 import { DuctCodeInputs, DuctInsulationSection, DuctSize } from './DuctSetup'
 import { PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
 import { CodeChips } from './CodeChips'
+import { ductSurface } from '../../sim/duct'
 
 const PIPE_HINT: Record<PipeMaterial, string> = { steel: 'Steel pipe, Sch 40', copper: 'Copper tube, Type L', pvc: 'PVC pipe, Sch 40' }
 
@@ -207,9 +208,6 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
               ))}
             </div>
           )}
-          <p className="field-note">
-            Surface emittance {(s.emittanceOverride ?? surface.value).toFixed(2)} · {s.emittanceOverride !== null ? 'custom' : surface.label}
-          </p>
         </div>
         {mode !== 'condensate' && (
           <div className="field">
@@ -220,30 +218,31 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
         )}
       </section>}
 
-      {beh !== 'hot' && (
-        <section>
-          <h2>Vapor retarder quality</h2>
-          <Segmented<VrQuality>
-            label="Vapor retarder quality"
-            value={s.vr}
-            onChange={(v) => set({ vr: v })}
-            options={[
-              { id: 'ideal', label: 'Ideal' },
-              { id: 'good', label: 'Good' },
-              { id: 'fair', label: 'Fair' },
-              { id: 'poor', label: 'Poor' },
-            ]}
-          />
-          <p className="field-note">
-            {duct ? (s.ductIns === 'elastomeric' ? 'Closed-cell sheet is its own retarder — glue every seam with full adhesive coverage.' : 'The FSK facing is the retarder — tape every seam, staple and pin.') : sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
-              : sys.vaporBy === 'facing' ? 'The ASJ facing is the retarder — seal every lap and butt strip.'
-              : sys.vaporBy === 'membrane' ? 'A separate sealed membrane is the retarder.'
-              : 'No vapor retarder in this build-up.'}
-          </p>
-        </section>
-      )}
-
-      <Disclosure title="Advanced settings">
+      <Disclosure title={<>Advanced <small className="muted">{beh === 'hot' ? 'wind, surface finish, limits, energy cost' : 'sealing, wind, surface finish, limits, energy cost'}</small></>}>
+        {beh !== 'hot' && (
+          <div className="field">
+            <span className="field-label">Vapor retarder sealing</span>
+            <Segmented<VrQuality>
+              size="sm"
+              label="Vapor retarder sealing"
+              value={s.vr}
+              onChange={(v) => set({ vr: v })}
+              options={[
+                { id: 'ideal', label: 'Ideal' },
+                { id: 'good', label: 'Good' },
+                { id: 'fair', label: 'Fair' },
+                { id: 'poor', label: 'Poor' },
+              ]}
+            />
+            <p className="field-note">
+              {duct ? (s.ductIns === 'elastomeric' ? 'Closed-cell sheet is its own retarder — glue every seam with full adhesive coverage.' : 'The FSK facing is the retarder — tape every seam, staple and pin.') : sys.vaporBy === 'integral' ? 'Closed-cell foam is its own retarder — glue every seam.'
+                : sys.vaporBy === 'facing' ? 'The ASJ facing is the retarder — seal every lap and butt strip.'
+                : sys.vaporBy === 'membrane' ? 'A separate sealed membrane is the retarder.'
+                : 'No vapor retarder in this build-up.'}
+            </p>
+          </div>
+        )}
+        <h4 className="adv-h">Surroundings</h4>
         <Slider
           label="Wind / air speed" value={s.windMph} min={0} max={30} step={0.5} onChange={(v) => set({ windMph: v })}
           format={(v) => (v === 0 ? 'Still air' : units === 'ip' ? `${v} mph` : `${(v * 0.44704).toFixed(1)} m/s`)}
@@ -270,6 +269,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
             )}
           </>
         )}
+        <h4 className="adv-h">Surface</h4>
         {!duct && metal && (
           <div className="field">
             <span className="field-label">Metal jacket surface</span>
@@ -289,6 +289,12 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
             onChange={(v) => set({ emittanceOverride: v === 'auto' ? null : surface.value })}
             options={[{ id: 'auto', label: 'From finish' }, { id: 'custom', label: 'Custom' }]}
           />
+          <p className="field-note">
+            {s.emittanceOverride !== null ? `Custom ${s.emittanceOverride.toFixed(2)}` : (() => {
+              const f = duct ? ductSurface(s, true) : surface
+              return `${f.label}: ${f.value.toFixed(2)}${'note' in f && f.note ? ` — ${f.note}` : ''}`
+            })()}
+          </p>
           {s.emittanceOverride !== null && (
             <Slider label="Surface emittance" value={s.emittanceOverride} min={0.03} max={0.95} step={0.01} onChange={(v) => set({ emittanceOverride: v })} format={(v) => v.toFixed(2)} accent={acc} />
           )}
@@ -305,6 +311,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
             </div>
           </div>
         )}
+        <h4 className="adv-h">Limits and targets</h4>
         {beh === 'hot' ? (
           <Slider label="Safe-touch limit (personnel protection)" value={s.ppF} min={100} max={180} onChange={(v) => set({ ppF: v })} format={(v) => fmt.temp(v, units)} accent={acc} />
         ) : (
@@ -324,6 +331,7 @@ export function SetupPanel({ mode, s, set, units, onGuide }: { mode: SimMode; s:
         {mode !== 'condensate' && !duct && (
           <Slider label={mode === 'hot' ? 'Heat-loss target' : 'Heat-gain target'} value={s.targetQ} min={1} max={mode === 'hot' ? 300 : 60} onChange={(v) => set({ targetQ: v })} format={(v) => `${fmt.flow(v, units)} ${fmt.flowUnit(units)}`} accent={acc} />
         )}
+        <h4 className="adv-h">{mode === 'condensate' ? 'Run' : 'Energy cost and run'}</h4>
         {mode !== 'condensate' && (
           <div className="field econ">
             <span className="field-label">Energy cost <small className="muted">your rates — defaults are examples</small></span>

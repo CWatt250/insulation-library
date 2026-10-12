@@ -167,8 +167,13 @@ function jacket(id: JacketId) {
   }
 }
 
+/**
+ * Stainless bands: smoother and a touch cooler than the aluminum jacket, with a
+ * brushed (anisotropic) sheen along the strap, so they read as separate straps
+ * the way they do in field photos rather than as seams.
+ */
 const bandMat = () =>
-  pbr('ss-2b', { metalness: 1, roughness: 0.85, color: new THREE.Color(1.15, 1.15, 1.15) })
+  pbr('ss-2b', { metalness: 1, roughness: 0.42, color: new THREE.Color(0.9, 0.93, 0.97), anisotropy: 0.55 })
 
 /** The materials for one assembly, made (and their textures fetched) only when a part first uses one. */
 export interface Slots {

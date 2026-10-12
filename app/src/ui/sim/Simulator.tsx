@@ -62,9 +62,10 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   onMode: (m: SimMode) => void
 }) {
   const [states, setStates] = useState<Record<SimMode, SimState>>(() => {
-    // open on the energy code last picked (Washington's until then); a shared scenario keeps its own
+    // open on the energy code last picked (Washington's until then), counted in the
+    // recommended thickness on hot and cold pipe; a shared scenario keeps its own
     const codes = loadCodes()
-    const st = Object.fromEntries(SIM_MODES.map((m) => [m, { ...initialState(m), ...codes }])) as Record<SimMode, SimState>
+    const st = Object.fromEntries(SIM_MODES.map((m) => [m, { ...initialState(m), ...codes, ...(m === 'hot' || m === 'cold' ? { applyCode: true } : {}) }])) as Record<SimMode, SimState>
     if (share) st[share.mode] = share.state
     return st
   })
@@ -72,7 +73,8 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
     setStates((prev) => ({ ...prev, [m]: state }))
     if (m !== mode) onMode(m)
   }
-  const [stages, setStages] = useState<Record<SimMode, 'studio' | 'plant'>>({ hot: 'studio', cold: 'studio', condensate: 'studio', duct: 'studio' })
+  // the outdoor plant yard unless a preset asks for the studio
+  const [stages, setStages] = useState<Record<SimMode, 'studio' | 'plant'>>({ hot: 'plant', cold: 'plant', condensate: 'plant', duct: 'plant' })
   const [view, setView] = useState<'installed' | 'cutaway'>('cutaway')
   const [thermal, setThermal] = useState(false)
   const [bare, setBare] = useState(false)
@@ -110,7 +112,7 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
   const guideEl = guide && mode === 'duct' ? <DuctGuide s={s} set={set} onClose={() => setGuide(false)} /> : null
   const pickPreset = (p: Preset) => {
     setStates((prev) => ({ ...prev, [mode]: applyPreset(prev[mode], p) }))
-    setStages((prev) => ({ ...prev, [mode]: p.stage ?? 'studio' }))
+    setStages((prev) => ({ ...prev, [mode]: p.stage ?? 'plant' }))
   }
 
   // Ductwork has no hot/cold of its own: the physics runs by which way heat flows

@@ -83,7 +83,7 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
           mode={physicsMode(result.s, result.mode)}
           panels={[{ key: `rec-${result.pick}-${result.s.thicknessIn}`, title: 'Recommended', side: result.ev.ins, modelThickness: result.s.thicknessIn, bare: false }]}
           bare={result.ev.bare}
-          opts={{ view: 'cutaway', thermal: false, stage: 'studio', mobile, units }}
+          opts={{ view: 'cutaway', thermal: false, stage: 'plant', mobile, units }}
           inset={{ left: 380, right: 392 }}
           sync={sync}
         />

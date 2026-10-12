@@ -42,7 +42,7 @@ function readParams() {
     service: q.get('svc') as ServiceId | null,
     view: (q.get('view') ?? 'cutaway') as ViewMode,
     component: (q.get('comp') ?? 'straight') as Component,
-    stage: (q.get('stage') ?? 'studio') as Stage,
+    stage: (q.get('stage') ?? 'plant') as Stage,
     hidden: (q.get('hide')?.split(',').filter(Boolean) ?? []) as LayerId[],
     selected: q.get('sel') as LayerId | null,
     ui: q.get('ui') !== '0',
@@ -115,7 +115,7 @@ function useIsMobile() {
 }
 
 const COMPONENT_LABEL: Record<Component, string> = { straight: 'Straight', elbow: '90° elbow', tee: 'Tee', valve: 'Valve', flange: 'Flanges' }
-const STAGE_LABEL: Record<Stage, string> = { studio: 'Studio', plant: 'Plant', room: 'Mech room' }
+const STAGE_LABEL: Record<Stage, string> = { plant: 'Plant', studio: 'Studio', room: 'Mech room' }
 const VIEW_LABEL: Record<ViewMode, string> = { installed: 'Installed', cutaway: 'Cutaway', layers: 'Layers', exploded: 'Exploded', section: 'Section' }
 const SERVICE_LABEL: Record<ServiceId, string> = { hot: 'Hot', cold: 'Cold (below ambient)' }
 const SERVICE_SHORT: Record<ServiceId, string> = { hot: 'Hot', cold: 'Cold' }
@@ -354,7 +354,7 @@ export default function App() {
           ))}
         </div>
         <div className="seg">
-          {(['studio', 'plant', 'room'] as const).map((v) => (
+          {(['plant', 'studio', 'room'] as const).map((v) => (
             <button key={v} className={v === stage ? 'on' : ''} onClick={() => setStage(v)}>{STAGE_LABEL[v]}</button>
           ))}
         </div>

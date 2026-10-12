@@ -1,5 +1,7 @@
 # Realism gaps: our renders vs. real field installs
 
+**Status 2026-10-11:** gap 1 (outdoor environment: sunny tank-farm HDRI, sun-matched shadows), gap 2 (installation context: plant yard with rack, tanks, vessel, lifts), gap 7 (readable bands, aligned wing seals), gap 8 (sleepers with T-shoes on hot lines and shields on cold lines) and gap 11 (lower field-photo camera in the yard) are addressed in the plant stage. Gap 3 waviness and gap 4 sheet tone steps were already in the jacket sweep.
+
 Written 2026-10-10. I compared the five renders in `research/renders/` against 65 new field photos in `refs/field/` and the earlier product and close-up set in `refs/*/`.
 
 **How photos are cited:** `NN/file` means `research/refs/field/NN-<query-slug>/file`. The earlier sets are cited as `refs/<folder>/file`.

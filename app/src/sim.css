@@ -626,3 +626,34 @@ table.accuracy a { color: var(--ink-3); text-decoration: none; font-size: 10px; 
 .stub-tag.frost { border-color: #bae6fd; color: #e0f2fe; }
 .stub-tag.hot { border-color: #ff8a3d; color: #ffd2ad; }
 .stub-tag.dry { color: var(--ink-2); }
+
+/* ------------------------------------------- results: the answer first */
+.answer .answer-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); font-weight: 700; }
+.answer-main { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.answer-main .hero-big { margin-top: 6px; }
+.answer-main .hero-big small { margin-left: 6px; }
+.answer-use { flex: none; }
+.answer-inuse { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 650; color: var(--good); }
+.answer-now {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-2);
+}
+.answer-now b { color: var(--ink); font-weight: 650; }
+.answer-code { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
+.answer-code svg { flex: none; margin-top: 2px; }
+.answer-code.ok svg { color: var(--good); }
+.answer-code.short { color: var(--ink); }
+.answer-code.short svg { color: var(--bad); }
+.answer-code a { color: var(--ink-3); text-decoration: none; font-size: 10.5px; }
+.answer-code.check-row small { margin-top: 1px; }
+.answer .linkish { margin-top: 10px; }
+.explain-line { margin: 0; padding: 0 2px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+.explain-intro { margin: 0; font-size: 12px; line-height: 1.5; }
+.duct-code-notes { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.duct-code-notes a { color: var(--ink-3); text-decoration: none; font-size: 10.5px; }
+.results > .disclosure > .disclosure-head { padding: 12px; font-size: 13.5px; }
+.results > .disclosure > .disclosure-head small { display: block; font-weight: 500; font-size: 11.5px; margin-top: 1px; }
+.results > .disclosure > .disclosure-body { gap: 12px; }
+/* setup: Advanced groups */
+.adv-h { margin: 4px 0 -4px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 650; }
+.setup > .disclosure > .disclosure-head small { display: block; font-weight: 500; font-size: 11.5px; margin-top: 1px; }

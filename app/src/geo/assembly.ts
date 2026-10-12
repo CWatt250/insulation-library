@@ -777,20 +777,31 @@ function pieceArcs(ins: InsulationVisual, rot: number, halfGap: number): [number
 }
 
 /**
- * Wing seal: a 1" sleeve of 0.032" stainless crimped around the band, with the
- * band tail folded back over it.
+ * Wing seal: a 1" clip of 0.032" stainless wrapped around both band plies, its
+ * wings crimped down over the band edges, so it stands about 2.5 mm proud and a
+ * little wider than the band; the band's tail end is folded back and lies on
+ * the band beyond it. `r` is the top of the band.
  */
 function wingSeal(r: number, zc: number, w: number, theta: number): THREE.BufferGeometry {
   const t = 0.032 * IN
   const len = 1 * IN
   const ang = len / r
-  const sleeve = sweep(bandProfile(r - 0.0002, t, zc, w + 2 * t + 0.0006, Slot.Band), {
-    theta0: theta - ang / 2, theta1: theta + ang / 2, segments: 256, capMat: Slot.Band,
+  const rIn = r - 0.02 * IN - 0.00005
+  const h = 2 * 0.02 * IN + 2 * t // two band plies inside, seal stock above and below
+  const half = w / 2 + t + 0.0004
+  const crimp = 0.0012 // the wings roll down over the edges
+  const pts: [number, number][] = [
+    [rIn, zc - half], [rIn + h - crimp, zc - half], [rIn + h, zc - half + crimp],
+    [rIn + h, zc + half - crimp], [rIn + h - crimp, zc + half], [rIn, zc + half],
+  ]
+  const clip = sweep({ pts, edges: pts.map((_, i) => ({ mat: Slot.Band, ...(i === pts.length - 1 ? {} : { smooth: 1 }) })) }, {
+    theta0: theta - ang / 2, theta1: theta + ang / 2, segments: 24, capMat: Slot.Band,
   })
-  const tail = sweep(bandProfile(r + t - 0.0001, 0.02 * IN, zc, w * 0.96, Slot.Band), {
-    theta0: theta - ang * 0.15, theta1: theta + ang * 0.75, segments: 256, capMat: Slot.Band,
+  // folded tail: a second ply on the band, running on past the clip
+  const tail = sweep(bandProfile(r - 0.00002, 0.02 * IN, zc, w * 0.97, Slot.Band), {
+    theta0: theta + ang * 0.45, theta1: theta + ang * 1.35, segments: 32, capMat: Slot.Band,
   })
-  return mergeGeos([sleeve, tail])
+  return mergeGeos([clip, tail])
 }
 
 // ------------------------------------------------------------------ elbow

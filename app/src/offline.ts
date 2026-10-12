@@ -1,4 +1,5 @@
 import { TEXTURE_DIR } from './materials/library'
+import { plantHdri, STUDIO_HDRI } from './scene/hdri'
 
 /**
  * Offline use (production only): register the service worker (sw/sw.js), and
@@ -22,7 +23,9 @@ export function registerOffline() {
       const reg = await navigator.serviceWorker.ready
       const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
       if (conn?.saveData) return
-      setTimeout(() => reg.active?.postMessage({ type: 'warm', prefixes: [`${TEXTURE_DIR}/`, 'hdri/'] }), 5000)
+      // this device's textures and lighting only (phones: half-size textures, 1k plant HDRI)
+      const phone = TEXTURE_DIR === 'tex-half'
+      setTimeout(() => reg.active?.postMessage({ type: 'warm', prefixes: [`${TEXTURE_DIR}/`, plantHdri(phone), STUDIO_HDRI] }), 5000)
     } catch { /* no offline support here; the app still works online */ }
   })
 }

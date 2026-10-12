@@ -16,7 +16,10 @@ Interactive, photoreal 3D library of mechanical insulation: pipe insulation mate
   - 90° elbow: pressed covers with throat pleats through 12" NPS, gored covers above, and PVC fitting covers.
   - Flanged gate valve with a removable blanket.
 - **Views:** Installed, Cutaway, Layers (a telescoping step-down with spec-driven callouts), Exploded (each layer's top half lifts off) and Section (every layer cut square, labelled ring by ring).
-- **Settings:** studio, outdoor plant, and mechanical room.
+- **Settings:** an outdoor plant yard (the default everywhere), a studio, and a mechanical room.
+  - **Plant yard** (`app/src/scene/Plant.tsx`): lit by a sunny CC0 HDRI (1k on phones, 2k on desktop) with a shadow-casting sun where the HDRI's sun is, and a lower, field-photo camera so the yard and sky show behind the line. Built procedurally at real scale: a steel pipe rack with jacketed and painted lines, an insulated storage tank with a caged ladder, a painted tank, an insulated horizontal vessel on saddles, a scissor lift under the rack and a boom lift at the vessel (generic), a caution-tape cordon with delineator posts and cones, and a pallet of insulation cartons with ASJ pipe sections and a coil of jacketing.
+  - **Supports** in the yard: concrete sleepers with a steel cap; hot lines stand on welded T-shoes, cold lines rest in 180° galvanized shields so the insulation and vapor retarder stay unbroken. Sizes are typical field sizes, for the picture only.
+  - **Bands and wing seals:** stainless bands are smoother and cooler-toned than the aluminum jacket with a brushed sheen, so they read as straps; each wing seal is a 1" clip standing about 2.5 mm proud with the band tail folded back, all in one row along the run.
 - **Photo mode:** progressive path tracing ([three-gpu-pathtracer](https://github.com/gkjohnson/three-gpu-pathtracer)) with denoising and depth of field.
 - **Spec data card:** service temperature, k-factor at a stated mean temperature, density, ASTM standards, moisture and vapor behaviour, application tags, and jacket compatibility and temperature limits. It follows the current selection. Every value comes from `research/materials-verified.json` or `research/jackets-verified.json`, with a link to its source.
 
@@ -117,7 +120,7 @@ Three simulation modes sit beside the library (**Explore**), switched from the b
 - **Save as report (PDF):** Prepared by, Prepared for and Project fields; the report leads with the recommendation, its basis, the inputs, notes and alternatives, and reads on a phone.
 - **Code:** `app/src/sim/recommend.ts`, tested in `recommend.test.ts`.
 
-**Pipe energy codes:** choose the code in Setup, in Results (next to the code minimum) or in Recommend. The app opens on the Washington State Energy Code (King County) and then on whichever code and county were picked last on that device; every tab follows the latest pick (`app/src/sim/codePrefs.ts`). Engine defaults stay ASHRAE, so tests and shared files are unaffected.
+**Pipe energy codes:** choose the code in Setup, in Results (next to the code minimum) or in Recommend. On hot and cold pipe the code minimum is counted in the recommended thickness by default (untick it on the answer card). The app opens on the Washington State Energy Code (King County) and then on whichever code and county were picked last on that device; every tab follows the latest pick (`app/src/sim/codePrefs.ts`). Engine defaults stay ASHRAE, so tests and shared files are unaffected.
 - **ASHRAE 90.1-2019:** Tables 6.8.3-1 and 6.8.3-2.
 - **IECC commercial:** 2021 Table C403.12.3; the same thicknesses as 90.1, except the 105–140°F conductivity range is 0.21–0.28.
 - **IECC residential:** R403.4 requires R-3 above 105°F or below 55°F. The pipe R-value is ro·ln(ro/ri)/k, the IECC 2024 Table C403.13.3(1) definition.
@@ -199,7 +202,9 @@ tools/.venv/bin/python tools/gen_textures.py aluminum   # one group
 tools/.venv/bin/python tools/half_textures.py            # phone copies only (gen_textures.py runs this itself)
 ```
 
-`npm run build` produces a static site in `app/dist/`; `npm test` runs the engine and validation tests. Deep links: `?mode=hot|cold|condensate`, `&units=si`.
+`npm run build` produces a static site in `app/dist/`; `npm test` runs the engine and validation tests.
+
+`npm run check:phone` (`tools/phone_check.mjs`) builds the working tree into a temp folder and opens every tab at iPhone size (390×844): no page errors or sideways scroll, a one-row toolbar and on-screen More menu, the model framed between the status pill and the toolbar, Reset view after a drag, and the bottom panel opening on screen. Screenshots land in `app/test-results/phone/`; `--url <site>` checks a running site instead. It also runs before every push (`.githooks/pre-push`, enabled with `git config core.hooksPath .githooks`); `SKIP_PHONE_CHECK=1 git push` skips it once. Deep links: `?mode=hot|cold|condensate`, `&units=si`.
 
 ## Credits
 

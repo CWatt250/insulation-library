@@ -2,7 +2,7 @@ Third-party assets (all CC0, Poly Haven, polyhaven.com; authors per api.polyhave
 
 HDRIs (app/public/hdri):
 - studio_small_09: Sergej Majboroda
-- overcast_industrial_courtyard: Grzegorz Wronkowski
+- abandoned_tank_farm_03 (1k for phones, 2k): Sergej Majboroda
 
 Textures (app/public/tex):
 - concrete-floor = concrete_floor_worn_001: Dimitrios Savva, Rico Cilliers

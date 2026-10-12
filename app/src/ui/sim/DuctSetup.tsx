@@ -1,5 +1,5 @@
 import { DUCT_WRAP, ELASTOMERIC_SHEET } from '../../data/ductData'
-import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, ductSurface, ductThicknesses, installedIn, ratedR, type DuctCodeBasis, type DuctInsulation, type DuctType } from '../../sim/duct'
+import { DUCT_CODES, DUCT_INSULATIONS, DUCT_LOCATIONS, DUCT_SERVICES, DUCT_TYPES, ductThicknesses, installedIn, ratedR, type DuctCodeBasis, type DuctInsulation, type DuctType } from '../../sim/duct'
 import { physicsMode } from '../../sim/model'
 import type { SimMode, SimState } from '../../sim/types'
 import { fmt, inchLabel, type UnitSystem } from '../../sim/units'
@@ -47,7 +47,6 @@ export function DuctInsulationSection({ s, set, mode, units, acc }: { s: SimStat
     const l = ductThicknesses(id)
     set({ ductIns: id, thicknessIn: l.reduce((b, x) => (Math.abs(x - s.thicknessIn) < Math.abs(b - s.thicknessIn) ? x : b), l[0]) })
   }
-  const surf = ductSurface(s, true)
   const wrap = s.ductIns !== 'elastomeric'
   const inst = installedIn(s.ductIns, s.thicknessIn)
   return (
@@ -72,7 +71,6 @@ export function DuctInsulationSection({ s, set, mode, units, acc }: { s: SimStat
           : <span>R-{ratedR(s.ductIns, s.thicknessIn).toFixed(1)} · {ELASTOMERIC_SHEET.product}{s.thicknessIn > ELASTOMERIC_SHEET.plenumMaxIn ? ' · over 1": not 25/50 rated for plenums' : ''}</span>}
         accent={acc}
       />
-      <p className="field-note">Outer surface: {surf.label}, emittance {(s.emittanceOverride ?? surf.value).toFixed(2)}{surf.note ? ` — ${surf.note}` : ''}</p>
       {physicsMode(s, mode) === 'hot' && s.processF > 120 && <p className="field-note">IMC 604.2: ducts above 120°F need enough insulation to hold the exposed surface at or below 120°F.</p>}
     </section>
   )
@@ -84,7 +82,7 @@ export function DuctCodeInputs({ s, set, acc, onGuide }: { s: SimState; set: (p:
     <>
       {onGuide && (
         <button className="tool guide-open" onClick={onGuide}>
-          <Icon name="layers" size={15} /> Where does my duct run? Location guide
+          <Icon name="map" size={15} /> Where does my duct run? Location guide
         </button>
       )}
       <div className="field">

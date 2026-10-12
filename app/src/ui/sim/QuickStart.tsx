@@ -6,23 +6,23 @@ import { Icon } from '../controls'
 const STEPS: Record<SimMode, (m: boolean) => string[]> = {
   hot: (m) => [
     `Pick a preset, or set the pipe, its temperature and the room in ${m ? 'the Setup tab' : 'the left panel'}.`,
-    `${m ? 'The Results tab' : 'The right panel'} shows heat loss, the surface temperature, and the thickness each requirement needs — tap Apply to use it.`,
-    'Compare shows versions side by side; Present walks a customer through it.',
+    `${m ? 'The Results tab' : 'The right panel'} leads with the thickness to use — tap Use to apply it. More details has heat loss, cost and every requirement.`,
+    `Compare shows versions side by side; Present walks a customer through it${m ? ' — both under More' : ''}.`,
   ],
   cold: (m) => [
     `Pick a preset, or set the pipe, its temperature, the room and the humidity in ${m ? 'the Setup tab' : 'the left panel'}.`,
-    `${m ? 'The Results tab' : 'The right panel'} shows whether it sweats and the thickness that keeps it dry and meets code — tap Apply to use it.`,
-    'Compare shows versions side by side; Present walks a customer through it.',
+    `${m ? 'The Results tab' : 'The right panel'} leads with the thickness that keeps it dry — tap Use to apply it, and tick the box to include the energy code.`,
+    `Compare shows versions side by side; Present walks a customer through it${m ? ' — both under More' : ''}.`,
   ],
   condensate: (m) => [
     `Pick a preset, or set the drain line, the room and the humidity in ${m ? 'the Setup tab' : 'the left panel'}.`,
-    `${m ? 'The Results tab' : 'The right panel'} shows whether it sweats; Auto-size picks the thickness that keeps it dry.`,
-    'Compare shows bare, current and recommended side by side.',
+    `${m ? 'The Results tab' : 'The right panel'} leads with the thickness that stops sweating — tap Use to apply it.`,
+    `Compare shows bare, current and recommended side by side${m ? ' (under More)' : ''}.`,
   ],
   duct: (m) => [
     `Pick what the duct carries and where it runs in ${m ? 'the Setup tab' : 'the left panel'} — not sure where? Open the Location guide.`,
-    `${m ? 'The Results tab' : 'The right panel'} leads with the energy-code minimum for that duct, then checks it won't sweat.`,
-    'Use the button in Results to apply the thickness that meets code; Compare and Present work here too.',
+    `${m ? 'The Results tab' : 'The right panel'} leads with the thickness that meets the energy code and won't sweat — tap Use to apply it.`,
+    `Compare and Present work here too${m ? ' — both under More' : ''}.`,
   ],
 }
 
