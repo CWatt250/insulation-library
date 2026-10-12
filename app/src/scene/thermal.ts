@@ -75,7 +75,10 @@ const thermalFrag = /* glsl */ `
 
   void main() {
     float T = tempAt(vR);
-    float t = clamp((T - uAmbient) / uSpan, -1.0, 1.0);
+    // square-root scale: the end near ambient is stretched, so a 137°F jacket on an
+    // 810°F line reads warm (yellow) instead of all but ambient (legend: thermalStop)
+    float x = clamp((T - uAmbient) / uSpan, -1.0, 1.0);
+    float t = sign(x) * sqrt(abs(x));
     vec3 c = ramp(t);
     // simple studio shading so the form still reads
     vec3 n = normalize(vN);
@@ -94,6 +97,13 @@ const thermalFrag = /* glsl */ `
     gl_FragColor = vec4(c, 1.0);
   }
 `
+
+/**
+ * Where a temperature sits along the legend bar, 0–1 (the bar is linear in
+ * temperature; the colours follow the shader's square-root scale, so the CSS
+ * gradient stops sit at t² of the ramp's stops).
+ */
+export const legendPos = (tF: number, fromF: number, toF: number) => Math.min(1, Math.max(0, (tF - fromF) / ((toF - fromF) || 1)))
 
 export function thermalMaterial() {
   return new THREE.ShaderMaterial({

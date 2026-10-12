@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { CamSync } from '../../scene/Viewer'
+import { legendPos } from '../../scene/thermal'
 import { currentMaterial, materialLabel, materials, maxThickness, noun, stateForAny, type MaterialId } from '../../sim/system'
 import { evaluate, evaluateSide, physicsMode, recommend, thicknessOptions, type Goal } from '../../sim/model'
 import { design } from '../../sim/design'
@@ -304,7 +305,19 @@ export function Simulator({ mode, mobile, units, setUnits, share, onMode }: {
 
   const legend = thermal && s.system !== 'duct' && s.component !== 'elbow' && s.component !== 'tee' && (
     <div className={`thermal-legend ${beh === 'hot' ? 'hot' : 'cold'} ${compare ? 'over-compare' : ''}`} aria-label="Thermal colour scale">
-      <div className="tl-bar" />
+      {/* the outside surface, marked on the scale (the number the status pill gives) */}
+      {(() => {
+        const from = beh === 'hot' ? s.ambientF : s.processF
+        const to = beh === 'hot' ? s.processF : s.ambientF
+        const sf = (bare ? ev.bare : ev.ins).result.surfaceF
+        const at = legendPos(sf, from, to)
+        return (
+          <>
+            <div className="tl-surface"><span style={{ left: `${Math.min(80, Math.max(20, at * 100))}%` }}>Surface {fmt.temp(sf, units)}</span></div>
+            <div className="tl-bar"><i className="tl-mark" style={{ left: `${at * 100}%` }} /></div>
+          </>
+        )
+      })()}
       <div className="tl-ticks">
         <span>{fmt.temp(beh === 'hot' ? s.ambientF : s.processF, units)}</span>
         {beh !== 'hot' && <span className="tl-dew">dew-point line {fmt.temp(m.dewF, units)}</span>}

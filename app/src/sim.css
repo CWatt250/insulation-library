@@ -107,8 +107,13 @@
 /* compare: sit above the panel picker instead of on top of it */
 .thermal-legend.over-compare { bottom: 162px; left: 50%; transform: translateX(-50%); }
 .tl-bar { height: 8px; border-radius: 4px; }
-.thermal-legend.hot .tl-bar { background: linear-gradient(90deg, rgb(204,199,184), rgb(250,204,51) 30%, rgb(242,97,15) 65%, rgb(153,10,10)); }
-.thermal-legend.cold .tl-bar { background: linear-gradient(90deg, rgb(10,28,115), rgb(15,115,230) 34%, rgb(140,204,242) 75%, rgb(204,199,184)); }
+/* the shader's ramp on a square-root scale: a stop at ramp t sits at t² along the bar */
+.thermal-legend.hot .tl-bar { background: linear-gradient(90deg, rgb(204,199,184), rgb(250,204,51) 6.25%, rgb(242,97,15) 43.6%, rgb(153,10,10)); }
+.thermal-legend.cold .tl-bar { background: linear-gradient(90deg, rgb(10,28,115), rgb(15,115,230) 56.4%, rgb(140,204,242) 93.75%, rgb(204,199,184)); }
+.tl-bar { position: relative; }
+.tl-mark { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55); border-radius: 1px; }
+.tl-surface { position: relative; height: 15px; margin-bottom: 3px; }
+.tl-surface span { position: absolute; transform: translateX(-50%); white-space: nowrap; color: var(--ink); font-weight: 650; }
 .tl-ticks { display: flex; justify-content: space-between; margin-top: 4px; gap: 6px; }
 .tl-dew { color: #2ee6c8; }
 
