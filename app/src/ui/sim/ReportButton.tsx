@@ -6,10 +6,18 @@ import { Icon } from '../controls'
  * "Report": who it's from and for, then print / save as PDF or download.
  * `inline` shows the form in place (the Recommend tab, phones) instead of a popover.
  */
-export function ReportButton({ make, inline, label = 'Report' }: {
-  make: () => Omit<ReportInput, 'images' | 'preparedFor' | 'project' | 'appUrl' | 'preparedBy'>
+/** Who a document is from and for, and where the app lives. */
+export interface Who { preparedFor: string; preparedBy: string; project: string; appUrl: string }
+
+export function ReportButton({ make, build, inline, label = 'Report', note, fileSlug = 'insulation-assessment' }: {
+  make?: () => Omit<ReportInput, 'images' | 'preparedFor' | 'project' | 'appUrl' | 'preparedBy'>
+  /** Builds another document (the savings proposal) instead of the assessment report. */
+  build?: (who: Who) => string
   inline?: boolean
   label?: string
+  /** What the document holds, under the buttons. */
+  note?: string
+  fileSlug?: string
 }) {
   const [open, setOpen] = useState(false)
   const [preparedBy, setBy] = useState(() => safeGet('il.report.by'))
@@ -19,14 +27,15 @@ export function ReportButton({ make, inline, label = 'Report' }: {
     safeSet('il.report.by', preparedBy)
     safeSet('il.report.for', preparedFor)
     safeSet('il.report.project', project)
-    return buildReport({ ...make(), images: snapshotCanvases(), preparedFor, project, preparedBy, appUrl: location.origin })
+    const who = { preparedFor, project, preparedBy, appUrl: location.origin }
+    return build ? build(who) : buildReport({ ...make!(), images: snapshotCanvases(), ...who })
   }
   const download = () => {
     const blob = new Blob([html()], { type: 'text/html' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    const slug = (project || 'insulation-assessment').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-    a.download = `${slug || 'insulation-assessment'}.html`
+    const slug = (project ? `${project} ${build ? fileSlug : ''}` : fileSlug).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    a.download = `${slug || fileSlug}.html`
     a.click()
     setTimeout(() => URL.revokeObjectURL(a.href), 2000)
   }
@@ -47,7 +56,7 @@ export function ReportButton({ make, inline, label = 'Report' }: {
         <button className="primary" onClick={print}><Icon name="book" size={15} /> Save as PDF</button>
         <button className="tool" onClick={download}>Download file</button>
       </div>
-      <p className="field-note">Save as PDF opens the report and your print screen — choose "Save as PDF" (on iPhone: Share → Save to Files, or Print). It includes the inputs, results, every requirement and its source.</p>
+      <p className="field-note">Save as PDF opens the {build ? 'proposal' : 'report'} and your print screen — choose "Save as PDF" (on iPhone: Share → Save to Files, or Print). {note ?? 'It includes the inputs, results, every requirement and its source.'}</p>
     </>
   )
   if (inline) {

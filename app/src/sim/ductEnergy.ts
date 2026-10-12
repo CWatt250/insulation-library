@@ -29,7 +29,8 @@ const INDOOR = { cooling: 78, heating: 70 }
 const DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-export type Season = 'cooling' | 'heating'
+/** A duct's cooling or heating season, or the months an outdoor pipe runs. */
+export type Season = 'cooling' | 'heating' | 'run'
 
 export interface SeasonPart {
   season: Season
@@ -45,6 +46,10 @@ export interface SeasonPart {
   /** How aroundF follows from outdoorF, in words. */
   rule: string
   airF: number
+  /** Outdoor pipes: the wind the jacket sees, mph (0 when sheltered). */
+  windMph?: number
+  /** Outdoor pipes: what the wind is. */
+  windRule?: string
   /** Heat flow that costs energy, Btu/hr·ft (0 when the season works for free). */
   qBare: number
   qIns: number
@@ -69,13 +74,13 @@ export function monthSpan(months: number[]): string {
   return run === months.length ? `${MONTH[start - 1]}–${MONTH[end - 1]}` : months.map((m) => MONTH[m - 1]).join(', ')
 }
 
-/** Outdoor normal over the season's operating hours (days-weighted across months). */
-function seasonOutdoor(st: ClimateStation, months: number[], hoursPerDay: number): number {
+/** A normal (temperature or wind) over the season's operating hours, days-weighted across months. */
+function seasonOutdoor(st: ClimateStation, months: number[], hoursPerDay: number, table: number[][] = st.monthHourF): number {
   const hrs = hoursPerDay >= 24 ? [...Array(24).keys()] : [...Array(Math.max(1, hoursPerDay)).keys()].map((i) => (DAY_START + i) % 24)
   let sum = 0
   let w = 0
   for (const m of months) {
-    const row = st.monthHourF[m - 1]
+    const row = table[m - 1]
     const mean = hrs.reduce((a, h) => a + row[h], 0) / hrs.length
     sum += mean * DAYS[m - 1]
     w += DAYS[m - 1]
@@ -83,7 +88,7 @@ function seasonOutdoor(st: ClimateStation, months: number[], hoursPerDay: number
   return sum / w
 }
 
-function around(s: SimState, season: Season, outdoorF: number, st: ClimateStation): { aroundF: number; rule: string } {
+function around(s: SimState, season: 'cooling' | 'heating', outdoorF: number, st: ClimateStation): { aroundF: number; rule: string } {
   const o = Math.round(outdoorF * 10) / 10
   switch (s.ductLocation) {
     case 'attic':
@@ -121,7 +126,7 @@ export function ductEnergy(s: SimState): DuctEnergy {
   const heatMonths = st.hdd.map((h, i) => (h > HEATING_MONTH_HDD ? i + 1 : 0)).filter(Boolean)
   // which seasons this air counts in: cold air in the cooling season, warm air in the heating
   // season, room-temperature (return) air in both without counting a month twice
-  const seasons: { season: Season; months: number[] }[] =
+  const seasons: { season: 'cooling' | 'heating'; months: number[] }[] =
     s.processF <= 65 ? [{ season: 'cooling', months: COOLING_MONTHS }]
       : s.processF >= 80 ? [{ season: 'heating', months: heatMonths }]
         : [{ season: 'cooling', months: COOLING_MONTHS }, { season: 'heating', months: heatMonths.filter((m) => !COOLING_MONTHS.includes(m)) }]
@@ -150,4 +155,43 @@ export function ductEnergy(s: SimState): DuctEnergy {
     })
   }
   return { kind: 'parts', station: st, county: s.waCounty, parts }
+}
+
+/**
+ * A pipe outdoors, priced at the county's normal weather: the months it runs (the coldest
+ * for hot work, the warmest for cold), the outdoor temperature over its operating hours and
+ * NOAA's average wind there — measured at the airport, in the open about 33 ft up, so a
+ * sheltered pipe is priced in still air instead.
+ */
+export function pipeOutdoor(s: SimState, mode: 'hot' | 'cold'): { station: ClimateStation; part: SeasonPart } {
+  const st = stationFor(s.waCounty)
+  const n = Math.min(12, Math.max(1, Math.round(s.monthsPerYear)))
+  const meanOf = (m: number) => st.monthHourF[m - 1].reduce((a, x) => a + x, 0) / 24
+  const order = [...Array(12).keys()].map((i) => i + 1).sort((a, b) => (mode === 'hot' ? meanOf(a) - meanOf(b) : meanOf(b) - meanOf(a)))
+  const months = order.slice(0, n).sort((a, b) => a - b)
+  const days = months.reduce((a, m) => a + DAYS[m - 1], 0)
+  const hours = days * (s.daysPerWeek / 7) * s.hoursPerDay
+  const outdoorF = seasonOutdoor(st, months, s.hoursPerDay)
+  const open = s.windExposure !== 'sheltered'
+  const windMph = open ? Math.round(seasonOutdoor(st, months, s.hoursPerDay, st.monthHourWindMph) * 10) / 10 : 0
+  const at = { ...s, ambientF: outdoorF, windMph }
+  const ev = evaluate(at, mode)
+  const costs = mode === 'hot' ? outdoorF < s.processF : outdoorF > s.processF
+  return {
+    station: st,
+    part: {
+      season: 'run',
+      mode,
+      months,
+      hours,
+      outdoorF,
+      aroundF: outdoorF,
+      rule: 'outdoors: the outdoor temperature (sun on the jacket not counted)',
+      airF: s.processF,
+      windMph,
+      windRule: open ? `NOAA average at ${st.name}, open ground about 33 ft up` : 'sheltered: still air',
+      qBare: costs ? Math.abs(ev.bare.result.qBtuHrFt) : 0,
+      qIns: costs ? Math.abs(ev.ins.result.qBtuHrFt) : 0,
+    },
+  }
 }

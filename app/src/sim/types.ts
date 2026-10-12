@@ -76,6 +76,10 @@ export interface SimState {
   hoursPerDay: number
   daysPerWeek: number
   monthsPerYear: number
+  /** Savings: a pipe outdoors is priced at Washington weather (sim/ductEnergy.ts), not the Setup air. */
+  pipeOutdoors: boolean
+  /** Outdoors: open to the wind (NOAA average) or sheltered (still air). */
+  windExposure: 'open' | 'sheltered'
   /** Personnel-protection (safe-touch) surface limit, °F. */
   ppF: number
   /** User's surface temperature target: a maximum on hot work, a minimum on cold work. */

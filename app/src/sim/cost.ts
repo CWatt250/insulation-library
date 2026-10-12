@@ -1,5 +1,5 @@
 import { physicsMode } from './model'
-import { ductEnergy, monthSpan } from './ductEnergy'
+import { ductEnergy, monthSpan, pipeOutdoor } from './ductEnergy'
 import type { Evaluation } from './model'
 import type { Fuel, SimMode, SimState } from './types'
 
@@ -104,12 +104,27 @@ export function annualCost(s: SimState, mode: SimMode, ev: Evaluation): CostResu
   if (s.system === 'duct') return ductCost(s)
   mode = physicsMode(s, mode)
   if (!ev.annual || mode === 'condensate') return null
+  if (s.pipeOutdoors && (mode === 'hot' || mode === 'cold')) return pipeOutdoorCost(s, mode)
   const k = dollarsPerBtu(s, mode)
   const bare = ev.annual.bare * k
   const ins = ev.annual.ins * k
   const saved = bare - ins
   const cost = s.installedPerFt * s.lengthFt
   return { bare, ins, saved, btuBare: ev.annual.bare, btuIns: ev.annual.ins, paybackYr: cost > 0 && saved > 0 ? cost / saved : null, basis: `${runBasis(s)} · ${priceBasis(s, mode)}` }
+}
+
+/** A pipe outdoors: the months it runs at the county's normal weather (sim/ductEnergy.ts). */
+export function pipeOutdoorCost(s: SimState, mode: 'hot' | 'cold'): CostResult | null {
+  if (s.lengthFt <= 0 || s.hoursPerDay <= 0 || s.daysPerWeek <= 0) return null
+  const { station, part } = pipeOutdoor(s, mode)
+  const k = dollarsPerBtu(s, mode)
+  const btuBare = part.qBare * s.lengthFt * part.hours
+  const btuIns = part.qIns * s.lengthFt * part.hours
+  const bare = btuBare * k
+  const ins = btuIns * k
+  const saved = bare - ins
+  const cost = s.installedPerFt * s.lengthFt
+  return { bare, ins, saved, btuBare, btuIns, paybackYr: cost > 0 && saved > 0 ? cost / saved : null, basis: `${Math.round(s.lengthFt).toLocaleString('en-US')} LF outdoors, ${Math.round(part.hours).toLocaleString('en-US')} h/yr (${monthSpan(part.months)}), ${station.name} weather · ${priceBasis(s, mode)}` }
 }
 
 /** Ducts: each season at Washington's normal weather (sim/ductEnergy.ts); null where nothing is lost. */

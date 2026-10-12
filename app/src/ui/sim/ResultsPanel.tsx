@@ -4,7 +4,7 @@ import { dewZone, materialOptions, type Design } from '../../sim/design'
 import { codeMinimum, PIPE_CODES, type PipeCodeBasis } from '../../sim/code'
 import { vaporCheck } from '../../sim/vapor'
 import { fittingResult } from '../../sim/fittings'
-import { annualCost, money, paybackWords, priceBasis, runBasis } from '../../sim/cost'
+import { annualCost, money, paybackWords } from '../../sim/cost'
 import { ductEnergy } from '../../sim/ductEnergy'
 import { SPECS } from '../../data/specs'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
@@ -61,7 +61,7 @@ function SavingsLine({ mode, s, ev, onOpen }: { mode: SimMode; s: SimState; ev: 
       <span className="svl-k">Energy savings vs. bare</span>
       <span className="svl-v"><b>{money(c.saved)}</b> / yr <span className="svl-m">· {money(c.saved / 12)} / month</span></span>
       {c.paybackYr !== null && <span className="svl-pay">Pays for itself in {paybackWords(c.paybackYr)}</span>}
-      <span className="svl-basis">{s.system === 'duct' ? c.basis : `${runBasis(s)} · ${priceBasis(s, mode)}`}</span>
+      <span className="svl-basis">{c.basis}</span>
       {onOpen && <span className="svl-go">Open the savings calculator →</span>}
     </>
   )

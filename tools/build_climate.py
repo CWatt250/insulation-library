@@ -65,18 +65,30 @@ def main():
             counts[m][h] += 1
         assert all(c == DAYS[m] for m in range(12) for c in counts[m]), sid
         mh = [[round(sums[m][h] / counts[m][h], 1) for h in range(24)] for m in range(12)]
+        wind = fetch(f"{sid}-wind.json", f"dataset=normals-hourly-1991-2020&stations={sid}&format=json&dataTypes=HLY-WIND-AVGSPD&startDate=0001-01-01&endDate=9996-12-31")
+        ws = [[0.0] * 24 for _ in range(12)]
+        wc = [[0] * 24 for _ in range(12)]
+        for r in wind:
+            v = r.get("HLY-WIND-AVGSPD", "").strip()
+            if not v or float(v) < 0:
+                continue
+            m, h = int(r["DATE"][0:2]) - 1, int(r["DATE"][6:8])
+            ws[m][h] += float(v)
+            wc[m][h] += 1
+        assert all(wc[m][h] > 0 for m in range(12) for h in range(24)), sid
+        mw = [[round(ws[m][h] / wc[m][h], 1) for h in range(24)] for m in range(12)]
         rows = sorted((r for r in monthly if r["STATION"] == sid), key=lambda r: r["DATE"])
         assert len(rows) == 12, sid
         hdd = [float(r["MLY-HTDD-NORMAL"]) for r in rows]
         tavg = [float(r["MLY-TAVG-NORMAL"]) for r in rows]
         annual = round(sum(t * d for t, d in zip(tavg, DAYS)) / 365, 1)
-        out[sid] = {"name": name, "annualF": annual, "hdd": hdd, "tavg": tavg, "monthHourF": mh}
+        out[sid] = {"name": name, "annualF": annual, "hdd": hdd, "tavg": tavg, "monthHourF": mh, "monthHourWindMph": mw}
 
     record = {
         "dataset": "Washington outdoor temperatures for duct energy savings: NOAA 1991-2020 U.S. Climate Normals (hourly temperature normals averaged to 12 months x 24 hours; monthly heating degree days base 65 F; monthly mean temperature). Counties map to the nearest station that publishes hourly normals.",
         "generated": "2026-10-12",
         "sources": [
-            {"id": "N1", "title": "U.S. Climate Normals 1991-2020: Hourly Normals (HLY-TEMP-NORMAL)", "publisher": "NOAA National Centers for Environmental Information", "url": "https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals", "accessed": "2026-10-12", "retrieval": f"{API}?dataset=normals-hourly-1991-2020"},
+            {"id": "N1", "title": "U.S. Climate Normals 1991-2020: Hourly Normals (HLY-TEMP-NORMAL, HLY-WIND-AVGSPD)", "publisher": "NOAA National Centers for Environmental Information", "url": "https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals", "accessed": "2026-10-12", "retrieval": f"{API}?dataset=normals-hourly-1991-2020"},
             {"id": "N2", "title": "U.S. Climate Normals 1991-2020: Monthly Normals (MLY-HTDD-NORMAL, MLY-TAVG-NORMAL)", "publisher": "NOAA National Centers for Environmental Information", "url": "https://www.ncei.noaa.gov/products/land-based-station/us-climate-normals", "accessed": "2026-10-12", "retrieval": f"{API}?dataset=normals-monthly-1991-2020"},
             {"id": "N3", "title": "Technical Background for Default Values used for Forced Air Systems in Proposed ASHRAE Standard 152P (LBNL-40588; ASHRAE Transactions 104, Pt. 1)", "publisher": "Lawrence Berkeley National Laboratory (I. S. Walker), via OSTI", "url": "https://www.osti.gov/servlets/purl/821316", "accessed": "2026-10-12", "retrieval": "curl + pdftotext",
              "quotes": ["The Heating season is December, January and February (2160 hours) and the cooling season is June through September (2928 hours).",
@@ -104,11 +116,16 @@ def main():
           "  hdd: number[]",
           "  /** Normal outdoor temperature, °F, by month (Jan–Dec) and hour of day (0–23). */",
           "  monthHourF: number[][]",
+          "  /** Normal wind speed, mph, measured at the airport (open ground, about 33 ft up), by month and hour. */",
+          "  monthHourWindMph: number[][]",
           "}", "",
           "export const WA_STATIONS: Record<string, ClimateStation> = {"]
     for sid, st in out.items():
         ts.append(f"  {sid}: {{ id: '{sid}', name: '{st['name']}', annualF: {st['annualF']}, hdd: {json.dumps(st['hdd'])}, monthHourF: [")
         for row in st["monthHourF"]:
+            ts.append(f"    {json.dumps(row)},")
+        ts.append("  ], monthHourWindMph: [")
+        for row in st["monthHourWindMph"]:
             ts.append(f"    {json.dumps(row)},")
         ts.append("  ] },")
     ts.append("}")
@@ -119,7 +136,8 @@ def main():
     (ROOT / "app/src/data/waClimate.ts").write_text("\n".join(ts))
     for sid, st in out.items():
         heat = [i + 1 for i, h in enumerate(st["hdd"]) if h > 150]
-        print(f"{st['name']:24s} annual {st['annualF']:5.1f}  heating months {heat}  Jun-Sep mean {sum(st['tavg'][5:9])/4:.1f}")
+        wind = sum(sum(r) for r in st["monthHourWindMph"]) / 288
+        print(f"{st['name']:24s} annual {st['annualF']:5.1f}  heating months {heat}  Jun-Sep mean {sum(st['tavg'][5:9])/4:.1f}  wind {wind:.1f} mph")
 
 
 main()

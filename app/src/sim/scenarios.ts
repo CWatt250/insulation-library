@@ -62,6 +62,7 @@ export function normalize(mode: SimMode, state: Partial<SimState>): SimState {
   oneOf('pipeCodeBasis', ['ashrae', 'iecc', 'iecc-res', 'wsec', 'wsec-res'])
   oneOf('ductDamper', ['upstream', 'downstream'])
   oneOf('fuel', ['gas', 'steam', 'electric', 'heatpump'])
+  oneOf('windExposure', ['open', 'sheltered'])
   // the Ductwork tab is always ductwork; the pipe tabs always pipe
   out.system = mode === 'duct' ? 'duct' : 'pipe'
   // outdoors a duct is in rigid board under a metal jacket (older files may say otherwise)

@@ -186,7 +186,7 @@ ${ins.result.faces && ins.result.faces.length > 1 ? row('Each face', esc(ins.res
 ${mode !== 'hot' ? row('Dew point', esc(T(m.dewF)), esc(`margin ${fmt.tempDelta(m.marginF, units, 1)} · ${statusWord}`)) : ''}
 ${mode !== 'hot' && m.condensing ? row('Condensation', esc(`≈ ${(m.ozPerDayPerFt * 10).toFixed(1)} fl oz per day per 10 ft`)) : ''}
 ${zone && zone.fraction > 0 && zone.fraction < 1 ? row('Dew-point zone', esc(`inner ${zone.depthIn.toFixed(2)}" (${Math.round(zone.fraction * 100)}%) of the insulation is below the dew point`)) : ''}
-${cost ? row('Annual energy saved', esc(fmt.energy(cost.btuBare - cost.btuIns, units)), esc(duct ? 'vs. bare, at Washington normal-year weather' : `vs. bare, ${runBasis(s)}`)) : ''}
+${cost ? row('Annual energy saved', esc(fmt.energy(cost.btuBare - cost.btuIns, units)), esc(duct || s.pipeOutdoors ? 'vs. bare, at Washington normal-year weather' : `vs. bare, ${runBasis(s)}`)) : ''}
 ${cost ? row('Energy cost saved', esc(`${money(cost.saved)} per year · ${money(cost.saved / 12)} per month`), esc(`vs. bare: ${money(cost.bare)} → ${money(cost.ins)} a year · ${cost.basis}`)) : ''}
 ${cost && cost.paybackYr !== null ? row('Payback', esc(paybackWords(cost.paybackYr)), esc(`${money(s.installedPerFt * s.lengthFt)} installed ($${s.installedPerFt.toFixed(2)}/LF × ${Math.round(s.lengthFt).toLocaleString('en-US')} LF) ÷ ${money(cost.saved)} saved a year`)) : ''}
 </table>

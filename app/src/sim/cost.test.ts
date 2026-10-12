@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { annualCost, costSteps, fuelSwitch, GAS_DEFAULT, KW_PER_TON_DEFAULT, paybackWords, POWER_DEFAULT, priceBasis, runBasis, scheduleHours, scheduleWords } from './cost'
 import { normalize } from './scenarios'
+import { savingsPlan } from './savings'
 import { evaluate } from './model'
 import { applyPreset, initialState, PRESETS } from './presets'
 
@@ -45,9 +46,11 @@ describe('energy cost', () => {
       const s = applyPreset(null, p)
       const ev = evaluate(s, p.mode)
       const c = annualCost(s, p.mode, ev)!
-      const b = costSteps(s, p.mode, ev.bare.result.qBtuHrFt)
-      const i = costSteps(s, p.mode, ev.ins.result.qBtuHrFt)
-      expect(b.cost - i.cost).toBeCloseTo(c.saved, 6)
+      // indoor pipes at the Setup air, outdoor pipes at Washington weather: the parts the tab shows
+      const plan = savingsPlan(s, p.mode, ev)
+      if (plan.kind !== 'parts') throw new Error('expected parts')
+      const sum = plan.parts.reduce((a, x) => a + costSteps(s, x.mode, x.qBare, x.hours).cost - costSteps(s, x.mode, x.qIns, x.hours).cost, 0)
+      expect(sum).toBeCloseTo(c.saved, 6)
     }
   })
 

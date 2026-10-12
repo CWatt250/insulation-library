@@ -2,7 +2,8 @@ import { useMemo, useState, type ReactNode } from 'react'
 import type { Evaluation } from '../../sim/model'
 import { systemFor } from '../../sim/model'
 import { annualCost, costSteps, fuelSwitch, KW_PER_TON_DEFAULT, KW_PER_TON_DX, money, paybackWords, perKwh, priceBasis, runBasis, scheduleHours, scheduleWords, type CostSteps } from '../../sim/cost'
-import { ductEnergy, monthSpan, type SeasonPart } from '../../sim/ductEnergy'
+import { monthSpan, type SeasonPart } from '../../sim/ductEnergy'
+import { savingsPlan, type SavingsPart } from '../../sim/savings'
 import { DUCT_LOCATIONS } from '../../sim/duct'
 import { JACKETS } from '../../data/catalog'
 import { pipeLabel, pipeSpec } from '../../data/pipes'
@@ -12,6 +13,8 @@ import { refsFor } from '../../sim/sources'
 import type { Fuel, SimMode, SimState } from '../../sim/types'
 import { fmt, FT_M, type UnitSystem } from '../../sim/units'
 import { Disclosure, Icon, NumberField } from '../controls'
+import { ReportButton } from './ReportButton'
+import { buildProposal } from '../../sim/proposal'
 
 /** What pays for the heat, in plain words — pipes and ducts are heated by different kit. */
 const FUELS: { id: Fuel; label: string; pipe: string; duct: string }[] = [
@@ -49,18 +52,7 @@ const num = (v: number) => (v >= 100 ? Math.round(v).toLocaleString('en-US') : v
 const mmbtu = (btu: number) => `${num(btu / 1e6)} MMBtu`
 const deg = (f: number) => `${Math.round(f)}°F`
 
-/** One part of the year: a pipe's whole run, or one duct season. */
-interface Part {
-  key: string
-  /** "Cooling season, Jun–Sep"; empty for a pipe. */
-  title: string
-  mode: 'hot' | 'cold'
-  hours: number
-  qBare: number
-  qIns: number
-  word: 'lost' | 'gained'
-  season?: SeasonPart
-}
+type Part = SavingsPart
 
 /** The steps behind one side's yearly cost, in inch-pound units. */
 function MathSteps({ title, st, s, part }: { title: string; st: CostSteps; s: SimState; part: Part }) {
@@ -102,10 +94,13 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
   const n = noun(s)
   const si = units === 'si'
   const [schedOpen, setSchedOpen] = useState(false)
-  const de = useMemo(() => (duct ? ductEnergy(s) : null), [duct, s])
+  // a pipe outdoors, or a duct, is priced at the county's normal weather
+  const outdoorPipe = !duct && s.pipeOutdoors && (mode === 'hot' || mode === 'cold')
+  const plan = useMemo(() => savingsPlan(s, mode, ev), [s, mode, ev])
   const c = useMemo(() => annualCost(s, mode, ev), [s, mode, ev])
 
-  if (de?.kind === 'none') {
+  if (plan.kind === 'none') {
+    const de = plan
     return (
       <div className="savings" style={{ '--acc': accent } as React.CSSProperties}>
         <section className="sv-card sv-none">
@@ -122,17 +117,18 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
     )
   }
 
-  const parts: Part[] = de?.kind === 'parts'
-    ? de.parts.map((p) => ({ key: p.season, title: `${cap(p.season)} season, ${monthSpan(p.months)}`, mode: p.mode, hours: p.hours, qBare: p.qBare, qIns: p.qIns, word: p.season === 'heating' ? 'lost' : 'gained', season: p }))
-    : [{ key: 'pipe', title: '', mode: mode === 'hot' ? 'hot' : 'cold', hours: s.hours, qBare: Math.abs(ev.bare.result.qBtuHrFt), qIns: Math.abs(ev.ins.result.qBtuHrFt), word: mode === 'hot' ? 'lost' : 'gained' }]
+  const parts: Part[] = plan.parts
+  const weatherParts: SeasonPart[] = parts.flatMap((p) => (p.season ? [p.season] : []))
+  const station = plan.station
+  const po = outdoorPipe ? parts[0].season : undefined
   const steps = parts.map((p) => ({ p, bare: costSteps(s, p.mode, p.qBare, p.hours), ins: costSteps(s, p.mode, p.qIns, p.hours) }))
   const needsHeat = parts.some((p) => p.mode === 'hot')
   const needsCool = parts.some((p) => p.mode === 'cold')
   const kwh = steps.filter((x) => x.bare.bought.unit === 'kWh').reduce((a, x) => a + x.bare.bought.amount - x.ins.bought.amount, 0)
   const runHours = parts.reduce((a, p) => a + p.hours, 0)
   const run = si
-    ? `${fmt.length(s.lengthFt, units)}, ${duct ? `${Math.round(runHours).toLocaleString('en-US')} h/yr` : s.hours >= 8760 ? 'running 24/7' : `${s.hours.toLocaleString('en-US')} h/yr`}`
-    : duct ? `${Math.round(s.lengthFt).toLocaleString('en-US')} LF, ${Math.round(runHours).toLocaleString('en-US')} h/yr` : runBasis(s)
+    ? `${fmt.length(s.lengthFt, units)}, ${weatherParts.length ? `${Math.round(runHours).toLocaleString('en-US')} h/yr` : s.hours >= 8760 ? 'running 24/7' : `${s.hours.toLocaleString('en-US')} h/yr`}`
+    : weatherParts.length ? `${Math.round(s.lengthFt).toLocaleString('en-US')} LF, ${Math.round(runHours).toLocaleString('en-US')} h/yr` : runBasis(s)
 
   // what's being priced, in words
   const sys = systemFor(s, mode)
@@ -174,10 +170,22 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
           unit={si ? 'm' : 'LF'}
           onChange={(v) => set({ lengthFt: si ? v / FT_M : v })}
         />
+        {!duct && (
+          <div className="field">
+            <span className="field-label">Where it runs</span>
+            <div className="chips sv-fuel" role="radiogroup" aria-label="Where it runs">
+              {([[false, 'Indoors', `at the ${fmt.temp(s.ambientF, units)} air set in Setup`], [true, 'Outdoors', 'Washington weather by county']] as const).map(([v, label, sub]) => (
+                <button key={label} role="radio" aria-checked={s.pipeOutdoors === v} className={s.pipeOutdoors === v ? 'on' : ''} onClick={() => set({ pipeOutdoors: v })}>
+                  {label}<small>{sub}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="field">
           <span className="field-label">How long it runs</span>
           <div className="sv-sched-now">
-            <div><b>{schedText}</b><small>{Math.round(duct ? runHours : s.hours).toLocaleString('en-US')} hours a year{duct ? ` in ${parts.map((p) => monthSpan(p.season!.months)).join(' + ')}` : ''}</small></div>
+            <div><b>{schedText}</b><small>{Math.round(weatherParts.length ? runHours : s.hours).toLocaleString('en-US')} hours a year{weatherParts.length && !(weatherParts.length === 1 && weatherParts[0].months.length === 12) ? ` in ${weatherParts.map((p) => monthSpan(p.months)).join(' + ')}` : ''}</small></div>
             <button className="sv-link" aria-expanded={schedOpen} aria-label={schedOpen ? 'Done changing how long it runs' : 'Change how long it runs'} onClick={() => setSchedOpen(!schedOpen)}>{schedOpen ? 'Done' : 'Change'}</button>
           </div>
           {schedOpen && (
@@ -185,6 +193,7 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
               <Pick label="Hours a day" value={s.hoursPerDay} options={range(24, 1)} unit={(v) => (v === 24 ? '24 h (around the clock)' : `${v} h`)} onChange={(v) => setSched({ hoursPerDay: v })} />
               <Pick label="Days a week" value={s.daysPerWeek} options={range(7, 1)} unit={(v) => (v === 7 ? '7 days' : v === 5 ? '5 days (weekdays)' : `${v} day${v === 1 ? '' : 's'}`)} onChange={(v) => setSched({ daysPerWeek: v })} />
               {!duct && <Pick label="Months a year" value={s.monthsPerYear} options={range(12, 1)} unit={(v) => (v === 12 ? '12 months (all year)' : `${v} month${v === 1 ? '' : 's'}`)} onChange={(v) => setSched({ monthsPerYear: v })} />}
+              {outdoorPipe && s.monthsPerYear < 12 && <p className="field-note">Outdoors, part of the year means the {mode === 'hot' ? 'coldest' : 'warmest'} months. Part-day schedules run from 6 am.</p>}
               {duct && <p className="field-note">The months come from the season (below). Part-day schedules run from 6 am.</p>}
               {(s.hoursPerDay !== 24 || s.daysPerWeek !== 7 || (!duct && s.monthsPerYear !== 12)) && (
                 <button className="sv-reset" onClick={() => setSched({ hoursPerDay: 24, daysPerWeek: 7, monthsPerYear: 12 })}>Back to 24/7</button>
@@ -232,39 +241,59 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
         )}
       </section>
 
+      {c && (
+        <ReportButton
+          inline
+          label="Save savings proposal (PDF)"
+          fileSlug="savings-proposal"
+          note="A one-page proposal for your customer: savings per year and month, payback, and how each number is figured."
+          build={(who) => buildProposal({ mode, s, ev, units, ...who })}
+        />
+      )}
+
       {/* ducts: the weather the savings use */}
-      {de?.kind === 'parts' && (
+      {station && (
         <section className="sv-card">
-          <h3><span className="sv-n">2</span> Washington weather <small className="muted">season averages, not the design temperatures in Setup</small></h3>
+          <h3><span className="sv-n">2</span> Washington weather <small className="muted">{duct ? 'season averages, not the design temperatures in Setup' : 'normal-year averages while it runs, not the air set in Setup'}</small></h3>
           <label className="sv-pick">
             <span>County</span>
             <select value={s.waCounty} onChange={(e) => set({ waCounty: e.target.value })}>
               {WA_COUNTIES.map((x) => <option key={x.county} value={x.county}>{x.county}</option>)}
             </select>
           </label>
-          <p className="field-note">Weather from {de.station.name} — NOAA 1991–2020 normals<Src ids={['N1', 'N2']} />.</p>
-          {de.parts.map((p) => (
+          <p className="field-note">Weather from {station.name} — NOAA 1991–2020 normals<Src ids={['N1', 'N2']} />.</p>
+          {outdoorPipe && (
+            <div className="chips sv-fuel" role="radiogroup" aria-label="Wind">
+              {([['open', 'Open to the wind', 'NOAA average wind'], ['sheltered', 'Sheltered', 'still air, e.g. in a pipe chase']] as const).map(([v, label, sub]) => (
+                <button key={v} role="radio" aria-checked={s.windExposure === v} className={s.windExposure === v ? 'on' : ''} onClick={() => set({ windExposure: v })}>
+                  {label}<small>{sub}</small>
+                </button>
+              ))}
+            </div>
+          )}
+          {weatherParts.map((p) => (
             <div key={p.season} className="sv-season">
               <div className="sv-season-h">
-                <b>{cap(p.season)} season · {monthSpan(p.months)}</b>
+                <b>{p.season === 'run' ? `While it runs · ${monthSpan(p.months)}` : `${cap(p.season)} season · ${monthSpan(p.months)}`}</b>
                 <small>{Math.round(p.hours).toLocaleString('en-US')} h</small>
               </div>
               <dl className="sv-break">
                 <div><dt>Outdoor, while it runs</dt><dd>{fmt.temp(p.outdoorF, units)}</dd></div>
-                <div><dt>Around the duct</dt><dd>{fmt.temp(p.aroundF, units)}</dd></div>
-                <div><dt>Air in the duct</dt><dd>{fmt.temp(p.airF, units)}</dd></div>
-                <div><dt>Heat {p.season === 'heating' ? 'lost' : 'gained'}, bare → insulated</dt><dd>{p.qBare > 0 ? `${fmt.flow(p.qBare, units)} → ${fmt.flow(p.qIns, units)} ${fmt.flowUnit(units)}` : 'none — no cost this season'}</dd></div>
+                {p.season !== 'run' && <div><dt>Around the duct</dt><dd>{fmt.temp(p.aroundF, units)}</dd></div>}
+                {p.windMph !== undefined && <div><dt>Wind</dt><dd>{p.windMph > 0 ? `${p.windMph} mph` : 'still air'}</dd></div>}
+                <div><dt>{duct ? 'Air in the duct' : 'Inside the pipe'}</dt><dd>{fmt.temp(p.airF, units)}</dd></div>
+                <div><dt>Heat {p.mode === 'hot' ? 'lost' : 'gained'}, bare → insulated</dt><dd>{p.qBare > 0 ? `${fmt.flow(p.qBare, units)} → ${fmt.flow(p.qIns, units)} ${fmt.flowUnit(units)}` : 'none — no cost this season'}</dd></div>
               </dl>
-              <p className="field-note">{cap(p.rule)}<Src ids={p.rule.includes('152') ? (p.rule.includes('+ 13') ? ['N4'] : ['N3']) : []} />.</p>
+              <p className="field-note">{p.season === 'run' ? `Wind: ${p.windRule}. Sun on the jacket isn’t counted.` : <>{cap(p.rule)}<Src ids={p.rule.includes('152') ? (p.rule.includes('+ 13') ? ['N4'] : ['N3']) : []} />.</>}</p>
             </div>
           ))}
-          <p className="field-note">Seasons: cooling June–September; heating in months with over 150 heating degree days (ASHRAE 152P)<Src ids={['N3']} />.</p>
+          {duct && <p className="field-note">Seasons: cooling June–September; heating in months with over 150 heating degree days (ASHRAE 152P)<Src ids={['N3']} />.</p>}
         </section>
       )}
 
       {/* energy price */}
       <section className="sv-card">
-        <h3><span className="sv-n">{duct ? 3 : 2}</span> Energy price <small className="muted">defaults are Washington averages — use your bill</small></h3>
+        <h3><span className="sv-n">{station ? 3 : 2}</span> Energy price <small className="muted">defaults are Washington averages — use your bill</small></h3>
         {needsHeat && (
           <>
             <div className="field">
@@ -341,7 +370,7 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
 
       {/* what's being priced */}
       <section className="sv-card sv-what">
-        <h3><span className="sv-n">{duct ? 4 : 3}</span> What’s being priced</h3>
+        <h3><span className="sv-n">{station ? 4 : 3}</span> What’s being priced</h3>
         <dl className="sv-break">
           <div><dt>{duct ? 'Duct' : 'Pipe'}</dt><dd>{what}, {fmt.temp(s.processF, units)} inside</dd></div>
           <div><dt>Insulation</dt><dd>{fmt.thick(s.thicknessIn, units)} {materialLabel(s)}{finish ? ` · ${finish}` : ''}</dd></div>
@@ -349,7 +378,7 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
             <div><dt>Where it runs</dt><dd>{DUCT_LOCATIONS.find((l) => l.id === s.ductLocation)?.short}</dd></div>
           ) : (
             <>
-              <div><dt>Around it</dt><dd>{fmt.temp(s.ambientF, units)} air{s.windMph > 0 ? `, ${s.windMph} mph wind` : ', still'}</dd></div>
+              <div><dt>Around it</dt><dd>{po ? `Outdoors, ${station?.name} weather` : `${fmt.temp(s.ambientF, units)} air${s.windMph > 0 ? `, ${s.windMph} mph wind` : ', still'}`}</dd></div>
               <div><dt>Heat {parts[0].word}, bare</dt><dd>{fmt.flow(parts[0].qBare, units)} {fmt.flowUnit(units)}</dd></div>
               <div><dt>Heat {parts[0].word}, insulated</dt><dd>{fmt.flow(parts[0].qIns, units)} {fmt.flowUnit(units)}</dd></div>
             </>
@@ -362,25 +391,32 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
 
       {c && (
         <Disclosure title={<>Show the math <small className="muted">step by step, with your numbers</small></>}>
-          <p className="field-note">Heat flow per foot comes from the ASTM C680 heat-transfer calculation shown in Results{duct ? ', run at each season’s temperature around the duct' : ''}. Steps are in inch-pound units.</p>
+          <p className="field-note">Heat flow per foot comes from the ASTM C680 heat-transfer calculation shown in Results{weatherParts.length ? `, run at the weather around the ${n}` : ''}. Steps are in inch-pound units.</p>
           {steps.map(({ p, bare, ins }) => (
             <div key={p.key} className="sv-math-part">
               {p.season && (
                 <div className="sv-steps">
                   <h4>{p.title}</h4>
                   <ol>
-                    <li><span>Air around the duct</span><span>{cap(p.season.rule)} → <b>{deg(p.season.aroundF)}</b></span></li>
+                    {p.season.season === 'run' ? (
+                      <>
+                        <li><span>Air around the pipe</span><span>NOAA normal outdoor temperature while it runs → <b>{deg(p.season.aroundF)}</b></span></li>
+                        <li><span>Wind</span><span>{p.season.windRule} → <b>{p.season.windMph ? `${p.season.windMph} mph` : 'still air'}</b></span></li>
+                      </>
+                    ) : (
+                      <li><span>Air around the duct</span><span>{cap(p.season.rule)} → <b>{deg(p.season.aroundF)}</b></span></li>
+                    )}
                     <li><span>Hours it runs</span><span>{monthSpan(p.season.months)} at {schedText} = <b>{Math.round(p.hours).toLocaleString('en-US')} h</b></span></li>
                   </ol>
                 </div>
               )}
               {p.qBare > 0 ? (
                 <>
-                  <MathSteps title={`${p.season ? `${cap(p.season.season)} · ` : ''}Bare ${n}`} st={bare} s={s} part={p} />
-                  <MathSteps title={`${p.season ? `${cap(p.season.season)} · ` : ''}Insulated ${n}`} st={ins} s={s} part={p} />
+                  <MathSteps title={`${p.season && p.season.season !== 'run' ? `${cap(p.season.season)} · ` : ''}Bare ${n}`} st={bare} s={s} part={p} />
+                  <MathSteps title={`${p.season && p.season.season !== 'run' ? `${cap(p.season.season)} · ` : ''}Insulated ${n}`} st={ins} s={s} part={p} />
                 </>
               ) : (
-                <p className="field-note">No cost this season: the air around the duct is on the helpful side of the air inside.</p>
+                <p className="field-note">No cost here: the air around the {n} is on the helpful side of what’s inside.</p>
               )}
             </div>
           ))}
@@ -399,7 +435,7 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
                 {c.paybackYr !== null ? (
                   <>
                     <li><span>Time to pay it back</span><span>{money(installed)} ÷ {money(c.saved)} saved a year = <b>{c.paybackYr.toFixed(2)} years</b></span></li>
-                    <li><span>In months</span><span>{c.paybackYr.toFixed(2)} × 12 = <b>{Math.max(1, Math.round(c.paybackYr * 12))} months</b></span></li>
+                    <li><span>In months</span><span>{c.paybackYr.toFixed(2)} × 12 = <b>{Math.max(1, Math.round(c.paybackYr * 12))} month{Math.max(1, Math.round(c.paybackYr * 12)) === 1 ? '' : 's'}</b></span></li>
                   </>
                 ) : (
                   <li><span>Time to pay it back</span><span>Nothing is saved, so it never pays back.</span></li>
@@ -423,6 +459,7 @@ export function Savings({ mode, s, set, ev, units, accent, onEditPipe }: {
           ) : (
             <>
               <li>Assumes {fmt.temp(s.processF, units)} inside for every hour it runs.</li>
+              {po && <li>Outdoors uses normal-year weather; the design air in Setup is for thickness and surface temperature.</li>}
               <li>Straight {n} only — valves, flanges and fittings aren’t counted.</li>
             </>
           )}

@@ -1,0 +1,2064 @@
+{
+  "dataset": "Annual heat loss, energy and fuel cost from the NIA/NIBS MIDG \"Energy Calculator for Horizontal Piping\", run headlessly from its published source code, compared with this app (app/src/sim) on the same eight cases. Checked by app/src/sim/niaEnergy.test.ts.",
+  "generated": "2026-10-12",
+  "sources": [
+    {
+      "id": "V30",
+      "title": "MIDG Energy Calculator for Horizontal Piping - calculation source code (echp/main.js)",
+      "publisher": "National Institute of Building Sciences (served by insulation.org)",
+      "url": "https://insulation.org/wp-content/themes/nia/midg-assets/echp/main.js",
+      "accessed": "2026-10-12",
+      "retrieval": "curl",
+      "pub_no_or_date": "file header '© 2020 National Institute of Building Sciences'; HTTP Last-Modified Mon, 11 Dec 2023 13:42:18 GMT; 32,134 bytes",
+      "context_documents": [
+        {
+          "title": "echp/controller.js (form handling: gather_values, do_calculation, change_fuel)",
+          "url": "https://insulation.org/wp-content/themes/nia/midg-assets/echp/controller.js",
+          "accessed": "2026-10-12",
+          "retrieval": "curl"
+        },
+        {
+          "title": "Energy Calculator for Horizontal Piping (instructions, assumptions, form defaults and option lists)",
+          "url": "https://insulation.org/training-tools/designguide/simple-calculators/energy-calculator-for-horizontal-piping/",
+          "accessed": "2026-10-12",
+          "retrieval": "curl",
+          "quotes": [
+            "Thermal conductivity based on ASTM Specification Values",
+            "Base structure is a horizontal steel pipe",
+            "Enter average wind speed for the period of operation (if unknown, use 1 mph for indoor, 8 mph for outdoor)",
+            "Installed costs of insulation are from industry sources and represent single layer installations"
+          ]
+        }
+      ]
+    }
+  ],
+  "method": {
+    "summary": "One-dimensional steady state, horizontal steel pipe, inch-pound units. Per foot: q = π·D_s·(T_op − T_amb)/R_total, with R_total = R_wall + R_ins + 1/h_s referenced to the outer surface area. The outer surface temperature is iterated (T_s += error/2 until |error| < 1e-5°F) because h_s and the insulation mean k depend on it.",
+    "equations": {
+      "steel_wall": "R_wall = (D_s/2)·ln(OD/ID)/k_steel, k_steel = 458.46 − 0.1926·T − 1e-5·T² + 2e-8·T³ (Btu·in/h·ft²·°F, T = operating °F); Sch 40 OD/ID",
+      "insulation": "R_ins = (D_s/2)·ln(D_s/D_bore)/k_m, k_m = a + (b/2)(T1+T2) + (c/3)(T1²+T1·T2+T2²) — the exact mean of k(T) = a + bT + cT² between the interface and surface temperatures; D_s and D_bore from a built-in ASTM C585-style table (e.g. NPS 2: bore 2.41 in, 1 in → 4.50 in OD)",
+      "k_curves_used": {
+        "fiberglass": [
+          0.208,
+          0.000294285714285714,
+          1.14285714285714e-06
+        ],
+        "wool": [
+          0.214285714285714,
+          0.000317857142857143,
+          6.78571428571429e-07
+        ],
+        "note": "a, b, c in k(T) = a + bT + cT², Btu·in/h·ft²·°F with T in °F; the page says \"Thermal conductivity based on ASTM Specification Values\""
+      },
+      "surface": "h_s = h_rad + h_conv. h_rad = 0.1714·ε·[(T_s/100)⁴ − (T_a/100)⁴]/(T_s − T_a) (°R); ε = 0.8 for the bare pipe, Line 8 when insulated. h_conv: Churchill–Chu natural convection and Churchill–Bernstein forced convection (Re from wind mph × 5280 ft/h), combined Nu = [(Nu_F − 0.3)⁴ + (Nu_N − 0.3)⁴]^¼ + 0.3; air properties at the film temperature — the ASTM C680 forms.",
+      "heat_loss": "Heat Loss (Btu/h) = Line 1 length × q (Btu/h·ft)",
+      "fuel_cost": "Cost of Fuel ($/yr) = 100·|Heat Loss|·hours·fuel_cost/(fuel_btu·efficiency_pct); fuel_btu: gas 1,027,000 Btu/Mcf, oil 138,690 Btu/gal, propane 91,033 Btu/gal, coal 19,977,000 Btu/ton, electricity 3,412 Btu/kWh",
+      "co2": "CO2 (MT/yr) = |Heat Loss|·hours·fuel_co2/(efficiency_pct·22,000,000); not compared (the app has no emissions output)",
+      "annual_energy": "not printed by NIA; annual_heat_loss_btu_yr here = Heat Loss × hours, the product inside its cost formula"
+    }
+  },
+  "harness": "main.js loaded unmodified into a Node vm context and driven as controller.js does (new ECalc(); fields set as gather_values() sets them, select values as strings; result_table()). The UI computes rows in order bare, 0.5 … 4 in., carrying the surface-temperature guess forward; the harness does the same. Check: the NIA default inputs (case NIA-1) reproduce every row of the published default-input screenshot (research/validation-cases.json CASE-13: bare 349°F/1443, 1 in 93/95, 1.5 in 87/70, 2 in 84/58, 2.5 in 82/50, 3 in 81/45, 3.5 in 80/40, 4 in 80/37 Btu/h) after the page's rounding to whole numbers. Values under result_table_verbatim are the unrounded numbers the page rounds for display (heat loss and surface temperature to whole numbers, costs as currency).",
+  "app_method": "SimState = initialState('hot') with the case's pipe, temperatures, wind, insulation (kProduct = productForTemp, as the UI picks it), thickness, jacket/facing giving the same emittance (aluminum oxidized 0.10 or ASJ 0.90), run length and hours, and pipeOutdoors false (NIA prices one average ambient and wind over the hours entered); evaluate() → solveCase per side; annualCost() = |q|·length·hours ÷ efficiency × price. NIA gas $/Mcf is entered as $/MMBtu at NIA's own 1.027 MMBtu/Mcf.",
+  "findings": [
+    "Cost/energy step: given NIA's own per-foot heat loss, the app's costSteps gives NIA's fuel cost exactly for gas (difference ≤ 2e-14 %) and 0.0041 % lower for electricity (3,412.14 vs NIA's 3,412 Btu/kWh).",
+    "Surface heat transfer is the same: with NIA's k-curve, insulation bore/OD and steel-wall resistance fed into solveCase, heat loss agrees to ≤ 0.002 % and surface temperature to ≤ 0.001°F on every case, bare and insulated.",
+    "Bare pipe as configured: the app is 0.11–0.78 % higher because it neglects the steel wall (as C680 does) while NIA includes it; the largest case (NPS 8 at 600°F) has a 2.2°F drop across the wall in NIA.",
+    "Insulated as configured: the app is 4.1–10.5 % lower. Most is k data — the app uses manufacturer typical k (OC SSL II; ROCKWOOL ProRox PS 960NA), 3.4–10.0 % below NIA's ASTM C547 specification curves at the layer mean temperature; the remaining 0.7–2.1 % is NIA's insulation bore (e.g. 2.41 in on NPS 2) versus the app's insulation-on-pipe-OD. Swapping in NIA's k leaves −0.7 to −2.1 %; adding NIA's bore/OD leaves +0.01 to +0.03 %.",
+    "Annual savings as configured: the app is 0.53–1.22 % higher than NIA (bare slightly higher, insulated lower; savings are dominated by the bare loss).",
+    "No discrepancy beyond these input-data differences was found."
+  ],
+  "tolerances_used_in_test": {
+    "cost_step_given_nia_q": "≤ 0.01 % (gas exact; electricity 0.0041 % from Btu/kWh)",
+    "engine_on_nia_inputs_with_steel_wall": "q ≤ 0.01 %, surface ≤ 0.01°F (observed ≤ 0.002 %, ≤ 0.001°F)",
+    "engine_on_nia_inputs_without_wall": "insulated q ≤ 0.05 % (observed +0.014 to +0.026 %)",
+    "bare_as_configured": "0 to +1 % (observed +0.11 to +0.78 %; steel wall)",
+    "insulated_as_configured": "−12 % to −3 % (observed −4.1 to −10.5 %; k data and bore), and within −2.5 % to 0 once NIA's k-curve is swapped in",
+    "savings_as_configured": "≤ 1.5 % (observed +0.53 to +1.22 %)"
+  },
+  "cases": [
+    {
+      "id": "NIA-1",
+      "label": "NIA default inputs: NPS 3, 350°F, 75°F, 8 mph, mineral wool 2\", aluminum oxidized ε 0.10, natural gas $8/Mcf at 80%, 8,320 h",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 1,
+          "2_pipe_size_nps": "3",
+          "3_operating_temperature_F": 350,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 8,
+          "6_insulation": "wool (Mineral Wool (to 1200°F) ASTM C 547 T II & III)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.10 - Aluminum, oxidized, in service",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8320,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 2,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "3",
+          "processF": 350,
+          "ambientF": 75,
+          "windMph": 8,
+          "insulation": "mineral-wool",
+          "kProduct": "ROCKWOOL ProRox PS 960NA (WR-Tech) (productForTemp default, as the UI picks it)",
+          "thicknessIn": 2,
+          "jacket": "alu-smooth",
+          "facing": "none",
+          "metalFinish": "oxidized",
+          "emittance": 0.1,
+          "lengthFt": 1,
+          "hours": 8320,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 349.07098065366574,
+            "heat_loss_btu_hr": 1442.5767297034558,
+            "cost_of_fuel_usd_yr": 116.86697557091289,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 0.7984216311555811
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 93.47081861779543,
+            "heat_loss_btu_hr": 95.12924006843025,
+            "cost_of_fuel_usd_yr": 7.706672613138653,
+            "installed_cost_usd": 21.42,
+            "payback_months": 2.3547021493649494,
+            "annual_return_pct": 509.61859457410935,
+            "co2_mt_yr": 0.052651094019546756
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 87.2011921797108,
+            "heat_loss_btu_hr": 70.0330290269101,
+            "cost_of_fuel_usd_yr": 5.673561845218034,
+            "installed_cost_usd": 25.04,
+            "payback_months": 2.7023183292246054,
+            "annual_return_pct": 444.06315385660884,
+            "co2_mt_yr": 0.03876111690913391
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 84.20628739608884,
+            "heat_loss_btu_hr": 57.73371842209293,
+            "cost_of_fuel_usd_yr": 4.677161998751832,
+            "installed_cost_usd": 28.87,
+            "payback_months": 3.087980886759991,
+            "annual_return_pct": 388.6034415384865,
+            "co2_mt_yr": 0.031953828649877204
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 82.37462116861911,
+            "heat_loss_btu_hr": 50.02461471567213,
+            "cost_of_fuel_usd_yr": 4.052627014940527,
+            "installed_cost_usd": 32.86,
+            "payback_months": 3.4953000664127383,
+            "annual_return_pct": 343.318163590908,
+            "co2_mt_yr": 0.027687078029760583
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 81.14099048630095,
+            "heat_loss_btu_hr": 44.70635838606096,
+            "cost_of_fuel_usd_yr": 3.6217809325416477,
+            "installed_cost_usd": 36.86,
+            "payback_months": 3.905861095585307,
+            "annual_return_pct": 307.23058773296594,
+            "co2_mt_yr": 0.02474358753378917
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 80.15760699613924,
+            "heat_loss_btu_hr": 40.36124869019544,
+            "cost_of_fuel_usd_yr": 3.2697720457879846,
+            "installed_cost_usd": 43.49,
+            "payback_months": 4.5941271774755705,
+            "annual_return_pct": 261.2030432861,
+            "co2_mt_yr": 0.0223387036205182
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 79.51322857783117,
+            "heat_loss_btu_hr": 37.444701494730595,
+            "cost_of_fuel_usd_yr": 3.0334948046364025,
+            "installed_cost_usd": 48.01,
+            "payback_months": 5.061076900414674,
+            "annual_return_pct": 237.10368832800768,
+            "co2_mt_yr": 0.02072448489565082
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 1442.5767297034558,
+          "surface_F": 349.07098065366574,
+          "annual_heat_loss_btu_yr": 12002238.391132753,
+          "fuel_cost_usd_yr": 116.86697557091289,
+          "co2_mt_yr": 0.7984216311555811
+        },
+        "insulated": {
+          "thickness_in": 2,
+          "q_btu_hr_ft": 57.73371842209293,
+          "surface_F": 84.20628739608884,
+          "annual_heat_loss_btu_yr": 480344.53727181314,
+          "fuel_cost_usd_yr": 4.677161998751832,
+          "co2_mt_yr": 0.031953828649877204
+        },
+        "saved_usd_yr": 112.18981357216106,
+        "saved_btu_yr": 11521893.85386094,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 5.74433,
+            "h_rad": 1.73144,
+            "h_conv": 4.01289,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0005901,
+            "pipe_od_in": 3.5
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.31926,
+            "insulation_id_in": 3.53,
+            "insulation_od_in": 7.62,
+            "interface_F": 349.963,
+            "surface_coefficient_btu_hr_ft2_F": 3.14356,
+            "h_rad": 0.10753,
+            "h_conv": 3.03603,
+            "thermal_curve_k_of_T_F": [
+              0.214285714285714,
+              0.000317857142857143,
+              6.78571428571429e-07
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "ROCKWOOL ProRox PS 960NA (WR-Tech)",
+        "k_mean_btu_in_hr_ft2_F": 0.30472,
+        "insulation_id_in": 3.5,
+        "insulation_od_in": 7.625,
+        "bare": {
+          "q_btu_hr_ft": 1448.365,
+          "surface_F": 350,
+          "annual_heat_loss_btu_yr": 12050397,
+          "fuel_cost_usd_yr": 117.3359
+        },
+        "insulated": {
+          "q_btu_hr_ft": 54.5659,
+          "surface_F": 83.697,
+          "annual_heat_loss_btu_yr": 453988,
+          "fuel_cost_usd_yr": 4.4205
+        },
+        "saved_usd_yr": 112.9154,
+        "saved_btu_yr": 11596409
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.401,
+        "insulated_q": -5.487,
+        "bare_surface_F_delta": 0.929,
+        "insulated_surface_F_delta": -0.509,
+        "annual_btu_bare": 0.401,
+        "annual_btu_insulated": -5.487,
+        "annual_btu_saved": 0.647,
+        "cost_bare": 0.401,
+        "cost_insulated": -5.487,
+        "cost_saved": 0.647,
+        "k_mean": -4.554
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.401,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.929,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -5.487,
+          "plus_nia_k_curve": -1.131,
+          "plus_nia_insulation_id_od": 0.018,
+          "plus_nia_steel_wall": 0.001
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.5092,
+          "plus_nia_k_curve": -0.108,
+          "plus_nia_insulation_id_od": 0.0017,
+          "plus_nia_steel_wall": 0.0001
+        }
+      }
+    },
+    {
+      "id": "NIA-2",
+      "label": "Heating hot water: NPS 2, 180°F, 75°F still air, fiberglass 1\", ASJ ε 0.90, gas",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "2",
+          "3_operating_temperature_F": 180,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 0,
+          "6_insulation": "fiberglass (Fiberglass (to 850°F) ASTM C 547 T I)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.90 - All Service Jacket",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 1,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "2",
+          "processF": 180,
+          "ambientF": 75,
+          "windMph": 0,
+          "insulation": "fiberglass",
+          "kProduct": "Owens Corning SSL II with ASJ Max (productForTemp default, as the UI picks it)",
+          "thicknessIn": 1,
+          "jacket": "none",
+          "facing": "asj",
+          "metalFinish": "oxidized",
+          "emittance": 0.9,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 179.90806686763779,
+            "heat_loss_btu_hr": 14679.487967085424,
+            "cost_of_fuel_usd_yr": 1252.1160135508112,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 8.5543114729503
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": 97.79433069449183,
+            "heat_loss_btu_hr": 3472.976498648043,
+            "cost_of_fuel_usd_yr": 296.2344121534261,
+            "installed_cost_usd": 1564,
+            "payback_months": 19.634230821645083,
+            "annual_return_pct": 61.113,
+            "co2_mt_yr": 2.0238391675707983
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 86.5522087624765,
+            "heat_loss_btu_hr": 2102.362336447317,
+            "cost_of_fuel_usd_yr": 179.32516131722002,
+            "installed_cost_usd": 1814,
+            "payback_months": 20.29100076187097,
+            "annual_return_pct": 59.134,
+            "co2_mt_yr": 1.2251287167028218
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 82.68257835317036,
+            "heat_loss_btu_hr": 1628.9015308122612,
+            "cost_of_fuel_usd_yr": 138.94038373822207,
+            "installed_cost_usd": 2064,
+            "payback_months": 22.24985827633494,
+            "annual_return_pct": 53.923,
+            "co2_mt_yr": 0.9492245972459636
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 80.66178244660549,
+            "heat_loss_btu_hr": 1372.7274446877625,
+            "cost_of_fuel_usd_yr": 117.08950745340603,
+            "installed_cost_usd": 2346,
+            "payback_months": 24.802944996232593,
+            "annual_return_pct": 48.363,
+            "co2_mt_yr": 0.7999419431833061
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 79.49015593308295,
+            "heat_loss_btu_hr": 1217.7117001239062,
+            "cost_of_fuel_usd_yr": 103.86713235720953,
+            "installed_cost_usd": 2530,
+            "payback_months": 26.44026090270679,
+            "annual_return_pct": 45.36,
+            "co2_mt_yr": 0.7096082091195687
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 78.6939007490044,
+            "heat_loss_btu_hr": 1107.7015545987783,
+            "cost_of_fuel_usd_yr": 94.48359900959395,
+            "installed_cost_usd": 2803,
+            "payback_months": 29.055855362628495,
+            "annual_return_pct": 41.259,
+            "co2_mt_yr": 0.6455009969254788
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 78.1207781552673,
+            "heat_loss_btu_hr": 1025.0358728298363,
+            "cost_of_fuel_usd_yr": 87.43246588110385,
+            "installed_cost_usd": 3281,
+            "payback_months": 33.8048906750467,
+            "annual_return_pct": 35.415,
+            "co2_mt_yr": 0.5973284726820653
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 77.6423115691202,
+            "heat_loss_btu_hr": 952.8913410082238,
+            "cost_of_fuel_usd_yr": 81.27875508502473,
+            "installed_cost_usd": 3728,
+            "payback_months": 38.20855518265628,
+            "annual_return_pct": 31.271,
+            "co2_mt_yr": 0.5552870337942768
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 146.79487967085424,
+          "surface_F": 179.90806686763779,
+          "annual_heat_loss_btu_yr": 128592314.59166832,
+          "fuel_cost_usd_yr": 1252.1160135508112,
+          "co2_mt_yr": 8.5543114729503
+        },
+        "insulated": {
+          "thickness_in": 1,
+          "q_btu_hr_ft": 21.02362336447317,
+          "surface_F": 86.5522087624765,
+          "annual_heat_loss_btu_yr": 18416694.067278497,
+          "fuel_cost_usd_yr": 179.32516131722002,
+          "co2_mt_yr": 1.2251287167028218
+        },
+        "saved_usd_yr": 1072.790852233591,
+        "saved_btu_yr": 110175620.52438983,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 2.25045,
+            "h_rad": 1.11893,
+            "h_conv": 1.13152,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0003894,
+            "pipe_od_in": 2.375
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.26835,
+            "insulation_id_in": 2.41,
+            "insulation_od_in": 4.5,
+            "interface_F": 179.987,
+            "surface_coefficient_btu_hr_ft2_F": 1.54476,
+            "h_rad": 0.97414,
+            "h_conv": 0.57063,
+            "thermal_curve_k_of_T_F": [
+              0.208,
+              0.000294285714285714,
+              1.14285714285714e-06
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "Owens Corning SSL II with ASJ Max",
+        "k_mean_btu_in_hr_ft2_F": 0.25906,
+        "insulation_id_in": 2.375,
+        "insulation_od_in": 4.5,
+        "bare": {
+          "q_btu_hr_ft": 146.9567,
+          "surface_F": 180,
+          "annual_heat_loss_btu_yr": 128734111,
+          "fuel_cost_usd_yr": 1253.4967
+        },
+        "insulated": {
+          "q_btu_hr_ft": 19.9463,
+          "surface_F": 86.023,
+          "annual_heat_loss_btu_yr": 17472919,
+          "fuel_cost_usd_yr": 170.1355
+        },
+        "saved_usd_yr": 1083.3612,
+        "saved_btu_yr": 111261192
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.11,
+        "insulated_q": -5.125,
+        "bare_surface_F_delta": 0.092,
+        "insulated_surface_F_delta": -0.529,
+        "annual_btu_bare": 0.11,
+        "annual_btu_insulated": -5.125,
+        "annual_btu_saved": 0.985,
+        "cost_bare": 0.11,
+        "cost_insulated": -5.125,
+        "cost_saved": 0.985,
+        "k_mean": -3.463
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.11,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.0919,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -5.125,
+          "plus_nia_k_curve": -2.071,
+          "plus_nia_insulation_id_od": 0.016,
+          "plus_nia_steel_wall": 0.002
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.5294,
+          "plus_nia_k_curve": -0.2135,
+          "plus_nia_insulation_id_od": 0.0017,
+          "plus_nia_steel_wall": 0.0002
+        }
+      }
+    },
+    {
+      "id": "NIA-3",
+      "label": "LP steam: NPS 4, 250°F, 75°F still air, mineral wool 2\", aluminum oxidized ε 0.10, gas",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "4",
+          "3_operating_temperature_F": 250,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 0,
+          "6_insulation": "wool (Mineral Wool (to 1200°F) ASTM C 547 T II & III)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.10 - Aluminum, oxidized, in service",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 2,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "4",
+          "processF": 250,
+          "ambientF": 75,
+          "windMph": 0,
+          "insulation": "mineral-wool",
+          "kProduct": "ROCKWOOL ProRox PS 960NA (WR-Tech) (productForTemp default, as the UI picks it)",
+          "thicknessIn": 2,
+          "jacket": "alu-smooth",
+          "facing": "none",
+          "metalFinish": "oxidized",
+          "emittance": 0.1,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 249.73181800305508,
+            "heat_loss_btu_hr": 51724.70718959701,
+            "cost_of_fuel_usd_yr": 4411.96139221879,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 30.14200884520468
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 112.33850914441388,
+            "heat_loss_btu_hr": 5607.619354286576,
+            "cost_of_fuel_usd_yr": 478.31300431889395,
+            "installed_cost_usd": 2276,
+            "payback_months": 6.9431726750192295,
+            "annual_return_pct": 172.83165148945062,
+            "co2_mt_yr": 3.2677790046811825
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 102.53115285290482,
+            "heat_loss_btu_hr": 4343.960442760327,
+            "cost_of_fuel_usd_yr": 370.5267135207445,
+            "installed_cost_usd": 2655,
+            "payback_months": 7.883339094389062,
+            "annual_return_pct": 152.21976190953092,
+            "co2_mt_yr": 2.5313955593592055
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 96.81872522879272,
+            "heat_loss_btu_hr": 3628.9734514414454,
+            "cost_of_fuel_usd_yr": 309.5404813498253,
+            "installed_cost_usd": 3155,
+            "payback_months": 9.228697108990843,
+            "annual_return_pct": 130.0291889340401,
+            "co2_mt_yr": 2.1147446900262135
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 93.06603925367313,
+            "heat_loss_btu_hr": 3165.524071199844,
+            "cost_of_fuel_usd_yr": 270.0096481373966,
+            "installed_cost_usd": 3604,
+            "payback_months": 10.441454336545291,
+            "annual_return_pct": 114.92651898117074,
+            "co2_mt_yr": 1.8446746195018415
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 90.11908205599872,
+            "heat_loss_btu_hr": 2803.2177634700597,
+            "cost_of_fuel_usd_yr": 239.1060137098123,
+            "installed_cost_usd": 4065.9999999999995,
+            "payback_months": 11.692712920579117,
+            "annual_return_pct": 102.62802209810573,
+            "co2_mt_yr": 1.6335445711047576
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 88.20614096855212,
+            "heat_loss_btu_hr": 2567.704029691764,
+            "cost_of_fuel_usd_yr": 219.01740311684372,
+            "installed_cost_usd": 4709,
+            "payback_months": 13.476926986592778,
+            "annual_return_pct": 89.041,
+            "co2_mt_yr": 1.496301511986188
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 86.71855757847808,
+            "heat_loss_btu_hr": 2383.6625240427666,
+            "cost_of_fuel_usd_yr": 203.31921821435867,
+            "installed_cost_usd": 5200,
+            "payback_months": 14.826634676957521,
+            "annual_return_pct": 80.935,
+            "co2_mt_yr": 1.389053332294751
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 517.2470718959701,
+          "surface_F": 249.73181800305508,
+          "annual_heat_loss_btu_yr": 453108434.98086977,
+          "fuel_cost_usd_yr": 4411.96139221879,
+          "co2_mt_yr": 30.14200884520468
+        },
+        "insulated": {
+          "thickness_in": 2,
+          "q_btu_hr_ft": 36.289734514414455,
+          "surface_F": 96.81872522879272,
+          "annual_heat_loss_btu_yr": 31789807.43462706,
+          "fuel_cost_usd_yr": 309.5404813498253,
+          "co2_mt_yr": 2.1147446900262135
+        },
+        "saved_usd_yr": 4102.420910868965,
+        "saved_btu_yr": 421318627.5462427,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 2.51273,
+            "h_rad": 1.34614,
+            "h_conv": 1.16658,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0006108,
+            "pipe_od_in": 4.5
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.29113,
+            "insulation_id_in": 4.53,
+            "insulation_od_in": 8.62,
+            "interface_F": 249.981,
+            "surface_coefficient_btu_hr_ft2_F": 0.73702,
+            "h_rad": 0.11138,
+            "h_conv": 0.62564,
+            "thermal_curve_k_of_T_F": [
+              0.214285714285714,
+              0.000317857142857143,
+              6.78571428571429e-07
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "ROCKWOOL ProRox PS 960NA (WR-Tech)",
+        "k_mean_btu_in_hr_ft2_F": 0.28084,
+        "insulation_id_in": 4.5,
+        "insulation_od_in": 8.625,
+        "bare": {
+          "q_btu_hr_ft": 518.3155,
+          "surface_F": 250,
+          "annual_heat_loss_btu_yr": 454044378,
+          "fuel_cost_usd_yr": 4421.0748
+        },
+        "insulated": {
+          "q_btu_hr_ft": 34.7882,
+          "surface_F": 96.086,
+          "annual_heat_loss_btu_yr": 30474496,
+          "fuel_cost_usd_yr": 296.7332
+        },
+        "saved_usd_yr": 4124.3416,
+        "saved_btu_yr": 423569882
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.207,
+        "insulated_q": -4.138,
+        "bare_surface_F_delta": 0.268,
+        "insulated_surface_F_delta": -0.733,
+        "annual_btu_bare": 0.207,
+        "annual_btu_insulated": -4.138,
+        "annual_btu_saved": 0.534,
+        "cost_bare": 0.207,
+        "cost_insulated": -4.138,
+        "cost_saved": 0.534,
+        "k_mean": -3.535
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.207,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.2682,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -4.138,
+          "plus_nia_k_curve": -0.994,
+          "plus_nia_insulation_id_od": 0.014,
+          "plus_nia_steel_wall": 0.001
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.7328,
+          "plus_nia_k_curve": -0.1823,
+          "plus_nia_insulation_id_od": 0.0025,
+          "plus_nia_steel_wall": 0.0003
+        }
+      }
+    },
+    {
+      "id": "NIA-4",
+      "label": "Process line: NPS 8, 600°F, 75°F still air, mineral wool 3\", aluminum oxidized ε 0.10, gas",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "8",
+          "3_operating_temperature_F": 600,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 0,
+          "6_insulation": "wool (Mineral Wool (to 1200°F) ASTM C 547 T II & III)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.10 - Aluminum, oxidized, in service",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 3,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "8",
+          "processF": 600,
+          "ambientF": 75,
+          "windMph": 0,
+          "insulation": "mineral-wool",
+          "kProduct": "ROCKWOOL ProRox PS 960NA (WR-Tech) (productForTemp default, as the UI picks it)",
+          "thicknessIn": 3,
+          "jacket": "alu-smooth",
+          "facing": "none",
+          "metalFinish": "oxidized",
+          "emittance": 0.1,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 597.7616122134131,
+            "heat_loss_btu_hr": 518971.2767131934,
+            "cost_of_fuel_usd_yr": 44266.68338858397,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 302.42484999977654
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 211.26581380808534,
+            "heat_loss_btu_hr": 44549.09756408331,
+            "cost_of_fuel_usd_yr": 3799.90355074362,
+            "installed_cost_usd": 3378,
+            "payback_months": 1.0017105428807784,
+            "annual_return_pct": 1197.9508536956882,
+            "co2_mt_yr": 25.960500615314306
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 176.0880133688368,
+            "heat_loss_btu_hr": 33216.51852624823,
+            "cost_of_fuel_usd_yr": 2833.2687662116305,
+            "installed_cost_usd": 3879,
+            "payback_months": 1.1234410782756483,
+            "annual_return_pct": 1068.146806454559,
+            "co2_mt_yr": 19.356563809150867
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 155.5733727900568,
+            "heat_loss_btu_hr": 26923.463912643023,
+            "cost_of_fuel_usd_yr": 2296.490203259522,
+            "installed_cost_usd": 4417,
+            "payback_months": 1.2628962598755369,
+            "annual_return_pct": 950.1968119838002,
+            "co2_mt_yr": 15.68935488457731
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 139.3647019353353,
+            "heat_loss_btu_hr": 22124.235757502895,
+            "cost_of_fuel_usd_yr": 1887.1305280985916,
+            "installed_cost_usd": 5047,
+            "payback_months": 1.4290853940667638,
+            "annual_return_pct": 839.6978969781135,
+            "co2_mt_yr": 12.892657032385637
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 130.4646830888434,
+            "heat_loss_btu_hr": 19553.348049203014,
+            "cost_of_fuel_usd_yr": 1667.8415668064108,
+            "installed_cost_usd": 5612,
+            "payback_months": 1.5808880504721166,
+            "annual_return_pct": 759.0670317494221,
+            "co2_mt_yr": 11.39450026642161
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 123.72992905541963,
+            "heat_loss_btu_hr": 17636.309856466,
+            "cost_of_fuel_usd_yr": 1504.3239955466618,
+            "installed_cost_usd": 6373,
+            "payback_months": 1.788395240241399,
+            "annual_return_pct": 670.9926156133266,
+            "co2_mt_yr": 10.277367172748036
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 118.45084532580086,
+            "heat_loss_btu_hr": 16148.96963530785,
+            "cost_of_fuel_usd_yr": 1377.4583642190535,
+            "installed_cost_usd": 6990.000000000001,
+            "payback_months": 1.9557359675384358,
+            "annual_return_pct": 613.57975714399,
+            "co2_mt_yr": 9.41063588439781
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 5189.712767131934,
+          "surface_F": 597.7616122134131,
+          "annual_heat_loss_btu_yr": 4546188384.007574,
+          "fuel_cost_usd_yr": 44266.68338858397,
+          "co2_mt_yr": 302.42484999977654
+        },
+        "insulated": {
+          "thickness_in": 3,
+          "q_btu_hr_ft": 195.53348049203015,
+          "surface_F": 130.4646830888434,
+          "annual_heat_loss_btu_yr": 171287328.9110184,
+          "fuel_cost_usd_yr": 1667.8415668064108,
+          "co2_mt_yr": 11.39450026642161
+        },
+        "saved_usd_yr": 42598.84182177756,
+        "saved_btu_yr": 4374901055.096556,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 4.39655,
+            "h_rad": 3.06513,
+            "h_conv": 1.33142,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0009739,
+            "pipe_od_in": 8.625
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.43332,
+            "insulation_id_in": 8.7,
+            "insulation_od_in": 15,
+            "interface_F": 599.916,
+            "surface_coefficient_btu_hr_ft2_F": 0.89773,
+            "h_rad": 0.12225,
+            "h_conv": 0.77547,
+            "thermal_curve_k_of_T_F": [
+              0.214285714285714,
+              0.000317857142857143,
+              6.78571428571429e-07
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "ROCKWOOL ProRox PS 960NA (WR-Tech)",
+        "k_mean_btu_in_hr_ft2_F": 0.38995,
+        "insulation_id_in": 8.625,
+        "insulation_od_in": 15,
+        "bare": {
+          "q_btu_hr_ft": 5230.1586,
+          "surface_F": 600,
+          "annual_heat_loss_btu_yr": 4581618905,
+          "fuel_cost_usd_yr": 44611.6739
+        },
+        "insulated": {
+          "q_btu_hr_ft": 174.9655,
+          "surface_F": 125.792,
+          "annual_heat_loss_btu_yr": 153269758,
+          "fuel_cost_usd_yr": 1492.4027
+        },
+        "saved_usd_yr": 43119.2711,
+        "saved_btu_yr": 4428349147
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.779,
+        "insulated_q": -10.519,
+        "bare_surface_F_delta": 2.238,
+        "insulated_surface_F_delta": -4.672,
+        "annual_btu_bare": 0.779,
+        "annual_btu_insulated": -10.519,
+        "annual_btu_saved": 1.222,
+        "cost_bare": 0.779,
+        "cost_insulated": -10.519,
+        "cost_saved": 1.222,
+        "k_mean": -10.009
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.779,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 2.2384,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -10.519,
+          "plus_nia_k_curve": -1.455,
+          "plus_nia_insulation_id_od": 0.026,
+          "plus_nia_steel_wall": 0.001
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -4.6725,
+          "plus_nia_k_curve": -0.6395,
+          "plus_nia_insulation_id_od": 0.0118,
+          "plus_nia_steel_wall": 0.0006
+        }
+      }
+    },
+    {
+      "id": "NIA-5",
+      "label": "Outdoor windy: NPS 4, 350°F, 40°F, 15 mph, mineral wool 2\", aluminum oxidized ε 0.10, gas",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "4",
+          "3_operating_temperature_F": 350,
+          "4_ambient_temperature_F": 40,
+          "5_wind_speed_mph": 15,
+          "6_insulation": "wool (Mineral Wool (to 1200°F) ASTM C 547 T II & III)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.10 - Aluminum, oxidized, in service",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 2,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "4",
+          "processF": 350,
+          "ambientF": 40,
+          "windMph": 15,
+          "insulation": "mineral-wool",
+          "kProduct": "ROCKWOOL ProRox PS 960NA (WR-Tech) (productForTemp default, as the UI picks it)",
+          "thicknessIn": 2,
+          "jacket": "alu-smooth",
+          "facing": "none",
+          "metalFinish": "oxidized",
+          "emittance": 0.1,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 348.6447587821145,
+            "heat_loss_btu_hr": 249073.64235992718,
+            "cost_of_fuel_usd_yr": 21245.22986439106,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 145.14494791824
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 54.81612313506662,
+            "heat_loss_btu_hr": 12680.598295105505,
+            "cost_of_fuel_usd_yr": 1081.6167581803722,
+            "installed_cost_usd": 2276,
+            "payback_months": 1.354519145757042,
+            "annual_return_pct": 885.9232471973062,
+            "co2_mt_yr": 7.38948032267315
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 49.949974036594654,
+            "heat_loss_btu_hr": 9365.141477147568,
+            "cost_of_fuel_usd_yr": 798.8182993165794,
+            "installed_cost_usd": 2655,
+            "payback_months": 1.5582196366633658,
+            "annual_return_pct": 770.1096634679654,
+            "co2_mt_yr": 5.4574340306279945
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 47.440510737525415,
+            "heat_loss_btu_hr": 7617.763823364756,
+            "cost_of_fuel_usd_yr": 649.7722599092041,
+            "installed_cost_usd": 3155,
+            "payback_months": 1.8382694246017208,
+            "annual_return_pct": 652.7878796983156,
+            "co2_mt_yr": 4.4391687651877385
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 45.91530912257571,
+            "heat_loss_btu_hr": 6532.180121874332,
+            "cost_of_fuel_usd_yr": 557.1752470070024,
+            "installed_cost_usd": 3604,
+            "payback_months": 2.090481719999856,
+            "annual_return_pct": 574.0303722914557,
+            "co2_mt_yr": 3.806556705875483
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 44.78460120887519,
+            "heat_loss_btu_hr": 5708.564645111477,
+            "cost_of_fuel_usd_yr": 486.9233329228485,
+            "installed_cost_usd": 4065.9999999999995,
+            "payback_months": 2.3504807545853783,
+            "annual_return_pct": 510.53385468441263,
+            "co2_mt_yr": 3.3266037716880397
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 44.08195178455077,
+            "heat_loss_btu_hr": 5184.766019291537,
+            "cost_of_fuel_usd_yr": 442.2448912268147,
+            "installed_cost_usd": 4709,
+            "payback_months": 2.7163409516901087,
+            "annual_return_pct": 441.7707575528615,
+            "co2_mt_yr": 3.0213658366582963
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 43.55260069597881,
+            "heat_loss_btu_hr": 4781.722601437343,
+            "cost_of_fuel_usd_yr": 407.8665042706049,
+            "installed_cost_usd": 5200,
+            "payback_months": 2.9946207167181287,
+            "annual_return_pct": 400.7185261561626,
+            "co2_mt_yr": 2.7864966817410504
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 2490.736423599272,
+          "surface_F": 348.6447587821145,
+          "annual_heat_loss_btu_yr": 2181885107.0729623,
+          "fuel_cost_usd_yr": 21245.22986439106,
+          "co2_mt_yr": 145.14494791824
+        },
+        "insulated": {
+          "thickness_in": 2,
+          "q_btu_hr_ft": 76.17763823364756,
+          "surface_F": 47.440510737525415,
+          "annual_heat_loss_btu_yr": 66731611.09267526,
+          "fuel_cost_usd_yr": 649.7722599092041,
+          "co2_mt_yr": 4.4391687651877385
+        },
+        "saved_usd_yr": 20595.457604481857,
+        "saved_btu_yr": 2115153495.980287,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 6.84996,
+            "h_rad": 1.61962,
+            "h_conv": 5.23035,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.000641,
+            "pipe_od_in": 4.5
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.30941,
+            "insulation_id_in": 4.53,
+            "insulation_od_in": 8.62,
+            "interface_F": 349.959,
+            "surface_coefficient_btu_hr_ft2_F": 4.5368,
+            "h_rad": 0.08746,
+            "h_conv": 4.44934,
+            "thermal_curve_k_of_T_F": [
+              0.214285714285714,
+              0.000317857142857143,
+              6.78571428571429e-07
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "ROCKWOOL ProRox PS 960NA (WR-Tech)",
+        "k_mean_btu_in_hr_ft2_F": 0.29643,
+        "insulation_id_in": 4.5,
+        "insulation_od_in": 8.625,
+        "bare": {
+          "q_btu_hr_ft": 2503.2777,
+          "surface_F": 350,
+          "annual_heat_loss_btu_yr": 2192871240,
+          "fuel_cost_usd_yr": 21352.2029
+        },
+        "insulated": {
+          "q_btu_hr_ft": 72.2723,
+          "surface_F": 47.056,
+          "annual_heat_loss_btu_yr": 63310496,
+          "fuel_cost_usd_yr": 616.4605
+        },
+        "saved_usd_yr": 20735.7424,
+        "saved_btu_yr": 2129560744
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.504,
+        "insulated_q": -5.127,
+        "bare_surface_F_delta": 1.355,
+        "insulated_surface_F_delta": -0.385,
+        "annual_btu_bare": 0.504,
+        "annual_btu_insulated": -5.127,
+        "annual_btu_saved": 0.681,
+        "cost_bare": 0.504,
+        "cost_insulated": -5.127,
+        "cost_saved": 0.681,
+        "k_mean": -4.196
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.504,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 1.3552,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -5.127,
+          "plus_nia_k_curve": -1.071,
+          "plus_nia_insulation_id_od": 0.019,
+          "plus_nia_steel_wall": 0.001
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.385,
+          "plus_nia_k_curve": -0.0828,
+          "plus_nia_insulation_id_od": 0.0014,
+          "plus_nia_steel_wall": 0.0001
+        }
+      }
+    },
+    {
+      "id": "NIA-6",
+      "label": "Steam, electric boiler: NPS 2, 250°F, 75°F still air, fiberglass 1.5\", ASJ ε 0.90, electricity $0.10/kWh at 100%",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "2",
+          "3_operating_temperature_F": 250,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 0,
+          "6_insulation": "fiberglass (Fiberglass (to 850°F) ASTM C 547 T I)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.90 - All Service Jacket",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 100,
+          "12_fuel": "electricity",
+          "13_fuel_cost": 0.1,
+          "fuel_cost_units": "$/kWh"
+        },
+        "compared_thickness_in": 1.5,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "2",
+          "processF": 250,
+          "ambientF": 75,
+          "windMph": 0,
+          "insulation": "fiberglass",
+          "kProduct": "Owens Corning SSL II with ASJ Max (productForTemp default, as the UI picks it)",
+          "thicknessIn": 1.5,
+          "jacket": "none",
+          "facing": "asj",
+          "metalFinish": "oxidized",
+          "emittance": 0.9,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "electric",
+          "fuelPrice": 0.1,
+          "fuelPrice_units": "$/kWh",
+          "efficiencyPct": 100
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 249.8157452095801,
+            "heat_loss_btu_hr": 28477.28899654611,
+            "cost_of_fuel_usd_yr": 7311.285217167173,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 48.24803520906639
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": 113.51581066036411,
+            "heat_loss_btu_hr": 6390.976614900457,
+            "cost_of_fuel_usd_yr": 1640.8251801444317,
+            "installed_cost_usd": 1564,
+            "payback_months": 3.309784369780002,
+            "annual_return_pct": 362.5613834413517,
+            "co2_mt_yr": 10.827999279476213
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 94.6716265709425,
+            "heat_loss_btu_hr": 3840.83147494437,
+            "cost_of_fuel_usd_yr": 986.0985850091641,
+            "installed_cost_usd": 1814,
+            "payback_months": 3.441479479724578,
+            "annual_return_pct": 348.68724543318683,
+            "co2_mt_yr": 6.507381101399157
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 88.14811009373514,
+            "heat_loss_btu_hr": 2969.0159401803635,
+            "cost_of_fuel_usd_yr": 762.2678674085575,
+            "installed_cost_usd": 2064,
+            "payback_months": 3.781941423763811,
+            "annual_return_pct": 317.2973522169872,
+            "co2_mt_yr": 5.030295743231584
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 84.72646948958936,
+            "heat_loss_btu_hr": 2499.2566037085444,
+            "cost_of_fuel_usd_yr": 641.6614258055935,
+            "installed_cost_usd": 2346,
+            "payback_months": 4.220927728556767,
+            "annual_return_pct": 284.29768931635033,
+            "co2_mt_yr": 4.234399581605071
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 82.73574922753926,
+            "heat_loss_btu_hr": 2215.644727920893,
+            "cost_of_fuel_usd_yr": 568.8466534755868,
+            "installed_cost_usd": 2530,
+            "payback_months": 4.502821896441196,
+            "annual_return_pct": 266.49954797199945,
+            "co2_mt_yr": 3.7538862936171715
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 81.37902172571376,
+            "heat_loss_btu_hr": 2014.66034375726,
+            "cost_of_fuel_usd_yr": 517.2457389013365,
+            "installed_cost_usd": 2803,
+            "payback_months": 4.950810207624156,
+            "annual_return_pct": 242.38456932807125,
+            "co2_mt_yr": 3.4133657600517893
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 80.40013406563651,
+            "heat_loss_btu_hr": 1863.7844019431402,
+            "cost_of_fuel_usd_yr": 478.5097116360467,
+            "installed_cost_usd": 3281,
+            "payback_months": 5.762226487337158,
+            "annual_return_pct": 208.25283467025685,
+            "co2_mt_yr": 3.15774213823401
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 79.58111463544438,
+            "heat_loss_btu_hr": 1732.2129415597929,
+            "cost_of_fuel_usd_yr": 444.7299345856913,
+            "installed_cost_usd": 3728,
+            "payback_months": 6.515057136943562,
+            "annual_return_pct": 184.18871466152044,
+            "co2_mt_yr": 2.9348253973232454
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 284.7728899654611,
+          "surface_F": 249.8157452095801,
+          "annual_heat_loss_btu_yr": 249461051.60974392,
+          "fuel_cost_usd_yr": 7311.285217167173,
+          "co2_mt_yr": 48.24803520906639
+        },
+        "insulated": {
+          "thickness_in": 1.5,
+          "q_btu_hr_ft": 29.690159401803633,
+          "surface_F": 88.14811009373514,
+          "annual_heat_loss_btu_yr": 26008579.635979984,
+          "fuel_cost_usd_yr": 762.2678674085575,
+          "co2_mt_yr": 5.030295743231584
+        },
+        "saved_usd_yr": 6549.017349758616,
+        "saved_btu_yr": 223452471.97376394,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 2.61991,
+            "h_rad": 1.34644,
+            "h_conv": 1.27347,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0004023,
+            "pipe_od_in": 2.375
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.29291,
+            "insulation_id_in": 2.41,
+            "insulation_od_in": 5.56,
+            "interface_F": 249.981,
+            "surface_coefficient_btu_hr_ft2_F": 1.55134,
+            "h_rad": 0.97849,
+            "h_conv": 0.57285,
+            "thermal_curve_k_of_T_F": [
+              0.208,
+              0.000294285714285714,
+              1.14285714285714e-06
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 3412
+        }
+      },
+      "app": {
+        "k_product": "Owens Corning SSL II with ASJ Max",
+        "k_mean_btu_in_hr_ft2_F": 0.27669,
+        "insulation_id_in": 2.375,
+        "insulation_od_in": 5.5625,
+        "bare": {
+          "q_btu_hr_ft": 285.1745,
+          "surface_F": 250,
+          "annual_heat_loss_btu_yr": 249812848,
+          "fuel_cost_usd_yr": 7321.2954
+        },
+        "insulated": {
+          "q_btu_hr_ft": 27.6878,
+          "surface_F": 87.353,
+          "annual_heat_loss_btu_yr": 24254536,
+          "fuel_cost_usd_yr": 710.8306
+        },
+        "saved_usd_yr": 6610.4648,
+        "saved_btu_yr": 225558312
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.141,
+        "insulated_q": -6.744,
+        "bare_surface_F_delta": 0.184,
+        "insulated_surface_F_delta": -0.796,
+        "annual_btu_bare": 0.141,
+        "annual_btu_insulated": -6.744,
+        "annual_btu_saved": 0.942,
+        "cost_bare": 0.137,
+        "cost_insulated": -6.748,
+        "cost_saved": 0.938,
+        "k_mean": -5.538
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": -0.004,
+        "insulated": -0.004
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.141,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.1843,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -6.744,
+          "plus_nia_k_curve": -1.656,
+          "plus_nia_insulation_id_od": 0.015,
+          "plus_nia_steel_wall": 0.002
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.7956,
+          "plus_nia_k_curve": -0.1984,
+          "plus_nia_insulation_id_od": 0.0018,
+          "plus_nia_steel_wall": 0.0002
+        }
+      }
+    },
+    {
+      "id": "NIA-7",
+      "label": "Indoor at NIA's 1 mph: NPS 8, 180°F, 70°F, fiberglass 2\", ASJ ε 0.90, gas $10/Mcf at 85%, 6,000 h",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 250,
+          "2_pipe_size_nps": "8",
+          "3_operating_temperature_F": 180,
+          "4_ambient_temperature_F": 70,
+          "5_wind_speed_mph": 1,
+          "6_insulation": "fiberglass (Fiberglass (to 850°F) ASTM C 547 T I)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.90 - All Service Jacket",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 6000,
+          "11_fuel_efficiency_pct": 85,
+          "12_fuel": "gas",
+          "13_fuel_cost": 10,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 2,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "8",
+          "processF": 180,
+          "ambientF": 70,
+          "windMph": 1,
+          "insulation": "fiberglass",
+          "kProduct": "Owens Corning SSL II with ASJ Max (productForTemp default, as the UI picks it)",
+          "thicknessIn": 2,
+          "jacket": "none",
+          "facing": "asj",
+          "metalFinish": "oxidized",
+          "emittance": 0.9,
+          "lengthFt": 250,
+          "hours": 6000,
+          "fuel": "gas",
+          "fuelPrice": 9.737098,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 85
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 179.80842245939095,
+            "heat_loss_btu_hr": 136884.52917374135,
+            "cost_of_fuel_usd_yr": 9408.410275988866,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 51.421734788219155
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 82.84510916417977,
+            "heat_loss_btu_hr": 16063.21325556464,
+            "cost_of_fuel_usd_yr": 1104.0641449497432,
+            "installed_cost_usd": 7672.5,
+            "payback_months": 11.086965613809173,
+            "annual_return_pct": 108.23520535730364,
+            "co2_mt_yr": 6.03427061378024
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 78.83791270070158,
+            "heat_loss_btu_hr": 11727.397237201303,
+            "cost_of_fuel_usd_yr": 806.0528486535062,
+            "installed_cost_usd": 8220,
+            "payback_months": 11.466624217049583,
+            "annual_return_pct": 104.65155021089248,
+            "co2_mt_yr": 4.405487706518274
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 76.67593689803252,
+            "heat_loss_btu_hr": 9397.652754241752,
+            "cost_of_fuel_usd_yr": 645.9237817223268,
+            "installed_cost_usd": 9102.5,
+            "payback_months": 12.465639755504474,
+            "annual_return_pct": 96.265,
+            "co2_mt_yr": 3.53030112663088
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 75.06763365035022,
+            "heat_loss_btu_hr": 7655.177865522022,
+            "cost_of_fuel_usd_yr": 526.1591980426385,
+            "installed_cost_usd": 10085,
+            "payback_months": 13.624924463178143,
+            "annual_return_pct": 88.074,
+            "co2_mt_yr": 2.87572692351439
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 74.22589213599434,
+            "heat_loss_btu_hr": 6733.501703051302,
+            "cost_of_fuel_usd_yr": 462.8101290830839,
+            "installed_cost_usd": 10972.5,
+            "payback_months": 14.718967742543656,
+            "annual_return_pct": 81.527,
+            "co2_mt_yr": 2.529492126395443
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 73.61028116403496,
+            "heat_loss_btu_hr": 6051.507698907501,
+            "cost_of_fuel_usd_yr": 415.93500422068854,
+            "installed_cost_usd": 11912.5,
+            "payback_months": 15.89662419743212,
+            "annual_return_pct": 75.487,
+            "co2_mt_yr": 2.2732957905500224
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 73.14157858108082,
+            "heat_loss_btu_hr": 5525.484436460594,
+            "cost_of_fuel_usd_yr": 379.7801319521572,
+            "installed_cost_usd": 12885,
+            "payback_months": 17.125521539070295,
+            "annual_return_pct": 70.069,
+            "co2_mt_yr": 2.0756910732218383
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 547.5381166949654,
+          "surface_F": 179.80842245939095,
+          "annual_heat_loss_btu_yr": 821307175.042448,
+          "fuel_cost_usd_yr": 9408.410275988866,
+          "co2_mt_yr": 51.421734788219155
+        },
+        "insulated": {
+          "thickness_in": 2,
+          "q_btu_hr_ft": 37.590611016967,
+          "surface_F": 76.67593689803252,
+          "annual_heat_loss_btu_yr": 56385916.52545051,
+          "fuel_cost_usd_yr": 645.9237817223268,
+          "co2_mt_yr": 3.53030112663088
+        },
+        "saved_usd_yr": 8762.486494266539,
+        "saved_btu_yr": 764921258.5169976,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 2.20827,
+            "h_rad": 1.10534,
+            "h_conv": 1.10293,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.0007901,
+            "pipe_od_in": 8.625
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.2656,
+            "insulation_id_in": 8.7,
+            "insulation_od_in": 12.75,
+            "interface_F": 179.987,
+            "surface_coefficient_btu_hr_ft2_F": 1.6869,
+            "h_rad": 0.9344,
+            "h_conv": 0.7525,
+            "thermal_curve_k_of_T_F": [
+              0.208,
+              0.000294285714285714,
+              1.14285714285714e-06
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "Owens Corning SSL II with ASJ Max",
+        "k_mean_btu_in_hr_ft2_F": 0.25657,
+        "insulation_id_in": 8.625,
+        "insulation_od_in": 12.75,
+        "bare": {
+          "q_btu_hr_ft": 548.7076,
+          "surface_F": 180,
+          "annual_heat_loss_btu_yr": 823061458,
+          "fuel_cost_usd_yr": 9428.5063
+        },
+        "insulated": {
+          "q_btu_hr_ft": 35.6297,
+          "surface_F": 76.335,
+          "annual_heat_loss_btu_yr": 53444491,
+          "fuel_cost_usd_yr": 612.2286
+        },
+        "saved_usd_yr": 8816.2778,
+        "saved_btu_yr": 769616966
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.214,
+        "insulated_q": -5.217,
+        "bare_surface_F_delta": 0.192,
+        "insulated_surface_F_delta": -0.341,
+        "annual_btu_bare": 0.214,
+        "annual_btu_insulated": -5.217,
+        "annual_btu_saved": 0.614,
+        "cost_bare": 0.214,
+        "cost_insulated": -5.217,
+        "cost_saved": 0.614,
+        "k_mean": -3.4
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.214,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.1916,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -5.217,
+          "plus_nia_k_curve": -2.084,
+          "plus_nia_insulation_id_od": 0.015,
+          "plus_nia_steel_wall": 0.002
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -0.3407,
+          "plus_nia_k_curve": -0.136,
+          "plus_nia_insulation_id_od": 0.001,
+          "plus_nia_steel_wall": 0.0001
+        }
+      }
+    },
+    {
+      "id": "NIA-8",
+      "label": "Fiberglass, hot: NPS 4, 350°F, 75°F still air, fiberglass 3\", aluminum oxidized ε 0.10, gas",
+      "inputs": {
+        "nia_lines": {
+          "1_piping_length_ft": 100,
+          "2_pipe_size_nps": "4",
+          "3_operating_temperature_F": 350,
+          "4_ambient_temperature_F": 75,
+          "5_wind_speed_mph": 0,
+          "6_insulation": "fiberglass (Fiberglass (to 850°F) ASTM C 547 T I)",
+          "7_cost_multiplier": 1,
+          "8_surface_emittance": "0.10 - Aluminum, oxidized, in service",
+          "9_useful_life_yr": 20,
+          "10_operating_hours_yr": 8760,
+          "11_fuel_efficiency_pct": 80,
+          "12_fuel": "gas",
+          "13_fuel_cost": 8,
+          "fuel_cost_units": "$/Mcf"
+        },
+        "compared_thickness_in": 3,
+        "app_state": {
+          "pipe": "steel",
+          "nps": "4",
+          "processF": 350,
+          "ambientF": 75,
+          "windMph": 0,
+          "insulation": "fiberglass",
+          "kProduct": "Owens Corning SSL II with ASJ Max (productForTemp default, as the UI picks it)",
+          "thicknessIn": 3,
+          "jacket": "alu-smooth",
+          "facing": "none",
+          "metalFinish": "oxidized",
+          "emittance": 0.1,
+          "lengthFt": 100,
+          "hours": 8760,
+          "fuel": "gas",
+          "fuelPrice": 7.789679,
+          "fuelPrice_units": "$/MMBtu (= NIA $/Mcf ÷ 1.027 MMBtu/Mcf, NIA's own gas heat content)",
+          "efficiencyPct": 80
+        }
+      },
+      "nia": {
+        "result_table_verbatim": [
+          {
+            "thickness_in": 0,
+            "surface_temp_F": 349.46947895068536,
+            "heat_loss_btu_hr": 97502.05967582192,
+            "cost_of_fuel_usd_yr": 8316.631380333009,
+            "installed_cost_usd": 0,
+            "payback_months": "NA",
+            "annual_return_pct": "NA",
+            "co2_mt_yr": 56.818261617252396
+          },
+          {
+            "thickness_in": 0.5,
+            "surface_temp_F": 168.53956588559015,
+            "heat_loss_btu_hr": 15441.65197648106,
+            "cost_of_fuel_usd_yr": 1317.1263029598254,
+            "installed_cost_usd": 1882.9999999999998,
+            "payback_months": 3.2282282461719363,
+            "annual_return_pct": 371.72092816639326,
+            "co2_mt_yr": 8.998454234909138
+          },
+          {
+            "thickness_in": 0.75,
+            "surface_temp_F": null,
+            "heat_loss_btu_hr": null,
+            "cost_of_fuel_usd_yr": null,
+            "installed_cost_usd": null,
+            "payback_months": null,
+            "annual_return_pct": null,
+            "co2_mt_yr": null
+          },
+          {
+            "thickness_in": 1,
+            "surface_temp_F": 135.95048953830081,
+            "heat_loss_btu_hr": 10375.857285743077,
+            "cost_of_fuel_usd_yr": 885.029306943616,
+            "installed_cost_usd": 2132,
+            "payback_months": 3.4425955194250184,
+            "annual_return_pct": 348.57420606892083,
+            "co2_mt_yr": 6.046417642096388
+          },
+          {
+            "thickness_in": 1.5,
+            "surface_temp_F": 119.77997528134853,
+            "heat_loss_btu_hr": 8000.011744825027,
+            "cost_of_fuel_usd_yr": 682.3768537942282,
+            "installed_cost_usd": 2378,
+            "payback_months": 3.737889521603055,
+            "annual_return_pct": 321.03677571651724,
+            "co2_mt_yr": 4.661919571441386
+          },
+          {
+            "thickness_in": 2,
+            "surface_temp_F": 110.41247509946197,
+            "heat_loss_btu_hr": 6662.920958763173,
+            "cost_of_fuel_usd_yr": 568.3270457523408,
+            "installed_cost_usd": 2820,
+            "payback_months": 4.367407182107206,
+            "annual_return_pct": 274.76256505605204,
+            "co2_mt_yr": 3.88274450230878
+          },
+          {
+            "thickness_in": 2.5,
+            "surface_temp_F": 104.28215577347598,
+            "heat_loss_btu_hr": 5799.751220428042,
+            "cost_of_fuel_usd_yr": 494.7012725506294,
+            "installed_cost_usd": 3074,
+            "payback_months": 4.7159715686155925,
+            "annual_return_pct": 254.4544602401555,
+            "co2_mt_yr": 3.379741753691128
+          },
+          {
+            "thickness_in": 3,
+            "surface_temp_F": 99.48184765161662,
+            "heat_loss_btu_hr": 5127.157183902534,
+            "cost_of_fuel_usd_yr": 437.3310314604303,
+            "installed_cost_usd": 3346,
+            "payback_months": 5.095883926514517,
+            "annual_return_pct": 235.4841706178296,
+            "co2_mt_yr": 2.9877949162953774
+          },
+          {
+            "thickness_in": 3.5,
+            "surface_temp_F": 96.37246030216042,
+            "heat_loss_btu_hr": 4691.066899356188,
+            "cost_of_fuel_usd_yr": 400.13384652736323,
+            "installed_cost_usd": 3868,
+            "payback_months": 5.863198946477375,
+            "annual_return_pct": 204.66643055340344,
+            "co2_mt_yr": 2.7336680603245522
+          },
+          {
+            "thickness_in": 4,
+            "surface_temp_F": 93.95807240690493,
+            "heat_loss_btu_hr": 4350.9369081758605,
+            "cost_of_fuel_usd_yr": 371.12178496222526,
+            "installed_cost_usd": 4253,
+            "payback_months": 6.423250691149454,
+            "annual_return_pct": 186.8212930959507,
+            "co2_mt_yr": 2.535461018473211
+          }
+        ],
+        "bare": {
+          "q_btu_hr_ft": 975.0205967582192,
+          "surface_F": 349.46947895068536,
+          "annual_heat_loss_btu_yr": 854118042.7602,
+          "fuel_cost_usd_yr": 8316.631380333009,
+          "co2_mt_yr": 56.818261617252396
+        },
+        "insulated": {
+          "thickness_in": 3,
+          "q_btu_hr_ft": 51.271571839025334,
+          "surface_F": 99.48184765161662,
+          "annual_heat_loss_btu_yr": 44913896.930986196,
+          "fuel_cost_usd_yr": 437.3310314604303,
+          "co2_mt_yr": 2.9877949162953774
+        },
+        "saved_usd_yr": 7879.300348872578,
+        "saved_btu_yr": 809204145.8292139,
+        "internals": {
+          "bare": {
+            "surface_coefficient_btu_hr_ft2_F": 3.01536,
+            "h_rad": 1.73314,
+            "h_conv": 1.28222,
+            "steel_wall_resistance_hr_ft2_F_btu": 0.000641,
+            "pipe_od_in": 4.5
+          },
+          "insulated": {
+            "k_mean_btu_in_hr_ft2_F": 0.33783,
+            "insulation_id_in": 4.53,
+            "insulation_od_in": 10.75,
+            "interface_F": 349.972,
+            "surface_coefficient_btu_hr_ft2_F": 0.74414,
+            "h_rad": 0.11221,
+            "h_conv": 0.63193,
+            "thermal_curve_k_of_T_F": [
+              0.208,
+              0.000294285714285714,
+              1.14285714285714e-06
+            ]
+          },
+          "fuel_heat_content_btu_per_unit": 1027000
+        }
+      },
+      "app": {
+        "k_product": "Owens Corning SSL II with ASJ Max",
+        "k_mean_btu_in_hr_ft2_F": 0.30838,
+        "insulation_id_in": 4.5,
+        "insulation_od_in": 10.75,
+        "bare": {
+          "q_btu_hr_ft": 977.791,
+          "surface_F": 350,
+          "annual_heat_loss_btu_yr": 856544885,
+          "fuel_cost_usd_yr": 8340.2618
+        },
+        "insulated": {
+          "q_btu_hr_ft": 46.7712,
+          "surface_F": 97.754,
+          "annual_heat_loss_btu_yr": 40971605,
+          "fuel_cost_usd_yr": 398.9445
+        },
+        "saved_usd_yr": 7941.3172,
+        "saved_btu_yr": 815573280
+      },
+      "diffPct": {
+        "note": "(app ÷ NIA − 1) × 100, app as a user would configure it",
+        "bare_q": 0.284,
+        "insulated_q": -8.777,
+        "bare_surface_F_delta": 0.531,
+        "insulated_surface_F_delta": -1.728,
+        "annual_btu_bare": 0.284,
+        "annual_btu_insulated": -8.777,
+        "annual_btu_saved": 0.787,
+        "cost_bare": 0.284,
+        "cost_insulated": -8.777,
+        "cost_saved": 0.787,
+        "k_mean": -8.716
+      },
+      "cost_step_given_nia_q_pct": {
+        "bare": 0,
+        "insulated": 0
+      },
+      "decomposition_pct": {
+        "bare_q": {
+          "app_as_configured": 0.284,
+          "plus_nia_steel_wall": 0
+        },
+        "bare_surface_F_delta": {
+          "app_as_configured": 0.5305,
+          "plus_nia_steel_wall": 0
+        },
+        "insulated_q": {
+          "app_as_configured": -8.777,
+          "plus_nia_k_curve": -0.707,
+          "plus_nia_insulation_id_od": 0.015,
+          "plus_nia_steel_wall": 0.001
+        },
+        "insulated_surface_F_delta": {
+          "app_as_configured": -1.7279,
+          "plus_nia_k_curve": -0.1378,
+          "plus_nia_insulation_id_od": 0.0031,
+          "plus_nia_steel_wall": 0.0004
+        }
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { annualCost } from './cost'
-import { COOLING_MONTHS, ductEnergy, monthSpan, stationFor } from './ductEnergy'
+import { COOLING_MONTHS, ductEnergy, monthSpan, pipeOutdoor, stationFor } from './ductEnergy'
 import { evaluate, physicsMode } from './model'
 import { applyPreset, initialState, PRESETS } from './presets'
 import { WA_COUNTIES } from '../data/wsecData'
@@ -92,5 +92,44 @@ describe('duct energy at Washington weather', () => {
   it('ducts open on rooftop-unit cooling; pipes on a chiller plant', () => {
     expect(initialState('duct').kwPerTon).toBe(1.25)
     expect(initialState('cold').kwPerTon).toBe(0.9)
+  })
+})
+
+describe('pipes outdoors at Washington weather', () => {
+  const proc = (patch: Partial<SimState> = {}) => preset('process', { waCounty: 'King', ...patch })
+
+  it('the outdoor process preset is priced outdoors; indoor pipes keep the Setup air', () => {
+    expect(proc().pipeOutdoors).toBe(true)
+    expect(initialState('hot').pipeOutdoors).toBe(false)
+    const s = proc({ pipeOutdoors: false })
+    const ev = evaluate(s, 'hot')
+    const c = annualCost(s, 'hot', ev)!
+    expect(c.btuBare).toBeCloseTo(ev.annual!.bare, 0)
+  })
+
+  it('all year: the yearly normal temperature and NOAA’s average wind over every hour', () => {
+    const { station, part } = pipeOutdoor(proc(), 'hot')
+    expect(part.hours).toBe(8760)
+    const mean = (t: number[][]) => t.reduce((a, row, m) => a + (row.reduce((x, y) => x + y, 0) / 24) * DAYS[m], 0) / 365
+    expect(part.outdoorF).toBeCloseTo(mean(station.monthHourF), 6)
+    expect(part.windMph).toBeCloseTo(Math.round(mean(station.monthHourWindMph) * 10) / 10, 6)
+    expect(pipeOutdoor(proc({ windExposure: 'sheltered' }), 'hot').part.windMph).toBe(0)
+  })
+
+  it('part of the year means the coldest months for hot work, the warmest for cold', () => {
+    const st = stationFor('King')
+    const meanOf = (m: number) => st.monthHourF[m - 1].reduce((a, x) => a + x, 0) / 24
+    const byCold = [...Array(12).keys()].map((i) => i + 1).sort((a, b) => meanOf(a) - meanOf(b))
+    expect(pipeOutdoor(proc({ monthsPerYear: 6 }), 'hot').part.months).toEqual(byCold.slice(0, 6).sort((a, b) => a - b))
+    expect(pipeOutdoor(proc({ monthsPerYear: 4 }), 'cold').part.months).toEqual(byCold.slice(8).sort((a, b) => a - b))
+  })
+
+  it('wind raises the bare loss far more than the insulated loss, so open sites save more', () => {
+    const open = proc()
+    const shel = proc({ windExposure: 'sheltered' })
+    const a = annualCost(open, 'hot', evaluate(open, 'hot'))!
+    const b = annualCost(shel, 'hot', evaluate(shel, 'hot'))!
+    expect(a.saved).toBeGreaterThan(b.saved)
+    expect(a.btuIns / b.btuIns).toBeLessThan(1.1)
   })
 })

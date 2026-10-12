@@ -56,7 +56,7 @@ export const PRESETS: Preset[] = [
   {
     id: 'process', mode: 'hot', label: 'Process hot pipe', blurb: 'Outdoor process line, jacketed',
     range: { text: 'ASHRAE 90.1 heating band: above 350°F', src: ['V10'] },
-    set: { processF: 600, ambientF: 70, rh: 50, npsIndex: NPS_8, insulation: 'mineral-wool', thicknessIn: 3, jacket: 'alu-smooth', facing: 'none', windMph: 0 },
+    set: { processF: 600, ambientF: 70, rh: 50, npsIndex: NPS_8, insulation: 'mineral-wool', thicknessIn: 3, jacket: 'alu-smooth', facing: 'none', windMph: 0, pipeOutdoors: true },
     stage: 'plant',
   },
   // ----------------------------------------------------------------- cold
@@ -191,6 +191,8 @@ const BASE: Omit<SimState, 'processF' | 'ambientF' | 'npsIndex'> = {
   hoursPerDay: 24,
   daysPerWeek: 7,
   monthsPerYear: 12,
+  pipeOutdoors: false,
+  windExposure: 'open',
   ppF: PP_DEFAULT_F,
   targetSurfaceF: 120,
   targetQ: 20,
