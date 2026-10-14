@@ -6,7 +6,7 @@ import { DuctDiagram } from '../ui/sim/DuctDiagram'
 /**
  * The duct-location images WattBot sends: the guide's drawing with a title,
  * the legend and the source line baked in, so the picture explains itself
- * in a chat bubble. duct-locations-0 = all 14; -N = location N highlighted.
+ * in a chat bubble. duct-locations-0 = all of them; -N = location N highlighted.
  */
 
 const W = 860
@@ -26,7 +26,7 @@ function wrap(text: string, max: number): string[] {
 function image(n: number | null): string {
   const spot = n === null ? null : DUCT_SPOTS.find((p) => p.n === n)!
   const kinds = (Object.keys(KIND) as Kind[]).filter((k) => k !== 'pending' || DUCT_SPOTS.some((p) => p.pending))
-  const title = spot ? `${spot.n}. ${spot.label}` : 'Where does the duct run? DOE’s 14 duct locations'
+  const title = spot ? `${spot.n}. ${spot.label}` : 'Where does the duct run? DOE’s duct locations'
   const sub = spot ? KIND[kindOf(spot)].label : 'Colour = how ASHRAE 90.1-2019 classes the space'
   const subLines = wrap(sub, 78)
   const top = 44 + subLines.length * 22

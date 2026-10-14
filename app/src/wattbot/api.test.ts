@@ -10,10 +10,30 @@ describe('Engine API (WattBot CLI + BidWatt engine.mjs)', () => {
     expect(r.image).toMatch(/\/wattbot\/duct-locations-3\.svg$/)
   })
 
-  it('lists all 14 locations when no spot is given', () => {
+  it('lists every location when no spot is given', () => {
     const r = ductLocation({ zone: 5 }) as Record<string, any>
-    expect(r.locations).toHaveLength(14)
+    expect(r.locations).toHaveLength(15)
     expect(r.image).toMatch(/duct-locations-0\.svg$/)
+  })
+
+  it('gives a ceiling space both answers: return plenum or ducted return', () => {
+    const r = ductLocation({ spot: 11, zone: 5, county: 'Franklin' }) as Record<string, any>
+    expect(r.label).toBe('Supply in ceiling space')
+    expect(r.ashrae.minimum).toBe('installed R-1.9 minimum if a return plenum; no minimum with a ducted return')
+    expect(r.iecc.minimum).toBe('no minimum')
+    const ret = ductLocation({ spot: 15, zone: 5 }) as Record<string, any>
+    expect(ret.label).toBe('Return in ceiling space')
+    expect(ret.ashrae.minimum).toBe('no minimum')
+  })
+
+  it('puts concealed supply ducts at WSEC R-3.3, exposed ones in the zone they serve at none', () => {
+    for (const spot of [9, 10, 11]) {
+      const r = ductLocation({ spot, county: 'King' }) as Record<string, any>
+      expect(r.wsec.minimum).toBe('installed R-3.3 minimum')
+    }
+    const exposed = ductLocation({ spot: 12, county: 'Franklin' }) as Record<string, any>
+    expect(exposed.wsec.minimum).toBe('no minimum')
+    expect(exposed.wsec.detail).toMatch(/exposed within the zone it serves/)
   })
 
   it('takes the Washington zone from the county', () => {
@@ -35,16 +55,16 @@ describe('Engine API (WattBot CLI + BidWatt engine.mjs)', () => {
 
   it('has a dark image and a light drawing for the overview and every location', () => {
     const files = Object.keys(ductImages())
-    expect(files).toHaveLength(30)
-    expect(files).toContain('duct-drawing-light-14.svg')
-    expect((ductLocation({ spot: 14 }) as Record<string, any>).drawing).toMatch(/duct-drawing-light-14\.svg$/)
+    expect(files).toHaveLength(32)
+    expect(files).toContain('duct-drawing-light-15.svg')
+    expect((ductLocation({ spot: 15 }) as Record<string, any>).drawing).toMatch(/duct-drawing-light-15\.svg$/)
   })
 
   it('offers form choices from the same data the site uses', () => {
     const o = options()
     expect(o.pipes.find((p) => p.id === 'copper')!.sizes).toContain('1-1/4')
     expect(o.uses.find((u) => u.id === 'chws')!.processF).toBeLessThan(60)
-    expect(o.spots).toHaveLength(14)
+    expect(o.spots).toHaveLength(15)
     expect(o.waCounties.find((c) => c.county === 'Franklin')!.zone).toBe('5B')
   })
 

@@ -12,10 +12,10 @@ import { KIND, kindOf, type Kind } from '../../sim/ductKinds'
 /** The spaces of the section and how 90.1-2019 classes them. */
 const SPACES: { x: number; y: number; w: number; h: number; kind: Kind; name: string; vertical?: boolean; lx?: number }[] = [
   { x: 400, y: 120, w: 460, h: 50, kind: 'exteriorcol', name: 'Vented attic' },
-  { x: 400, y: 170, w: 460, h: 35, kind: 'indirect', name: 'Return air plenum', lx: 760 },
+  { x: 400, y: 170, w: 460, h: 35, kind: 'indirect', name: 'Return air plenum', lx: 655 },
   { x: 400, y: 205, w: 460, h: 115, kind: 'conditioned', name: 'Conditioned floor' },
-  { x: 400, y: 320, w: 460, h: 35, kind: 'indirect', name: 'Return air plenum', lx: 760 },
-  { x: 400, y: 355, w: 460, h: 115, kind: 'conditioned', name: 'Conditioned floor' },
+  { x: 400, y: 320, w: 460, h: 52, kind: 'ceiling', name: 'Ceiling space (return plenum or ducted return)' },
+  { x: 400, y: 372, w: 460, h: 98, kind: 'conditioned', name: 'Conditioned floor' },
   { x: 400, y: 470, w: 460, h: 50, kind: 'exteriorcol', name: 'Vented crawl space' },
   { x: 340, y: 110, w: 60, h: 410, kind: 'unconditioned', name: 'Unconditioned shaft', vertical: true },
   { x: 120, y: 210, w: 220, h: 40, kind: 'exteriorcol', name: 'Unvented attic' },
@@ -31,8 +31,9 @@ const DUCTS: { spot: number; d: string; flex?: boolean }[] = [
   { spot: 2, d: 'M785 172 V112' },
   { spot: 6, d: 'M345 232 H170 V250' },
   { spot: 7, d: 'M400 188 H640' },
-  { spot: 11, d: 'M370 338 H600' },
-  { spot: 10, d: 'M600 338 L612 330 L624 346 L636 330 L648 346 L660 330 L672 346 L690 340', flex: true },
+  { spot: 15, d: 'M370 341 H800 V368' },
+  { spot: 11, d: 'M370 359 H600' },
+  { spot: 10, d: 'M600 359 L612 351 L624 367 L636 351 L648 367 L660 351 L672 367 L690 361', flex: true },
   { spot: 12, d: 'M345 400 H160 V412' },
   { spot: 13, d: 'M370 495 H760 V470' },
   { spot: 14, d: 'M370 496 V540 H160 V510' },
@@ -71,7 +72,7 @@ export function DuctDiagram({ lit, sel, onPick, onHover, standalone, at, theme =
   const p = PALETTES[standalone ? theme : 'dark']
   const acc = standalone ? p.acc : 'var(--acc)'
   return (
-    <svg viewBox="80 40 860 540" role="img" aria-label="Building section with 14 numbered duct locations"
+    <svg viewBox="80 40 860 540" role="img" aria-label={`Building section with ${DUCT_SPOTS.length} numbered duct locations`}
       {...(standalone ? { xmlns: 'http://www.w3.org/2000/svg', width: 860, height: 540, ...at } : {})}>
       {standalone && <style>{standaloneCss(p)}</style>}
       {standalone && <rect x="80" y="40" width="860" height="540" fill={p.bg} />}
@@ -102,7 +103,7 @@ export function DuctDiagram({ lit, sel, onPick, onHover, standalone, at, theme =
       {/* structure */}
       <path d="M120 510 V210 H340 M400 120 H860 V520 M120 510 H340 M340 110 V520 M400 120 V520" stroke={p.line} strokeWidth="3" fill="none" />
       <path d="M400 320 H860 M400 470 H860 M120 380 H340" stroke={p.line} strokeWidth="1.5" fill="none" opacity="0.6" />
-      <path d="M400 205 H860 M400 355 H860" stroke={p.line} strokeWidth="1" strokeDasharray="5 4" fill="none" opacity="0.6" />
+      <path d="M400 205 H860 M400 372 H860" stroke={p.line} strokeWidth="1" strokeDasharray="5 4" fill="none" opacity="0.6" />
       {/* vents */}
       {[130, 150, 482, 500].map((y) => <path key={y} d={`M862 ${y} l10 -4 M862 ${y + 6} l10 -4`} stroke={p.line} strokeWidth="1.5" />)}
       <text x="876" y="146" className="g-note">vented</text>
@@ -125,8 +126,9 @@ export function DuctDiagram({ lit, sel, onPick, onHover, standalone, at, theme =
           opacity={lit === dct.spot ? 1 : 0.85}
         />
       ))}
-      <rect x="690" y="344" width="44" height="12" rx="2" fill={lit === 9 ? acc : p.duct} />
-      <path d="M860 320 V355" stroke={lit === 8 ? acc : p.line} strokeWidth={lit === 8 ? 7 : 3} />
+      <rect x="690" y="362" width="44" height="12" rx="2" fill={lit === 9 ? acc : p.duct} />
+      <rect x="784" y="366" width="32" height="7" rx="1.5" fill={lit === 15 ? acc : p.duct} />
+      <path d="M860 170 V205" stroke={lit === 8 ? acc : p.line} strokeWidth={lit === 8 ? 7 : 3} />
       {/* markers */}
       {DUCT_SPOTS.map((p) => (
         <g

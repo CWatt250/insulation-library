@@ -3,7 +3,7 @@
  * insulation-library.vercel.app. Plain JSON in, plain JSON out:
  *
  *   recommend(args)      thickness design for a pipe or duct
- *   ductLocation(args)   DOE's 14 duct locations + ASHRAE/IECC/WSEC minimums
+ *   ductLocation(args)   DOE's 14 duct locations (+ 15, a return in a ducted-return ceiling) + ASHRAE/IECC/WSEC minimums
  *   options()            the choices a form needs (sizes, materials, codes, counties, spots)
  *
  * Shipped two ways by scripts/build-wattbot.mjs:
@@ -18,7 +18,7 @@ import { WA_COUNTIES } from '../data/wsecData'
 import { codeMinimum, PIPE_CODES } from '../sim/code'
 import { ductCode, waOptions } from '../sim/design'
 import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPE_AIR, DUCT_TYPES, type DuctCodeBasis, type DuctCodeResult, type DuctPlace, type DuctType } from '../sim/duct'
-import { DUCT_SPOTS, spotRequirement } from '../sim/ductSpots'
+import { DUCT_SPOTS, minimumText, spotRequirement } from '../sim/ductSpots'
 import { DOE_SPOT_NOTES } from '../data/ductData'
 import { physicsMode } from '../sim/model'
 import { initialState, PRESETS } from '../sim/presets'
@@ -152,7 +152,7 @@ export function recommend(a: Args) {
 }
 
 const reqOut = (r: DuctCodeResult | null) => r && ({
-  minimum: r.R === null ? (r.notStated ? 'no R-value set' : 'no minimum') : `installed R-${r.R} minimum`,
+  minimum: minimumText(r),
   detail: r.label, derived: !!r.derived, sources: sources(r.src),
 })
 
@@ -174,7 +174,7 @@ export function ductLocation(a: Args) {
     return { ...base, image: spotImage(null), drawing: spotDrawing(null), locations: DUCT_SPOTS.map((p) => ({ spot: p.n, label: p.label, class: KIND[kindOf(p)].label, ashrae: reqOut(spotRequirement(p, service, zone, 'ashrae'))?.minimum ?? 'n/a — not a duct run' })) }
   }
   const spot = DUCT_SPOTS.find((p) => p.n === n)
-  if (!spot) throw new Error('spot must be 1–14')
+  if (!spot) throw new Error(`spot must be 1–${DUCT_SPOTS.length}`)
   const place = DUCT_LOCATIONS.find((l) => l.id === spot.place)
   const doe = DOE_SPOT_NOTES[spot.n]
   return {

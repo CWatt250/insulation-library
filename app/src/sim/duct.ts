@@ -427,6 +427,8 @@ export interface DuctCodeResult {
   derived?: boolean
   /** Still being verified (unused once every case is sourced). */
   pending?: boolean
+  /** A ceiling space that may be a return plenum: the answer when the return is ducted instead, where it differs. */
+  ifDucted?: DuctCodeResult
 }
 
 /**
