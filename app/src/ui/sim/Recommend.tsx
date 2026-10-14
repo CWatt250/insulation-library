@@ -1,15 +1,13 @@
 import { useMemo, useState } from 'react'
 import { DUCT_AIR, materialsFor, modeFor, PIPE_USES, recommendation, START, type Answers, type System } from '../../sim/recommend'
 import { CamSync } from '../../scene/Viewer'
-import { INSULATION } from '../../data/catalog'
 import { PIPE_LABEL, type PipeMaterial } from '../../data/pipe'
 import { equivalentIndex, pipeSizes } from '../../data/pipes'
-import { PIPE_LIMITS } from '../../data/pipeWalls'
 import { physicsMode, touchWords } from '../../sim/model'
 import { ductCode } from '../../sim/design'
 import { vaporCheck } from '../../sim/vapor'
-import { codeMinimum, PIPE_CODES } from '../../sim/code'
-import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPE_AIR, DUCT_TYPES, ductInsLabel, ductStage, type DuctInsulation, type DuctType } from '../../sim/duct'
+import { PIPE_CODES } from '../../sim/code'
+import { DUCT_CODES, DUCT_LOCATIONS, DUCT_TYPE_AIR, DUCT_TYPES, ductStage, type DuctType } from '../../sim/duct'
 import { dewPointF } from '../../sim/psychro'
 import { initialState, PRESETS } from '../../sim/presets'
 import { refsFor } from '../../sim/sources'
@@ -22,7 +20,7 @@ import { DuctSize, WsecInputs } from './DuctSetup'
 import { ReportButton } from './ReportButton'
 import { BrandFooter, BrandLine } from '../brand'
 import { governedBy, shortfall } from './answerText'
-import { WA_COUNTIES } from '../../data/wsecData'
+import { describeAnswers, matLabel, recommendationNotes } from '../../sim/recommendText'
 import { CodeChips } from './CodeChips'
 import { codesIn, loadCodes, saveCodes } from '../../sim/codePrefs'
 
@@ -210,8 +208,6 @@ export function Recommend({ mobile, units, onOpen }: { mobile: boolean; units: U
 }
 
 
-const matLabel = (s: SimState, pick: string) => (s.system === 'duct' ? ductInsLabel(pick as DuctInsulation, s.ductShape) : INSULATION[pick as keyof typeof INSULATION].label)
-
 /** The recommendation for the answers that were applied, with what it was based on. */
 function Answer({ ap, r, units, stale, onPick, onOpen }: {
   ap: Answers
@@ -227,21 +223,10 @@ function Answer({ ap, r, units, stale, onPick, onOpen }: {
   const vap = vaporCheck(s, mode, ev.ins)
   const label = matLabel(s, pick)
   const Q = (b: number) => `${fmt.flow(Math.abs(b), units)} ${fmt.flowUnit(units)}`
-  const what = ap.system === 'duct'
-    ? `${DUCT_TYPES.find((t) => t.id === ap.duct.ductType)!.label} duct, ${ap.duct.ductShape === 'round' ? `${ap.duct.ductD}" round` : `${ap.duct.ductW}" × ${ap.duct.ductH}"`}, ${DUCT_LOCATIONS.find((l) => l.id === ap.duct.ductLocation)!.short.toLowerCase()}, zone ${ap.duct.ductCodeBasis === 'wsec' ? `${WA_COUNTIES.find((c) => c.county === ap.duct.waCounty)?.zone ?? '4C'} (${ap.duct.waCounty} County)` : ap.duct.climateZone}`
-    : `${ap.pipe === 'steel' ? 'Steel' : ap.pipe === 'copper' ? 'Copper' : 'PVC'} ${pipeSizes(ap.pipe)[Math.min(ap.npsIndex, pipeSizes(ap.pipe).length - 1)].nps}" pipe${ap.drain ? ' (condensate drain)' : ''}, ${ap.outdoors ? 'outdoors' : 'indoors'}`
+  const what = describeAnswers(ap)
 
   // notes worth acting on, each with its source
-  const notes: { text: string; src: string[] }[] = []
-  if (ap.system === 'pipe' && mode !== 'condensate') {
-    const c = codeMinimum(s, mode)
-    if ('none' in c) notes.push({ text: `Energy code: ${c.none}`, src: [] })
-  }
-  if (mode === 'condensate') notes.push({ text: 'No model code requires insulating HVAC condensate drain lines, and ASHRAE 90.1-2019 exempts them from its pipe tables. Insulate where sweating would cause damage, or where the equipment maker\'s instructions call for it.', src: ['C7', 'C19'] })
-  if (ap.system === 'pipe' && ap.outdoors) notes.push({ text: 'IECC C403.12.3.1: "Piping insulation exposed to the weather shall be protected from damage, including that caused by sunlight, moisture, equipment maintenance and wind" (no adhesive tape). The recommendation uses an aluminum jacket where the material offers one.', src: ['C1'] })
-  if (ap.system === 'pipe' && PIPE_LIMITS[ap.pipe] && ap.processF > PIPE_LIMITS[ap.pipe]!.maxF) notes.push({ text: `${PIPE_LIMITS[ap.pipe]!.label} is rated to ${T(PIPE_LIMITS[ap.pipe]!.maxF)} — this temperature is above its rating.`, src: PIPE_LIMITS[ap.pipe]!.src })
-  if (ap.system === 'duct' && beh !== 'hot') notes.push({ text: 'Cooling ducts: a vapor retarder of 0.05 perm or less, every seam, staple and pin sealed (IMC 604.11).', src: ['C6'] })
-  if (ap.system === 'duct' && (ap.duct.ductType === 'outdoor' || ap.duct.ductType === 'exhaust')) notes.push({ text: 'Neither energy code sets an R-value for outside-air or exhaust ducts; the thickness here keeps the outside from sweating (IMC 603.12).', src: ['C1', 'C19'] })
+  const notes = recommendationNotes(ap, r, units)
 
   return (
     <div className={`rec-result ${stale ? 'stale' : ''}`}>

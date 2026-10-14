@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/build-wattbot.mjs && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "check:phone": "node ../tools/phone_check.mjs"
+    "check:phone": "node ../tools/phone_check.mjs",
+    "build:wattbot": "node scripts/build-wattbot.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

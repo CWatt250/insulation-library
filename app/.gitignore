@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# WattBot CLI bundle (rebuilt by scripts/build-wattbot.mjs and by the worker)
+dist-wattbot
