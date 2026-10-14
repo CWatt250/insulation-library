@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// WattBot export (watt-wattbot-worker deep mode):
-//   dist-wattbot/cli.mjs          the simulator as a stdin→stdout JSON CLI
-//   public/wattbot/*.svg          the duct-location images WattBot sends
+// The simulator for other Watt apps (src/wattbot/api.ts):
+//   dist-wattbot/cli.mjs          stdin→stdout JSON CLI (watt-wattbot-worker deep mode)
+//   public/wattbot/engine.mjs     browser ES module (BidWatt Toolbox; CORS in vercel.json)
+//   public/wattbot/*.svg          the duct-location images WattBot sends / BidWatt draws on
 // Run by `npm run build` before Vite, so the deployed images always match
 // src/sim/ductSpots.ts; the worker rebuilds the CLI itself when src/ changes.
 import { build } from 'esbuild'
@@ -15,6 +16,7 @@ const common = { bundle: true, platform: 'node', format: 'esm', target: 'node20'
 await build({ ...common, entryPoints: ['src/wattbot/cli.ts'], outfile: 'dist-wattbot/cli.mjs' })
 
 if (!process.argv.includes('--cli-only')) {
+  await build({ ...common, platform: 'browser', target: 'es2022', minify: true, entryPoints: ['src/wattbot/api.ts'], outfile: 'public/wattbot/engine.mjs' })
   const tmp = join(app, 'dist-wattbot', 'images.mjs')
   await build({ ...common, entryPoints: ['src/wattbot/images.tsx'], outfile: tmp, packages: 'external' })
   const { ductImages } = await import(pathToFileURL(tmp).href)
@@ -22,5 +24,5 @@ if (!process.argv.includes('--cli-only')) {
   mkdirSync(dir, { recursive: true })
   const files = ductImages()
   for (const [name, svg] of Object.entries(files)) writeFileSync(join(dir, name), `<?xml version="1.0" encoding="UTF-8"?>\n${svg}\n`)
-  console.log(`wattbot: cli + ${Object.keys(files).length} images`)
+  console.log(`wattbot: cli + engine + ${Object.keys(files).length} images`)
 }

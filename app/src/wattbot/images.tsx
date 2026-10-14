@@ -58,9 +58,15 @@ function image(n: number | null): string {
   )
 }
 
+/** The drawing alone, light theme — BidWatt's Toolbox lays its own title, legend and tap targets over it. */
+const drawing = (n: number | null) => renderToStaticMarkup(<DuctDiagram lit={n} sel={n} standalone theme="light" />)
+
 /** file name → SVG text, for every image. */
 export function ductImages(): Record<string, string> {
-  const out: Record<string, string> = { 'duct-locations-0.svg': image(null) }
-  for (const p of DUCT_SPOTS) out[`duct-locations-${p.n}.svg`] = image(p.n)
+  const out: Record<string, string> = { 'duct-locations-0.svg': image(null), 'duct-drawing-light-0.svg': drawing(null) }
+  for (const p of DUCT_SPOTS) {
+    out[`duct-locations-${p.n}.svg`] = image(p.n)
+    out[`duct-drawing-light-${p.n}.svg`] = drawing(p.n)
+  }
   return out
 }

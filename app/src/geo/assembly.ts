@@ -4,8 +4,9 @@ import { sweep, annulusProfile, bandProfile, type Profile, type ProfileEdge } fr
 import { IN, aluminumGauge, stainlessGauge, type PipeMaterial } from '../data/pipe'
 import { pipeSpec } from '../data/pipes'
 import { Slot } from '../materials/library'
+import { resolveSystem, type VaporBy } from './system'
 import {
-  INSULATION, JACKETS, layerCount,
+  JACKETS, layerCount,
   type FacingId, type InsulationId, type JacketId, type InsulationVisual, type JacketVisual, type LayerId, type OuterJacketId, type ServiceId,
 } from '../data/catalog'
 
@@ -183,7 +184,7 @@ interface Dims {
   rF: number
   tF: number
   /** Cold service: how the vapor retarder is provided. */
-  vaporBy: 'none' | 'facing' | 'integral' | 'membrane'
+  vaporBy: VaporBy
   /** A separate vapor-retarder membrane is built. */
   membrane: boolean
   rV: number
@@ -204,38 +205,12 @@ interface Dims {
   bendR: number
 }
 
+export { resolveSystem }
+
 const RAMP = 0.004
 
 /** Vapor-retarder membrane laid over the insulation: 36" widths, 2" laps both ways. */
 const MEMBRANE: JacketVisual = { id: 'none', label: 'Vapor retarder', metal: false, sheetIn: 36, circLapIn: 2, longLapIn: 2, bands: false, elbow: 'none' }
-
-/** Resolve facing, service and jacket into the system actually built (also used by the UI). */
-export function resolveSystem(p: Pick<AssemblyParams, 'insulation' | 'jacket' | 'facing' | 'service'>) {
-  const ins = INSULATION[p.insulation]
-  let jacketId = p.jacket as OuterJacketId
-  let facing: FacingId = p.facing ?? ins.facings[0]
-  if (p.jacket === 'asj' || p.jacket === 'fsk') {
-    facing = 'asj'
-    jacketId = 'none'
-  }
-  if (!ins.facings.includes(facing)) facing = ins.facings[0]
-  const service: ServiceId = p.service && ins.services.includes(p.service) ? p.service : ins.services[0]
-  // a cold fibrous system needs its ASJ: the facing is the vapor retarder
-  if (service === 'cold' && ins.vapor.kind === 'facing' && ins.facings.includes('asj')) facing = 'asj'
-  let vaporBy: Dims['vaporBy'] = 'none'
-  let membrane = false
-  if (service === 'cold') {
-    if (ins.vapor.kind === 'integral') vaporBy = 'integral'
-    else if (ins.vapor.kind === 'facing' && facing === 'asj') {
-      vaporBy = 'facing'
-      membrane = !!ins.vapor.membraneUnder?.includes(jacketId)
-    } else {
-      vaporBy = 'membrane'
-      membrane = true
-    }
-  }
-  return { ins, jacketId, facing, service, vaporBy, membrane }
-}
 
 function dims(p: AssemblyParams): Dims {
   const pipe = pipeSpec(p.pipe, p.npsIndex)

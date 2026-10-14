@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { ductImages } from './images'
-import { ductLocation, recommend } from './cli'
+import { ductLocation, options, recommend } from './api'
 
-describe('WattBot CLI', () => {
+describe('Engine API (WattBot CLI + BidWatt engine.mjs)', () => {
   it('reads a duct location off the DOE figure with its code minimums', () => {
     const r = ductLocation({ spot: 3, zone: 4 }) as Record<string, any>
     expect(r.label).toBe('Supply & return in vented attic')
@@ -33,7 +33,27 @@ describe('WattBot CLI', () => {
     expect(() => recommend({ system: 'pipe', pipe: 'steel', size: '2' })).toThrow(/processF/)
   })
 
-  it('has an image for the overview and every location', () => {
-    expect(Object.keys(ductImages())).toHaveLength(15)
+  it('has a dark image and a light drawing for the overview and every location', () => {
+    const files = Object.keys(ductImages())
+    expect(files).toHaveLength(30)
+    expect(files).toContain('duct-drawing-light-14.svg')
+    expect((ductLocation({ spot: 14 }) as Record<string, any>).drawing).toMatch(/duct-drawing-light-14\.svg$/)
+  })
+
+  it('offers form choices from the same data the site uses', () => {
+    const o = options()
+    expect(o.pipes.find((p) => p.id === 'copper')!.sizes).toContain('1-1/4')
+    expect(o.uses.find((u) => u.id === 'chws')!.processF).toBeLessThan(60)
+    expect(o.spots).toHaveLength(14)
+    expect(o.waCounties.find((c) => c.county === 'Franklin')!.zone).toBe('5B')
+  })
+
+  it('every listed pipe size round-trips through recommend', () => {
+    for (const p of options().pipes) {
+      for (const size of p.sizes) {
+        const r = recommend({ system: 'pipe', pipe: p.id, size, processF: 180 }) as Record<string, any>
+        expect(r.notes.join(' ')).not.toMatch(/isn't a listed/)
+      }
+    }
   })
 })
